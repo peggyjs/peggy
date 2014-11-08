@@ -29,6 +29,9 @@ Released: TBD
 - [#285](https://github.com/peggyjs/peggy/issues/285) Require that a non-empty
   string be given as a grammarSource if you are generating a source map, from
   @hildjj
+- [#206](https://github.com/peggyjs/peggy/pull/206): New output type `ast` and
+  an `--ast` flag for the CLI to get an internal grammar AST for investigation
+  (can be useful for plugin writers), from @Mingun
 
 ### Bug Fixes
 
