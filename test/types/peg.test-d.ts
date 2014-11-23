@@ -189,12 +189,16 @@ describe("peg.d.ts", () => {
         expectType<peggy.ast.Grammar>(node);
         expectType<"grammar">(node.type);
         expectType<peggy.LocationRange>(node.location);
+        expectType<peggy.ast.Import[]>(node.imports);
         expectType<peggy.ast.TopLevelInitializer | undefined>(
           node.topLevelInitializer
         );
         expectType<peggy.ast.Initializer | undefined>(node.initializer);
         expectType<peggy.ast.Rule[]>(node.rules);
 
+        if (node.imports) {
+          node.imports.forEach(visit);
+        }
         if (node.topLevelInitializer) {
           visit(node.topLevelInitializer);
         }
@@ -202,6 +206,26 @@ describe("peg.d.ts", () => {
           visit(node.initializer);
         }
         node.rules.forEach(visit);
+      },
+      import(node) {
+        add(node.type);
+        expectType<peggy.ast.Import>(node);
+        expectType<"import">(node.type);
+        expectType<peggy.LocationRange>(node.location);
+        expectType<string>(node.path);
+        expectType<peggy.ast.ImportedRule[]>(node.rules);
+
+        node.rules.forEach(visit);
+      },
+      imported_rule(node) {
+        add(node.type);
+        expectType<peggy.ast.ImportedRule>(node);
+        expectType<"imported_rule">(node.type);
+        expectType<peggy.LocationRange>(node.location);
+        expectType<string>(node.name);
+        expectType<string>(node.alias);
+        expectType<peggy.LocationRange>(node.nameLocation);
+        expectType<peggy.LocationRange | null>(node.aliasLocation);
       },
       top_level_initializer(node) {
         add(node.type);

@@ -28,6 +28,23 @@ describe("compiler pass |removeProxyRules|", () => {
         },
         { allowedStartRules: ["start"] }
       );
+
+      expect(pass).to.changeAST(
+        [
+          "import { imported } from '';",
+          "start = proxy",
+          "proxy = imported",
+        ].join("\n"),
+        {
+          rules: [
+            {
+              name: "start",
+              expression: { type: "rule_ref", name: "imported" },
+            },
+          ],
+        },
+        { allowedStartRules: ["start"] }
+      );
     });
   });
 
@@ -50,6 +67,27 @@ describe("compiler pass |removeProxyRules|", () => {
               expression: { type: "rule_ref", name: "proxied" },
             },
             { name: "proxied" },
+          ],
+        },
+        { allowedStartRules: ["start", "proxy"] }
+      );
+
+      expect(pass).to.changeAST(
+        [
+          "import { imported } from '';",
+          "start = proxy",
+          "proxy = imported",
+        ].join("\n"),
+        {
+          rules: [
+            {
+              name: "start",
+              expression: { type: "rule_ref", name: "imported" },
+            },
+            {
+              name: "proxy",
+              expression: { type: "rule_ref", name: "imported" },
+            },
           ],
         },
         { allowedStartRules: ["start", "proxy"] }

@@ -2915,7 +2915,7 @@ describe("generated parser behavior", () => {
       } catch (er) {
         expect(er).to.be.an.instanceof(peg.parser.SyntaxError);
         expect(er.format([source])).to.equal(`\
-Error: Expected "{", code block, comment, end of line, identifier, or whitespace but "=" found.
+Error: Expected "import", "{", code block, comment, end of line, identifier, or whitespace but "=" found.
  --> stdin:1:1
   |
 1 | ===
@@ -2927,7 +2927,7 @@ Error: Expected "{", code block, comment, end of line, identifier, or whitespace
       } catch (er) {
         expect(er).to.be.an.instanceof(peg.parser.SyntaxError);
         expect(er.format([])).to.equal(`\
-Error: Expected "{", code block, comment, end of line, identifier, or whitespace but "=" found.
+Error: Expected "import", "{", code block, comment, end of line, identifier, or whitespace but "=" found.
  at stdin:1:1`);
       }
     });

@@ -2394,6 +2394,15 @@ describe("compiler pass |generateBytecode|", () => {
           {},
         ],
       });
+
+      expect(pass).to.changeAST([
+        "import { imported } from '1';",
+        "start = imported",
+      ].join("\n"), {
+        rules: [{
+          bytecode: [43, 0, 0],  // IMPORTED_RULE <module '1'> <rule 0>
+        }],
+      });
     });
   });
 

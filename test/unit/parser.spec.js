@@ -66,6 +66,7 @@ describe("Peggy grammar parser", () => {
   function oneRuleGrammar(expression) {
     return {
       type: "grammar",
+      imports: [],
       topLevelInitializer: null,
       initializer: null,
       rules: [{ type: "rule", name: "start", expression }],
@@ -123,6 +124,7 @@ describe("Peggy grammar parser", () => {
   const trivialGrammar = literalGrammar("abcd", false);
   const twoRuleGrammar = {
     type: "grammar",
+    imports: [],
     topLevelInitializer: null,
     initializer: null,
     rules: [ruleA, ruleB],
@@ -140,6 +142,7 @@ describe("Peggy grammar parser", () => {
       delete node.codeLocation;
       delete node.nameLocation;
       delete node.labelLocation;
+      delete node.aliasLocation;
     }
 
     function stripExpression(node) {
@@ -169,6 +172,10 @@ describe("Peggy grammar parser", () => {
         delete node.nameLocation;
         delete node.labelLocation;
 
+        if (node.imports) {
+          node.imports.forEach(strip);
+        }
+
         if (node.topLevelInitializer) {
           strip(node.topLevelInitializer);
         }
@@ -178,6 +185,8 @@ describe("Peggy grammar parser", () => {
         node.rules.forEach(strip);
       },
 
+      import: stripChildren("rules"),
+      imported_rule: stripLeaf,
       top_level_initializer: stripLeaf,
       initializer: stripLeaf,
       rule: stripExpression,
@@ -280,33 +289,121 @@ describe("Peggy grammar parser", () => {
   // Canonical Grammar is "a = 'abcd'; b = 'efgh'; c = 'ijkl';".
   it("parses Grammar", () => {
     expect("\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA] }
+      { type: "grammar", imports: [], topLevelInitializer: null, initializer: null, rules: [ruleA] }
     );
     expect("\na = 'abcd';\nb = 'efgh';\nc = 'ijkl';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA, ruleB, ruleC] }
+      { type: "grammar", imports: [], topLevelInitializer: null, initializer: null, rules: [ruleA, ruleB, ruleC] }
     );
     expect("\n{ code };\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer: null, initializer, rules: [ruleA] }
+      { type: "grammar", imports: [], topLevelInitializer: null, initializer, rules: [ruleA] }
     );
     expect("\n{{ top level code }};\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer, initializer: null, rules: [ruleA] }
+      { type: "grammar", imports: [], topLevelInitializer, initializer: null, rules: [ruleA] }
     );
     expect("\n{{ top level code }};\n{ code };\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer, initializer, rules: [ruleA] }
+      { type: "grammar", imports: [], topLevelInitializer, initializer, rules: [ruleA] }
     );
+  });
+
+  // Canonical Import is "import { rule } from 'path';".
+  it("parses Import", () => {
+    expect("import { rule } from \"path/to/grammar\";start = 'abcd'").to.parseAs({
+      type: "grammar",
+      imports: [
+        {
+          type: "import",
+          path: "path/to/grammar",
+          rules: [{ type: "imported_rule", name: "rule", alias: "rule" }],
+        },
+      ],
+      topLevelInitializer: null,
+      initializer: null,
+      rules: [ruleStart],
+    });
+
+    expect([
+      "import",
+      "{",
+      "rule1",
+      ",",
+      "rule2",
+      "}",
+      "from",
+      "'path/to/grammar';start = 'abcd'",
+    ].join("\n")).to.parseAs({
+      type: "grammar",
+      imports: [{
+        type: "import",
+        path: "path/to/grammar",
+        rules: [
+          { type: "imported_rule", name: "rule1", alias: "rule1" },
+          { type: "imported_rule", name: "rule2", alias: "rule2" },
+        ],
+      }],
+      topLevelInitializer: null,
+      initializer: null,
+      rules: [ruleStart],
+    });
+
+    expect([
+      "import { rule1 } from 'path/to/grammar1'",
+      "import { rule2 } from 'path/to/grammar2'",
+      "start = 'abcd'",
+    ].join("\n")).to.parseAs({
+      type: "grammar",
+      imports: [
+        {
+          type: "import",
+          path: "path/to/grammar1",
+          rules: [{ type: "imported_rule", name: "rule1", alias: "rule1" }],
+        },
+        {
+          type: "import",
+          path: "path/to/grammar2",
+          rules: [{ type: "imported_rule", name: "rule2", alias: "rule2" }],
+        },
+      ],
+      topLevelInitializer: null,
+      initializer: null,
+      rules: [ruleStart],
+    });
+
+    expect("import { rule } from 'path/to/grammar';{ code };start = 'abcd'").to.parseAs({
+      type: "grammar",
+      imports: [{
+        type: "import",
+        path: "path/to/grammar",
+        rules: [{ type: "imported_rule", name: "rule", alias: "rule" }],
+      }],
+      topLevelInitializer: null,
+      initializer,
+      rules: [ruleStart],
+    });
+
+    expect("import { rule } from 'path/to/grammar';{{ top level code }};start = 'abcd'").to.parseAs({
+      type: "grammar",
+      imports: [{
+        type: "import",
+        path: "path/to/grammar",
+        rules: [{ type: "imported_rule", name: "rule", alias: "rule" }],
+      }],
+      topLevelInitializer,
+      initializer: null,
+      rules: [ruleStart],
+    });
   });
 
   // Canonical Top-Level Initializer is "{ top level code }".
   it("parses Top-Level Initializer", () => {
     expect("{{ top level code }};start = 'abcd'").to.parseAs(
-      { type: "grammar", topLevelInitializer, initializer: null, rules: [ruleStart] }
+      { type: "grammar", imports: [], topLevelInitializer, initializer: null, rules: [ruleStart] }
     );
   });
 
   // Canonical Initializer is "{ code }".
   it("parses Initializer", () => {
     expect("{ code };start = 'abcd'").to.parseAs(
-      { type: "grammar", topLevelInitializer: null, initializer, rules: [ruleStart] }
+      { type: "grammar", imports: [], topLevelInitializer: null, initializer, rules: [ruleStart] }
     );
   });
 
@@ -1116,6 +1213,7 @@ describe("Peggy grammar parser", () => {
 
   it("generates codeLocation / nameLocation / labelLocation", () => {
     const result = parser.parse(`
+import { d, e as f } from 'library';
 {{
   const foo = 12;
 }}
@@ -1128,18 +1226,65 @@ c = @'ijkl'
 `);
     expect(result).to.eql({
       type: "grammar",
+      imports: [{
+        type: "import",
+        path: "library",
+        rules: [
+          {
+            type: "imported_rule",
+            name: "d",
+            alias: "d",
+            nameLocation: {
+              source: undefined,
+              start: { offset: 10, line: 2, column: 10 },
+              end: { offset: 11, line: 2, column: 11 },
+            },
+            aliasLocation: null,
+            location: {
+              source: undefined,
+              start: { offset: 10, line: 2, column: 10 },
+              end: { offset: 11, line: 2, column: 11 },
+            },
+          },
+          {
+            type: "imported_rule",
+            name: "e",
+            alias: "f",
+            nameLocation: {
+              source: undefined,
+              start: { offset: 13, line: 2, column: 13 },
+              end: { offset: 14, line: 2, column: 14 },
+            },
+            aliasLocation: {
+              source: undefined,
+              start: { offset: 18, line: 2, column: 18 },
+              end: { offset: 19, line: 2, column: 19 },
+            },
+            location: {
+              source: undefined,
+              start: { offset: 13, line: 2, column: 13 },
+              end: { offset: 19, line: 2, column: 19 },
+            },
+          },
+        ],
+        location: {
+          source: undefined,
+          start: { offset: 1, line: 2, column: 1 },
+          end: { offset: 37, line: 2, column: 37 },
+        },
+      }],
       topLevelInitializer: {
         type: "top_level_initializer",
         code: "\n  const foo = 12;\n",
         codeLocation: {
           source: undefined,
-          start: { offset: 3, line: 2, column: 3 },
-          end: { offset: 22, line: 4, column: 1 },
+          start: { offset: 40, line: 3, column: 3 },
+          end: { offset: 59, line: 5, column: 1 },
         },
         location: {
           source: undefined,
-          start: { offset: 1, line: 2, column: 1 },
-          end: { offset: 25, line: 5, column: 1 },
+          start: { offset: 38, line: 3, column: 1 },
+          end: { offset: 62, line: 6, column: 1 },
         },
       },
       initializer: {
@@ -1147,13 +1292,13 @@ c = @'ijkl'
         code: "\n  const bar = 13;\n",
         codeLocation: {
           source: undefined,
-          start: { offset: 26, line: 5, column: 2 },
-          end: { offset: 45, line: 7, column: 1 },
+          start: { offset: 63, line: 6, column: 2 },
+          end: { offset: 82, line: 8, column: 1 },
         },
         location: {
           source: undefined,
-          start: { offset: 25, line: 5, column: 1 },
-          end: { offset: 47, line: 8, column: 1 },
+          start: { offset: 62, line: 6, column: 1 },
+          end: { offset: 84, line: 9, column: 1 },
         },
       },
       rules: [
@@ -1162,8 +1307,8 @@ c = @'ijkl'
           name: "a",
           nameLocation: {
             source: undefined,
-            start: { offset: 47, line: 8, column: 1 },
-            end: { offset: 48, line: 8, column: 2 },
+            start: { offset: 84, line: 9, column: 1 },
+            end: { offset: 85, line: 9, column: 2 },
           },
           expression: {
             type: "action",
@@ -1175,8 +1320,8 @@ c = @'ijkl'
                   label: "label",
                   labelLocation: {
                     source: undefined,
-                    start: { offset: 51, line: 8, column: 5 },
-                    end: { offset: 56, line: 8, column: 10 },
+                    start: { offset: 88, line: 9, column: 5 },
+                    end: { offset: 93, line: 9, column: 10 },
                   },
                   expression: {
                     type: "literal",
@@ -1184,14 +1329,14 @@ c = @'ijkl'
                     ignoreCase: false,
                     location: {
                       source: undefined,
-                      start: { offset: 57, line: 8, column: 11 },
-                      end: { offset: 63, line: 8, column: 17 },
+                      start: { offset: 94, line: 9, column: 11 },
+                      end: { offset: 100, line: 9, column: 17 },
                     },
                   },
                   location: {
                     source: undefined,
-                    start: { offset: 51, line: 8, column: 5 },
-                    end: { offset: 63, line: 8, column: 17 },
+                    start: { offset: 88, line: 9, column: 5 },
+                    end: { offset: 100, line: 9, column: 17 },
                   },
                 },
                 {
@@ -1199,13 +1344,13 @@ c = @'ijkl'
                   code: " return true; ",
                   codeLocation: {
                     source: undefined,
-                    start: { offset: 66, line: 8, column: 20 },
-                    end: { offset: 80, line: 8, column: 34 },
+                    start: { offset: 103, line: 9, column: 20 },
+                    end: { offset: 117, line: 9, column: 34 },
                   },
                   location: {
                     source: undefined,
-                    start: { offset: 64, line: 8, column: 18 },
-                    end: { offset: 81, line: 8, column: 35 },
+                    start: { offset: 101, line: 9, column: 18 },
+                    end: { offset: 118, line: 9, column: 35 },
                   },
                 },
                 {
@@ -1213,38 +1358,38 @@ c = @'ijkl'
                   code: " return false; ",
                   codeLocation: {
                     source: undefined,
-                    start: { offset: 84, line: 8, column: 38 },
-                    end: { offset: 99, line: 8, column: 53 },
+                    start: { offset: 121, line: 9, column: 38 },
+                    end: { offset: 136, line: 9, column: 53 },
                   },
                   location: {
                     source: undefined,
-                    start: { offset: 82, line: 8, column: 36 },
-                    end: { offset: 100, line: 8, column: 54 },
+                    start: { offset: 119, line: 9, column: 36 },
+                    end: { offset: 137, line: 9, column: 54 },
                   },
                 },
               ],
               location: {
                 source: undefined,
-                start: { offset: 51, line: 8, column: 5 },
-                end: { offset: 100, line: 8, column: 54 },
+                start: { offset: 88, line: 9, column: 5 },
+                end: { offset: 137, line: 9, column: 54 },
               },
             },
             code: " return 'so true'; ",
             codeLocation: {
               source: undefined,
-              start: { offset: 102, line: 8, column: 56 },
-              end: { offset: 121, line: 8, column: 75 },
+              start: { offset: 139, line: 9, column: 56 },
+              end: { offset: 158, line: 9, column: 75 },
             },
             location: {
               source: undefined,
-              start: { offset: 51, line: 8, column: 5 },
-              end: { offset: 122, line: 8, column: 76 },
+              start: { offset: 88, line: 9, column: 5 },
+              end: { offset: 159, line: 9, column: 76 },
             },
           },
           location: {
             source: undefined,
-            start: { offset: 47, line: 8, column: 1 },
-            end: { offset: 123, line: 9, column: 1 },
+            start: { offset: 84, line: 9, column: 1 },
+            end: { offset: 160, line: 10, column: 1 },
           },
         },
         {
@@ -1252,8 +1397,8 @@ c = @'ijkl'
           name: "b",
           nameLocation: {
             source: undefined,
-            start: { offset: 123, line: 9, column: 1 },
-            end: { offset: 124, line: 9, column: 2 },
+            start: { offset: 160, line: 10, column: 1 },
+            end: { offset: 161, line: 10, column: 2 },
           },
           expression: {
             type: "sequence",
@@ -1262,8 +1407,8 @@ c = @'ijkl'
               label: "LABEL",
               labelLocation: {
                 source: undefined,
-                start: { offset: 128, line: 9, column: 6 },
-                end: { offset: 133, line: 9, column: 11 },
+                start: { offset: 165, line: 10, column: 6 },
+                end: { offset: 170, line: 10, column: 11 },
               },
               pick: true,
               expression: {
@@ -1272,26 +1417,26 @@ c = @'ijkl'
                 ignoreCase: false,
                 location: {
                   source: undefined,
-                  start: { offset: 134, line: 9, column: 12 },
-                  end: { offset: 140, line: 9, column: 18 },
+                  start: { offset: 171, line: 10, column: 12 },
+                  end: { offset: 177, line: 10, column: 18 },
                 },
               },
               location: {
                 source: undefined,
-                start: { offset: 127, line: 9, column: 5 },
-                end: { offset: 140, line: 9, column: 18 },
+                start: { offset: 164, line: 10, column: 5 },
+                end: { offset: 177, line: 10, column: 18 },
               },
             }],
             location: {
               source: undefined,
-              start: { offset: 127, line: 9, column: 5 },
-              end: { offset: 140, line: 9, column: 18 },
+              start: { offset: 164, line: 10, column: 5 },
+              end: { offset: 177, line: 10, column: 18 },
             },
           },
           location: {
             source: undefined,
-            start: { offset: 123, line: 9, column: 1 },
-            end: { offset: 141, line: 10, column: 1 },
+            start: { offset: 160, line: 10, column: 1 },
+            end: { offset: 178, line: 11, column: 1 },
           },
         },
         {
@@ -1299,8 +1444,8 @@ c = @'ijkl'
           name: "c",
           nameLocation: {
             source: undefined,
-            start: { offset: 141, line: 10, column: 1 },
-            end: { offset: 142, line: 10, column: 2 },
+            start: { offset: 178, line: 11, column: 1 },
+            end: { offset: 179, line: 11, column: 2 },
           },
           expression: {
             type: "sequence",
@@ -1309,8 +1454,8 @@ c = @'ijkl'
               label: null,
               labelLocation: {
                 source: undefined,
-                start: { offset: 145, line: 10, column: 5 },
-                end: { offset: 146, line: 10, column: 6 },
+                start: { offset: 182, line: 11, column: 5 },
+                end: { offset: 183, line: 11, column: 6 },
               },
               pick: true,
               expression: {
@@ -1319,33 +1464,33 @@ c = @'ijkl'
                 ignoreCase: false,
                 location: {
                   source: undefined,
-                  start: { offset: 146, line: 10, column: 6 },
-                  end: { offset: 152, line: 10, column: 12 },
+                  start: { offset: 183, line: 11, column: 6 },
+                  end: { offset: 189, line: 11, column: 12 },
                 },
               },
               location: {
                 source: undefined,
-                start: { offset: 145, line: 10, column: 5 },
-                end: { offset: 152, line: 10, column: 12 },
+                start: { offset: 182, line: 11, column: 5 },
+                end: { offset: 189, line: 11, column: 12 },
               },
             }],
             location: {
               source: undefined,
-              start: { offset: 145, line: 10, column: 5 },
-              end: { offset: 152, line: 10, column: 12 },
+              start: { offset: 182, line: 11, column: 5 },
+              end: { offset: 189, line: 11, column: 12 },
             },
           },
           location: {
             source: undefined,
-            start: { offset: 141, line: 10, column: 1 },
-            end: { offset: 153, line: 11, column: 1 },
+            start: { offset: 178, line: 11, column: 1 },
+            end: { offset: 190, line: 12, column: 1 },
           },
         },
       ],
       location: {
         source: undefined,
         start: { offset: 0, line: 1, column: 1 },
-        end: { offset: 153, line: 11, column: 1 },
+        end: { offset: 190, line: 12, column: 1 },
       },
     });
   });

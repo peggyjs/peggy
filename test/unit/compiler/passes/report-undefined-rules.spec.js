@@ -19,4 +19,16 @@ describe("compiler pass |reportUndefinedRules|", () => {
       },
     });
   });
+
+  it("do not report imported rules as undefined", () => {
+    expect(pass).to.not.reportError([
+      "import { imported } from '';",
+      "start = imported;",
+    ].join("\n"));
+
+    expect(pass).to.not.reportError(
+      "import { imported } from ''; start = 'a'",
+      { allowedStartRules: ["imported"] }
+    );
+  });
 });

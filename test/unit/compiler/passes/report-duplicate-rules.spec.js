@@ -30,4 +30,48 @@ describe("compiler pass |reportDuplicateRules|", () => {
       }],
     });
   });
+
+  it("reports duplicate imports", () => {
+    expect(pass).to.reportError([
+      "import { rule, rule } from '';",
+      "start = 'a'",
+    ].join("\n"), {
+      message: "Rule \"rule\" is already imported",
+      location: {
+        source: undefined,
+        start: { offset: 15, line: 1, column: 16 },
+        end: { offset: 19, line: 1, column: 20 },
+      },
+      diagnostics: [{
+        message: "Original import location",
+        location: {
+          source: undefined,
+          start: { offset: 9, line: 1, column: 10 },
+          end: { offset: 13, line: 1, column: 14 },
+        },
+      }],
+    });
+  });
+
+  it("reports overrides of imported rules", () => {
+    expect(pass).to.reportError([
+      "import { start } from '';",
+      "start = 'a'",
+    ].join("\n"), {
+      message: "Rule with the same name \"start\" is already defined in the grammar, try to add `as <alias_name>` to the imported one",
+      location: {
+        source: undefined,
+        start: { offset: 9, line: 1, column: 10 },
+        end: { offset: 14, line: 1, column: 15 },
+      },
+      diagnostics: [{
+        message: "Rule defined here",
+        location: {
+          source: undefined,
+          start: { offset: 26, line: 2, column: 1 },
+          end: { offset: 31, line: 2, column: 6 },
+        },
+      }],
+    });
+  });
 });
