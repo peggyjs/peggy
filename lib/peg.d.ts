@@ -53,6 +53,8 @@ declare namespace ast {
 
   /** The main Peggy AST class returned by the parser. */
   interface Grammar extends Node<"grammar"> {
+    /** List of import clauses with additional rules. */
+    imports: Import[];
     /** Initializer that run once when importing generated parser module. */
     topLevelInitializer?: TopLevelInitializer;
     /** Initializer that run each time when `parser.parse()` method in invoked. */
@@ -76,6 +78,40 @@ declare namespace ast {
      functions?: FunctionConst[];
      locations?: LocationRange[];
    }
+
+  /** The single `import` clause. */
+  interface Import extends Node<"import"> {
+    /** Path to the grammar, relative to the current file. */
+    path: string;
+    /** List of imported rules from another grammar. */
+    rules: ImportedRule[];
+  }
+
+  /**
+   * A rule with an optional alias imported from another grammar.
+   *
+   * Alias name shares the same naming scope as the ordinal rules,
+   * so they should be unique within that scope.
+   */
+  interface ImportedRule extends Node<"imported_rule"> {
+    /** Name of rule in the imported grammar. */
+    name: string;
+    /**
+     * Name of the rule to use in the grammar. This property will be set to
+     * `name` if alias was not defined in the grammar. To distinguish between
+     * values, defined in the grammar and constructed from the rule name use
+     * the `aliasLocation` property. It will be `null` in case of constructed
+     * name.
+     */
+    alias: string;
+    /** Span of the `name` string definition in the grammar. */
+    nameLocation: LocationRange;
+    /**
+     * Span of the `alias` string definition in the grammar.
+     * `null` if the alias is not defined in the grammar.
+     */
+    aliasLocation: LocationRange | null;
+  }
 
   /**
    * Base interface for all initializer nodes with the code.
@@ -603,6 +639,7 @@ export namespace compiler {
     interface NodeTypes {
       /**
        * Default behavior: run visitor:
+       * - on each element in `imports`
        * - on the top level initializer, if it is defined
        * - on the initializer, if it is defined
        * - on each element in `rules`
@@ -613,6 +650,22 @@ export namespace compiler {
        * @param args Any arguments passed to the `Visitor`
        */
       grammar?(node: ast.Grammar, ...args: any[]): any;
+
+      /**
+       * Default behavior: run visitor on each element in `rules`,
+       * return `undefined`
+       *
+       * @param node Node, representing one clause of imports from one another grammar
+       * @param args Any arguments passed to the `Visitor`
+       */
+      import?(node: ast.Import, ...args: any[]): any;
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Node, representing imported one and possible renamed rule
+       * @param args Any arguments passed to the `Visitor`
+       */
+      imported_rule?(node: ast.ImportedRule, ...args: any[]): any;
 
       /**
        * Default behavior: do nothing

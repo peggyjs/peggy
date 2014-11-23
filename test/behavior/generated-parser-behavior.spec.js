@@ -2955,7 +2955,7 @@ Error: Expected "{", code block, comment, end of line, identifier, or whitespace
 
         // Check that all messages present in the list
         expect(messages).to.include.members([
-          "Rule \"missingRule\" is not defined",
+          "Rule \"missingRule\" is not defined or imported",
           "Rule \"duplicatedRule\" is already defined",
           "Label \"duplicatedLabel\" is already defined",
           "Possible infinite loop when parsing (left recursion: duplicatedRule -> start -> leftRecursion -> duplicatedRule)",

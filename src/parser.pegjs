@@ -46,15 +46,41 @@
 // ---- Syntactic Grammar -----
 
 Grammar
-  = __ topLevelInitializer:(@TopLevelInitializer __)? initializer:(@Initializer __)? rules:(@Rule __)+ {
+  = __ imports:(@Import __)* topLevelInitializer:(@TopLevelInitializer __)? initializer:(@Initializer __)? rules:(@Rule __)+ {
       return {
         type: "grammar",
+        imports,
         topLevelInitializer,
         initializer,
         rules,
         location: location()
       };
     }
+
+Import
+  = "import" __
+    "{" __ rules:ImportedRule|.., __ "," __| (__ ",")? __ "}" __
+    "from" __ path:StringLiteral EOS
+  {
+    return {
+      type: "import",
+      path,
+      rules,
+      location: location(),
+    };
+  }
+
+ImportedRule
+  = name:IdentifierName alias:(__ "as" __ @IdentifierName)? {
+    return {
+      type: "imported_rule",
+      name: name[0],
+      alias: alias !== null ? alias[0] : name[0],
+      nameLocation: name[1],
+      aliasLocation: alias !== null ? alias[1] : null,
+      location: location(),
+    };
+  }
 
 TopLevelInitializer
   = "{" code:CodeBlock "}" EOS {
