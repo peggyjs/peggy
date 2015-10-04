@@ -209,7 +209,7 @@ RepeatedExpression
   = expression:PrimaryExpression __ "|" __ boundaries:Boundaries __ "|" {
       let min = boundaries[0];
       let max = boundaries[1];
-      if (max.value === 0) {
+      if (max.type === "constant" && max.value === 0) {
         error("The maximum count of repetitions of the rule must be > 0", max.location);
       }
 
@@ -233,6 +233,7 @@ Boundaries
 
 Boundary
   = value:Integer { return { type: "constant", value, location: location() }; }
+  / value:IdentifierName { return { type: "variable", value: value[0], location: location() }; }
 
 PrimaryExpression
   = LiteralMatcher

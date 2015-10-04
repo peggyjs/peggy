@@ -223,8 +223,14 @@ declare namespace ast {
     value: number;
   }
 
+  interface VariableBoundary extends Boundary<"variable"> {
+    /** Repetition count - name of the label of the one of preceding expressions. */
+    value: string;
+  }
+
   type RepeatedBoundary
-    = ConstantBoundary;
+    = ConstantBoundary
+    | VariableBoundary;
 
   /** Expression repeated from `min` to `max` times. */
   interface Repeated extends Expr<"repeated"> {
