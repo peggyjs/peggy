@@ -231,6 +231,11 @@ declare namespace ast {
     min: RepeatedBoundary | null;
     /** Maximum count of repetitions. */
     max: RepeatedBoundary;
+    /**
+     * An expression that should appeared between occurrences of the `expression`.
+     * Matched parts of input skipped and do not included to the result array.
+     */
+    delimiter: Expression | null;
     expression: Primary;
   }
 
