@@ -206,7 +206,7 @@ SuffixedOperator
   / "+"
 
 RepeatedExpression
-  = expression:PrimaryExpression __ "|" __ boundaries:Boundaries __ "|" {
+  = expression:PrimaryExpression __ "|" __ boundaries:Boundaries __ delimiter:("," __ @Expression __)? "|" {
       let min = boundaries[0];
       let max = boundaries[1];
       if (max.type === "constant" && max.value === 0) {
@@ -218,6 +218,7 @@ RepeatedExpression
         min,
         max,
         expression,
+        delimiter,
         location: location(),
       };
     }

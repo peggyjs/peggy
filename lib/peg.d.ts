@@ -249,6 +249,11 @@ declare namespace ast {
     min: RepeatedBoundary | null;
     /** Maximum count of repetitions. */
     max: RepeatedBoundary;
+    /**
+     * An expression that should appear between occurrences of the `expression`.
+     * Matched parts of input skipped and do not included to the result array.
+     */
+    delimiter: Expression | null;
     expression: Primary;
   }
 
@@ -721,7 +726,8 @@ export namespace compiler {
        */
       one_or_more?(node: ast.Suffixed, ...args: any[]): any;
       /**
-       * Default behavior: run visitor on `expression` and return it result
+       * Default behavior: run visitor on `delimiter` if it is defined then
+       * run visitor on `expression` and return it result
        *
        * @param node Node, representing repetition of the `expression` specified number of times
        * @param args Any arguments passed to the `Visitor`
