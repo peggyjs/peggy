@@ -197,12 +197,42 @@ SuffixedExpression
         location: location()
       };
     }
+  / RepeatedExpression
   / PrimaryExpression
 
 SuffixedOperator
   = "?"
   / "*"
   / "+"
+
+RepeatedExpression
+  = expression:PrimaryExpression __ "|" __ boundaries:Boundaries __ "|" {
+      let min = boundaries[0];
+      let max = boundaries[1];
+      if (max.value === 0) {
+        error("The maximum count of repetitions of the rule must be > 0", max.location);
+      }
+
+      return {
+        type: "repeated",
+        min,
+        max,
+        expression,
+        location: location(),
+      };
+    }
+
+Boundaries
+  = min:Boundary? __ ".." __ max:Boundary? {
+    return [
+      min !== null ? min : { type: "constant", value: 0 },
+      max !== null ? max : { type: "constant", value: null },
+    ];
+  }
+  / exact:Boundary { return [null, exact]; }
+
+Boundary
+  = value:Integer { return { type: "constant", value, location: location() }; }
 
 PrimaryExpression
   = LiteralMatcher
@@ -429,6 +459,9 @@ BareCodeBlock
 
 Code
   = $((![{}] SourceCharacter)+ / "{" Code "}")*
+
+Integer
+  = digits:$DecimalDigit+ { return parseInt(digits, 10); }
 
 // Unicode Character Categories
 //
