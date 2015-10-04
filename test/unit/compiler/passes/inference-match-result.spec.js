@@ -152,6 +152,29 @@ describe("compiler pass |inferenceMatchResult|", () => {
           expect(pass).to.changeAST("start = []| 42 |", { rules: [{ match: -1 }] });
         });
       });
+
+      describe("with variable boundaries", () => {
+        it("for |   ..max| correctly", () => {
+          expect(pass).to.changeAST("start =  .|   ..max|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = ''|   ..max|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = []|   ..max|", { rules: [{ match: 0 }] });
+        });
+        it("for |min..   | correctly", () => {
+          expect(pass).to.changeAST("start =  .|min..   |", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = ''|min..   |", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = []|min..   |", { rules: [{ match: 0 }] });
+        });
+        it("for |min..max| correctly", () => {
+          expect(pass).to.changeAST("start =  .|min..max|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = ''|min..max|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = []|min..max|", { rules: [{ match: 0 }] });
+        });
+        it("for | exact  | correctly", () => {
+          expect(pass).to.changeAST("start =  .|exact|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = ''|exact|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = []|exact|", { rules: [{ match: 0 }] });
+        });
+      });
     });
   });
 
