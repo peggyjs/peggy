@@ -679,6 +679,232 @@ describe("compiler pass |generateBytecode|", () => {
           });
         });
       });
+
+      describe("with variable boundaries", () => {
+        describe("| ..x| (edge case -- no min boundary)", () => {
+          const grammar = "start = max:('a'{return 42;}) 'a'| ..max|";
+
+          it("generates correct bytecode", () => {
+            expect(pass).to.changeAST(grammar, bytecodeDetails([
+              5,                            // PUSH_CURR_POS
+              // "a"{return 42;}
+              5,                            // PUSH_CURR_POS
+              18, 0, 2, 2, 22, 0, 23, 0,    // <expression>
+              15, 6, 0,                     // IF_NOT_ERROR
+              24, 1,                        //   * REPORT_SAVED_POS <1>
+              26, 0, 1, 0,                  //     CALL <0>
+              9,                            // NIP
+
+              15, 41, 3,                    // IF_NOT_ERROR
+              // "a"| ..max|
+              4,                            //   * PUSH_EMPTY_ARRAY
+              33, 1, 1, 8,                  //     IF_GE_DYNAMIC <1>
+              3,                            //       * PUSH_FAILED
+              18, 0, 2, 2, 22, 0, 23, 0,    //       * <expression>
+              16, 14,                       //     WHILE_NOT_ERROR
+              10,                           //       * APPEND
+              33, 1, 1, 8,                  //         IF_GE_DYNAMIC <1>
+              3,                            //           * PUSH_FAILED
+              18, 0, 2, 2, 22, 0, 23, 0,    //           * <expression>
+              6,                            //     POP
+
+              15, 3, 4,                     //     IF_NOT_ERROR
+              11, 2,                        //       * WRAP <2>
+              9,                            //         POP
+              8, 2,                         //       * POP_N <2>
+              7,                            //         POP_CURR_POS
+              3,                            //         PUSH_FAILED
+              6,                            //   * POP
+              7,                            //     POP_CURR_POS
+              3,                            //     PUSH_FAILED
+            ]));
+          });
+
+          it("defines correct constants", () => {
+            expect(pass).to.changeAST(grammar, constsDetails(
+              ["a"],
+              [],
+              [{ type: "literal", value: "a", ignoreCase: false }],
+              [{ predicate: false, params: [], body: "return 42;" }]
+            ));
+          });
+        });
+
+        describe("|x.. | (edge case -- no max boundary)", () => {
+          const grammar = "start = min:('a'{return 42;}) 'a'|min.. |";
+
+          it("generates correct bytecode", () => {
+            expect(pass).to.changeAST(grammar, bytecodeDetails([
+              5,                            // PUSH_CURR_POS
+              // "a"{return 42;}
+              5,                            // PUSH_CURR_POS
+              18, 0, 2, 2, 22, 0, 23, 0,    // <expression>
+              15, 6, 0,                     // IF_NOT_ERROR
+              24, 1,                        //   * REPORT_SAVED_POS <1>
+              26, 0, 1, 0,                  //     CALL <0>
+              9,                            // NIP
+
+              15, 40, 3,                    // IF_NOT_ERROR
+              // "a"|min..|
+              5,                            //   * PUSH_CURR_POS
+              4,                            //     PUSH_EMPTY_ARRAY
+              18, 0, 2, 2, 22, 0, 23, 0,    //     <expression>
+              16, 9,                        //     WHILE_NOT_ERROR
+              10,                           //       * APPEND
+              18, 0, 2, 2, 22, 0, 23, 0,    //         <expression>
+              6,                            //     POP
+              32, 2, 3, 1,                  //     IF_LT_DYNAMIC <2>
+              6,                            //       * POP
+              7,                            //         POP_CURR_POS
+              3,                            //         PUSH_FAILED
+              9,                            //       * NIP
+
+              15, 3, 4,                     //     IF_NOT_ERROR
+              11, 2,                        //       * WRAP <2>
+              9,                            //         POP
+              8, 2,                         //       * POP_N <2>
+              7,                            //         POP_CURR_POS
+              3,                            //         PUSH_FAILED
+              6,                            //   * POP
+              7,                            //     POP_CURR_POS
+              3,                            //     PUSH_FAILED
+            ]));
+          });
+
+          it("defines correct constants", () => {
+            expect(pass).to.changeAST(grammar, constsDetails(
+              ["a"],
+              [],
+              [{ type: "literal", value: "a", ignoreCase: false }],
+              [{ predicate: false, params: [], body: "return 42;" }]
+            ));
+          });
+        });
+
+        describe("|x..y|", () => {
+          const grammar = "start = min:('a'{return 42;}) max:('a'{return 42;}) 'a'|min..max|";
+
+          it("generates correct bytecode", () => {
+            expect(pass).to.changeAST(grammar, bytecodeDetails([
+              5,                            // PUSH_CURR_POS
+              // "a"{return 42;}
+              5,                            // PUSH_CURR_POS
+              18, 0, 2, 2, 22, 0, 23, 0,    // <expression>
+              15, 6, 0,                     // IF_NOT_ERROR
+              24, 1,                        //   * REPORT_SAVED_POS <1>
+              26, 0, 1, 0,                  //     CALL <0>
+              9,                            // NIP
+
+              15, 77, 3,                    // IF_NOT_ERROR
+              // "a"{return 42;}
+              5,                            //   * PUSH_CURR_POS
+              18, 0, 2, 2, 22, 0, 23, 0,    //     <expression>
+              15, 7, 0,                     //     IF_NOT_ERROR
+              24, 1,                        //       * REPORT_SAVED_POS <1>
+              26, 1, 1, 1, 2,               //         CALL <1>
+              9,                            //     NIP
+              15, 50, 4,                    //     IF_NOT_ERROR
+              // "a"|min..max|
+              5,                            //       * PUSH_CURR_POS
+              4,                            //         PUSH_EMPTY_ARRAY
+              33, 2, 1, 8,                  //         IF_GE_DYNAMIC <2>
+              3,                            //           * PUSH_FAILED
+              18, 0, 2, 2, 22, 0, 23, 0,    //           * <expression>
+              16, 14,                       //         WHILE_NOT_ERROR
+              10,                           //           * APPEND
+              33, 2, 1, 8,                  //             IF_GE_DYNAMIC <2>
+              3,                            //               * PUSH_FAILED
+              18, 0, 2, 2, 22, 0, 23, 0,    //               * <expression>
+              6,                            //         POP
+              32, 3, 3, 1,                  //         IF_LT_DYNAMIC <3>
+              6,                            //           * POP
+              7,                            //             POP_CURR_POS
+              3,                            //             PUSH_FAILED
+              9,                            //           * NIP
+
+              15, 3, 4,                     //         IF_NOT_ERROR
+              11, 3,                        //           * WRAP <3>
+              9,                            //             NIP
+              8, 3,                         //           * POP_N <3>
+              7,                            //             POP_CURR_POS
+              3,                            //             PUSH_FAILED
+              8, 2,                         //       * WRAP <2>
+              7,                            //         POP_CURR_POS
+              3,                            //         PUSH_FAILED
+              6,                            // * POP
+              7,                            //   POP_CURR_POS
+              3,                            //   PUSH_FAILED
+            ]));
+          });
+
+          it("defines correct constants", () => {
+            expect(pass).to.changeAST(grammar, constsDetails(
+              ["a"],
+              [],
+              [{ type: "literal", value: "a", ignoreCase: false }],
+              [
+                { predicate: false, params: [],      body: "return 42;" },
+                { predicate: false, params: ["min"], body: "return 42;" },
+              ]
+            ));
+          });
+        });
+
+        describe("|exact| (edge case -- exact repetitions)", () => {
+          const grammar = "start = exact:('a'{return 42;}) 'a'|exact|";
+
+          it("generates correct bytecode", () => {
+            expect(pass).to.changeAST(grammar, bytecodeDetails([
+              5,                            // PUSH_CURR_POS
+              // "a"{return 42;}
+              5,                            // PUSH_CURR_POS
+              18, 0, 2, 2, 22, 0, 23, 0,    // <expression>
+              15, 6, 0,                     // IF_NOT_ERROR
+              24, 1,                        //   * REPORT_SAVED_POS <1>
+              26, 0, 1, 0,                  //     CALL <0>
+              9,                            // NIP
+
+              15, 50, 3,                    // IF_NOT_ERROR
+              // "a"|exact|
+              5,                            //   * PUSH_CURR_POS
+              4,                            //     PUSH_EMPTY_ARRAY
+              33, 2, 1, 8,                  //     IF_GE_DYNAMIC <2>
+              3,                            //       * PUSH_FAILED
+              18, 0, 2, 2, 22, 0, 23, 0,    //       * <expression>
+              16, 14,                       //     WHILE_NOT_ERROR
+              10,                           //       * APPEND
+              33, 2, 1, 8,                  //         IF_GE_DYNAMIC <2>
+              3,                            //           * PUSH_FAILED
+              18, 0, 2, 2, 22, 0, 23, 0,    //           * <expression>
+              6,                            //     POP
+              32, 2, 3, 1,                  //     IF_LT_DYNAMIC <2>
+              6,                            //       * POP
+              7,                            //         POP_CURR_POS
+              3,                            //         PUSH_FAILED
+              9,                            //       * NIP
+
+              15, 3, 4,                    //     IF_NOT_ERROR
+              11, 2,                       //       * WRAP <2>
+              9,                           //         NIP
+              8, 2,                        //       * POP_N <2>
+              7,                           //         POP_CURR_POS
+              3,                           //         PUSH_FAILED
+              6,                           // * POP
+              7,                           //   POP_CURR_POS
+              3,                           //   PUSH_FAILED
+            ]));
+          });
+
+          it("defines correct constants", () => {
+            expect(pass).to.changeAST(grammar, constsDetails(
+              ["a"],
+              [],
+              [{ type: "literal", value: "a", ignoreCase: false }],
+              [{ predicate: false, params: [], body: "return 42;" }]
+            ));
+          });
+        });
+      });
     });
   });
 

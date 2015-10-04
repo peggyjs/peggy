@@ -7,17 +7,17 @@ const sinon = require("sinon");
 const expect = chai.expect;
 
 describe("generated parser behavior", () => {
+  function clone(object) {
+    const result = {};
+
+    Object.keys(object).forEach(key => {
+      result[key] = object[key];
+    });
+
+    return result;
+  }
+
   function varyOptimizationOptions(block) {
-    function clone(object) {
-      const result = {};
-
-      Object.keys(object).forEach(key => {
-        result[key] = object[key];
-      });
-
-      return result;
-    }
-
     const optionsVariants = [
       { cache: false, trace: false },
       { cache: false, trace: true },
@@ -979,6 +979,42 @@ describe("generated parser behavior", () => {
     });
 
     describe("repeated", () => {
+      function buildParser(boundary) {
+        const start = [];
+        for (let i = 1; i <= 4; ++i) {
+          for (let j = 1; j <= 4; ++j) {
+            start[start.length] = "start" + String(i) + j;
+          }
+        }
+        const opt = clone(options);
+        opt.allowedStartRules = start;
+
+        return peg.generate([
+          "start11 =         val:n1      x|" + boundary + "|      $.*",
+          "start12 =         val:n1 data:x|" + boundary + "|      $.*",
+          "start13 =         val:n1      x|" + boundary + "| rest:$.*",
+          "start14 =         val:n1 data:x|" + boundary + "| rest:$.*",
+
+          "start21 = .       val:n1      x|" + boundary + "|      $.*",
+          "start22 = .       val:n1 data:x|" + boundary + "|      $.*",
+          "start23 = .       val:n1      x|" + boundary + "| rest:$.*",
+          "start24 = .       val:n1 data:x|" + boundary + "| rest:$.*",
+
+          "start31 = a:.     val:n1      x|" + boundary + "|      $.*",
+          "start32 = a:.     val:n1 data:x|" + boundary + "|      $.*",
+          "start33 = a:.     val:n1      x|" + boundary + "| rest:$.*",
+          "start34 = a:.     val:n1 data:x|" + boundary + "| rest:$.*",
+
+          "start41 = a:. b:. val:n1      x|" + boundary + "|      $.*",
+          "start42 = a:. b:. val:n1 data:x|" + boundary + "|      $.*",
+          "start43 = a:. b:. val:n1      x|" + boundary + "| rest:$.*",
+          "start44 = a:. b:. val:n1 data:x|" + boundary + "| rest:$.*",
+
+          "n1 = n:$[0-9] { return parseInt(n, 10); }",
+          "x = '='",
+        ].join(";\n"), opt);
+      }
+
       describe("without delimiter", () => {
         describe("with constant boundaries", () => {
           it("| .. | matches correctly", () => {
@@ -1076,6 +1112,272 @@ describe("generated parser behavior", () => {
             const parser = peg.generate("start = 'a'|3| / 'a'|2| { return 42; }", options);
 
             expect(parser).to.parse("aa", 42);
+          });
+        });
+
+        describe("with variable boundaries", () => {
+          it("|min..   | matches correctly", () => {
+            const parser = buildParser("val..");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("1", undefined, opt);
+              expect(parser).to.failToParse("2=", undefined, opt);
+              expect(parser).to.parse("2==", [2, ["=", "="], ""], opt);
+              expect(parser).to.parse("2=====", [2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("-1", undefined, opt);
+              expect(parser).to.failToParse("-2=", undefined, opt);
+              expect(parser).to.parse("-2==", ["-", 2, ["=", "="], ""], opt);
+              expect(parser).to.parse("-2=====", ["-", 2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("-1", undefined, opt);
+              expect(parser).to.failToParse("-2=", undefined, opt);
+              expect(parser).to.parse("-2==", ["-", 2, ["=", "="], ""], opt);
+              expect(parser).to.parse("-2=====", ["-", 2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("--1", undefined, opt);
+              expect(parser).to.failToParse("--2=", undefined, opt);
+              expect(parser).to.parse("--2==", ["-", "-", 2, ["=", "="], ""], opt);
+              expect(parser).to.parse("--2=====", ["-", "-", 2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+          });
+
+          it("|   ..max| matches correctly", () => {
+            const parser = buildParser("..val");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, [], "=="], opt);
+              expect(parser).to.parse("3", [3, [], ""], opt);
+              expect(parser).to.parse("3=", [3, ["="], ""], opt);
+              expect(parser).to.parse("3===", [3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("3=====", [3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.parse("-3", ["-", 3, [], ""], opt);
+              expect(parser).to.parse("-3=", ["-", 3, ["="], ""], opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.parse("-3", ["-", 3, [], ""], opt);
+              expect(parser).to.parse("-3=", ["-", 3, ["="], ""], opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, [], "=="], opt);
+              expect(parser).to.parse("--3", ["-", "-", 3, [], ""], opt);
+              expect(parser).to.parse("--3=", ["-", "-", 3, ["="], ""], opt);
+              expect(parser).to.parse("--3===", ["-", "-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--3=====", ["-", "-", 3, ["=", "=", "="], "=="], opt);
+            }
+          });
+
+          it("|min..max| matches correctly", () => {
+            function buildRangeParser() {
+              const start = [];
+              for (let i = 1; i <= 4; ++i) {
+                for (let j = 1; j <= 4; ++j) {
+                  start[start.length] = "start" + String(i) + j;
+                }
+              }
+              const opt = clone(options);
+              opt.allowedStartRules = start;
+
+              return peg.generate([
+                "start11 =         min:n1 max:n1      .|min..max|      $.*",
+                "start12 =         min:n1 max:n1 data:.|min..max|      $.*",
+                "start13 =         min:n1 max:n1      .|min..max| rest:$.*",
+                "start14 =         min:n1 max:n1 data:.|min..max| rest:$.*",
+
+                "start21 = .       min:n1 max:n1      .|min..max|      $.*",
+                "start22 = .       min:n1 max:n1 data:.|min..max|      $.*",
+                "start23 = .       min:n1 max:n1      .|min..max| rest:$.*",
+                "start24 = .       min:n1 max:n1 data:.|min..max| rest:$.*",
+
+                "start31 = a:.     min:n1 max:n1      .|min..max|      $.*",
+                "start32 = a:.     min:n1 max:n1 data:.|min..max|      $.*",
+                "start33 = a:.     min:n1 max:n1      .|min..max| rest:$.*",
+                "start34 = a:.     min:n1 max:n1 data:.|min..max| rest:$.*",
+
+                "start41 = a:. b:. min:n1 max:n1      .|min..max|      $.*",
+                "start42 = a:. b:. min:n1 max:n1 data:.|min..max|      $.*",
+                "start43 = a:. b:. min:n1 max:n1      .|min..max| rest:$.*",
+                "start44 = a:. b:. min:n1 max:n1 data:.|min..max| rest:$.*",
+
+                "n1 = n:$[0-9] { return parseInt(n, 10); }",
+              ].join(";\n"), opt);
+            }
+
+            const parser = buildRangeParser();
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("00", [0, 0, [], ""], opt);
+              expect(parser).to.parse("00==", [0, 0, [], "=="], opt);
+              expect(parser).to.failToParse("23", undefined, opt);
+              expect(parser).to.failToParse("23=", undefined, opt);
+              expect(parser).to.parse("23==", [2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("23===", [2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("23=====", [2, 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-00", ["-", 0, 0, [], ""], opt);
+              expect(parser).to.parse("-00==", ["-", 0, 0, [], "=="], opt);
+              expect(parser).to.failToParse("-23", undefined, opt);
+              expect(parser).to.failToParse("-23=", undefined, opt);
+              expect(parser).to.parse("-23==", ["-", 2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("-23===", ["-", 2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-23=====", ["-", 2, 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-00", ["-", 0, 0, [], ""], opt);
+              expect(parser).to.parse("-00==", ["-", 0, 0, [], "=="], opt);
+              expect(parser).to.failToParse("-23", undefined, opt);
+              expect(parser).to.failToParse("-23=", undefined, opt);
+              expect(parser).to.parse("-23==", ["-", 2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("-23===", ["-", 2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-23=====", ["-", 2, 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--00", ["-", "-", 0, 0, [], ""], opt);
+              expect(parser).to.parse("--00==", ["-", "-", 0, 0, [], "=="], opt);
+              expect(parser).to.failToParse("--23", undefined, opt);
+              expect(parser).to.failToParse("--23=", undefined, opt);
+              expect(parser).to.parse("--23==", ["-", "-", 2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("--23===", ["-", "-", 2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--23=====", ["-", "-", 2, 3, ["=", "=", "="], "=="], opt);
+            }
+          });
+
+          it("|val..val| matches correctly", () => {
+            const parser = buildParser("val");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, [], "=="], opt);
+              expect(parser).to.failToParse("3", undefined, opt);
+              expect(parser).to.failToParse("3=", undefined, opt);
+              expect(parser).to.parse("3===", [3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("3=====", [3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("--3", undefined, opt);
+              expect(parser).to.failToParse("--3=", undefined, opt);
+              expect(parser).to.parse("--3===", ["-", "-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--3=====", ["-", "-", 3, ["=", "=", "="], "=="], opt);
+            }
+          });
+
+          it("| exact  | matches correctly", () => {
+            const parser = buildParser("val");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, [], "=="], opt);
+              expect(parser).to.failToParse("3", undefined, opt);
+              expect(parser).to.failToParse("3=", undefined, opt);
+              expect(parser).to.parse("3===", [3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("3=====", [3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("--3", undefined, opt);
+              expect(parser).to.failToParse("--3=", undefined, opt);
+              expect(parser).to.parse("--3===", ["-", "-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--3=====", ["-", "-", 3, ["=", "=", "="], "=="], opt);
+            }
           });
         });
       });
