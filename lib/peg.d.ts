@@ -122,6 +122,7 @@ declare namespace ast {
     | Labeled
     | Prefixed
     | Suffixed
+    | Repeated
     | Primary;
 
   /** One element of the choice node. */
@@ -131,6 +132,7 @@ declare namespace ast {
     | Labeled
     | Prefixed
     | Suffixed
+    | Repeated
     | Primary;
 
   interface Choice extends Expr<"choice"> {
@@ -147,6 +149,7 @@ declare namespace ast {
       | Labeled
       | Prefixed
       | Suffixed
+      | Repeated
       | Primary
     );
   }
@@ -156,6 +159,7 @@ declare namespace ast {
     = Labeled
     | Prefixed
     | Suffixed
+    | Repeated
     | Primary;
 
   interface Sequence extends Expr<"sequence"> {
@@ -178,16 +182,41 @@ declare namespace ast {
      */
     labelLocation: LocationRange;
     /** Expression which result will be available in the user code under name `label`. */
-    expression: Prefixed | Suffixed | Primary;
+    expression: Prefixed | Suffixed | Repeated | Primary;
   }
 
   /** Expression with a preceding operator. */
   interface Prefixed extends Expr<"text" | "simple_and" | "simple_not"> {
-    expression: Suffixed | Primary;
+    expression: Suffixed | Repeated | Primary;
   }
 
   /** Expression with a following operator. */
   interface Suffixed extends Expr<"optional" | "zero_or_more" | "one_or_more"> {
+    expression: Primary;
+  }
+
+  interface Boundary<T> {
+    type: T;
+    location: LocationRange;
+  }
+
+  interface ConstantBoundary extends Boundary<"constant"> {
+    /** Repetition count. Always a positive integer. */
+    value: number;
+  }
+
+  type RepeatedBoundary
+    = ConstantBoundary;
+
+  /** Expression repeated from `min` to `max` times. */
+  interface Repeated extends Expr<"repeated"> {
+    /**
+     * Minimum count of repetitions. If `null` then exact repetition
+     * is used and minimum the same as maximum.
+     */
+    min: RepeatedBoundary | null;
+    /** Maximum count of repetitions. */
+    max: RepeatedBoundary;
     expression: Primary;
   }
 
@@ -596,6 +625,13 @@ export namespace compiler {
        * @param args Any arguments passed to the `Visitor`
        */
       one_or_more?(node: ast.Suffixed, ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing repetition of the `expression` specified number of times
+       * @param args Any arguments passed to the `Visitor`
+       */
+      repeated?(node: ast.Repeated, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *

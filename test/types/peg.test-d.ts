@@ -184,6 +184,7 @@ describe("peg.d.ts", () => {
           peggy.ast.Labeled |
           peggy.ast.Prefixed |
           peggy.ast.Suffixed |
+          peggy.ast.Repeated |
           peggy.ast.Primary>(node.expression);
         visit(node.expression);
       },
@@ -206,6 +207,7 @@ describe("peg.d.ts", () => {
         expectType<
           peggy.ast.Prefixed |
           peggy.ast.Suffixed |
+          peggy.ast.Repeated |
           peggy.ast.Primary>(node.expression);
         visit(node.expression);
       },
@@ -215,7 +217,10 @@ describe("peg.d.ts", () => {
         expectType<"text" | "simple_and" | "simple_not">(node.type);
         expect(node.type).toBe("text");
         expectType<peggy.LocationRange>(node.location);
-        expectType<peggy.ast.Suffixed | peggy.ast.Primary>(node.expression);
+        expectType<
+          peggy.ast.Suffixed |
+          peggy.ast.Repeated |
+          peggy.ast.Primary>(node.expression);
         visit(node.expression);
       },
       simple_and(node) {
@@ -224,7 +229,10 @@ describe("peg.d.ts", () => {
         expectType<"text" | "simple_and" | "simple_not">(node.type);
         expect(node.type).toBe("simple_and");
         expectType<peggy.LocationRange>(node.location);
-        expectType<peggy.ast.Suffixed | peggy.ast.Primary>(node.expression);
+        expectType<
+          peggy.ast.Suffixed |
+          peggy.ast.Repeated |
+          peggy.ast.Primary>(node.expression);
         visit(node.expression);
       },
       simple_not(node) {
@@ -232,7 +240,10 @@ describe("peg.d.ts", () => {
         expectType<peggy.ast.Prefixed>(node);
         expectType<"text" | "simple_and" | "simple_not">(node.type);
         expect(node.type).toBe("simple_not");
-        expectType<peggy.ast.Suffixed | peggy.ast.Primary>(node.expression);
+        expectType<
+          peggy.ast.Suffixed |
+          peggy.ast.Repeated |
+          peggy.ast.Primary>(node.expression);
         visit(node.expression);
       },
       optional(node) {
