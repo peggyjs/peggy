@@ -101,16 +101,23 @@ describe("Peggy grammar parser", () => {
     return oneRuleGrammar({ type: "rule_ref", name });
   }
 
-  function repeatedGrammar(min, max, type = "variable") {
+  function repeatedGrammar(min, max, type = "variable", delimiter = null) {
     return oneRuleGrammar({
       type: "repeated",
       min: { type: typeof min === "string" ? type : "constant", value: min },
       max: { type: typeof max === "string" ? type : "constant", value: max },
       expression: literalAbcd,
+      delimiter,
     });
   }
   function repeatedGrammar2(min, max) {
     return repeatedGrammar(min, max, "function");
+  }
+  function repeatedGrammar3(min, max) {
+    return repeatedGrammar(min, max, "variable", literalEfgh);
+  }
+  function repeatedGrammar4(min, max) {
+    return repeatedGrammar(min, max, "function", literalEfgh);
   }
 
   const trivialGrammar = literalGrammar("abcd", false);
@@ -194,6 +201,12 @@ describe("Peggy grammar parser", () => {
         delete node.max.codeLocation;
         delete node.location;
         strip(node.expression);
+
+        if (node.delimiter) {
+          delete node.delimiter.location;
+
+          strip(node.delimiter);
+        }
       },
       group: stripExpression,
       semantic_and: stripLeaf,
@@ -451,6 +464,7 @@ describe("Peggy grammar parser", () => {
           min: null,
           max: { type: "constant", value: 3 },
           expression: literalAbcd,
+          delimiter: null,
         });
         expect("start = 'abcd'\n|3|").to.parseAs(grammar);
         expect("start = 'abcd'|\n3|").to.parseAs(grammar);
@@ -471,6 +485,7 @@ describe("Peggy grammar parser", () => {
           min: null,
           max: { type: "variable", value: "exact" },
           expression: literalAbcd,
+          delimiter: null,
         });
         expect("start = 'abcd'\n|exact|").to.parseAs(grammar);
         expect("start = 'abcd'|\nexact|").to.parseAs(grammar);
@@ -491,6 +506,7 @@ describe("Peggy grammar parser", () => {
           min: null,
           max: { type: "function", value: "exact" },
           expression: literalAbcd,
+          delimiter: null,
         });
         expect("start = 'abcd'\n|{exact}|").to.parseAs(grammar);
         expect("start = 'abcd'|\n{exact}|").to.parseAs(grammar);
@@ -515,6 +531,149 @@ describe("Peggy grammar parser", () => {
         expect("start = 'abcd'|min..3\n|").to.parseAs(grammar);
       });
     });
+
+    describe("with delimiter", () => {
+      it("with constant boundaries", () => {
+        let grammar = repeatedGrammar3(2, 3);
+        expect("start = 'abcd'|2..3,'efgh'|  ").to.parseAs(grammar);
+        expect("start = 'abcd'\n|2..3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|\n2..3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2\n..3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..\n3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..3\n,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..3,\n'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..3,'efgh'\n|").to.parseAs(grammar);
+
+        grammar = oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "constant", value: 3 },
+          expression: literalAbcd,
+          delimiter: literalEfgh,
+        });
+        expect("start = 'abcd'\n|3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|\n3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|3\n,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|3,\n'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|3,'efgh'\n|").to.parseAs(grammar);
+
+        expect("start = 'abcd'|3, 'efgh'?|").to.parseAs(oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "constant", value: 3 },
+          expression: literalAbcd,
+          delimiter: { type: "optional", expression: literalEfgh },
+        }));
+      });
+
+      it("with variable boundaries", () => {
+        let grammar = repeatedGrammar3("min", "max");
+        expect("start = 'abcd'|min..max,'efgh'|  ").to.parseAs(grammar);
+        expect("start = 'abcd'\n|min..max,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|\nmin..max,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|min\n..max,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|min..\nmax,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|min..max\n,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|min..max,\n'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|min..max,'efgh'\n|").to.parseAs(grammar);
+
+        grammar = oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "variable", value: "exact" },
+          expression: literalAbcd,
+          delimiter: literalEfgh,
+        });
+        expect("start = 'abcd'\n|exact,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|\nexact,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|exact\n,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|exact,\n'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|exact,'efgh'\n|").to.parseAs(grammar);
+
+        expect("start = 'abcd'|exact, 'efgh'?|").to.parseAs(oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "variable", value: "exact" },
+          expression: literalAbcd,
+          delimiter: { type: "optional", expression: literalEfgh },
+        }));
+      });
+
+      it("with function boundaries", () => {
+        let grammar = repeatedGrammar4("min", "max");
+        expect("start = 'abcd'|{min}..{max},'efgh'|  ").to.parseAs(grammar);
+        expect("start = 'abcd'\n|{min}..{max},'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|\n{min}..{max},'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{min}\n..{max},'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{min}..\n{max},'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{min}..{max}\n,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{min}..{max},\n'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{min}..{max},'efgh'\n|").to.parseAs(grammar);
+
+        grammar = oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "function", value: "exact" },
+          expression: literalAbcd,
+          delimiter: literalEfgh,
+        });
+        expect("start = 'abcd'\n|{exact},'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|\n{exact},'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{exact}\n,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{exact},\n'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{exact},'efgh'\n|").to.parseAs(grammar);
+
+        expect("start = 'abcd'|{exact}, 'efgh'?|").to.parseAs(oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "function", value: "exact" },
+          expression: literalAbcd,
+          delimiter: { type: "optional", expression: literalEfgh },
+        }));
+      });
+
+      it("with mixed boundaries", () => {
+        let grammar = repeatedGrammar3(2, "max");
+        expect("start = 'abcd'|2..max,'efgh'|  ").to.parseAs(grammar);
+        expect("start = 'abcd'\n|2..max,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|\n2..max,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2\n..max,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..\nmax,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..max\n,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..max,\n'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..max,'efgh'\n|").to.parseAs(grammar);
+
+        grammar = repeatedGrammar3("min", 3);
+        expect("start = 'abcd'|min..3,'efgh'|  ").to.parseAs(grammar);
+        expect("start = 'abcd'\n|min..3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|\nmin..3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|min\n..3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|min..\n3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|min..3\n,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|min..3,\n'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|min..3,'efgh'\n|").to.parseAs(grammar);
+
+        grammar = repeatedGrammar4(2, "max");
+        expect("start = 'abcd'|2..{max},'efgh'|  ").to.parseAs(grammar);
+        expect("start = 'abcd'\n|2..{max},'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|\n2..{max},'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2\n..{max},'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..\n{max},'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..{max}\n,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..{max},\n'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..{max},'efgh'\n|").to.parseAs(grammar);
+
+        grammar = repeatedGrammar4("min", 3);
+        expect("start = 'abcd'|{min}..3,'efgh'|  ").to.parseAs(grammar);
+        expect("start = 'abcd'\n|{min}..3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|\n{min}..3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{min}\n..3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{min}..\n3,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{min}..3\n,'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{min}..3,\n'efgh'|").to.parseAs(grammar);
+        expect("start = 'abcd'|{min}..3,'efgh'\n|").to.parseAs(grammar);
+      });
+    });
   });
 
   // Canonical RepeatedOperator is "2..3".
@@ -536,6 +695,7 @@ describe("Peggy grammar parser", () => {
           min: null,
           max: { type: "constant", value: 3 },
           expression: literalAbcd,
+          delimiter: null,
         }));
 
         expect("start = 'abcd'| ..0|").to.failToParse();
@@ -552,6 +712,7 @@ describe("Peggy grammar parser", () => {
           min: null,
           max: { type: "variable", value: "exact" },
           expression: literalAbcd,
+          delimiter: null,
         }));
       });
 
@@ -564,12 +725,76 @@ describe("Peggy grammar parser", () => {
           min: null,
           max: { type: "function", value: "exact" },
           expression: literalAbcd,
+          delimiter: null,
         }));
       });
 
       it("with mixed boundaries", () => {
         expect("start = 'abcd'|2..max|").to.parseAs(repeatedGrammar(2, "max"));
         expect("start = 'abcd'|min..3|").to.parseAs(repeatedGrammar("min", 3));
+
+        expect("start = 'abcd'|2..{max}|").to.parseAs(repeatedGrammar2(2, "max"));
+        expect("start = 'abcd'|{min}..3|").to.parseAs(repeatedGrammar2("min", 3));
+      });
+    });
+
+    describe("with delimiter", () => {
+      it("with constant boundaries", () => {
+        expect("start = 'abcd'| .. , 'efgh'|").to.parseAs(repeatedGrammar3(0, null));
+        expect("start = 'abcd'|0.. , 'efgh'|").to.parseAs(repeatedGrammar3(0, null));
+        expect("start = 'abcd'|1.. , 'efgh'|").to.parseAs(repeatedGrammar3(1, null));
+        expect("start = 'abcd'|2.. , 'efgh'|").to.parseAs(repeatedGrammar3(2, null));
+
+        expect("start = 'abcd'| ..1, 'efgh'|").to.parseAs(repeatedGrammar3(0, 1));
+        expect("start = 'abcd'| ..2, 'efgh'|").to.parseAs(repeatedGrammar3(0, 2));
+
+        expect("start = 'abcd'|2..2, 'efgh'|").to.parseAs(repeatedGrammar3(2, 2));
+        expect("start = 'abcd'|2..3, 'efgh'|").to.parseAs(repeatedGrammar3(2, 3));
+        expect("start = 'abcd'|3   , 'efgh'|").to.parseAs(oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "constant", value: 3 },
+          expression: literalAbcd,
+          delimiter: literalEfgh,
+        }));
+
+        expect("start = 'abcd'| ..0, 'efgh'|").to.failToParse();
+        expect("start = 'abcd'|0..0, 'efgh'|").to.failToParse();
+        expect("start = 'abcd'|0   , 'efgh'|").to.failToParse();
+      });
+
+      it("with variable boundaries", () => {
+        expect("start = 'abcd'|min..   , 'efgh'|").to.parseAs(repeatedGrammar3("min", null));
+        expect("start = 'abcd'|   ..max, 'efgh'|").to.parseAs(repeatedGrammar3(0, "max"));
+        expect("start = 'abcd'|min..max, 'efgh'|").to.parseAs(repeatedGrammar3("min", "max"));
+        expect("start = 'abcd'|exact, 'efgh'|   ").to.parseAs(oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "variable", value: "exact" },
+          expression: literalAbcd,
+          delimiter: literalEfgh,
+        }));
+      });
+
+      it("with function boundaries", () => {
+        expect("start = 'abcd'|{min}..     , 'efgh'|").to.parseAs(repeatedGrammar4("min", null));
+        expect("start = 'abcd'|     ..{max}, 'efgh'|").to.parseAs(repeatedGrammar4(0, "max"));
+        expect("start = 'abcd'|{min}..{max}, 'efgh'|").to.parseAs(repeatedGrammar4("min", "max"));
+        expect("start = 'abcd'|{exact},      'efgh'|").to.parseAs(oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "function", value: "exact" },
+          expression: literalAbcd,
+          delimiter: literalEfgh,
+        }));
+      });
+
+      it("with mixed boundaries", () => {
+        expect("start = 'abcd'|2..max, 'efgh'|").to.parseAs(repeatedGrammar3(2, "max"));
+        expect("start = 'abcd'|min..3, 'efgh'|").to.parseAs(repeatedGrammar3("min", 3));
+
+        expect("start = 'abcd'|2..{max}, 'efgh'|").to.parseAs(repeatedGrammar4(2, "max"));
+        expect("start = 'abcd'|{min}..3, 'efgh'|").to.parseAs(repeatedGrammar4("min", 3));
       });
     });
   });

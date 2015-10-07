@@ -254,12 +254,16 @@ describe("Peggy API", () => {
       const NOT_BLOCK = "NOT\nBLOCK";
       const AND_BLOCK = "AND\nBLOCK";
       const ACTION_BLOCK = "ACTION\nBLOCK";
+      const MIN_BLOCK = "MIN\nBLOCK";
+      const MAX_BLOCK = "MAX\nBLOCK";
+      const EXACT_BLOCK = "EXACT\nBLOCK";
       const SOURCE = `
         {{${GLOBAL_INITIALIZER}}}
         {${PER_PARSE_INITIALIZER}}
         RULE_1 = !{${NOT_BLOCK}} 'a' rule:RULE_2 {${ACTION_BLOCK}};
         RULE_2 'named' = &{${AND_BLOCK}} @'b' [abc] 'def';
         RULE_3 = RULE_1 / RULE_2;
+        RULE_4 = RULE_1|{${MIN_BLOCK}} .. {${MAX_BLOCK}}, RULE_2|{${EXACT_BLOCK}}| |;
       `;
 
       function check(chunk, source, name, generatedChunk = chunk) {
@@ -304,6 +308,9 @@ describe("Peggy API", () => {
           it("action block", () => check(ACTION_BLOCK, source, null));
           it("semantic and predicate", () => check(AND_BLOCK, source, null));
           it("semantic not predicate", () => check(NOT_BLOCK, source, null));
+          it("min function boundary", () => check(MIN_BLOCK, source, null));
+          it("max function boundary", () => check(MAX_BLOCK, source, null));
+          it("exact function boundary", () => check(EXACT_BLOCK, source, null));
 
           it("rule name", () => check("RULE_1", source, "RULE_1", "peg$parseRULE_1() {"));
           it("labelled rule name", () => check("RULE_2 'named'", source, "RULE_2", "peg$parseRULE_2() {"));
