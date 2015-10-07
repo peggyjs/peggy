@@ -136,4 +136,26 @@ describe("compiler pass |reportInfiniteRecursion|", () => {
       expect(pass).to.not.reportError("start = . start");
     });
   });
+
+  describe("in repeated with delimiter", () => {
+    it("doesn't report left recursion for delimiter if expression not match empty string", () => {
+      expect(pass).to.not.reportError("start = 'a'| .. , start|");
+      expect(pass).to.not.reportError("start = 'a'|0.. , start|");
+      expect(pass).to.not.reportError("start = 'a'|1.. , start|");
+      expect(pass).to.not.reportError("start = 'a'|2.. , start|");
+      expect(pass).to.not.reportError("start = 'a'| ..3, start|");
+      expect(pass).to.not.reportError("start = 'a'|2..3, start|");
+      expect(pass).to.not.reportError("start = 'a'| 42 , start|");
+    });
+
+    it("reports left recursion for delimiter if expression match empty string", () => {
+      expect(pass).to.reportError("start = ''| .. , start|");
+      expect(pass).to.reportError("start = ''|0.. , start|");
+      expect(pass).to.reportError("start = ''|1.. , start|");
+      expect(pass).to.reportError("start = ''|2.. , start|");
+      expect(pass).to.reportError("start = ''| ..3, start|");
+      expect(pass).to.reportError("start = ''|2..3, start|");
+      expect(pass).to.reportError("start = ''| 42 , start|");
+    });
+  });
 });

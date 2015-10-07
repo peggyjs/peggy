@@ -281,6 +281,7 @@ describe("peg.d.ts", () => {
         expectType<peggy.LocationRange>(node.location);
         expectType<peggy.ast.RepeatedBoundary | null>(node.min);
         expectType<peggy.ast.RepeatedBoundary>(node.max);
+        expectType<peggy.ast.Expression | null>(node.delimiter);
         expectType<peggy.ast.Primary>(node.expression);
         visit(node.expression);
       },

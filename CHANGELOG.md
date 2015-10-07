@@ -18,6 +18,9 @@ Released: TBD
   results checking after each compilation stage.
   [@Mingun](https://github.com/peggyjs/peggy/pull/160)
 
+- Add support for repetition operator `expression|min .. max, delimiter|`
+  [@Mingun](https://github.com/peggyjs/peggy/pull/208)
+
 ### Minor Changes
 
 - New CLI [@hildjj](https://github.com/peggyjs/peggy/pull/167)

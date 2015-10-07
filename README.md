@@ -517,6 +517,39 @@ Try to match the expression. If the match succeeds, return its match result,
 otherwise return `null`. Unlike in regular expressions, there is no
 backtracking.
 
+#### _expression_ |count|<br> _expression_ |min..max|<br> _expression_ |count, delimiter|<br> _expression_ |min..max, delimiter|
+
+Match exact `count` repetitions of `expression`. If the match succeeds, return
+their match results in an array.
+
+-or-
+
+Match expression at least `min` but not more then `max` times. If the match
+succeeds, return their match results in an array. Both `min` and `max` may
+be omitted. If `min` is omitted, then it is assumed to be `0`. If `max` is
+omitted, then it is assumed to be infinity. Hence `expression |..|` is an
+equivalent of `expression |0..|` and `expression *`. `expression |1..|` is
+equivalent of `expression +`.
+
+Optionally, `delimiter` expression can be specified. Delimiter must appear
+between expressions exactly once and it is not included in the final array.
+
+`count`, `min` and `max` can be represented as:
+- positive integers:
+  ```peggy
+  start = "a"|2|;
+  ```
+- name of the preceding label:
+  ```peggy
+  start = count:n1 "a"|count|;
+  n1 = n:$[0-9] { parseInt(n); };
+  ```
+- code block:
+  ```peggy
+  start = 'a'|{ return options.count; }|;
+  ```
+  Any non-number values will be interpreted as `0`.
+
 #### & _expression_
 
 Try to match the expression. If the match succeeds, just return `undefined` and
