@@ -273,6 +273,17 @@ describe("peg.d.ts", () => {
         expectType<peggy.ast.Primary>(node.expression);
         visit(node.expression);
       },
+      repeated(node) {
+        add(node.type);
+        expectType<peggy.ast.Repeated>(node);
+        expectType<"repeated">(node.type);
+        expect(node.type).toBe("repeated");
+        expectType<peggy.LocationRange>(node.location);
+        expectType<peggy.ast.RepeatedBoundary | null>(node.min);
+        expectType<peggy.ast.RepeatedBoundary>(node.max);
+        expectType<peggy.ast.Primary>(node.expression);
+        visit(node.expression);
+      },
       group(node) {
         add(node.type);
         expectType<peggy.ast.Group>(node);
@@ -346,6 +357,7 @@ describe("peg.d.ts", () => {
       "named",
       "one_or_more",
       "optional",
+      "repeated",
       "rule",
       "rule_ref",
       "semantic_and",

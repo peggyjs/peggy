@@ -108,6 +108,53 @@ describe("compiler pass |inferenceMatchResult|", () => {
     expect(pass).to.changeAST("start = []+", { rules: [{ match: -1 }] });
   });
 
+  describe("calculate |match| property for |repeated|", () => {
+    describe("without delimiter", () => {
+      describe("with constant boundaries", () => {
+        it("for | .. | correctly", () => {
+          expect(pass).to.changeAST("start =  .| .. |", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = ''| .. |", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = []| .. |", { rules: [{ match:  1 }] });
+        });
+        it("for | ..1| correctly", () => {
+          expect(pass).to.changeAST("start =  .| ..1|", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = ''| ..1|", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = []| ..1|", { rules: [{ match:  1 }] });
+        });
+        it("for | ..3| correctly", () => {
+          expect(pass).to.changeAST("start =  .| ..3|", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = ''| ..3|", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = []| ..3|", { rules: [{ match:  1 }] });
+        });
+        it("for |0.. | correctly", () => {
+          expect(pass).to.changeAST("start =  .|0.. |", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = ''|0.. |", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = []|0.. |", { rules: [{ match:  1 }] });
+        });
+        it("for |1.. | correctly", () => {
+          expect(pass).to.changeAST("start =  .|1.. |", { rules: [{ match:  0 }] });
+          expect(pass).to.changeAST("start = ''|1.. |", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = []|1.. |", { rules: [{ match: -1 }] });
+        });
+        it("for |2.. | correctly", () => {
+          expect(pass).to.changeAST("start =  .|2.. |", { rules: [{ match:  0 }] });
+          expect(pass).to.changeAST("start = ''|2.. |", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = []|2.. |", { rules: [{ match: -1 }] });
+        });
+        it("for |2..3| correctly", () => {
+          expect(pass).to.changeAST("start =  .|2..3|", { rules: [{ match:  0 }] });
+          expect(pass).to.changeAST("start = ''|2..3|", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = []|2..3|", { rules: [{ match: -1 }] });
+        });
+        it("for | 42 | correctly", () => {
+          expect(pass).to.changeAST("start =  .| 42 |", { rules: [{ match:  0 }] });
+          expect(pass).to.changeAST("start = ''| 42 |", { rules: [{ match:  1 }] });
+          expect(pass).to.changeAST("start = []| 42 |", { rules: [{ match: -1 }] });
+        });
+      });
+    });
+  });
+
   it("calculate |match| property for |group| correctly", () => {
     expect(pass).to.changeAST("start = (.)",  { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = ('')", { rules: [{ match:  1 }] });

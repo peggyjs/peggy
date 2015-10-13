@@ -101,6 +101,15 @@ describe("Peggy grammar parser", () => {
     return oneRuleGrammar({ type: "rule_ref", name });
   }
 
+  function repeatedGrammar(min, max) {
+    return oneRuleGrammar({
+      type: "repeated",
+      min: { type: "constant", value: min },
+      max: { type: "constant", value: max },
+      expression: literalAbcd,
+    });
+  }
+
   const trivialGrammar = literalGrammar("abcd", false);
   const twoRuleGrammar = {
     type: "grammar",
@@ -173,6 +182,14 @@ describe("Peggy grammar parser", () => {
       optional: stripExpression,
       zero_or_more: stripExpression,
       one_or_more: stripExpression,
+      repeated(node) {
+        if (node.min) {
+          delete node.min.location;
+        }
+        delete node.max.location;
+        delete node.location;
+        strip(node.expression);
+      },
       group: stripExpression,
       semantic_and: stripLeaf,
       semantic_not: stripLeaf,
@@ -410,6 +427,59 @@ describe("Peggy grammar parser", () => {
     expect("start = (\na:'abcd'\n)").to.parseAs(oneRuleGrammar(groupLabeled));
     expect("start = (\n'abcd' 'efgh' 'ijkl'\n)").to.parseAs(oneRuleGrammar(groupSequence));
     expect("start = (\n'abcd'\n)").to.parseAs(trivialGrammar);
+  });
+
+  // Canonical RepeatedExpression is "'abcd'|2..3|".
+  describe("parses RepeatedExpression", () => {
+    describe("without delimiter", () => {
+      it("with constant boundaries", () => {
+        let grammar = repeatedGrammar(2, 3);
+        expect("start = 'abcd'|2..3|  ").to.parseAs(grammar);
+        expect("start = 'abcd'\n|2..3|").to.parseAs(grammar);
+        expect("start = 'abcd'|\n2..3|").to.parseAs(grammar);
+        expect("start = 'abcd'|2\n..3|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..\n3|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..3\n|").to.parseAs(grammar);
+
+        grammar = oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "constant", value: 3 },
+          expression: literalAbcd,
+        });
+        expect("start = 'abcd'\n|3|").to.parseAs(grammar);
+        expect("start = 'abcd'|\n3|").to.parseAs(grammar);
+        expect("start = 'abcd'|3\n|").to.parseAs(grammar);
+      });
+    });
+  });
+
+  // Canonical RepeatedOperator is "2..3".
+  describe("parses RepeatedOperator", () => {
+    describe("without delimiter", () => {
+      it("with constant boundaries", () => {
+        expect("start = 'abcd'| .. |").to.parseAs(repeatedGrammar(0, null));
+        expect("start = 'abcd'|0.. |").to.parseAs(repeatedGrammar(0, null));
+        expect("start = 'abcd'|1.. |").to.parseAs(repeatedGrammar(1, null));
+        expect("start = 'abcd'|2.. |").to.parseAs(repeatedGrammar(2, null));
+
+        expect("start = 'abcd'| ..1|").to.parseAs(repeatedGrammar(0, 1));
+        expect("start = 'abcd'| ..2|").to.parseAs(repeatedGrammar(0, 2));
+
+        expect("start = 'abcd'|2..2|").to.parseAs(repeatedGrammar(2, 2));
+        expect("start = 'abcd'|2..3|").to.parseAs(repeatedGrammar(2, 3));
+        expect("start = 'abcd'|3|   ").to.parseAs(oneRuleGrammar({
+          type: "repeated",
+          min: null,
+          max: { type: "constant", value: 3 },
+          expression: literalAbcd,
+        }));
+
+        expect("start = 'abcd'| ..0|").to.failToParse();
+        expect("start = 'abcd'|0..0|").to.failToParse();
+        expect("start = 'abcd'|0|   ").to.failToParse();
+      });
+    });
   });
 
   // Canonical RuleReferenceExpression is "a".
