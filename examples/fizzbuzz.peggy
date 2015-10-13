@@ -10,7 +10,7 @@ const NUMS = [3, 5];
 let currentNumber = (options.start == null) ? 1 : options.start|0;
 }
 
-top = c:count* { return c.filter(fb => fb) }
+top = c:count|..| { return c.filter(fb => fb) }
 
 count
   = end_comment "\n" { return }

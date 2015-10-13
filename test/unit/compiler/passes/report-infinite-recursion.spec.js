@@ -94,6 +94,24 @@ describe("compiler pass |reportInfiniteRecursion|", () => {
       expect(pass).to.reportError("start = ''+ start");
       expect(pass).to.not.reportError("start = 'a'+ start");
 
+      expect(pass).to.reportError("start = ''| .. | start");
+      expect(pass).to.reportError("start = ''|0.. | start");
+      expect(pass).to.reportError("start = ''|1.. | start");
+      expect(pass).to.reportError("start = ''|2.. | start");
+      expect(pass).to.reportError("start = ''| ..1| start");
+      expect(pass).to.reportError("start = ''| ..3| start");
+      expect(pass).to.reportError("start = ''|2..3| start");
+      expect(pass).to.reportError("start = ''| 42 | start");
+
+      expect(pass).to.reportError("start = 'a'| .. | start");
+      expect(pass).to.reportError("start = 'a'|0.. | start");
+      expect(pass).to.not.reportError("start = 'a'|1.. | start");
+      expect(pass).to.not.reportError("start = 'a'|2.. | start");
+      expect(pass).to.reportError("start = 'a'| ..1| start");
+      expect(pass).to.reportError("start = 'a'| ..3| start");
+      expect(pass).to.not.reportError("start = 'a'|2..3| start");
+      expect(pass).to.not.reportError("start = 'a'| 42 | start");
+
       expect(pass).to.reportError("start = ('') start");
       expect(pass).to.not.reportError("start = ('a') start");
 
