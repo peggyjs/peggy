@@ -499,9 +499,12 @@ character class that failed to match:
 > Expected [0-9] but "a" found.
 
 Aside from the text content of messages, human-readable names also have a
-subtler effect on _where_ errors are reported. PEG.js prefers shorter matches
-for named rules and longer matches for unnamed rules. For example, for this
-rule matching a comma-separated list of integers:
+subtler effect on _where_ errors are reported. PEG.js prefers to match
+named rules completely or not at all, but not partially. Unnamed rules,
+on the other hand, can produce an error in the middle of their
+subexpressions.
+
+For example, for this rule matching a comma-separated list of integers:
 
     seq
       = integer ("," integer)*
