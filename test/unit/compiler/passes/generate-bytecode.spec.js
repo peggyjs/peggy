@@ -43,9 +43,9 @@ describe("compiler pass |generateBytecode|", function() {
         ["\"a\"", "\"b\"", "\"c\""],
         [],
         [
-          "peg$literalExpectation(\"a\", false)",
-          "peg$literalExpectation(\"b\", false)",
-          "peg$literalExpectation(\"c\", false)"
+          { type: "literal", value: "a", ignoreCase: false },
+          { type: "literal", value: "b", ignoreCase: false },
+          { type: "literal", value: "c", ignoreCase: false }
         ],
         []
       ));
@@ -120,8 +120,8 @@ describe("compiler pass |generateBytecode|", function() {
         ["\"a\""],
         [],
         [
-          "peg$otherExpectation(\"start\")",
-          "peg$literalExpectation(\"a\", false)"
+          { type: "rule", value: "start" },
+          { type: "literal", value: "a", ignoreCase: false }
         ],
         []
       ));
@@ -161,7 +161,7 @@ describe("compiler pass |generateBytecode|", function() {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["\"a\""],
           [],
-          ["peg$literalExpectation(\"a\", false)"],
+          [{ type: "literal", value: "a", ignoreCase: false }],
           [{ predicate: false, params: [], body: " code " }]
         ));
       });
@@ -185,7 +185,7 @@ describe("compiler pass |generateBytecode|", function() {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["\"a\""],
           [],
-          ["peg$literalExpectation(\"a\", false)"],
+          [{ type: "literal", value: "a", ignoreCase: false }],
           [{ predicate: false, params: ["a"], body: " code " }]
         ));
       });
@@ -222,9 +222,9 @@ describe("compiler pass |generateBytecode|", function() {
           ["\"a\"", "\"b\"", "\"c\""],
           [],
           [
-            "peg$literalExpectation(\"a\", false)",
-            "peg$literalExpectation(\"b\", false)",
-            "peg$literalExpectation(\"c\", false)"
+            { type: "literal", value: "a", ignoreCase: false },
+            { type: "literal", value: "b", ignoreCase: false },
+            { type: "literal", value: "c", ignoreCase: false }
           ],
           [{ predicate: false, params: ["a", "b", "c"], body: " code " }]
         ));
@@ -263,9 +263,9 @@ describe("compiler pass |generateBytecode|", function() {
         ["\"a\"", "\"b\"", "\"c\""],
         [],
         [
-          "peg$literalExpectation(\"a\", false)",
-          "peg$literalExpectation(\"b\", false)",
-          "peg$literalExpectation(\"c\", false)"
+          { type: "literal", value: "a", ignoreCase: false },
+          { type: "literal", value: "b", ignoreCase: false },
+          { type: "literal", value: "c", ignoreCase: false }
         ],
         []
       ));
@@ -316,7 +316,7 @@ describe("compiler pass |generateBytecode|", function() {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["\"a\""],
         [],
-        ["peg$literalExpectation(\"a\", false)"],
+        [{ type: "literal", value: "a", ignoreCase: false }],
         []
       ));
     });
@@ -345,7 +345,7 @@ describe("compiler pass |generateBytecode|", function() {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["\"a\""],
         [],
-        ["peg$literalExpectation(\"a\", false)"],
+        [{ type: "literal", value: "a", ignoreCase: false }],
         []
       ));
     });
@@ -367,7 +367,7 @@ describe("compiler pass |generateBytecode|", function() {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["\"a\""],
         [],
-        ["peg$literalExpectation(\"a\", false)"],
+        [{ type: "literal", value: "a", ignoreCase: false }],
         []
       ));
     });
@@ -391,7 +391,7 @@ describe("compiler pass |generateBytecode|", function() {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["\"a\""],
         [],
-        ["peg$literalExpectation(\"a\", false)"],
+        [{ type: "literal", value: "a", ignoreCase: false }],
         []
       ));
     });
@@ -419,7 +419,7 @@ describe("compiler pass |generateBytecode|", function() {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["\"a\""],
         [],
-        ["peg$literalExpectation(\"a\", false)"],
+        [{ type: "literal", value: "a", ignoreCase: false }],
         []
       ));
     });
@@ -438,7 +438,7 @@ describe("compiler pass |generateBytecode|", function() {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["\"a\""],
         [],
-        ["peg$literalExpectation(\"a\", false)"],
+        [{ type: "literal", value: "a", ignoreCase: false }],
         []
       ));
     });
@@ -515,9 +515,9 @@ describe("compiler pass |generateBytecode|", function() {
           ["\"a\"", "\"b\"", "\"c\""],
           [],
           [
-            "peg$literalExpectation(\"a\", false)",
-            "peg$literalExpectation(\"b\", false)",
-            "peg$literalExpectation(\"c\", false)"
+            { type: "literal", value: "a", ignoreCase: false },
+            { type: "literal", value: "b", ignoreCase: false },
+            { type: "literal", value: "c", ignoreCase: false }
           ],
           [{ predicate: true, params: ["a", "b", "c"], body: " code " }]
         ));
@@ -596,9 +596,9 @@ describe("compiler pass |generateBytecode|", function() {
           ["\"a\"", "\"b\"", "\"c\""],
           [],
           [
-            "peg$literalExpectation(\"a\", false)",
-            "peg$literalExpectation(\"b\", false)",
-            "peg$literalExpectation(\"c\", false)"
+            { type: "literal", value: "a", ignoreCase: false },
+            { type: "literal", value: "b", ignoreCase: false },
+            { type: "literal", value: "c", ignoreCase: false }
           ],
           [{ predicate: true, params: ["a", "b", "c"], body: " code " }]
         ));
@@ -652,7 +652,7 @@ describe("compiler pass |generateBytecode|", function() {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["\"a\""],
           [],
-          ["peg$literalExpectation(\"a\", false)"],
+          [{ type: "literal", value: "a", ignoreCase: false }],
           []
         ));
       });
@@ -673,7 +673,7 @@ describe("compiler pass |generateBytecode|", function() {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["\"a\""],
           [],
-          ["peg$literalExpectation(\"A\", true)"],
+          [{ type: "literal", value: "A", ignoreCase: true }],
           []
         ));
       });
@@ -694,7 +694,7 @@ describe("compiler pass |generateBytecode|", function() {
         expect(pass).to.changeAST("start = [a]", constsDetails(
           [],
           ["/^[a]/"],
-          ["peg$classExpectation([\"a\"], false, false)"],
+          [{ type: "class", value: ["a"], ignoreCase: false, inverted: false }],
           []
         ));
       });
@@ -705,7 +705,7 @@ describe("compiler pass |generateBytecode|", function() {
         expect(pass).to.changeAST("start = [^a]", constsDetails(
           [],
           ["/^[^a]/"],
-          ["peg$classExpectation([\"a\"], true, false)"],
+          [{ type: "class", value: ["a"], ignoreCase: false, inverted: true }],
           []
         ));
       });
@@ -716,7 +716,7 @@ describe("compiler pass |generateBytecode|", function() {
         expect(pass).to.changeAST("start = [a]i", constsDetails(
           [],
           ["/^[a]/i"],
-          ["peg$classExpectation([\"a\"], false, true)"],
+          [{ type: "class", value: ["a"], ignoreCase: true, inverted: false }],
           []
         ));
       });
@@ -727,7 +727,7 @@ describe("compiler pass |generateBytecode|", function() {
         expect(pass).to.changeAST("start = [ab-def-hij-l]", constsDetails(
           [],
           ["/^[ab-def-hij-l]/"],
-          ["peg$classExpectation([\"a\", [\"b\", \"d\"], \"e\", [\"f\", \"h\"], \"i\", [\"j\", \"l\"]], false, false)"],
+          [{ type: "class", value: ["a", ["b", "d"], "e", ["f", "h"], "i", ["j", "l"]], ignoreCase: false, inverted: false }],
           []
         ));
       });
@@ -748,7 +748,7 @@ describe("compiler pass |generateBytecode|", function() {
     it("defines correct constants", function() {
       expect(pass).to.changeAST(
         grammar,
-        constsDetails([], [], ["peg$anyExpectation()"], [])
+        constsDetails([], [], [{ type: "any" }], [])
       );
     });
   });
