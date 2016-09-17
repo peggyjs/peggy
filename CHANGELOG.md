@@ -37,6 +37,17 @@ Released: TBD
   messages have changed; use the `toString()` method on `GrammarError` to get
   something close to the old text.
   [@hildjj](https://github.com/peggyjs/peggy/pull/116)
+- The code generator was slightly reworked to simplify reusing the bytecode generator
+  (`generate.generateBytecode` pass). Property `consts` on the `grammar` AST node,
+  has been creating by the pass in the past, was decoupled into 4 other properties
+  with the structured information:
+  - `literals`
+  - `classes`
+  - `expectations`
+  - `functions`
+
+  Now bytecode generation pass is independent from the JavaScript backend.
+  [@Mingun](https://github.com/peggyjs/peggy/pull/117)
 
 ### Bug fixes
 
