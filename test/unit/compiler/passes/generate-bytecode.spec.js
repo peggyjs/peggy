@@ -693,7 +693,7 @@ describe("compiler pass |generateBytecode|", function() {
       it("defines correct constants", function() {
         expect(pass).to.changeAST("start = [a]", constsDetails(
           [],
-          ["/^[a]/"],
+          [{ value: ["a"], ignoreCase: false, inverted: false }],
           [{ type: "class", value: ["a"], ignoreCase: false, inverted: false }],
           []
         ));
@@ -704,7 +704,7 @@ describe("compiler pass |generateBytecode|", function() {
       it("defines correct constants", function() {
         expect(pass).to.changeAST("start = [^a]", constsDetails(
           [],
-          ["/^[^a]/"],
+          [{ value: ["a"], ignoreCase: false, inverted: true }],
           [{ type: "class", value: ["a"], ignoreCase: false, inverted: true }],
           []
         ));
@@ -715,7 +715,7 @@ describe("compiler pass |generateBytecode|", function() {
       it("defines correct constants", function() {
         expect(pass).to.changeAST("start = [a]i", constsDetails(
           [],
-          ["/^[a]/i"],
+          [{ value: ["a"], ignoreCase: true, inverted: false }],
           [{ type: "class", value: ["a"], ignoreCase: true, inverted: false }],
           []
         ));
@@ -726,7 +726,7 @@ describe("compiler pass |generateBytecode|", function() {
       it("defines correct constants", function() {
         expect(pass).to.changeAST("start = [ab-def-hij-l]", constsDetails(
           [],
-          ["/^[ab-def-hij-l]/"],
+          [{ value: ["a", ["b", "d"], "e", ["f", "h"], "i", ["j", "l"]], ignoreCase: false, inverted: false }],
           [{ type: "class", value: ["a", ["b", "d"], "e", ["f", "h"], "i", ["j", "l"]], ignoreCase: false, inverted: false }],
           []
         ));
