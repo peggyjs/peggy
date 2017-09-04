@@ -539,6 +539,12 @@ available to them.
 - `location()` returns an object with the information about the parse position.
   Refer to [the corresponding section](#locations) for the details.
 
+- `range()` is similar to `location()`, but returns an object with offsets only.
+  Refer to [the "Locations" section](#locations) for the details.
+
+- `offset()` returns only the start offset, i.e. `location().start.offset`.
+  Refer to [the "Locations" section](#locations) for the details.
+
 - `text()` returns the source text between `start` and `end` (which will be `""` for
   predicates). Instead of using that function as a return value for the rule consider
   using the [`$` operator](#-expression-2).
@@ -708,6 +714,24 @@ For the per-parse initializer, the location is the start of the input, i.e.
 
 The line number is incremented each time the parser finds an end of line
 sequence in the input.
+
+Line and column are somewhat expensive to compute, so if you just need the
+offset, there's also a function `offset()` that returns just the start offset,
+and a function `range()` that returns the object:
+
+```javascript
+{
+  source: options.grammarSource,
+  start: 23,
+  end: 25
+}
+```
+
+(i.e. difference from the `location()` result only in type of `start` and `end`
+properties, which contain just an offset instead of the `Location` object.)
+
+All notes about values for `location()` object is also applicable to the `range()`
+and `offset()` calls.
 
 Currently, Peggy only works with the [Basic Multilingual Plane (BMP)][BMP] of
 Unicode. This means that all offsets are measured in UTF-16 code units. If you

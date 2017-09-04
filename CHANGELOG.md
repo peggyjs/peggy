@@ -79,6 +79,11 @@ Released: TBD
     - `zero_or_more`
     - `one_or_more`
     - `group`
+- Parsers now can use two new functions to get location information:
+  `offset()` and `range()`. Use them if you don't need the whole
+  location information, because it could be expensive to compute.
+  That two functions always very efficient (back-ported pegjs/pegjs#528).
+  [@felix9 and @Mingun](https://github.com/peggyjs/peggy/pull/145)
 
 ### Bug fixes
 
