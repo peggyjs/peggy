@@ -407,72 +407,39 @@ Try to match the expression. If the match does not succeed, just return
 
 #### & { _predicate_ }
 
-The predicate is a piece of JavaScript code that is executed as if it was inside
-a function. It gets the match results of labeled expressions in preceding
-expression as its arguments. It should return some JavaScript value using the
-`return` statement. If the returned value evaluates to `true` in boolean
-context, just return `undefined` and do not consume any input; otherwise
-consider the match failed.
+This is a positive assertion. No input is consumed.
 
-The code inside the predicate can access all variables and functions defined in
-the initializer at the beginning of the grammar.
+The predicate should be JavaScript code, and it's executed as a
+function. Curly braces in the predicate must be balanced.
 
-The code inside the predicate can also access location information using the
-`location` function. It returns an object like this:
+The predicate should `return` a boolean value. If the result is
+truthy, it's match result is `undefined`, otherwise the match is
+considered failed.
 
-```javascript
-{
-  source: options.grammarSource,
-  start: { offset: 23, line: 5, column: 6 },
-  end: { offset: 23, line: 5, column: 6 }
-}
-```
-
-The `start` and `end` properties both refer to the current parse position. The
-`offset` property contains an offset as a zero-based index and `line` and
-`column` properties contain a line and a column as one-based indices.
-
-The code inside the predicate can also access options passed to the parser using
-the `options` variable.
-
-Note that curly braces in the predicate code must be balanced.
+The predicate has access to all variables and functions in the
+[Action Execution Environment](#action-execution-environment).
 
 #### ! { _predicate_ }
 
-The predicate is a piece of JavaScript code that is executed as if it was inside
-a function. It gets the match results of labeled expressions in preceding
-expression as its arguments. It should return some JavaScript value using the
-`return` statement. If the returned value evaluates to `false` in boolean
-context, just return `undefined` and do not consume any input; otherwise
-consider the match failed.
+This is a negative assertion. No input is consumed.
 
-The code inside the predicate can access all variables and functions defined in
-the initializer at the beginning of the grammar.
+The predicate should be JavaScript code, and it's executed as a
+function. Curly braces in the predicate must be balanced.
 
-The code inside the predicate can also access location information using the
-`location` function. It returns an object like this:
+The predicate should `return` a boolean value. If the result is
+falsy, it's match result is `undefined`, otherwise the match is
+considered failed.
 
-```javascript
-{
-  source: options.grammarSource,
-  start: { offset: 23, line: 5, column: 6 },
-  end: { offset: 23, line: 5, column: 6 }
-}
-```
-
-The `start` and `end` properties both refer to the current parse position. The
-`offset` property contains an offset as a zero-based index and `line` and
-`column` properties contain a line and a column as one-based indices.
-
-The code inside the predicate can also access options passed to the parser using
-the `options` variable.
-
-Note that curly braces in the predicate code must be balanced.
+The predicate has access to all variables and functions in the
+[Action Execution Environment](#action-execution-environment).
 
 #### \$ _expression_
 
 Try to match the expression. If the match succeeds, return the matched text
 instead of the match result.
+
+If you need to return the matched text in an action, use the
+[`text()` function](#action-execution-environment).
 
 #### _label_ : _expression_
 
@@ -502,60 +469,70 @@ Match a sequence of expressions and return their match results in an array.
 
 #### _expression_ { _action_ }
 
-Match the expression. If the match is successful, run the action, otherwise
+If the expression matches successfully, run the action, otherwise
 consider the match failed.
 
-The action is a piece of JavaScript code that is executed as if it was inside a
-function. It gets the match results of labeled expressions in preceding
-expression as its arguments. The action should return some JavaScript value
-using the `return` statement. This value is considered match result of the
-preceding expression.
+The action should be JavaScript code, and it's executed as a
+function. Curly braces in the action must be balanced.
 
-To indicate an error, the code inside the action can invoke the `expected`
-function, which makes the parser throw an exception. The function takes two
-parameters — a description of what was expected at the current position and
-optional location information (the default is what `location` would return — see
-below). The description will be used as part of a message of the thrown
-exception.
+The action should `return` some value, which will be used as the
+match result of the expression.
 
-The code inside an action can also invoke the `error` function, which also makes
-the parser throw an exception. The function takes two parameters — an error
-message and optional location information (the default is what `location` would
-return — see below). The message will be used by the thrown exception.
-
-The code inside the action can access all variables and functions defined in the
-initializer at the beginning of the grammar. Curly braces in the action code
-must be balanced.
-
-The code inside the action can also access the text matched by the expression
-using the `text` function.
-
-The code inside the action can also access location information using the
-`location` function. It returns an object like this:
-
-```javascript
-{
-  source: options.grammarSource,
-  start: { offset: 23, line: 5, column: 6 },
-  end: { offset: 25, line: 5, column: 8 }
-}
-```
-
-The `start` property refers to the position at the beginning of the expression,
-the `end` property refers to position after the end of the expression. The
-`offset` property contains an offset as a zero-based index and `line` and
-`column` properties contain a line and a column as one-based indices.
-
-The code inside the action can also access options passed to the parser using
-the `options` variable.
-
-Note that curly braces in the action code must be balanced.
+The action has access to all variables and functions in the
+[Action Execution Environment](#action-execution-environment).
 
 #### _expression<sub>1</sub>_ / _expression<sub>2</sub>_ / ... / _expression<sub>n</sub>_
 
 Try to match the first expression, if it does not succeed, try the second one,
 etc. Return the match result of the first successfully matched expression. If no
 expression matches, consider the match failed.
+
+### Action Execution Environment
+
+Actions and predicates have these variables and functions
+available to them.
+
+- All variables and functions defined in the initializer or the top-level
+  initializer at the beginning of the grammar are available.
+
+- Note, that all functions and variables, described below, are unavailable
+  in the global initializer.
+
+- Labels from preceding expressions are available as local variables,
+  which will have the match result of the labelled expressions.
+
+  A label is only available after its labelled expression is matched:
+
+  ```peggy
+  rule = A:('a' B:'b' { /* B is available, A is not */ } )
+  ```
+
+  A label in a sub-expression is only valid within the
+  sub-expression:
+
+  ```peggy
+  rule = A:'a' (B:'b') (C:'b' { /* A and C are available, B is not */ })
+  ```
+
+- `input` is a parsed string that was passed to the `parse()` method.
+
+- `options` is a variable that contains the parser options.
+  That is the same object that was passed to the `parse()` method.
+
+- `error(message, where)` will report an error and throw an exception.
+  `where` is optional; the default is the value of `location()`.
+
+- `expected(message, where)` is similar to `error`, but reports
+  > Expected _message_ but "_other_" found.
+
+  where `other` is, by default, the character in the `location().start.offset` position.
+
+- `location()` returns an object with the information about the parse position.
+  Refer to [the corresponding section](#locations) for the details.
+
+- `text()` returns the source text between `start` and `end` (which will be `""` for
+  predicates). Instead of using that function as a return value for the rule consider
+  using the [`$` operator](#-expression-2).
 
 ### Parsing Lists
 
@@ -674,6 +651,63 @@ note: Step 3: call itself without input consumption - left recursion
 3 | end = !start
   |        ^^^^^
 ```
+
+## Locations
+
+During the parsing you can access to the information of the current parse location,
+such as offset in the parsed string, line and column information. You can get this
+information by calling `location()` function, which returns you the following object:
+
+```javascript
+{
+  source: options.grammarSource,
+  start: { offset: 23, line: 5, column: 6 },
+  end: { offset: 25, line: 5, column: 8 }
+}
+```
+
+`source` is an any object that was supplied in the `grammarSource` option in
+the `parse()` call. That object can be used to hold reference to the origin of
+the grammar, for example, it can be a filename. It is recommended that this
+object have a `toString()` implementation that returns meaningful string,
+because that string will be used when getting formatted error representation
+with [`e.format()`](#error-messages).
+
+If `source` is `null` or `undefined` it don't appeared in the formatted messages.
+Default value for `source` is `undefined`.
+
+For actions, `start` refers to the position at the beginning of the preceding
+expression, and `end` refers to the position after the end of the preceding
+expression.
+
+For (semantic) predicates, `start` and `end` are the same, the location where
+the predicate is evaluated.
+
+For pre-parse initializer, the location is the start location, i.e.
+```javascript
+{
+  source: options.grammarSource,
+  start: { offset: 0, line: 1, column: 1 },
+  end: { offset: 0, line: 1, column: 1 }
+}
+```
+
+`offset` is a 0-based character index within the source text.
+`line` and `column` are 1-based indices.
+
+New line is started each time as parser found an `\n`, `\r`, or `\n\r` sequence in
+the input.
+
+Currently, Peggy only works with the [Basic Multilingual Plane (BMP)][BMP] of the Unicode.
+That means that all offsets are measured in the UTF-16 code units, so, if you try
+to parse characters outside this Plane (for example, emoji, or any surrogate pairs),
+you will get an offset inside the character.
+
+Changing this behavior would be a breaking change and will not to be done until 2.0.
+You can join to the discussion for this topic on the [GitHub Discussions page][unicode].
+
+[BMP]: https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane
+[unicode]: https://github.com/peggyjs/peggy/discussions/15
 
 ## Compatibility
 
