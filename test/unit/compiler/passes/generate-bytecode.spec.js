@@ -628,12 +628,12 @@ describe("compiler pass |generateBytecode|", function() {
 
       it("generates correct bytecode", function() {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
-          0, 0   // PUSH
+          35     // PUSH_EMPTY_STRING
         ]));
       });
 
       it("defines correct constants", function() {
-        expect(pass).to.changeAST(grammar, constsDetails([""], [], [], []));
+        expect(pass).to.changeAST(grammar, constsDetails([], [], [], []));
       });
     });
 
