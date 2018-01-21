@@ -113,8 +113,6 @@ You can tweak the generated parser with several options:
   pass to `peg.generate`
 - `--format` — format of the generated parser: `amd`, `es`, `commonjs`, `globals`,
   `umd` (default: `commonjs`)
-- `--optimize` — selects between optimizing the generated parser for parsing
-  speed (`speed`) or code size (`size`) (default: `speed`)
 - `--plugin` — makes Peggy use a specified plugin (can be specified multiple
   times)
 - `--trace` — makes the parser trace its progress
@@ -164,8 +162,6 @@ object to `peg.generate`. The following options are supported:
 - `format` — format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`,
   `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"`
   (default: `"bare"`)
-- `optimize`— selects between optimizing the generated parser for parsing
-  speed (`"speed"`) or code size (`"size"`) (default: `"speed"`)
 - `output` — if set to `"parser"`, the method will return generated parser
   object; if set to `"source"`, it will return parser source code as a string
   (default: `"parser"`)

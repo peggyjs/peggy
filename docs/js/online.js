@@ -11,7 +11,6 @@ $(document).ready(function() {
   var oldGrammar        = null;
   var oldParserVar      = null;
   var oldOptionCache    = null;
-  var oldOptionOptimize = null;
   var oldInput          = null;
 
   var editor = CodeMirror.fromTextArea($("#grammar").get(0), {
@@ -39,7 +38,6 @@ $(document).ready(function() {
     oldGrammar        = getGrammar();
     oldParserVar      = $("#parser-var").val();
     oldOptionCache    = $("#option-cache").is(":checked");
-    oldOptionOptimize = $("#option-optimize").val();
 
     $('#build-message').attr("class", "message progress").text("Building the parser...");
     $("#input").attr("disabled", "disabled");
@@ -47,14 +45,12 @@ $(document).ready(function() {
     $("#output").addClass("disabled").text("Output not available.");
     $("#parser-var").attr("disabled", "disabled");
     $("#option-cache").attr("disabled", "disabled");
-    $("#option-optimize").attr("disabled", "disabled");
     $("#parser-download").attr("disabled", "disabled");
 
     try {
       var timeBefore = (new Date).getTime();
       parserSource = peggy.generate(getGrammar(), {
         cache:    $("#option-cache").is(":checked"),
-        optimize: $("#option-optimize").val(),
         output:   "source"
       });
       var timeAfter = (new Date).getTime();
@@ -72,7 +68,6 @@ $(document).ready(function() {
       $("#input").removeAttr("disabled");
       $("#parser-var").removeAttr("disabled");
       $("#option-cache").removeAttr("disabled");
-      $("#option-optimize").removeAttr("disabled");
       $("#parser-download").removeAttr("disabled");
 
       var result = true;
@@ -126,8 +121,7 @@ $(document).ready(function() {
   function scheduleBuildAndParse() {
     var nothingChanged = getGrammar() === oldGrammar
       && $("#parser-var").val() === oldParserVar
-      && $("#option-cache").is(":checked") === oldOptionCache
-      && $("#option-optimize").val() === oldOptionOptimize;
+      && $("#option-cache").is(":checked") === oldOptionCache;
     if (nothingChanged) { return; }
 
     if (buildAndParseTimer !== null) {
@@ -182,7 +176,7 @@ $(document).ready(function() {
 
   editor.on("change", scheduleBuildAndParse);
 
-  $("#parser-var, #option-cache, #option-optimize")
+  $("#parser-var, #option-cache")
     .change(scheduleBuildAndParse)
     .mousedown(scheduleBuildAndParse)
     .mouseup(scheduleBuildAndParse)
@@ -214,8 +208,8 @@ $(document).ready(function() {
   $("#loader").hide();
   $("#content").show();
 
-  $("#grammar, #parser-var, #option-cache, #option-optimize").removeAttr("disabled");
-  
+  $("#grammar, #parser-var, #option-cache").removeAttr("disabled");
+
   buildAndParse();
 
   editor.refresh();

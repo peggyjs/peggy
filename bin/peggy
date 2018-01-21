@@ -33,8 +33,6 @@ function printHelp() {
   console.log("      --format <format>              format of the generated parser: amd,");
   console.log("                                     commonjs, globals, umd (default: commonjs)");
   console.log("  -h, --help                         print help and exit");
-  console.log("  -O, --optimize <goal>              select optimization for speed or size");
-  console.log("                                     (default: speed)");
   console.log("  -o, --output <file>                output file");
   console.log("      --plugin <plugin>              use a specified plugin (can be specified");
   console.log("                                     multiple times)");
@@ -112,7 +110,6 @@ const options = {
   dependencies: {},
   exportVar: null,
   format: "commonjs",
-  optimize: "speed",
   output: "source",
   plugins: [],
   trace: false
@@ -203,13 +200,9 @@ while (args.length > 0 && isOption(args[0])) {
     case "-O":
     case "--optimize":
       nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the -O/--optimize option.");
-      }
-      if (args[0] !== "speed" && args[0] !== "size") {
-        abort("Optimization goal must be either \"speed\" or \"size\".");
-      }
-      options.optimize = args[0];
+      console.error("Option --optimize is deprecated from 1.2.0 and has no effect anymore.");
+      console.error("It will be deleted in 2.0.");
+      console.error("Parser will be generated in the former \"speed\" mode.");
       break;
 
     case "-o":
