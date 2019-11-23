@@ -13,6 +13,7 @@ describe("compiler pass |reportInfiniteRepetition|", function() {
     expect(pass).to.reportError("start = ('')*", {
       message: "Possible infinite loop when parsing (repetition used with an expression that may not consume any input).",
       location: {
+        source: undefined,
         start: { offset: 8, line: 1, column: 9 },
         end: { offset: 13, line: 1, column: 14 }
       }
@@ -23,6 +24,7 @@ describe("compiler pass |reportInfiniteRepetition|", function() {
     expect(pass).to.reportError("start = ('')+", {
       message: "Possible infinite loop when parsing (repetition used with an expression that may not consume any input).",
       location: {
+        source: undefined,
         start: { offset: 8, line: 1, column: 9 },
         end: { offset: 13, line: 1, column: 14 }
       }

@@ -567,16 +567,19 @@ describe("generated parser behavior", function() {
           ].join("\n"), options);
 
           expect(parser).to.parse("1\n2\n\n3\n\n\n4 5 x", {
+            source: undefined,
             start: { offset: 13, line: 7, column: 5 },
             end: { offset: 13, line: 7, column: 5 }
           });
 
           // Newline representations
           expect(parser).to.parse("1\nx", {     // Unix
+            source: undefined,
             start: { offset: 2, line: 2, column: 1 },
             end: { offset: 2, line: 2, column: 1 }
           });
           expect(parser).to.parse("1\r\nx", {   // Windows
+            source: undefined,
             start: { offset: 3, line: 2, column: 1 },
             end: { offset: 3, line: 2, column: 1 }
           });
@@ -760,16 +763,19 @@ describe("generated parser behavior", function() {
           ].join("\n"), options);
 
           expect(parser).to.parse("1\n2\n\n3\n\n\n4 5 x", {
+            source: undefined,
             start: { offset: 13, line: 7, column: 5 },
             end: { offset: 13, line: 7, column: 5 }
           });
 
           // Newline representations
           expect(parser).to.parse("1\nx", {     // Unix
+            source: undefined,
             start: { offset: 2, line: 2, column: 1 },
             end: { offset: 2, line: 2, column: 1 }
           });
           expect(parser).to.parse("1\r\nx", {   // Windows
+            source: undefined,
             start: { offset: 3, line: 2, column: 1 },
             end: { offset: 3, line: 2, column: 1 }
           });
@@ -1183,16 +1189,19 @@ describe("generated parser behavior", function() {
             ].join("\n"), options);
 
             expect(parser).to.parse("1\n2\n\n3\n\n\n4 5 x", {
+              source: undefined,
               start: { offset: 13, line: 7, column: 5 },
               end: { offset: 14, line: 7, column: 6 }
             });
 
             // Newline representations
             expect(parser).to.parse("1\nx", {     // Unix
+              source: undefined,
               start: { offset: 2, line: 2, column: 1 },
               end: { offset: 3, line: 2, column: 2 }
             });
             expect(parser).to.parse("1\r\nx", {   // Windows
+              source: undefined,
               start: { offset: 3, line: 2, column: 1 },
               end: { offset: 4, line: 2, column: 2 }
             });
@@ -1210,6 +1219,7 @@ describe("generated parser behavior", function() {
                 expected: [{ type: "other", description: "a" }],
                 found: "a",
                 location: {
+                  source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
                   end: { offset: 1, line: 1, column: 2 }
                 }
@@ -1250,6 +1260,7 @@ describe("generated parser behavior", function() {
                 found: null,
                 expected: null,
                 location: {
+                  source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
                   end: { offset: 1, line: 1, column: 2 }
                 }
@@ -1437,6 +1448,7 @@ describe("generated parser behavior", function() {
 
           expect(parser).to.failToParse("", {
             location: {
+              source: undefined,
               start: { offset: 0, line: 1, column: 1 },
               end: { offset: 0, line: 1, column: 1 }
             }
@@ -1448,6 +1460,7 @@ describe("generated parser behavior", function() {
 
           expect(parser).to.failToParse("b", {
             location: {
+              source: undefined,
               start: { offset: 0, line: 1, column: 1 },
               end: { offset: 1, line: 1, column: 2 }
             }
@@ -1459,6 +1472,7 @@ describe("generated parser behavior", function() {
 
           expect(parser).to.failToParse("aa", {
             location: {
+              source: undefined,
               start: { offset: 1, line: 1, column: 2 },
               end: { offset: 2, line: 1, column: 3 }
             }
@@ -1475,6 +1489,7 @@ describe("generated parser behavior", function() {
 
           expect(parser).to.failToParse("1\n2\n\n3\n\n\n4 5 x", {
             location: {
+              source: undefined,
               start: { offset: 13, line: 7, column: 5 },
               end: { offset: 14, line: 7, column: 6 }
             }
@@ -1483,16 +1498,36 @@ describe("generated parser behavior", function() {
           // Newline representations
           expect(parser).to.failToParse("1\nx", {     // Old Mac
             location: {
+              source: undefined,
               start: { offset: 2, line: 2, column: 1 },
               end: { offset: 3, line: 2, column: 2 }
             }
           });
           expect(parser).to.failToParse("1\r\nx", {   // Windows
             location: {
+              source: undefined,
               start: { offset: 3, line: 2, column: 1 },
               end: { offset: 4, line: 2, column: 2 }
             }
           });
+        });
+
+        it("reports location source correctly", function() {
+          const source = { source: "object" };
+          const parser = peg.generate([
+            "start = line (nl+ line)*",
+            "line = digit (' '+ digit)*",
+            "digit = [0-9]",
+            "nl = '\\r'? '\\n'"
+          ].join("\n"), options);
+
+          expect(parser).to.failToParse("1\n2\n\n3\n\n\n4 5 x", {
+            location: {
+              source,
+              start: { offset: 13, line: 7, column: 5 },
+              end: { offset: 14, line: 7, column: 6 }
+            }
+          }, { grammarSource: source });
         });
       });
     });
