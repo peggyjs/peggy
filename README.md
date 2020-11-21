@@ -1,50 +1,46 @@
-[![Build status](https://img.shields.io/travis/pegjs/pegjs.svg)](https://travis-ci.org/pegjs/pegjs)
+[![Build status](https://img.shields.io/travis/codemix/peg.svg)](https://travis-ci.org/codemix/peg)
 [![npm version](https://img.shields.io/npm/v/pegjs.svg)](https://www.npmjs.com/package/pegjs)
 [![Bower version](https://img.shields.io/bower/v/pegjs.svg)](https://github.com/pegjs/bower)
 [![License](https://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
-PEG.js
-======
+# PEG.js
 
 PEG.js is a simple parser generator for JavaScript that produces fast parsers
 with excellent error reporting. You can use it to process complex data or
 computer languages and build transformers, interpreters, compilers and other
 tools easily.
 
-Features
---------
+## Features
 
-  * Simple and expressive grammar syntax
-  * Integrates both lexical and syntactical analysis
-  * Parsers have excellent error reporting out of the box
-  * Based on [parsing expression
-    grammar](http://en.wikipedia.org/wiki/Parsing_expression_grammar) formalism
-    — more powerful than traditional LL(*k*) and LR(*k*) parsers
-  * Usable [from your browser](https://pegjs.org/online), from the command line,
-    or via JavaScript API
+- Simple and expressive grammar syntax
+- Integrates both lexical and syntactical analysis
+- Parsers have excellent error reporting out of the box
+- Based on [parsing expression
+  grammar](http://en.wikipedia.org/wiki/Parsing_expression_grammar) formalism
+  — more powerful than traditional LL(_k_) and LR(_k_) parsers
+- Usable [from your browser](https://pegjs.org/online), from the command line,
+  or via JavaScript API
 
-Getting Started
----------------
+## Getting Started
 
 [Online version](https://pegjs.org/online) is the easiest way to generate a
 parser. Just enter your grammar, try parsing few inputs, and download generated
 parser code.
 
-Installation
-------------
+## Installation
 
 ### Node.js
 
 To use the `pegjs` command, install PEG.js globally:
 
 ```console
-$ npm install -g pegjs
+$ npm install -g @codemix/peg
 ```
 
 To use the JavaScript API, install PEG.js locally:
 
 ```console
-$ npm install pegjs
+$ npm install @codemix/peg
 ```
 
 If you need both the `pegjs` command and the JavaScript API, install PEG.js both
@@ -59,8 +55,7 @@ version) or install it using Bower:
 $ bower install pegjs
 ```
 
-Generating a Parser
--------------------
+## Generating a Parser
 
 PEG.js generates parser from a grammar that describes expected input and can
 specify what the parser returns (using semantic actions on matched parts of the
@@ -88,25 +83,25 @@ override this using the `--format` option.
 
 You can tweak the generated parser with several options:
 
-  * `--allowed-start-rules` — comma-separated list of rules the parser will be
-    allowed to start parsing from (default: the first rule in the grammar)
-  * `--cache` — makes the parser cache results, avoiding exponential parsing
-    time in pathological cases but making the parser slower
-  * `--dependency` — makes the parser require a specified dependency (can be
-    specified multiple times)
-  * `--export-var` — name of a global variable into which the parser object is
-    assigned to when no module loader is detected
-  * `--extra-options` — additional options (in JSON format) to pass to
-    `peg.generate`
-  * `--extra-options-file` — file with additional options (in JSON format) to
-    pass to `peg.generate`
-  * `--format` — format of the generated parser: `amd`, `commonjs`, `globals`,
-    `umd` (default: `commonjs`)
-  * `--optimize` — selects between optimizing the generated parser for parsing
-    speed (`speed`) or code size (`size`) (default: `speed`)
-  * `--plugin` — makes PEG.js use a specified plugin (can be specified multiple
-    times)
-  * `--trace` — makes the parser trace its progress
+- `--allowed-start-rules` — comma-separated list of rules the parser will be
+  allowed to start parsing from (default: the first rule in the grammar)
+- `--cache` — makes the parser cache results, avoiding exponential parsing
+  time in pathological cases but making the parser slower
+- `--dependency` — makes the parser require a specified dependency (can be
+  specified multiple times)
+- `--export-var` — name of a global variable into which the parser object is
+  assigned to when no module loader is detected
+- `--extra-options` — additional options (in JSON format) to pass to
+  `peg.generate`
+- `--extra-options-file` — file with additional options (in JSON format) to
+  pass to `peg.generate`
+- `--format` — format of the generated parser: `amd`, `commonjs`, `globals`,
+  `umd` (default: `commonjs`)
+- `--optimize` — selects between optimizing the generated parser for parsing
+  speed (`speed`) or code size (`size`) (default: `speed`)
+- `--plugin` — makes PEG.js use a specified plugin (can be specified multiple
+  times)
+- `--trace` — makes the parser trace its progress
 
 ### JavaScript API
 
@@ -135,37 +130,36 @@ property with more details about the error.
 You can tweak the generated parser by passing a second parameter with an options
 object to `peg.generate`. The following options are supported:
 
-  * `allowedStartRules` — rules the parser will be allowed to start parsing from
-    (default: the first rule in the grammar)
-  * `cache` — if `true`, makes the parser cache results, avoiding exponential
-    parsing time in pathological cases but making the parser slower (default:
-    `false`)
-  * `dependencies` — parser dependencies, the value is an object which maps
-    variables used to access the dependencies in the parser to module IDs used
-    to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, or
-    `"umd"` (default: `{}`)
-  * `exportVar` — name of a global variable into which the parser object is
-    assigned to when no module loader is detected; valid only when `format` is
-    set to `"globals"` or `"umd"` (default: `null`)
-  * `format` — format of the genreated parser (`"amd"`, `"bare"`, `"commonjs"`,
-    `"globals"`, or `"umd"`); valid only when `output` is set to `"source"`
-    (default: `"bare"`)
-  * `optimize`— selects between optimizing the generated parser for parsing
-    speed (`"speed"`) or code size (`"size"`) (default: `"speed"`)
-  * `output` — if set to `"parser"`, the method will return generated parser
-    object; if set to `"source"`, it will return parser source code as a string
-    (default: `"parser"`)
-  * `plugins` — plugins to use
-  * `trace` — makes the parser trace its progress (default: `false`)
+- `allowedStartRules` — rules the parser will be allowed to start parsing from
+  (default: the first rule in the grammar)
+- `cache` — if `true`, makes the parser cache results, avoiding exponential
+  parsing time in pathological cases but making the parser slower (default:
+  `false`)
+- `dependencies` — parser dependencies, the value is an object which maps
+  variables used to access the dependencies in the parser to module IDs used
+  to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, or
+  `"umd"` (default: `{}`)
+- `exportVar` — name of a global variable into which the parser object is
+  assigned to when no module loader is detected; valid only when `format` is
+  set to `"globals"` or `"umd"` (default: `null`)
+- `format` — format of the genreated parser (`"amd"`, `"bare"`, `"commonjs"`,
+  `"globals"`, or `"umd"`); valid only when `output` is set to `"source"`
+  (default: `"bare"`)
+- `optimize`— selects between optimizing the generated parser for parsing
+  speed (`"speed"`) or code size (`"size"`) (default: `"speed"`)
+- `output` — if set to `"parser"`, the method will return generated parser
+  object; if set to `"source"`, it will return parser source code as a string
+  (default: `"parser"`)
+- `plugins` — plugins to use
+- `trace` — makes the parser trace its progress (default: `false`)
 
-Using the Parser
-----------------
+## Using the Parser
 
 Using the generated parser is simple — just call its `parse` method and pass an
 input string as a parameter. The method will return a parse result (the exact
 value depends on the grammar used to generate the parser) or throw an exception
 if the input is invalid. The exception will contain `location`, `expected`,
-`found`,  and `message` properties with more details about the error.
+`found`, and `message` properties with more details about the error.
 
 ```javascript
 parser.parse("abba"); // returns ["a", "b", "b", "a"]
@@ -176,13 +170,12 @@ parser.parse("abcd"); // throws an exception
 You can tweak parser behavior by passing a second parameter with an options
 object to the `parse` method. The following options are supported:
 
-  * `startRule` — name of the rule to start parsing from
-  * `tracer` — tracer to use
+- `startRule` — name of the rule to start parsing from
+- `tracer` — tracer to use
 
 Parsers can also support their own custom options.
 
-Grammar Syntax and Semantics
-----------------------------
+## Grammar Syntax and Semantics
 
 The grammar syntax is similar to JavaScript in that it is not line-oriented and
 ignores whitespace between tokens. You can also use JavaScript-style comments
@@ -211,15 +204,14 @@ integer "integer"
   = digits:[0-9]+ { return parseInt(digits.join(""), 10); }
 ```
 
-On the top level, the grammar consists of *rules* (in our example, there are
-five of them). Each rule has a *name* (e.g. `integer`) that identifies the rule,
-and a *parsing expression* (e.g. `digits:[0-9]+ { return
-parseInt(digits.join(""), 10); }`) that defines a pattern to match against the
+On the top level, the grammar consists of _rules_ (in our example, there are
+five of them). Each rule has a _name_ (e.g. `integer`) that identifies the rule,
+and a _parsing expression_ (e.g. `digits:[0-9]+ { return parseInt(digits.join(""), 10); }`) that defines a pattern to match against the
 input text and possibly contains some JavaScript code that determines what
 happens when the pattern matches successfully. A rule can also contain
-*human-readable name* that is used in error messages (in our example, only the
+_human-readable name_ that is used in error messages (in our example, only the
 `integer` rule has a human-readable name). The parsing starts at the first rule,
-which is also called the *start rule*.
+which is also called the _start rule_.
 
 A rule name must be a JavaScript identifier. It is followed by an equality sign
 (“=”) and a parsing expression. If the rule has a human-readable name, it is
@@ -227,7 +219,7 @@ written as a JavaScript string between the name and separating equality sign.
 Rules need to be separated only by whitespace (their beginning is easily
 recognizable), but a semicolon (“;”) after the parsing expression is allowed.
 
-The first rule can be preceded by an *initializer* — a piece of JavaScript code
+The first rule can be preceded by an _initializer_ — a piece of JavaScript code
 in curly braces (“{” and “}”). This code is executed before the generated parser
 starts parsing. All variables and functions defined in the initializer are
 accessible in rule actions and semantic predicates. The code inside the
@@ -267,19 +259,19 @@ character classes, indicating optional parts and repetition, etc. Expressions
 can also contain references to other rules. See detailed description below.
 
 If an expression successfully matches a part of the text when running the
-generated parser, it produces a *match result*, which is a JavaScript value. For
+generated parser, it produces a _match result_, which is a JavaScript value. For
 example:
 
-  * An expression matching a literal string produces a JavaScript string
-    containing matched text.
-  * An expression matching repeated occurrence of some subexpression produces a
-    JavaScript array with all the matches.
+- An expression matching a literal string produces a JavaScript string
+  containing matched text.
+- An expression matching repeated occurrence of some subexpression produces a
+  JavaScript array with all the matches.
 
 The match results propagate through the rules when the rule names are used in
 expressions, up to the start rule. The generated parser returns start rule's
 match result when parsing is successful.
 
-One special case of parser expression is a *parser action* — a piece of
+One special case of parser expression is a _parser action_ — a piece of
 JavaScript code inside curly braces (“{” and “}”) that takes match results of
 some of the the preceding expressions and returns a JavaScript value. This value
 is considered match result of the preceding expression (in other words, the
@@ -296,7 +288,7 @@ number and converts it to a JavaScript `number` object.
 There are several types of parsing expressions, some of them containing
 subexpressions and thus forming a recursive structure:
 
-#### "*literal*"<br>'*literal*'
+#### "_literal_"<br>'_literal_'
 
 Match exact literal string and return it. The string syntax is the same as in
 JavaScript. Appending `i` right after the literal makes the match
@@ -315,45 +307,45 @@ Preceding the characters with `^` inverts the matched set (e.g. `[^a-z]` means
 “all character but lowercase letters”). Appending `i` right after the right
 bracket makes the match case-insensitive.
 
-#### *rule*
+#### _rule_
 
 Match a parsing expression of a rule recursively and return its match result.
 
-#### ( *expression* )
+#### ( _expression_ )
 
 Match a subexpression and return its match result.
 
-#### *expression* \*
+#### _expression_ \*
 
 Match zero or more repetitions of the expression and return their match results
 in an array. The matching is greedy, i.e. the parser tries to match the
 expression as many times as possible. Unlike in regular expressions, there is no
 backtracking.
 
-#### *expression* +
+#### _expression_ +
 
 Match one or more repetitions of the expression and return their match results
 in an array. The matching is greedy, i.e. the parser tries to match the
 expression as many times as possible. Unlike in regular expressions, there is no
 backtracking.
 
-#### *expression* ?
+#### _expression_ ?
 
 Try to match the expression. If the match succeeds, return its match result,
 otherwise return `null`. Unlike in regular expressions, there is no
 backtracking.
 
-#### & *expression*
+#### & _expression_
 
 Try to match the expression. If the match succeeds, just return `undefined` and
 do not consume any input, otherwise consider the match failed.
 
-#### ! *expression*
+#### ! _expression_
 
 Try to match the expression. If the match does not succeed, just return
 `undefined` and do not consume any input, otherwise consider the match failed.
 
-#### & { *predicate* }
+#### & { _predicate_ }
 
 The predicate is a piece of JavaScript code that is executed as if it was inside
 a function. It gets the match results of labeled expressions in preceding
@@ -384,7 +376,7 @@ the `options` variable.
 
 Note that curly braces in the predicate code must be balanced.
 
-#### ! { *predicate* }
+#### ! { _predicate_ }
 
 The predicate is a piece of JavaScript code that is executed as if it was inside
 a function. It gets the match results of labeled expressions in preceding
@@ -415,12 +407,12 @@ the `options` variable.
 
 Note that curly braces in the predicate code must be balanced.
 
-#### $ *expression*
+#### \$ _expression_
 
 Try to match the expression. If the match succeeds, return the matched text
 instead of the match result.
 
-#### *label* : *expression*
+#### _label_ : _expression_
 
 Match the expression and remember its match result under given label. The label
 must be a JavaScript identifier.
@@ -428,11 +420,11 @@ must be a JavaScript identifier.
 Labeled expressions are useful together with actions, where saved match results
 can be accessed by action's JavaScript code.
 
-#### *expression<sub>1</sub>* *expression<sub>2</sub>* ...  *expression<sub>n</sub>*
+#### _expression<sub>1</sub>_ _expression<sub>2</sub>_ ... _expression<sub>n</sub>_
 
 Match a sequence of expressions and return their match results in an array.
 
-#### *expression* { *action* }
+#### _expression_ { _action_ }
 
 Match the expression. If the match is successful, run the action, otherwise
 consider the match failed.
@@ -462,7 +454,6 @@ must be balanced.
 The code inside the action can also access the text matched by the expression
 using the `text` function.
 
-
 The code inside the action can also access location information using the
 `location` function. It returns an object like this:
 
@@ -483,35 +474,33 @@ the `options` variable.
 
 Note that curly braces in the action code must be balanced.
 
-#### *expression<sub>1</sub>* / *expression<sub>2</sub>* / ... / *expression<sub>n</sub>*
+#### _expression<sub>1</sub>_ / _expression<sub>2</sub>_ / ... / _expression<sub>n</sub>_
 
 Try to match the first expression, if it does not succeed, try the second one,
 etc. Return the match result of the first successfully matched expression. If no
 expression matches, consider the match failed.
 
-Compatibility
--------------
+## Compatibility
 
 Both the parser generator and generated parsers should run well in the following
 environments:
 
-  * Node.js 4+
-  * Internet Explorer 9+
-  * Edge
-  * Firefox
-  * Chrome
-  * Safari
-  * Opera
+- Node.js 4+
+- Internet Explorer 9+
+- Edge
+- Firefox
+- Chrome
+- Safari
+- Opera
 
-Development
------------
+## Development
 
-  * [Project website](https://pegjs.org/)
-  * [Wiki](https://github.com/pegjs/pegjs/wiki)
-  * [Source code](https://github.com/pegjs/pegjs)
-  * [Issue tracker](https://github.com/pegjs/pegjs/issues)
-  * [Google Group](http://groups.google.com/group/pegjs)
-  * [Twitter](http://twitter.com/peg_js)
+- [Project website](https://pegjs.org/)
+- [Wiki](https://github.com/codemix/peg/wiki)
+- [Source code](https://github.com/codemix/peg)
+- [Issue tracker](https://github.com/codemix/peg/issues)
+- [Google Group](http://groups.google.com/group/pegjs)
+- [Twitter](http://twitter.com/peg_js)
 
 PEG.js is developed by [David Majda](https://majda.cz/)
 ([@dmajda](http://twitter.com/dmajda)). The [Bower
@@ -519,7 +508,7 @@ package](https://github.com/pegjs/bower) is maintained by [Michel
 Krämer](http://www.michel-kraemer.com/)
 ([@michelkraemer](https://twitter.com/michelkraemer)).
 
-You are welcome to contribute code.  Unless your contribution is really trivial
+You are welcome to contribute code. Unless your contribution is really trivial
 you should get in touch with me first — this can prevent wasted effort on both
 sides. You can send code both as a patch or a GitHub pull request.
 
