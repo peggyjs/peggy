@@ -1,16 +1,16 @@
-PEG.js Test Suite
+Peggy Test Suite
 =================
 
-This is the PEG.js test suite. It ensures PEG.js works correctly. All tests
+This is the Peggy test suite. It ensures Peggy works correctly. All tests
 should always pass on all supported platforms.
 
 Running in Node.js
 ------------------
 
-All commands in the following steps need to be executed in PEG.js root directory
+All commands in the following steps need to be executed in Peggy root directory
 (one level up from this one).
 
-  1. Install all PEG.js dependencies, including development ones:
+  1. Install all Peggy dependencies, including development ones:
 
      ```console
      $ npm install
@@ -27,12 +27,12 @@ All commands in the following steps need to be executed in PEG.js root directory
 Running in the Browser
 ----------------------
 
-All commands in the following steps need to be executed in PEG.js root directory
+All commands in the following steps need to be executed in Peggy root directory
 (one level up from this one).
 
   1. Make sure you have Node.js installed.
 
-  2. Install all PEG.js dependencies, including development ones:
+  2. Install all Peggy dependencies, including development ones:
 
      ```console
      $ npm install

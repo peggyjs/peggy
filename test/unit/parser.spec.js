@@ -5,7 +5,7 @@ let parser = require("../../lib/parser");
 
 let expect = chai.expect;
 
-describe("PEG.js grammar parser", function() {
+describe("Peggy grammar parser", function() {
   let literalAbcd       = { type: "literal",      value: "abcd", ignoreCase: false };
   let literalEfgh       = { type: "literal",      value: "efgh", ignoreCase: false };
   let literalIjkl       = { type: "literal",      value: "ijkl", ignoreCase: false };
@@ -586,11 +586,11 @@ describe("PEG.js grammar parser", function() {
   it("parses NonEscapeCharacter", function() {
     expect("start = '\\a'").to.parseAs(literalGrammar("a", false));
 
-    // The negative predicate is impossible to test with PEG.js grammar
+    // The negative predicate is impossible to test with Peggy grammar
     // structure.
   });
 
-  // The EscapeCharacter rule is impossible to test with PEG.js grammar
+  // The EscapeCharacter rule is impossible to test with Peggy grammar
   // structure.
 
   // Canonical HexEscapeSequence is "xFF".

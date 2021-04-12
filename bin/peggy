@@ -9,11 +9,11 @@ let peg = require("../lib/peg");
 // Helpers
 
 function printVersion() {
-  console.log("PEG.js " + peg.VERSION);
+  console.log("Peggy " + peg.VERSION);
 }
 
 function printHelp() {
-  console.log("Usage: pegjs [options] [--] [<input_file>]");
+  console.log("Usage: peggy [options] [--] [<input_file>]");
   console.log("");
   console.log("Options:");
   console.log("      --allowed-start-rules <rules>  comma-separated list of rules the generated");

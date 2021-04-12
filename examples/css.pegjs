@@ -11,7 +11,7 @@
 //
 //   * Many errors which should be recovered from according to the specification
 //     (e.g. malformed declarations or unexpected end of stylesheet) are fatal.
-//     This is a result of straightforward rewrite of the CSS grammar to PEG.js.
+//     This is a result of straightforward rewrite of the CSS grammar to Peggy.
 //
 // [1] http://www.w3.org/TR/2011/REC-CSS2-20110607
 // [2] http://www.w3.org/Style/css2-updates/REC-CSS2-20110607-errata.html

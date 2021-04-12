@@ -25,12 +25,13 @@ app.get("/bundle.js", (req, res) => {
     ignore: `${__dirname}/vendor/**/*`
   });
 
+  res.type("js");
   browserify(files)
-    .transform(babelify, { presets: "es2015", compact: false })
+    .transform(babelify, { presets: ["@babel/preset-env"], compact: false })
     .bundle()
     .pipe(res);
 });
 
 app.listen(8000, () => {
-  console.log("Benchmark server running at http://localhost:8000...");
+  console.log("Benchmark server running at http://localhost:8000 ...");
 });

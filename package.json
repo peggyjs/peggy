@@ -1,20 +1,21 @@
 {
-  "name": "@codemix/peg",
+  "name": "peggy",
   "version": "0.11.0",
   "description": "Parser generator for JavaScript",
   "keywords": [
     "parser generator",
-    "PEG"
+    "PEG",
+    "peg.js"
   ],
-  "homepage": "https://github.com/codemix/peg",
-  "bugs": "https://github.com/codemix/peg/issues",
+  "homepage": "https://github.com/peggy/peggy",
+  "bugs": "https://github.com/peggy/peggy/issues",
   "license": "MIT",
   "author": "David Majda <david@majda.cz> (https://majda.cz/)",
   "files": [
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
-    "bin/peg",
+    "bin/peggy",
     "examples/arithmetics.pegjs",
     "examples/css.pegjs",
     "examples/javascript.pegjs",
@@ -37,9 +38,9 @@
     "lib/peg.js",
     "package.json"
   ],
-  "main": "lib/peg",
-  "bin": "bin/peg",
-  "repository": "peg/peg",
+  "main": "lib/peg.js",
+  "bin": "bin/peggy",
+  "repository": "peggy/peggy",
   "scripts": {
     "test": "gulp"
   },
