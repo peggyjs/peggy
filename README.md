@@ -1,6 +1,6 @@
-[![Build status](https://img.shields.io/travis/codemix/peg.svg)](https://travis-ci.org/codemix/peg)
-[![npm version](https://img.shields.io/npm/v/peggy.svg)](https://www.npmjs.com/package/peggy)
-[![Bower version](https://img.shields.io/bower/v/peggy.svg)](https://github.com/peggy/bower)
+[![Tests](https://github.com/peggyjs/peggy/actions/workflows/node.js.yml/badge.svg)](https://github.com/peggyjs/peggy/actions/workflows/node.js.yml)
+[![npm version](https://img.shields.io/npm/v/pegjs.svg)](https://www.npmjs.com/package/pegjs)
+[![Bower version](https://img.shields.io/bower/v/pegjs.svg)](https://github.com/pegjs/bower)
 [![License](https://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
 # Peggy
