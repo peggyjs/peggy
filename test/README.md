@@ -19,7 +19,7 @@ All commands in the following steps need to be executed in Peggy root directory
   2. Execute the test suite:
 
      ```console
-     $ gulp test
+     $ npm test
      ```
 
   3. Watch the tests pass (or fail).

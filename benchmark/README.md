@@ -20,7 +20,7 @@ All commands in the following steps need to be executed in Peggy root directory
   2. Execute the benchmark suite:
 
      ```console
-     $ gulp benchmark
+     $ npm run benchmark
      ```
 
   3. Wait for results.
