@@ -18,12 +18,12 @@ tools easily.
 - Based on [parsing expression
   grammar](http://en.wikipedia.org/wiki/Parsing_expression_grammar) formalism
   — more powerful than traditional LL(_k_) and LR(_k_) parsers
-- Usable [from your browser](https://peggy.org/online), from the command line,
+- Usable [from your browser](https://peggyjs.org/online), from the command line,
   or via JavaScript API
 
 ## Getting Started
 
-[Online version](https://peggy.org/online) is the easiest way to generate a
+[Online version](https://peggyjs.org/online) is the easiest way to generate a
 parser. Just enter your grammar, try parsing few inputs, and download generated
 parser code.
 
@@ -48,7 +48,7 @@ ways.
 
 ### Browser
 
-[Download](https://peggy.org/#download) the Peggy library (regular or minified
+[Download](https://peggyjs.org/#download) the Peggy library (regular or minified
 version) or install it using Bower:
 
 ```console
@@ -495,7 +495,7 @@ environments:
 
 ## Development
 
-- [Project website](https://peggy.org/)
+- [Project website](https://peggyjs.org/)
 - [Wiki](https://github.com/codemix/peg/wiki)
 - [Source code](https://github.com/codemix/peg)
 - [Issue tracker](https://github.com/codemix/peg/issues)
