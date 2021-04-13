@@ -1,4 +1,20 @@
+"use strict";
+
 module.exports = {
+  root: true,
+  ignorePatterns: [
+    "docs/",
+    "lib/parser.js",
+    "test/vendor/",
+    "benchmark/vendor/",
+    "browser/",
+    "node_modules/",
+    "*.min.js"
+  ],
+  env: {
+    node: true,
+    es6: true
+  },
   parserOptions: {
     ecmaVersion: 2015,
   },
@@ -123,11 +139,11 @@ module.exports = {
     "class-methods-use-this": "off",
 
     // Disabled because code quality issues are generally not checked.
-    complexity: "off",
+    "complexity": "off",
 
     "consistent-return": "error",
 
-    curly: "error",
+    "curly": "error",
 
     "default-case": "error",
 
@@ -135,7 +151,7 @@ module.exports = {
 
     "dot-notation": "error",
 
-    eqeqeq: "error",
+    "eqeqeq": "error",
 
     // Enabled, but it's better to use `Object.keys(...).forEach` instead of
     // `for...in`.
@@ -286,7 +302,7 @@ module.exports = {
 
     // Set to require a radix even though it always defaults to 10 in ES5+. It
     // prevents confusion.
-    radix: "error",
+    "radix": "error",
 
     // Disabled because while putting variable declarations at the top is
     // generally a good idea, it's not always practical. For example, modifying
@@ -300,11 +316,11 @@ module.exports = {
 
     "wrap-iife": ["error", "inside"],
 
-    yoda: "error",
+    "yoda": "error",
 
     // ----- Strict Mode -----
 
-    strict: "error",
+    "strict": "error",
 
     // ----- Variables -----
 
@@ -533,13 +549,13 @@ module.exports = {
 
     "quote-props": ["error", "consistent"],
 
-    quotes: ["error", "double"],
+    "quotes": ["error", "double"],
 
     "require-jsdoc": "off",
 
     "semi-spacing": ["error", { before: false, after: true }],
 
-    semi: ["error", "always"],
+    "semi": ["error", "always"],
 
     "sort-keys": "off",
 
@@ -642,7 +658,7 @@ module.exports = {
     "sort-imports": [
       "error",
       {
-        memberSyntaxSortOrder: ["none", "all", "multiple", "single"],
+        "memberSyntaxSortOrder": ["none", "all", "multiple", "single"],
       },
     ],
 

@@ -1,7 +1,5 @@
 "use strict";
 
-/* global setTimeout */
-
 let peg = require("../lib/peg");
 
 let Runner = {

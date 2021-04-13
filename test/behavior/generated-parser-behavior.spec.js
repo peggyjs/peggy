@@ -1,7 +1,5 @@
 "use strict";
 
-/* global console */
-
 let chai = require("chai");
 let peg = require("../../lib/peg");
 let sinon = require("sinon");
