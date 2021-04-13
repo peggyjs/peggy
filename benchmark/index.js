@@ -54,7 +54,7 @@ $("#run").click(() => {
   // Each input is parsed multiple times and the results are averaged. We
   // do this for two reasons:
   //
-  //   1. To warm up the interpreter (PEG.js-generated parsers will be
+  //   1. To warm up the interpreter (Peggy-generated parsers will be
   //      most likely used repeatedly, so it makes sense to measure
   //      performance after warming up).
   //

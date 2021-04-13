@@ -1,6 +1,6 @@
 # Contribution Guidelines
 
-The best way to contribute to PEG.js is by using it and giving back useful
+The best way to contribute to Peggy is by using it and giving back useful
 feedback — reporting discovered bugs or requesting missing features.
 
 You can also contribute code, but be advised that many patches end up being
@@ -49,8 +49,8 @@ When appropriate, add documentation and tests.
 Before submitting, make sure your change passes the tests (`gulp test`) and
 ESLint checks (`gulp lint`).
 
-[issues]: https://github.com/pegjs/pegjs/issues
-[issues-search-bugs]: https://github.com/pegjs/pegjs/issues?q=is%3Aopen+is%3Aissue+label%3ABug
-[issues-search-enhancements]: https://github.com/pegjs/pegjs/issues?q=is%3Aopen+is%3Aissue+label%3AEnhancement
-[pulls]: https://github.com/pegjs/pegjs/pulls
+[issues]: https://github.com/peggyjs/peggy/issues
+[issues-search-bugs]: https://github.com/peggyjs/peggy/issues?q=is%3Aopen+is%3Aissue+label%3ABug
+[issues-search-enhancements]: https://github.com/peggyjs/peggy/issues?q=is%3Aopen+is%3Aissue+label%3AEnhancement
+[pulls]: https://github.com/peggyjs/peggy/pulls
 [git-commit-messages]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html

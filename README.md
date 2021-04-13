@@ -1,11 +1,11 @@
 [![Build status](https://img.shields.io/travis/codemix/peg.svg)](https://travis-ci.org/codemix/peg)
-[![npm version](https://img.shields.io/npm/v/pegjs.svg)](https://www.npmjs.com/package/pegjs)
-[![Bower version](https://img.shields.io/bower/v/pegjs.svg)](https://github.com/pegjs/bower)
+[![npm version](https://img.shields.io/npm/v/peggy.svg)](https://www.npmjs.com/package/peggy)
+[![Bower version](https://img.shields.io/bower/v/peggy.svg)](https://github.com/peggy/bower)
 [![License](https://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
-# PEG.js
+# Peggy
 
-PEG.js is a simple parser generator for JavaScript that produces fast parsers
+Peggy is a simple parser generator for JavaScript that produces fast parsers
 with excellent error reporting. You can use it to process complex data or
 computer languages and build transformers, interpreters, compilers and other
 tools easily.
@@ -18,12 +18,12 @@ tools easily.
 - Based on [parsing expression
   grammar](http://en.wikipedia.org/wiki/Parsing_expression_grammar) formalism
   — more powerful than traditional LL(_k_) and LR(_k_) parsers
-- Usable [from your browser](https://pegjs.org/online), from the command line,
+- Usable [from your browser](https://peggyjs.org/online), from the command line,
   or via JavaScript API
 
 ## Getting Started
 
-[Online version](https://pegjs.org/online) is the easiest way to generate a
+[Online version](https://peggyjs.org/online) is the easiest way to generate a
 parser. Just enter your grammar, try parsing few inputs, and download generated
 parser code.
 
@@ -31,49 +31,49 @@ parser code.
 
 ### Node.js
 
-To use the `pegjs` command, install PEG.js globally:
+To use the `peggy` command, install Peggy globally:
 
 ```console
 $ npm install -g @codemix/peg
 ```
 
-To use the JavaScript API, install PEG.js locally:
+To use the JavaScript API, install Peggy locally:
 
 ```console
 $ npm install @codemix/peg
 ```
 
-If you need both the `pegjs` command and the JavaScript API, install PEG.js both
+If you need both the `peggy` command and the JavaScript API, install Peggy both
 ways.
 
 ### Browser
 
-[Download](https://pegjs.org/#download) the PEG.js library (regular or minified
+[Download](https://peggyjs.org/#download) the Peggy library (regular or minified
 version) or install it using Bower:
 
 ```console
-$ bower install pegjs
+$ bower install peggy
 ```
 
 ## Generating a Parser
 
-PEG.js generates parser from a grammar that describes expected input and can
+Peggy generates parser from a grammar that describes expected input and can
 specify what the parser returns (using semantic actions on matched parts of the
 input). Generated parser itself is a JavaScript object with a simple API.
 
 ### Command Line
 
-To generate a parser from your grammar, use the `pegjs` command:
+To generate a parser from your grammar, use the `peggy` command:
 
 ```console
-$ pegjs arithmetics.pegjs
+$ peggy arithmetics.peggy
 ```
 
 This writes parser source code into a file with the same name as the grammar
 file but with “.js” extension. You can also specify the output file explicitly:
 
 ```console
-$ pegjs -o arithmetics-parser.js arithmetics.pegjs
+$ peggy -o arithmetics-parser.js arithmetics.peggy
 ```
 
 If you omit both input and output file, standard input and output are used.
@@ -99,20 +99,20 @@ You can tweak the generated parser with several options:
   `umd` (default: `commonjs`)
 - `--optimize` — selects between optimizing the generated parser for parsing
   speed (`speed`) or code size (`size`) (default: `speed`)
-- `--plugin` — makes PEG.js use a specified plugin (can be specified multiple
+- `--plugin` — makes Peggy use a specified plugin (can be specified multiple
   times)
 - `--trace` — makes the parser trace its progress
 
 ### JavaScript API
 
-In Node.js, require the PEG.js parser generator module:
+In Node.js, require the Peggy parser generator module:
 
 ```javascript
-var peg = require("pegjs");
+var peg = require("peggy");
 ```
 
-In browser, include the PEG.js library in your web page or application using the
-`<script>` tag. If PEG.js detects an AMD loader, it will define itself as a
+In browser, include the Peggy library in your web page or application using the
+`<script>` tag. If Peggy detects an AMD loader, it will define itself as a
 module, otherwise the API will be available in the `peg` global object.
 
 To generate a parser, call the `peg.generate` method and pass your grammar as a
@@ -184,7 +184,7 @@ ignores whitespace between tokens. You can also use JavaScript-style comments
 Let's look at example grammar that recognizes simple arithmetic expressions like
 `2*(3+4)`. A parser generated from this grammar computes their values.
 
-```pegjs
+```peggy
 start
   = additive
 
@@ -227,7 +227,7 @@ initializer can access options passed to the parser using the `options`
 variable. Curly braces in the initializer code must be balanced. Let's look at
 the example grammar from above using a simple initializer.
 
-```pegjs
+```peggy
 {
   function makeInteger(o) {
     return parseInt(o.join(""), 10);
@@ -495,16 +495,16 @@ environments:
 
 ## Development
 
-- [Project website](https://pegjs.org/)
+- [Project website](https://peggyjs.org/)
 - [Wiki](https://github.com/codemix/peg/wiki)
 - [Source code](https://github.com/codemix/peg)
 - [Issue tracker](https://github.com/codemix/peg/issues)
-- [Google Group](http://groups.google.com/group/pegjs)
+- [Google Group](http://groups.google.com/group/peggy)
 - [Twitter](http://twitter.com/peg_js)
 
-PEG.js is developed by [David Majda](https://majda.cz/)
+Peggy is developed by [David Majda](https://majda.cz/)
 ([@dmajda](http://twitter.com/dmajda)). The [Bower
-package](https://github.com/pegjs/bower) is maintained by [Michel
+package](https://github.com/peggy/bower) is maintained by [Michel
 Krämer](http://www.michel-kraemer.com/)
 ([@michelkraemer](https://twitter.com/michelkraemer)).
 
@@ -512,5 +512,5 @@ You are welcome to contribute code. Unless your contribution is really trivial
 you should get in touch with me first — this can prevent wasted effort on both
 sides. You can send code both as a patch or a GitHub pull request.
 
-Note that PEG.js is still very much work in progress. There are no compatibility
+Note that Peggy is still very much work in progress. There are no compatibility
 guarantees until version 1.0.

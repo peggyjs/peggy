@@ -6,7 +6,7 @@ let sinon = require("sinon");
 
 let expect = chai.expect;
 
-describe("PEG.js API", function() {
+describe("Peggy API", function() {
   describe("generate", function() {
     it("generates a parser", function() {
       let parser = peg.generate("start = 'a'");

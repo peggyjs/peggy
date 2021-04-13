@@ -20,11 +20,11 @@ let transform = require("gulp-transform");
 let uglify = require("gulp-uglify");
 
 const HEADER = [
-  "// PEG.js " + package_.version,
+  "// peggy " + package_.version,
   "//",
-  "// https://pegjs.org/",
+  "// https://github.com/peggyjs/peggy",
   "//",
-  "// Copyright (c) 2010-2016 David Majda",
+  "// Copyright (c) 2021 the peggy authors",
   "// Licensed under the MIT License.",
   "",
 ]
@@ -41,7 +41,7 @@ const JS_FILES = [
   "benchmark/run",
   "benchmark/server",
   "!benchmark/vendor/**/*",
-  "bin/pegjs",
+  "bin/peggy",
   "gulpfile.js",
 ];
 
@@ -71,13 +71,13 @@ gulp.task("benchmark", () => spawn("benchmark/run", { stdio: "inherit" }));
 
 // Create the browser build.
 gulp.task("browser:build", () =>
-  browserify("lib/peg.js", { standalone: "peg" })
+  browserify("lib/peg.js", { standalone: "peggy" })
     .transform(babelify.configure({
       presets : ["@babel/preset-env"],
       compact: false
     }))
     .bundle()
-    .pipe(source("peg.js"))
+    .pipe(source("peggy.js"))
     .pipe(header(HEADER))
     .pipe(gulp.dest("browser"))
     .pipe(rename({ suffix: ".min" }))
