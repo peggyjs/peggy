@@ -13,6 +13,9 @@
   "license": "MIT",
   "author": "David Majda <david@majda.cz> (https://majda.cz/)",
   "main": "lib/peg.js",
+  "browser": "browser/peggy.min.js",
+  "unpkg": "browser/peggy.min.js",
+  "jsdelivr": "browser/peggy.min.js",
   "types": "lib/peg.d.ts",
   "bin": "bin/peggy",
   "scripts": {
