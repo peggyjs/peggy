@@ -13,6 +13,7 @@
   "license": "MIT",
   "author": "David Majda <david@majda.cz> (https://majda.cz/)",
   "main": "lib/peg.js",
+  "types": "lib/peg.d.ts",
   "bin": "bin/peggy",
   "scripts": {
     "pretest": "npm run parser",
