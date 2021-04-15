@@ -19,11 +19,13 @@
     "test": "mocha --recursive test --exclude test/vendor",
     "lint": "eslint . --ext .js",
     "benchmark": "./benchmark run",
-    "build": "npm run parser && npm run browser:build",
+    "build": "npm run parser && npm run browser:build && npm run benchmark:build && npm run test:build",
     "browser:clean": "rm -rf browser/",
     "prebrowser:build": "npm run parser",
     "browser:build": "browserify lib/peg.js -s peggy -o browser/peggy.js -t [ babelify --no-compact --presets [ @babel/preset-env ] ] && uglifyjs browser/peggy.js -o browser/peggy.min.js",
     "postbrowser:build": "tools/header browser/*",
+    "benchmark:build": "browserify benchmark/browser.stub.js -o docs/js/benchmark-bundle.min.js -t [ babelify --no-compact --presets [ @babel/preset-env ] ]",
+    "test:build": "browserify test/browser.stub.js -o docs/js/test-bundle.min.js -t [ babelify --no-compact --presets [ @babel/preset-env ] ]",
     "parser": "bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs"
   },
   "devDependencies": {
