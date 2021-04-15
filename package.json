@@ -5,10 +5,11 @@
   "keywords": [
     "parser generator",
     "PEG",
-    "peg.js"
+    "PEG.js"
   ],
-  "homepage": "https://github.com/peggy/peggy",
-  "bugs": "https://github.com/peggy/peggy/issues",
+  "homepage": "https://peggyjs.org/",
+  "repository": "peggyjs/peggy",
+  "bugs": "https://github.com/peggyjs/peggy/issues",
   "license": "MIT",
   "author": "David Majda <david@majda.cz> (https://majda.cz/)",
   "files": [
@@ -36,13 +37,14 @@
   ],
   "main": "lib/peg.js",
   "bin": "bin/peggy",
-  "repository": "peggy/peggy",
   "scripts": {
+    "pretest": "npm run parser",
     "test": "mocha --recursive test --exclude test/vendor",
     "lint": "eslint . --ext .js",
     "benchmark": "./benchmark run",
     "build": "npm run parser && npm run browser:build",
     "browser:clean": "rm -rf browser/",
+    "prebrowser:build": "npm run parser",
     "browser:build": "browserify lib/peg.js -s peggy -o browser/peggy.js -t [ babelify --no-compact --presets [ @babel/preset-env ] ] && uglifyjs browser/peggy.js -o browser/peggy.min.js",
     "postbrowser:build": "tools/header browser/*",
     "parser": "bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs"
