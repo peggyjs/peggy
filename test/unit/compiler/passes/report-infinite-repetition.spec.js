@@ -1,12 +1,12 @@
 "use strict";
 
-let chai = require("chai");
-let helpers = require("./helpers");
-let pass = require("../../../../lib/compiler/passes/report-infinite-repetition");
+const chai = require("chai");
+const helpers = require("./helpers");
+const pass = require("../../../../lib/compiler/passes/report-infinite-repetition");
 
 chai.use(helpers);
 
-let expect = chai.expect;
+const expect = chai.expect;
 
 describe("compiler pass |reportInfiniteRepetition|", function() {
   it("reports infinite loops for zero_or_more", function() {

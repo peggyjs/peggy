@@ -1,12 +1,12 @@
 "use strict";
 
-let peg = require("../lib/peg");
+const peg = require("../lib/peg");
 
-let Runner = {
+const Runner = {
   run(benchmarks, runCount, options, callbacks) {
     // Queue
 
-    let Q = {
+    const Q = {
       functions: [],
 
       add(f) {
@@ -37,7 +37,7 @@ let Runner = {
     // The enqueued functions share state, which is all stored in the properties
     // of the |state| object.
 
-    let state = {};
+    const state = {};
 
     function initialize() {
       callbacks.start();
@@ -63,15 +63,15 @@ let Runner = {
       return function() {
         callbacks.testStart(benchmark, test);
 
-        let input = callbacks.readFile(benchmark.id + "/" + test.file);
+        const input = callbacks.readFile(benchmark.id + "/" + test.file);
 
         let parseTime = 0;
         for (let i = 0; i < runCount; i++) {
-          let t = (new Date()).getTime();
+          const t = (new Date()).getTime();
           state.parser.parse(input);
           parseTime += (new Date()).getTime() - t;
         }
-        let averageParseTime = parseTime / runCount;
+        const averageParseTime = parseTime / runCount;
 
         callbacks.testFinish(benchmark, test, input.length, averageParseTime);
 

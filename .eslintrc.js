@@ -627,10 +627,7 @@ module.exports = {
     // allow to make exceptions for these cases.
     "prefer-arrow-callback": "off",
 
-    // Disabled because using `const` for anything else than for immutable
-    // variables of permanent character (generally spelled in `ALL_CAPS`) feels
-    // confusing.
-    "prefer-const": "off",
+    "prefer-const": "error",
 
     "prefer-numeric-literals": "error",
 

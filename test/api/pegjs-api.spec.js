@@ -1,11 +1,11 @@
 "use strict";
 
-let chai = require("chai");
-let peg = require("../../lib/peg");
-let sinon = require("sinon");
-let pkg = require("../../package.json");
+const chai = require("chai");
+const peg = require("../../lib/peg");
+const sinon = require("sinon");
+const pkg = require("../../package.json");
 
-let expect = chai.expect;
+const expect = chai.expect;
 
 describe("Peggy API", function() {
   it("has the correct VERSION", function() {
@@ -14,7 +14,7 @@ describe("Peggy API", function() {
 
   describe("generate", function() {
     it("generates a parser", function() {
-      let parser = peg.generate("start = 'a'");
+      const parser = peg.generate("start = 'a'");
 
       expect(parser).to.be.an("object");
       expect(parser.parse("a")).to.equal("a");
@@ -29,7 +29,7 @@ describe("Peggy API", function() {
     });
 
     describe("allowed start rules", function() {
-      let grammar = [
+      const grammar = [
         "a = 'x'",
         "b = 'x'",
         "c = 'x'"
@@ -41,7 +41,7 @@ describe("Peggy API", function() {
       describe("when optimizing for parsing speed", function() {
         describe("when |allowedStartRules| is not set", function() {
           it("generated parser can start only from the first rule", function() {
-            let parser = peg.generate(grammar, { optimize: "speed" });
+            const parser = peg.generate(grammar, { optimize: "speed" });
 
             expect(parser.parse("x", { startRule: "a" })).to.equal("x");
             expect(() => { parser.parse("x", { startRule: "b" }); }).to.throw();
@@ -51,7 +51,7 @@ describe("Peggy API", function() {
 
         describe("when |allowedStartRules| is set", function() {
           it("generated parser can start only from specified rules", function() {
-            let parser = peg.generate(grammar, {
+            const parser = peg.generate(grammar, {
               optimize: "speed",
               allowedStartRules: ["b", "c"]
             });
@@ -66,7 +66,7 @@ describe("Peggy API", function() {
       describe("when optimizing for code size", function() {
         describe("when |allowedStartRules| is not set", function() {
           it("generated parser can start only from the first rule", function() {
-            let parser = peg.generate(grammar, { optimize: "size" });
+            const parser = peg.generate(grammar, { optimize: "size" });
 
             expect(parser.parse("x", { startRule: "a" })).to.equal("x");
             expect(() => { parser.parse("x", { startRule: "b" }); }).to.throw();
@@ -76,7 +76,7 @@ describe("Peggy API", function() {
 
         describe("when |allowedStartRules| is set", function() {
           it("generated parser can start only from specified rules", function() {
-            let parser = peg.generate(grammar, {
+            const parser = peg.generate(grammar, {
               optimize: "size",
               allowedStartRules: ["b", "c"]
             });
@@ -90,7 +90,7 @@ describe("Peggy API", function() {
     });
 
     describe("intermediate results caching", function() {
-      let grammar = [
+      const grammar = [
         "{ var n = 0; }",
         "start = (a 'b') / (a 'c') { return n; }",
         "a = 'a' { n++; }"
@@ -98,7 +98,7 @@ describe("Peggy API", function() {
 
       describe("when |cache| is not set", function() {
         it("generated parser doesn't cache intermediate parse results", function() {
-          let parser = peg.generate(grammar);
+          const parser = peg.generate(grammar);
 
           expect(parser.parse("ac")).to.equal(2);
         });
@@ -106,7 +106,7 @@ describe("Peggy API", function() {
 
       describe("when |cache| is set to |false|", function() {
         it("generated parser doesn't cache intermediate parse results", function() {
-          let parser = peg.generate(grammar, { cache: false });
+          const parser = peg.generate(grammar, { cache: false });
 
           expect(parser.parse("ac")).to.equal(2);
         });
@@ -114,7 +114,7 @@ describe("Peggy API", function() {
 
       describe("when |cache| is set to |true|", function() {
         it("generated parser caches intermediate parse results", function() {
-          let parser = peg.generate(grammar, { cache: true });
+          const parser = peg.generate(grammar, { cache: true });
 
           expect(parser.parse("ac")).to.equal(1);
         });
@@ -122,12 +122,12 @@ describe("Peggy API", function() {
     });
 
     describe("tracing", function() {
-      let grammar = "start = 'a'";
+      const grammar = "start = 'a'";
 
       describe("when |trace| is not set", function() {
         it("generated parser doesn't trace", function() {
-          let parser = peg.generate(grammar);
-          let tracer = { trace: sinon.spy() };
+          const parser = peg.generate(grammar);
+          const tracer = { trace: sinon.spy() };
 
           parser.parse("a", { tracer: tracer });
 
@@ -137,8 +137,8 @@ describe("Peggy API", function() {
 
       describe("when |trace| is set to |false|", function() {
         it("generated parser doesn't trace", function() {
-          let parser = peg.generate(grammar, { trace: false });
-          let tracer = { trace: sinon.spy() };
+          const parser = peg.generate(grammar, { trace: false });
+          const tracer = { trace: sinon.spy() };
 
           parser.parse("a", { tracer: tracer });
 
@@ -148,8 +148,8 @@ describe("Peggy API", function() {
 
       describe("when |trace| is set to |true|", function() {
         it("generated parser traces", function() {
-          let parser = peg.generate(grammar, { trace: true });
-          let tracer = { trace: sinon.spy() };
+          const parser = peg.generate(grammar, { trace: true });
+          const tracer = { trace: sinon.spy() };
 
           parser.parse("a", { tracer: tracer });
 
@@ -162,11 +162,11 @@ describe("Peggy API", function() {
     // write the tests without turning this into a performance test.
 
     describe("output", function() {
-      let grammar = "start = 'a'";
+      const grammar = "start = 'a'";
 
       describe("when |output| is not set", function() {
         it("returns generated parser object", function() {
-          let parser = peg.generate(grammar);
+          const parser = peg.generate(grammar);
 
           expect(parser).to.be.an("object");
           expect(parser.parse("a")).to.equal("a");
@@ -175,7 +175,7 @@ describe("Peggy API", function() {
 
       describe("when |output| is set to |\"parser\"|", function() {
         it("returns generated parser object", function() {
-          let parser = peg.generate(grammar, { output: "parser" });
+          const parser = peg.generate(grammar, { output: "parser" });
 
           expect(parser).to.be.an("object");
           expect(parser.parse("a")).to.equal("a");
@@ -184,7 +184,7 @@ describe("Peggy API", function() {
 
       describe("when |output| is set to |\"source\"|", function() {
         it("returns generated parser source code", function() {
-          let source = peg.generate(grammar, { output: "source" });
+          const source = peg.generate(grammar, { output: "source" });
 
           expect(source).to.be.a("string");
           expect(eval(source).parse("a")).to.equal("a");

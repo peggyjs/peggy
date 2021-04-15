@@ -2,13 +2,13 @@
 
 /* eslint-env browser, jquery */
 
-let Runner = require("./runner.js");
-let benchmarks = require("./benchmarks.js");
+const Runner = require("./runner.js");
+const benchmarks = require("./benchmarks.js");
 
 $("#run").click(() => {
   // Results Table Manipulation
 
-  let resultsTable = $("#results-table");
+  const resultsTable = $("#results-table");
 
   function appendHeading(heading) {
     resultsTable.append(
@@ -60,8 +60,8 @@ $("#run").click(() => {
   //
   //   2. To minimize random errors.
 
-  let runCount = parseInt($("#run-count").val(), 10);
-  let options = {
+  const runCount = parseInt($("#run-count").val(), 10);
+  const options = {
     cache: $("#cache").is(":checked"),
     optimize: $("#optimize").val()
   };

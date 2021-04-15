@@ -1,66 +1,66 @@
 "use strict";
 
-let chai = require("chai");
-let parser = require("../../lib/parser");
+const chai = require("chai");
+const parser = require("../../lib/parser");
 
-let expect = chai.expect;
+const expect = chai.expect;
 
 describe("Peggy grammar parser", function() {
-  let literalAbcd       = { type: "literal",      value: "abcd", ignoreCase: false };
-  let literalEfgh       = { type: "literal",      value: "efgh", ignoreCase: false };
-  let literalIjkl       = { type: "literal",      value: "ijkl", ignoreCase: false };
-  let literalMnop       = { type: "literal",      value: "mnop", ignoreCase: false };
-  let semanticAnd       = { type: "semantic_and", code: " code " };
-  let semanticNot       = { type: "semantic_not", code: " code " };
-  let optional          = { type: "optional",     expression: literalAbcd };
-  let zeroOrMore        = { type: "zero_or_more", expression: literalAbcd };
-  let oneOrMore         = { type: "one_or_more",  expression: literalAbcd };
-  let textOptional      = { type: "text",         expression: optional    };
-  let simpleNotAbcd     = { type: "simple_not",   expression: literalAbcd };
-  let simpleAndOptional = { type: "simple_and",   expression: optional    };
-  let simpleNotOptional = { type: "simple_not",   expression: optional    };
-  let labeledAbcd       = { type: "labeled",      label: "a", expression: literalAbcd   };
-  let labeledEfgh       = { type: "labeled",      label: "b", expression: literalEfgh   };
-  let labeledIjkl       = { type: "labeled",      label: "c", expression: literalIjkl   };
-  let labeledMnop       = { type: "labeled",      label: "d", expression: literalMnop   };
-  let labeledSimpleNot  = { type: "labeled",      label: "a", expression: simpleNotAbcd };
-  let sequence          = {
+  const literalAbcd       = { type: "literal",      value: "abcd", ignoreCase: false };
+  const literalEfgh       = { type: "literal",      value: "efgh", ignoreCase: false };
+  const literalIjkl       = { type: "literal",      value: "ijkl", ignoreCase: false };
+  const literalMnop       = { type: "literal",      value: "mnop", ignoreCase: false };
+  const semanticAnd       = { type: "semantic_and", code: " code " };
+  const semanticNot       = { type: "semantic_not", code: " code " };
+  const optional          = { type: "optional",     expression: literalAbcd };
+  const zeroOrMore        = { type: "zero_or_more", expression: literalAbcd };
+  const oneOrMore         = { type: "one_or_more",  expression: literalAbcd };
+  const textOptional      = { type: "text",         expression: optional    };
+  const simpleNotAbcd     = { type: "simple_not",   expression: literalAbcd };
+  const simpleAndOptional = { type: "simple_and",   expression: optional    };
+  const simpleNotOptional = { type: "simple_not",   expression: optional    };
+  const labeledAbcd       = { type: "labeled",      label: "a", expression: literalAbcd   };
+  const labeledEfgh       = { type: "labeled",      label: "b", expression: literalEfgh   };
+  const labeledIjkl       = { type: "labeled",      label: "c", expression: literalIjkl   };
+  const labeledMnop       = { type: "labeled",      label: "d", expression: literalMnop   };
+  const labeledSimpleNot  = { type: "labeled",      label: "a", expression: simpleNotAbcd };
+  const sequence          = {
     type: "sequence",
     elements: [literalAbcd, literalEfgh, literalIjkl]
   };
-  let sequence2         = {
+  const sequence2         = {
     type: "sequence",
     elements: [labeledAbcd, labeledEfgh]
   };
-  let sequence4         = {
+  const sequence4         = {
     type: "sequence",
     elements: [labeledAbcd, labeledEfgh, labeledIjkl, labeledMnop]
   };
-  let groupLabeled      = { type: "group",  expression: labeledAbcd };
-  let groupSequence     = { type: "group",  expression: sequence    };
-  let actionAbcd        = { type: "action", expression: literalAbcd, code: " code " };
-  let actionEfgh        = { type: "action", expression: literalEfgh, code: " code " };
-  let actionIjkl        = { type: "action", expression: literalIjkl, code: " code " };
-  let actionMnop        = { type: "action", expression: literalMnop, code: " code " };
-  let actionSequence    = { type: "action", expression: sequence,    code: " code " };
-  let choice            = {
+  const groupLabeled      = { type: "group",  expression: labeledAbcd };
+  const groupSequence     = { type: "group",  expression: sequence    };
+  const actionAbcd        = { type: "action", expression: literalAbcd, code: " code " };
+  const actionEfgh        = { type: "action", expression: literalEfgh, code: " code " };
+  const actionIjkl        = { type: "action", expression: literalIjkl, code: " code " };
+  const actionMnop        = { type: "action", expression: literalMnop, code: " code " };
+  const actionSequence    = { type: "action", expression: sequence,    code: " code " };
+  const choice            = {
     type: "choice",
     alternatives: [literalAbcd, literalEfgh, literalIjkl]
   };
-  let choice2           = {
+  const choice2           = {
     type: "choice",
     alternatives: [actionAbcd, actionEfgh]
   };
-  let choice4           = {
+  const choice4           = {
     type: "choice",
     alternatives: [actionAbcd, actionEfgh, actionIjkl, actionMnop]
   };
-  let named             = { type: "named",       name: "start rule", expression: literalAbcd };
-  let ruleA             = { type: "rule",        name: "a",          expression: literalAbcd };
-  let ruleB             = { type: "rule",        name: "b",          expression: literalEfgh };
-  let ruleC             = { type: "rule",        name: "c",          expression: literalIjkl };
-  let ruleStart         = { type: "rule",        name: "start",      expression: literalAbcd };
-  let initializer       = { type: "initializer", code: " code " };
+  const named             = { type: "named",       name: "start rule", expression: literalAbcd };
+  const ruleA             = { type: "rule",        name: "a",          expression: literalAbcd };
+  const ruleB             = { type: "rule",        name: "b",          expression: literalEfgh };
+  const ruleC             = { type: "rule",        name: "c",          expression: literalIjkl };
+  const ruleStart         = { type: "rule",        name: "start",      expression: literalAbcd };
+  const initializer       = { type: "initializer", code: " code " };
 
   function oneRuleGrammar(expression) {
     return {
@@ -99,14 +99,14 @@ describe("Peggy grammar parser", function() {
     return oneRuleGrammar({ type: "rule_ref", name: name });
   }
 
-  let trivialGrammar = literalGrammar("abcd", false);
-  let twoRuleGrammar = {
+  const trivialGrammar = literalGrammar("abcd", false);
+  const twoRuleGrammar = {
     type: "grammar",
     initializer: null,
     rules: [ruleA, ruleB]
   };
 
-  let stripLocation = (function() {
+  const stripLocation = (function() {
     function buildVisitor(functions) {
       return function(node) {
         return functions[node.type].apply(null, arguments);
@@ -131,7 +131,7 @@ describe("Peggy grammar parser", function() {
       };
     }
 
-    let strip = buildVisitor({
+    const strip = buildVisitor({
       grammar(node) {
         delete node.location;
 
@@ -167,10 +167,10 @@ describe("Peggy grammar parser", function() {
   })();
 
   function helpers(chai, utils) {
-    let Assertion = chai.Assertion;
+    const Assertion = chai.Assertion;
 
     Assertion.addMethod("parseAs", function(expected) {
-      let result = parser.parse(utils.flag(this, "object"));
+      const result = parser.parse(utils.flag(this, "object"));
 
       stripLocation(result);
 

@@ -1,9 +1,9 @@
 "use strict";
 
-let parser = require("../../../../lib/parser");
+const parser = require("../../../../lib/parser");
 
 module.exports = function(chai, utils) {
-  let Assertion = chai.Assertion;
+  const Assertion = chai.Assertion;
 
   Assertion.addMethod("changeAST", function(grammar, props, options) {
     options = options !== undefined ? options : {};
@@ -29,9 +29,9 @@ module.exports = function(chai, utils) {
       } else if (isObject(props)) {
         if (!isObject(value)) { return false; }
 
-        let keys = Object.keys(props);
+        const keys = Object.keys(props);
         for (let i = 0; i < keys.length; i++) {
-          let key = keys[i];
+          const key = keys[i];
 
           if (!(key in value)) { return false; }
 
@@ -44,7 +44,7 @@ module.exports = function(chai, utils) {
       }
     }
 
-    let ast = parser.parse(grammar);
+    const ast = parser.parse(grammar);
 
     utils.flag(this, "object")(ast, options);
 
@@ -58,7 +58,7 @@ module.exports = function(chai, utils) {
   });
 
   Assertion.addMethod("reportError", function(grammar, props) {
-    let ast = parser.parse(grammar);
+    const ast = parser.parse(grammar);
 
     let passed, result;
 
