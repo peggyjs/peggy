@@ -10,7 +10,16 @@ computer languages and build transformers, interpreters, compilers and other
 tools easily.
 
 Peggy is the successor of [PEG.js](https://github.com/pegjs/pegjs) which had been abandoned by its maintainer.
-Peggy version 1.x.x is backwards compatible with the most recent PEG.js release. Switching from PEG.js to Peggy should be as simple as uninstalling `pegjs` and installing `peggy` instead.
+
+## Migrating from PEG.js
+
+Peggy version 1.x.x is API compatible with the most recent PEG.js release.
+Follow these steps to upgrade:
+
+1. Uninstall `pegjs` (and `@types/pegjs` if you're using the DefinitelyTyped type definitions - we now include type definitions as part of peggy itself).
+2. Replace all `require("pegjs")` or `import ... from "pegjs"` with `require("peggy")` or `import ... from "peggy"` as appropriate.
+3. Any scripts that use the `pegjs` cli should now use `peggy` instead.
+4. That's it!
 
 ## Features
 
