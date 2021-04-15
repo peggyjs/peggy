@@ -17,7 +17,7 @@
   "scripts": {
     "pretest": "npm run parser",
     "test": "npm run test:bare",
-    "test:bare": "mocha --recursive test --exclude test/vendor --exclude test/browser.stub.js --reporter min",
+    "test:bare": "mocha --recursive test --exclude test/browser.stub.js --reporter min",
     "pretest:node": "npm run parser",
     "test:node": "nve 10,12,14,15 npm run test:bare",
     "lint": "eslint . --ext .js",
