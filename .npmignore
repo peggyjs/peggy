@@ -1,0 +1,13 @@
+.editorconfig
+.eslintrc.js
+.github
+benchmark
+bin/.eslintrc.json
+browser
+CHANGELOG.md
+docs
+examples
+lib/.eslintrc.json
+src
+test
+tools
