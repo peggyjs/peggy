@@ -46,8 +46,10 @@ see good examples.
 
 When appropriate, add documentation and tests.
 
-Before submitting, make sure your change passes the tests (`gulp test`) and
-ESLint checks (`gulp lint`).
+Before submitting, make sure your change passes the tests (`npm test`) and
+ESLint checks (`npm run lint`).
+
+Please add yourself to the AUTHORS file.
 
 [issues]: https://github.com/peggyjs/peggy/issues
 [issues-search-bugs]: https://github.com/peggyjs/peggy/issues?q=is%3Aopen+is%3Aissue+label%3ABug
