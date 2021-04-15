@@ -11,3 +11,4 @@ lib/.eslintrc.json
 src
 test
 tools
+.vscode/
