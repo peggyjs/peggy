@@ -16,7 +16,7 @@
   "bin": "bin/peggy",
   "scripts": {
     "pretest": "npm run parser",
-    "test": "mocha --recursive test --exclude test/vendor",
+    "test": "mocha --recursive test --exclude test/vendor --exclude test/browser.stub.js --reporter min",
     "lint": "eslint . --ext .js",
     "benchmark": "./benchmark run",
     "build": "npm run parser && npm run browser:build && npm run benchmark:build && npm run test:build",
