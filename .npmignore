@@ -4,6 +4,7 @@
 benchmark
 bin/.eslintrc.json
 browser
+CHANGELOG.md
 docs
 examples
 lib/.eslintrc.json
