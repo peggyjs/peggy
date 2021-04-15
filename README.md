@@ -1,6 +1,5 @@
 [![Tests](https://github.com/peggyjs/peggy/actions/workflows/node.js.yml/badge.svg)](https://github.com/peggyjs/peggy/actions/workflows/node.js.yml)
-[![npm version](https://img.shields.io/npm/v/pegjs.svg)](https://www.npmjs.com/package/pegjs)
-[![Bower version](https://img.shields.io/bower/v/pegjs.svg)](https://github.com/pegjs/bower)
+[![npm version](https://img.shields.io/npm/v/peggy.svg)](https://www.npmjs.com/package/peggy)
 [![License](https://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
 # Peggy
@@ -34,13 +33,13 @@ parser code.
 To use the `peggy` command, install Peggy globally:
 
 ```console
-$ npm install -g @codemix/peg
+$ npm install -g peggy
 ```
 
 To use the JavaScript API, install Peggy locally:
 
 ```console
-$ npm install @codemix/peg
+$ npm install peggy
 ```
 
 If you need both the `peggy` command and the JavaScript API, install Peggy both
@@ -48,12 +47,7 @@ ways.
 
 ### Browser
 
-[Download](https://peggyjs.org/#download) the Peggy library (regular or minified
-version) or install it using Bower:
-
-```console
-$ bower install peggy
-```
+TODO: document how to use https://unpkg.com/ once we've done a release.
 
 ## Generating a Parser
 
@@ -539,21 +533,18 @@ environments:
 ## Development
 
 - [Project website](https://peggyjs.org/)
-- [Wiki](https://github.com/codemix/peg/wiki)
-- [Source code](https://github.com/codemix/peg)
-- [Issue tracker](https://github.com/codemix/peg/issues)
-- [Google Group](http://groups.google.com/group/peggy)
-- [Twitter](http://twitter.com/peg_js)
+- [Wiki](https://github.com/peggyjs/peggy/wiki)
+- [Source code](https://github.com/peggyjs/peggy)
+- [Issue tracker](https://github.com/peggyjs/peggy/issues)
+- [Discussions](https://github.com/peggyjs/peggy/discussions)
 
-Peggy is developed by [David Majda](https://majda.cz/)
-([@dmajda](http://twitter.com/dmajda)). The [Bower
-package](https://github.com/peggy/bower) is maintained by [Michel
-Krämer](http://www.michel-kraemer.com/)
-([@michelkraemer](https://twitter.com/michelkraemer)).
+Peggy was originally developed by [David Majda](https://majda.cz/)
+([@dmajda](http://twitter.com/dmajda)).  It is currently maintained by
+[Joe Hildebrand](https://github.com/hildjj) ([@hildjj](https://twitter.com/hildjj)).
 
 You are welcome to contribute code. Unless your contribution is really trivial
-you should get in touch with me first — this can prevent wasted effort on both
-sides. You can send code both as a patch or a GitHub pull request.
+you should [get in touch with us](https://github.com/peggyjs/peggy/discussions)
+first — this can prevent wasted effort on both sides.
 
 Note that Peggy is still very much work in progress. There are no compatibility
 guarantees until version 1.0.
