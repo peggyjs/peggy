@@ -3,10 +3,15 @@
 let chai = require("chai");
 let peg = require("../../lib/peg");
 let sinon = require("sinon");
+let pkg = require("../../package.json");
 
 let expect = chai.expect;
 
 describe("Peggy API", function() {
+  it("has the correct VERSION", function() {
+    expect(peg.VERSION).to.equal(pkg.version);
+  });
+
   describe("generate", function() {
     it("generates a parser", function() {
       let parser = peg.generate("start = 'a'");
