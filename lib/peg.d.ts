@@ -45,7 +45,7 @@ export interface PeggyError extends Error {
 }
 
 // for backwards compatibility with PEGjs
-export interface PegjsError extends PeggyError {}
+export type PegjsError = PeggyError;
 
 export type GrammarError = PeggyError;
 export var GrammarError: any;
@@ -80,10 +80,19 @@ export interface ParserBuildOptions extends BuildOptionsBase {
   output?: "parser";
 }
 
+export interface OutputFormatES extends BuildOptionsBase {
+  /** if set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
+  output: "source";
+  /** format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
+  format: "es";
+  /** parser dependencies, the value is an object which maps variables used to access the dependencies in the parser to module IDs used to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, or `"umd"` (default: `{}`) */
+  dependencies?: any;
+}
+
 export interface OutputFormatAmdCommonjs extends BuildOptionsBase {
   /** if set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
   output: "source";
-  /** format of the genreated parser (`"amd"`, `"bare"`, `"commonjs"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
+  /** format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "amd" | "commonjs";
   /** parser dependencies, the value is an object which maps variables used to access the dependencies in the parser to module IDs used to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, or `"umd"` (default: `{}`) */
   dependencies?: any;
@@ -92,7 +101,7 @@ export interface OutputFormatAmdCommonjs extends BuildOptionsBase {
 export interface OutputFormatUmd extends BuildOptionsBase {
   /** if set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
   output: "source";
-  /** format of the genreated parser (`"amd"`, `"bare"`, `"commonjs"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
+  /** format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "umd";
   /** parser dependencies, the value is an object which maps variables used to access the dependencies in the parser to module IDs used to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, or `"umd"` (default: `{}`) */
   dependencies?: any;
@@ -103,7 +112,7 @@ export interface OutputFormatUmd extends BuildOptionsBase {
 export interface OutputFormatGlobals extends BuildOptionsBase {
   /** if set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
   output: "source";
-  /** format of the genreated parser (`"amd"`, `"bare"`, `"commonjs"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
+  /** format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "globals";
   /** name of a global variable into which the parser object is assigned to when no module loader is detected; valid only when `format` is set to `"globals"` or `"umd"` (default: `null`) */
   exportVar?: any;
@@ -112,7 +121,7 @@ export interface OutputFormatGlobals extends BuildOptionsBase {
 export interface OutputFormatBare extends BuildOptionsBase {
   /** if set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
   output: "source";
-  /** format of the genreated parser (`"amd"`, `"bare"`, `"commonjs"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
+  /** format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format?: "bare";
 }
 
@@ -123,6 +132,8 @@ export function generate(
   grammar: string,
   options: OutputFormatAmdCommonjs
 ): string;
+/** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
+export function generate(grammar: string, options: OutputFormatES): string;
 /** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
 export function generate(grammar: string, options: OutputFormatUmd): string;
 /** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
