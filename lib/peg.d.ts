@@ -49,7 +49,7 @@ export var GrammarError: any;
 
 export interface ParserOptions {
   startRule?: string;
-  tracer?: any;
+  tracer?: ParserTracer;
   [key: string]: any;
 }
 
@@ -58,6 +58,15 @@ export interface Parser {
 
   SyntaxError: any;
 }
+
+export interface ParserTracer {
+  trace(event: ParserTracerEvent): void;
+}
+
+export type ParserTracerEvent =
+  | { type: "rule.enter"; rule: string; location: LocationRange }
+  | { type: "rule.match"; rule: string; result: any; location: LocationRange }
+  | { type: "rule.fail"; rule: string; location: LocationRange };
 
 export interface BuildOptionsBase {
   /** rules the parser will be allowed to start parsing from (default: the first rule in the grammar) */
