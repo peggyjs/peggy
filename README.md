@@ -9,6 +9,9 @@ with excellent error reporting. You can use it to process complex data or
 computer languages and build transformers, interpreters, compilers and other
 tools easily.
 
+Peggy is the successor of [PEG.js](https://github.com/pegjs/pegjs) which had been abandoned by its maintainer.
+Peggy version 1.x.x is backwards compatible with the most recent PEG.js release. Switching from PEG.js to Peggy should be as simple as uninstalling `pegjs` and installing `peggy` instead.
+
 ## Features
 
 - Simple and expressive grammar syntax
@@ -487,13 +490,13 @@ will produce an error message like:
 > Expected integer but "a" found.
 
 when parsing a non-number, referencing the human-readable name "integer."
-Without the human-readable name, PEG.js instead uses a description of the
+Without the human-readable name, Peggy instead uses a description of the
 character class that failed to match:
 
 > Expected [0-9] but "a" found.
 
 Aside from the text content of messages, human-readable names also have a
-subtler effect on _where_ errors are reported. PEG.js prefers to match
+subtler effect on _where_ errors are reported. Peggy prefers to match
 named rules completely or not at all, but not partially. Unnamed rules,
 on the other hand, can produce an error in the middle of their
 subexpressions.
@@ -512,7 +515,7 @@ But if we add a human-readable name to the `seq` production:
     seq "list of numbers"
       = integer ("," integer)*
 
-then PEG.js prefers an error message that implies a smaller attempted parse
+then Peggy prefers an error message that implies a smaller attempted parse
 tree:
 
 > Expected end of input but "," found.
@@ -539,7 +542,7 @@ environments:
 - [Discussions](https://github.com/peggyjs/peggy/discussions)
 
 Peggy was originally developed by [David Majda](https://majda.cz/)
-([@dmajda](http://twitter.com/dmajda)).  It is currently maintained by
+([@dmajda](http://twitter.com/dmajda)). It is currently maintained by
 [Joe Hildebrand](https://github.com/hildjj) ([@hildjj](https://twitter.com/hildjj)).
 
 You are welcome to contribute code. Unless your contribution is really trivial
