@@ -16,7 +16,10 @@
   "bin": "bin/peggy",
   "scripts": {
     "pretest": "npm run parser",
-    "test": "mocha --recursive test --exclude test/vendor --exclude test/browser.stub.js --reporter min",
+    "test": "npm run test:bare",
+    "test:bare": "mocha --recursive test --exclude test/vendor --exclude test/browser.stub.js --reporter min",
+    "pretest:node": "npm run parser",
+    "test:node": "nve 10,12,14,15 npm run test:bare",
     "lint": "eslint . --ext .js",
     "benchmark": "./benchmark run",
     "build": "npm run parser && npm run browser:build && npm run benchmark:build && npm run test:build",
@@ -37,6 +40,7 @@
     "express": "4.17.1",
     "mocha": "^8.3.2",
     "morgan": "1.10.0",
+    "nve": "^13.0.0",
     "sinon": "10.0.0",
     "uglify-js": "^3.13.4"
   },
