@@ -38,4 +38,4 @@ jobs:
           version: 5.18.9
           run_install: true
       - name: Test ${{ matrix.node-version }}
-        run: npm test
+        run: npm test:bare
