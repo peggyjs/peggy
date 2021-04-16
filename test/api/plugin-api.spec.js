@@ -1,17 +1,17 @@
 "use strict";
 
-let chai = require("chai");
-let peg = require("../../lib/peg");
+const chai = require("chai");
+const peg = require("../../lib/peg");
 
-let expect = chai.expect;
+const expect = chai.expect;
 
 describe("plugin API", function() {
   describe("use", function() {
-    let grammar = "start = 'a'";
+    const grammar = "start = 'a'";
 
     it("is called for each plugin", function() {
-      let pluginsUsed = [false, false, false];
-      let plugins = [
+      const pluginsUsed = [false, false, false];
+      const plugins = [
         { use() { pluginsUsed[0] = true; } },
         { use() { pluginsUsed[1] = true; } },
         { use() { pluginsUsed[2] = true; } }
@@ -23,7 +23,7 @@ describe("plugin API", function() {
     });
 
     it("receives configuration", function() {
-      let plugin = {
+      const plugin = {
         use(config) {
           expect(config).to.be.an("object");
 
@@ -53,20 +53,20 @@ describe("plugin API", function() {
     });
 
     it("receives options", function() {
-      let plugin = {
+      const plugin = {
         use(config, options) {
           expect(options).to.equal(generateOptions);
         }
       };
-      let generateOptions = { plugins: [plugin], foo: 42 };
+      const generateOptions = { plugins: [plugin], foo: 42 };
 
       peg.generate(grammar, generateOptions);
     });
 
     it("can replace parser", function() {
-      let plugin = {
+      const plugin = {
         use(config) {
-          let parser = peg.generate([
+          const parser = peg.generate([
             "start = .* {",
             "  return {",
             "    type: 'grammar',",
@@ -84,13 +84,13 @@ describe("plugin API", function() {
           config.parser = parser;
         }
       };
-      let parser = peg.generate("a", { plugins: [plugin] });
+      const parser = peg.generate("a", { plugins: [plugin] });
 
       expect(parser.parse("a")).to.equal("a");
     });
 
     it("can change compiler passes", function() {
-      let plugin = {
+      const plugin = {
         use(config) {
           function pass(ast) {
             ast.code = "({ parse: function() { return 42; } })";
@@ -99,23 +99,23 @@ describe("plugin API", function() {
           config.passes.generate = [pass];
         }
       };
-      let parser = peg.generate(grammar, { plugins: [plugin] });
+      const parser = peg.generate(grammar, { plugins: [plugin] });
 
       expect(parser.parse("a")).to.equal(42);
     });
 
     it("can change options", function() {
-      let grammar = [
+      const grammar = [
         "a = 'x'",
         "b = 'x'",
         "c = 'x'"
       ].join("\n");
-      let plugin = {
+      const plugin = {
         use(config, options) {
           options.allowedStartRules = ["b", "c"];
         }
       };
-      let parser = peg.generate(grammar, {
+      const parser = peg.generate(grammar, {
         allowedStartRules: ["a"],
         plugins: [plugin]
       });

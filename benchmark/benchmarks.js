@@ -1,6 +1,6 @@
 "use strict";
 
-let benchmarks = [
+const benchmarks = [
   {
     id: "json",
     title: "JSON",

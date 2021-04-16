@@ -1,12 +1,12 @@
 "use strict";
 
-let chai = require("chai");
-let helpers = require("./helpers");
-let pass = require("../../../../lib/compiler/passes/remove-proxy-rules");
+const chai = require("chai");
+const helpers = require("./helpers");
+const pass = require("../../../../lib/compiler/passes/remove-proxy-rules");
 
 chai.use(helpers);
 
-let expect = chai.expect;
+const expect = chai.expect;
 
 describe("compiler pass |removeProxyRules|", function() {
   describe("when a proxy rule isn't listed in |allowedStartRules|", function() {

@@ -1,27 +1,27 @@
 "use strict";
 
-let chai = require("chai");
-let peg = require("../../lib/peg");
-let sinon = require("sinon");
+const chai = require("chai");
+const peg = require("../../lib/peg");
+const sinon = require("sinon");
 
-let expect = chai.expect;
+const expect = chai.expect;
 
 describe("generated parser API", function() {
   describe("parse", function() {
     it("parses input", function() {
-      let parser = peg.generate("start = 'a'");
+      const parser = peg.generate("start = 'a'");
 
       expect(parser.parse("a")).to.equal("a");
     });
 
     it("throws an exception on syntax error", function() {
-      let parser = peg.generate("start = 'a'");
+      const parser = peg.generate("start = 'a'");
 
       expect(() => { parser.parse("b"); }).to.throw();
     });
 
     describe("start rule", function() {
-      let parser = peg.generate([
+      const parser = peg.generate([
         "a = 'x' { return 'a'; }",
         "b = 'x' { return 'b'; }",
         "c = 'x' { return 'c'; }"
@@ -48,7 +48,7 @@ describe("generated parser API", function() {
     });
 
     describe("tracing", function() {
-      let parser = peg.generate([
+      const parser = peg.generate([
         "start = a / b",
         "a = 'a'",
         "b = 'b'"
@@ -56,7 +56,7 @@ describe("generated parser API", function() {
 
       describe("default tracer", function() {
         it("traces using console.log (if console is defined)", function() {
-          let messages = [
+          const messages = [
             "1:1-1:1 rule.enter start",
             "1:1-1:1 rule.enter   a",
             "1:1-1:1 rule.fail    a",
@@ -75,7 +75,7 @@ describe("generated parser API", function() {
             if (typeof console === "object") {
               expect(console.log.callCount).to.equal(messages.length);
               messages.forEach((message, index) => {
-                let call = console.log.getCall(index);
+                const call = console.log.getCall(index);
                 expect(call.calledWithExactly(message)).to.equal(true);
               });
             }
@@ -90,7 +90,7 @@ describe("generated parser API", function() {
       describe("custom tracers", function() {
         describe("trace", function() {
           it("receives tracing events", function() {
-            let events = [
+            const events = [
               {
                 type: "rule.enter",
                 rule: "start",
@@ -143,13 +143,13 @@ describe("generated parser API", function() {
               }
             ];
 
-            let tracer = { trace: sinon.spy() };
+            const tracer = { trace: sinon.spy() };
 
             parser.parse("b", { tracer: tracer });
 
             expect(tracer.trace.callCount).to.equal(events.length);
             events.forEach((event, index) => {
-              let call = tracer.trace.getCall(index);
+              const call = tracer.trace.getCall(index);
               expect(call.calledWithExactly(event)).to.equal(true);
             });
           });
@@ -158,7 +158,7 @@ describe("generated parser API", function() {
     });
 
     it("accepts custom options", function() {
-      let parser = peg.generate("start = 'a'");
+      const parser = peg.generate("start = 'a'");
 
       parser.parse("a", { foo: 42 });
     });
