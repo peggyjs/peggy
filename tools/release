@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 
 // automate the release process
+// pre-requisites:
+// - real release repo is in a remote called "upstream"
+// - on the branch "main"
+// - repo clean (nothing pending vs. HEAD)
+// - 2FA turned on in npm
 "use strict";
 const { spawn } = require("child_process");
 const fs = require("fs").promises;
@@ -74,10 +79,10 @@ async function main() {
   await e("git diff --quiet --exit-code --cached");
 
   // tag
-  await e(`git tag v${VERSION}`);
+  await e(`git tag "v${VERSION}"`);
 
   // push tag
-  await e("git push --follow-tags upstream main");
+  await e(`git push upstream main "v${VERSION}"`);
 
   // publish
   await e("npm publish");
