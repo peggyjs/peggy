@@ -3,8 +3,6 @@
 .github
 benchmark
 bin/.eslintrc.json
-browser/peggy.js
-CHANGELOG.md
 docs
 examples
 lib/.eslintrc.json
