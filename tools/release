@@ -1,0 +1,80 @@
+#!/usr/bin/env node
+
+// automate the release process
+"use strict";
+const { spawn } = require("child_process");
+const fs = require("fs").promises;
+const path = require("path");
+const open = require("open");
+
+if (process.argv.length < 3) {
+  console.error(`usage: ${process.argv[1]} <VERSION>`);
+  process.exit(1);
+}
+const VERSION = process.argv[2];
+
+function e(cmd) {
+  return new Promise((resolve, reject) => {
+    const c = spawn(cmd, {
+      shell: true,
+      stdio: "inherit"
+    });
+    c.on("error", reject);
+    c.on("close", code => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`${cmd} failed, exit code ${code}`));
+      }
+    });
+  });
+}
+
+async function main() {
+  // check that we're clean
+  await e("git diff --quiet --exit-code --cached");
+
+  // check that we're on main
+  await e("[[ `git branch --show-current` == main ]]");
+
+  // lint clean?
+  await e("npm run lint");
+
+  // update version in package.json
+  const pkg = path.join(__dirname, "..", "package.json");
+  const ptxt = await fs.readFile(pkg, "utf8");
+  const pjson = JSON.parse(ptxt);
+  pjson.version = VERSION;
+  await fs.writeFile(pkg, JSON.stringify(pjson, null, 2));
+
+  // update VERSION in lib/peg.js
+  const pn = path.join(__dirname, "..", "lib", "peg.js");
+  let pegTxt = await fs.readFile(pn, "utf8");
+  pegTxt = pegTxt.replace(/^(\s+)VERSION: "[^"]*",$/m, `$1VERSION: "${VERSION}",`);
+  await fs.writeFile(pn, pegTxt);
+
+  // build
+  await e("npm run build");
+
+  // test:node
+  await e("npm run test:node");
+
+  // add files
+  await e(`git add ${pkg} ${pn}`);
+
+  // check in
+  await e(`git checkin -m "Update for v${VERSION}"`);
+  // tag
+  await e(`git tag v${VERSION}`);
+
+  // push tag
+  await e("git push --follow-tags upstream main");
+
+  // publish
+  await e("npm publish");
+
+  // go to GitHub Release page
+  await open("https://github.com/peggyjs/peggy/releases/new");
+}
+
+main().catch(e => console.error(e.message));
