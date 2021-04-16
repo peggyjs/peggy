@@ -68,7 +68,7 @@ async function main() {
   await e(`git add ${pkg} ${pn} docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js docs/vendor/peggy/peggy.min.js`);
 
   // check in
-  await e(`git checkin -m "Update for v${VERSION}"`);
+  await e(`git commit -m "Update for v${VERSION}"`);
 
   // check that we're clean
   await e("git diff --quiet --exit-code --cached");
