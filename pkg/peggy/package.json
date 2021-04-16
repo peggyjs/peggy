@@ -1,0 +1,71 @@
+{
+  "name": "peggy",
+  "version": "1.0.0",
+  "description": "Parser generator for JavaScript",
+  "keywords": [
+    "parser generator",
+    "PEG",
+    "PEG.js"
+  ],
+  "homepage": "https://peggyjs.org/",
+  "repository": "peggyjs/peggy",
+  "bugs": "https://github.com/peggyjs/peggy/issues",
+  "license": "MIT",
+  "author": "David Majda <david@majda.cz> (https://majda.cz/)",
+  "main": "lib/peg.js",
+  "unpkg": "browser/peggy.min.js",
+  "jsdelivr": "browser/peggy.min.js",
+  "types": "lib/peg.d.ts",
+  "bin": "bin/peggy",
+  "scripts": {
+    "pretest": "npm run parser",
+    "test": "npm run test:bare",
+    "test:bare": "mocha --recursive test --exclude test/browser.stub.js --reporter min",
+    "pretest:node": "npm run parser",
+    "test:node": "nve 10,12,14,15 npm run test:bare",
+    "lint": "eslint . --ext .js",
+    "benchmark": "./benchmark run",
+    "build": "npm run browser:build && npm run benchmark:build && npm run test:build",
+    "browser:clean": "rm -rf browser/",
+    "prebrowser:build": "npm run parser",
+    "browser:build": "browserify lib/peg.js -s peggy -o browser/peggy.min.js",
+    "postbrowser:build": "tools/header browser/* && cp browser/peggy.min.js docs/vendor/peggy/peggy.min.js",
+    "benchmark:build": "browserify benchmark/browser.stub.js -o docs/js/benchmark-bundle.min.js",
+    "test:build": "browserify test/browser.stub.js -o docs/js/test-bundle.min.js",
+    "parser": "bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.15",
+    "@babel/preset-env": "^7.13.15",
+    "babelify": "10.0.0",
+    "browserify": "17.0.0",
+    "chai": "4.3.4",
+    "express": "4.17.1",
+    "mocha": "^8.3.2",
+    "morgan": "1.10.0",
+    "nve": "^13.0.0",
+    "open": "^8.0.6",
+    "sinon": "10.0.0",
+    "uglifyify": "^5.0.2"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "browserify": {
+    "browserField": false,
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "@babel/preset-env"
+          ],
+          "compact": false
+        }
+      ],
+      [
+        "uglifyify"
+      ]
+    ]
+  }
+}
