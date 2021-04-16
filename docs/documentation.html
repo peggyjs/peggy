@@ -84,7 +84,24 @@ install Peggy both ways.</p>
 
 <h3 id="installation-browser">Browser</h3>
 
-<p>TODO: instructions for using unkpg after we do a release</p>
+<p>The easiest way to use Peggy from the browser is to pull the latest version
+from a CDN. Either of these should work:</p>
+
+<pre><code>&lt;script src="https://unpkg.com/peggy">&lt;/script></code></pre>
+
+<pre><code>&lt;script src="https://cdn.jsdelivr.net/npm/peggy">&lt;/script></code></pre>
+
+<p>Both of those CDNs support pinning a version number rather than always
+taking the latest. Not only is that good practice, it will save several
+redirects, improving performance. See their documentation for more
+information:</p>
+
+<ul>
+  <li><a href="https://unpkg.com/">unpkg</a></li>
+  <li><a href="https://www.jsdelivr.com/">jsDelivr</a></li>
+</ul>
+
+<p>When your document is done loading, there will be a global <code>peggy</code> object.</p>
 
 <h2 id="generating-a-parser">Generating a Parser</h2>
 
