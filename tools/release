@@ -37,6 +37,9 @@ async function main() {
   // check that we're on main
   await e("[[ `git branch --show-current` == main ]]");
 
+  // lint clean?
+  await e("npm run lint");
+
   // update version in package.json
   const pkg = path.join(__dirname, "..", "package.json");
   const ptxt = await fs.readFile(pkg, "utf8");
