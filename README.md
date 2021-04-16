@@ -59,7 +59,17 @@ ways.
 
 ### Browser
 
-TODO: document how to use https://unpkg.com/ once we've done a release.
+The easiest way to use Peggy from the browser is to pull the latest version from a CDN.  Either of these should work:
+
+```html
+<script src="https://unpkg.com/peggy"></script>
+```
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/peggy"></script>
+```
+
+When your document is done loading, there will be a global `peggy` object.
 
 ## Generating a Parser
 
