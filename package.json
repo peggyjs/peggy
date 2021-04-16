@@ -13,6 +13,8 @@
   "license": "MIT",
   "author": "David Majda <david@majda.cz> (https://majda.cz/)",
   "main": "lib/peg.js",
+  "unpkg": "browser/peggy.min.js",
+  "jsdelivr": "browser/peggy.min.js",
   "types": "lib/peg.d.ts",
   "bin": "bin/peggy",
   "scripts": {
@@ -26,10 +28,10 @@
     "build": "npm run browser:build && npm run benchmark:build && npm run test:build",
     "browser:clean": "rm -rf browser/",
     "prebrowser:build": "npm run parser",
-    "browser:build": "browserify lib/peg.js -s peggy -o browser/peggy.js -t [ babelify --no-compact --presets [ @babel/preset-env ] ] && uglifyjs browser/peggy.js -o browser/peggy.min.js",
+    "browser:build": "browserify lib/peg.js -s peggy -o browser/peggy.min.js",
     "postbrowser:build": "tools/header browser/* && cp browser/peggy.min.js docs/vendor/peggy/peggy.min.js",
-    "benchmark:build": "browserify benchmark/browser.stub.js -o docs/js/benchmark-bundle.min.js -t [ babelify --no-compact --presets [ @babel/preset-env ] ]",
-    "test:build": "browserify test/browser.stub.js -o docs/js/test-bundle.min.js -t [ babelify --no-compact --presets [ @babel/preset-env ] ]",
+    "benchmark:build": "browserify benchmark/browser.stub.js -o docs/js/benchmark-bundle.min.js",
+    "test:build": "browserify test/browser.stub.js -o docs/js/test-bundle.min.js",
     "parser": "bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs"
   },
   "devDependencies": {
@@ -43,9 +45,16 @@
     "morgan": "1.10.0",
     "nve": "^13.0.0",
     "sinon": "10.0.0",
-    "uglify-js": "^3.13.4"
+    "uglifyify": "^5.0.2"
   },
   "engines": {
     "node": ">=10"
+  },
+  "browserify": {
+    "browserField": false,
+    "transform": [
+      ["babelify", {"presets": ["@babel/preset-env"], "compact": false}],
+      ["uglifyify"]
+    ]
   }
 }
