@@ -1,4 +1,7 @@
 {
+  "ignorePatterns": [
+    "parser.js"
+  ],
   "env": {
     "commonjs": true
   }

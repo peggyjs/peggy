@@ -4,7 +4,7 @@
   "description": "Peggy Benchmark Suite",
   "private": true,
   "scripts": {
-    "start": "./run",
+    "test": "./run",
     "build": "webpack",
     "postbuild": "../../tools/header ../../docs/js/benchmark-bundle.min.js"
   },
@@ -15,6 +15,8 @@
     "peggy": "*"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.15",
+    "@babel/preset-env": "^7.13.15",
     "babel-loader": "^8.2.2",
     "webpack": "^5.33.2",
     "webpack-cli": "^4.6.0"

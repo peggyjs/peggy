@@ -4,7 +4,6 @@ module.exports = {
   root: true,
   ignorePatterns: [
     "docs/",
-    "lib/parser.js",
     "test/vendor/",
     "benchmark/vendor/",
     "browser/",

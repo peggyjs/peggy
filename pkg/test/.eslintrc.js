@@ -5,4 +5,4 @@ module.exports = {
     "commonjs": true,
     "mocha": true
   }
-}
+};

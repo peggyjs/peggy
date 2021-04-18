@@ -6,7 +6,8 @@ const peggy = require("peggy");
 const expect = chai.expect;
 
 describe("Peggy API", function() {
-  // TODO: I don't care enough about this to make it work in the browser
+  // I don't care enough about this to make it work in the browser,
+  // at the moment.
 
   // it("has the correct VERSION", function() {
   //   expect(peggy.VERSION).to.equal(pkg.version);

@@ -20,47 +20,21 @@
   "bin": "bin/peggy",
   "scripts": {
     "build": "pnpm run -r --if-present --filter ./pkg build",
-    "pretest": "npm run parser",
+    "pretest": "npm run build",
     "test": "npm run test:bare",
-    "test:bare": "mocha --recursive test --exclude test/browser.stub.js --reporter min",
-    "pretest:node": "npm run parser",
+    "test:bare": "pnpm run -r --if-present --filter ./pkg test",
+    "pretest:node": "npm run build",
     "test:node": "nve 10,12,14,15 npm run test:bare",
     "lint": "eslint . --ext .js",
     "benchmark": "./benchmark run",
     "parser": "bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.15",
-    "@babel/preset-env": "^7.13.15",
-    "babelify": "10.0.0",
-    "browserify": "17.0.0",
-    "chai": "4.3.4",
-    "express": "4.17.1",
-    "mocha": "^8.3.2",
-    "morgan": "1.10.0",
     "nve": "^13.0.0",
     "open": "^8.0.6",
-    "sinon": "10.0.0",
-    "uglifyify": "^5.0.2"
+    "pnpm": "^6.0.2"
   },
   "engines": {
     "node": ">=10"
-  },
-  "browserify": {
-    "browserField": false,
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "@babel/preset-env"
-          ],
-          "compact": false
-        }
-      ],
-      [
-        "uglifyify"
-      ]
-    ]
   }
 }

@@ -25,6 +25,8 @@
     "postbuild": "../../tools/header peggy.min.js && cp peggy.min.js ../../docs/vendor/peggy"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.15",
+    "@babel/preset-env": "^7.13.15",
     "babel-loader": "^8.2.2",
     "webpack": "^5.33.2",
     "webpack-cli": "^4.6.0"

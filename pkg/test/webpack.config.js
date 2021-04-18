@@ -47,7 +47,7 @@ module.exports = (env, options) => {
     },
     plugins: [
       new webpack.DefinePlugin({
-        "process": fakeProcess
+        process: fakeProcess
       })
     ]
   };

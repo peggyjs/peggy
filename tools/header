@@ -3,6 +3,7 @@
 
 // prepend header info to generated files, in-place.
 // Pass list of files on command line.
+// webpack BannerPlugin doesn't survive the compression process.
 
 const fs = require("fs");
 const pkg = require("../package.json");
