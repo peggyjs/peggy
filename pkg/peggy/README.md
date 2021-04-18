@@ -111,7 +111,7 @@ You can tweak the generated parser with several options:
   `peg.generate`
 - `--extra-options-file` — file with additional options (in JSON format) to
   pass to `peg.generate`
-- `--format` — format of the generated parser: `amd`, `commonjs`, `globals`,
+- `--format` — format of the generated parser: `amd`, `commonjs`, `es`, `globals`,
   `umd` (default: `commonjs`)
 - `--optimize` — selects between optimizing the generated parser for parsing
   speed (`speed`) or code size (`size`) (default: `speed`)
