@@ -2,14 +2,14 @@
 
 "use strict";
 
-let fs = require("fs");
-let path = require("path");
-let peg = require("../lib/peg");
+const fs = require("fs");
+const path = require("path");
+const peggy = require("peggy");
 
 // Helpers
 
 function printVersion() {
-  console.log("Peggy " + peg.VERSION);
+  console.log("Peggy " + peggy.VERSION);
 }
 
 function printHelp() {
@@ -27,9 +27,9 @@ function printHelp() {
   console.log("                                     parser object is assigned to when no module");
   console.log("                                     loader is detected");
   console.log("      --extra-options <options>      additional options (in JSON format) to pass");
-  console.log("                                     to peg.generate");
+  console.log("                                     to peggy.generate");
   console.log("      --extra-options-file <file>    file with additional options (in JSON");
-  console.log("                                     format) to pass to peg.generate");
+  console.log("                                     format) to pass to peggy.generate");
   console.log("      --format <format>              format of the generated parser: amd,");
   console.log("                                     commonjs, globals, umd (default: commonjs)");
   console.log("  -h, --help                         print help and exit");
@@ -313,7 +313,7 @@ readStream(inputStream, input => {
   let source;
 
   try {
-    source = peg.generate(input, options);
+    source = peggy.generate(input, options);
   } catch (e) {
     if (e.location !== undefined) {
       abort(e.location.start.line + ":" + e.location.start.column + ": " + e.message);

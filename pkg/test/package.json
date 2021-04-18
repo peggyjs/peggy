@@ -1,0 +1,28 @@
+{
+  "name": "peggy-test",
+  "version": "1.0.0",
+  "description": "Javascript for the docs directory",
+  "private": true,
+  "scripts": {
+    "build": "webpack",
+    "postbuild": "../../tools/header ../../docs/js/test-bundle.min.js",
+    "test": "mocha --recursive tests --reporter progress"
+  },
+  "keywords": [],
+  "author": "Joe Hildebrand <joe-github@cursive.net>",
+  "license": "MIT",
+  "dependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^8.3.2",
+    "peggy": "*",
+    "sinon": "^10.0.0"
+  },
+  "devDependencies": {
+    "babel-loader": "^8.2.2",
+    "css-loader": "^5.2.2",
+    "mocha-loader": "^5.1.5",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.33.2",
+    "webpack-cli": "^4.6.0"
+  }
+}

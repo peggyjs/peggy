@@ -1,0 +1,22 @@
+{
+  "name": "peggy-benchmarks",
+  "version": "1.0.0",
+  "description": "Peggy Benchmark Suite",
+  "private": true,
+  "scripts": {
+    "start": "./run",
+    "build": "webpack",
+    "postbuild": "../../tools/header ../../docs/js/benchmark-bundle.min.js"
+  },
+  "keywords": [],
+  "author": "Joe Hildebrand <joe-github@cursive.net>",
+  "license": "MIT",
+  "dependencies": {
+    "peggy": "*"
+  },
+  "devDependencies": {
+    "babel-loader": "^8.2.2",
+    "webpack": "^5.33.2",
+    "webpack-cli": "^4.6.0"
+  }
+}

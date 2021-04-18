@@ -1,7 +1,8 @@
 {
-  "name": "peggy",
+  "name": "peggy-monorepo",
   "version": "1.0.0",
   "description": "Parser generator for JavaScript",
+  "private": true,
   "keywords": [
     "parser generator",
     "PEG",
@@ -18,6 +19,7 @@
   "types": "lib/peg.d.ts",
   "bin": "bin/peggy",
   "scripts": {
+    "build": "pnpm run -r --if-present --filter ./pkg build",
     "pretest": "npm run parser",
     "test": "npm run test:bare",
     "test:bare": "mocha --recursive test --exclude test/browser.stub.js --reporter min",
@@ -25,13 +27,6 @@
     "test:node": "nve 10,12,14,15 npm run test:bare",
     "lint": "eslint . --ext .js",
     "benchmark": "./benchmark run",
-    "build": "npm run browser:build && npm run benchmark:build && npm run test:build",
-    "browser:clean": "rm -rf browser/",
-    "prebrowser:build": "npm run parser",
-    "browser:build": "browserify lib/peg.js -s peggy -o browser/peggy.min.js",
-    "postbrowser:build": "tools/header browser/* && cp browser/peggy.min.js docs/vendor/peggy/peggy.min.js",
-    "benchmark:build": "browserify benchmark/browser.stub.js -o docs/js/benchmark-bundle.min.js",
-    "test:build": "browserify test/browser.stub.js -o docs/js/test-bundle.min.js",
     "parser": "bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs"
   },
   "devDependencies": {
