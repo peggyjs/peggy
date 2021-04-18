@@ -32,7 +32,7 @@
   "devDependencies": {
     "nve": "^13.0.0",
     "open": "^8.0.6",
-    "pnpm": "^6.0.2"
+    "pnpm": "5.18.8"
   },
   "engines": {
     "node": ">=10"
