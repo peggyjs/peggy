@@ -316,18 +316,34 @@ Rules need to be separated only by whitespace (their beginning is easily
 recognizable), but a semicolon (“;”) after the parsing expression is
 allowed.</p>
 
-<p>The first rule can be preceded by an <em>initializer</em> &mdash; a piece of
-JavaScript code in curly braces (“{” and “}”). This code is executed before the
-generated parser starts parsing. All variables and functions defined in the
-initializer are accessible in rule actions and semantic predicates. The code
-inside the initializer can access options passed to the parser using the
-<code>options</code> variable. Curly braces in the initializer code must be
-balanced. Let's look at the example grammar from above using a simple
-initializer.</p>
+<p>The first rule can be preceded by a <em>top level initializer</em> and/or a <em>parse
+level initializer</em>, in that order. Both are pieces of JavaScript code in double
+curly braces (“{{” and “}}”) and single curly braces (“{” and “}”) respectively.
+All variables and functions defined in both <em>initializers</em> are accessible in
+rule actions and semantic predicates. Curly braces in both <em>initializers</em> code
+must be balanced.</p>
+<p>The <em>top level initializer</em> is executed once and only once, when the generated
+parser is loaded (through a <code>require</code> or an <code>import</code> statement for instance). It
+is the ideal location to require, to import or to declare utility functions to
+be used in rule actions and semantic predicates.</p>
+<p>The <em>parse level initializer</em> is called everytime and before the generated
+parser starts parsing. The code inside the <em>parse level initializer</em> can access
+the input string and the options passed to the parser using the <code>input</code>
+variable and the <code>options</code> variable respectively. It is the ideal location to
+create data structures that are unique to each parse or to modify the input
+before the parse.</p>
+<p>Let's look at the example grammar from above using a <em>top level initializer</em> and
+a <em>parse level initializer</em>:</p>
 
-<pre><code>{
+<pre><code>{{
   function makeInteger(o) {
     return parseInt(o.join(""), 10);
+  }
+}}
+
+{
+  if (options.multiplier) {
+    input = "(" + input + ")*(" + options.multiplier + ")";
   }
 }
 
