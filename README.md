@@ -235,27 +235,27 @@ written as a JavaScript string between the name and separating equality sign.
 Rules need to be separated only by whitespace (their beginning is easily
 recognizable), but a semicolon (“;”) after the parsing expression is allowed.
 
-The first rule can be preceded by a _top level initializer_ and/or a _parse
-level initializer_, in that order. Both are pieces of JavaScript code in double
+The first rule can be preceded by a _global initializer_ and/or a _per-parse
+initializer_, in that order. Both are pieces of JavaScript code in double
 curly braces (“{{” and “}}”) and single curly braces (“{” and “}”) respectively.
 All variables and functions defined in both _initializers_ are accessible in
 rule actions and semantic predicates. Curly braces in both _initializers_ code
 must be balanced.
 
-The _top level initializer_ is executed once and only once, when the generated
+The _global initializer_ is executed once and only once, when the generated
 parser is loaded (through a `require` or an `import` statement for instance). It
 is the ideal location to require, to import or to declare utility functions to
 be used in rule actions and semantic predicates.
 
-The _parse level initializer_ is called everytime and before the generated
-parser starts parsing. The code inside the _parse level initializer_ can access
-the input string and the options passed to the parser using the `input`
-variable and the `options` variable respectively. It is the ideal location to
-create data structures that are unique to each parse or to modify the input
-before the parse.
+The _per-parse initializer_ is called before the generated parser starts
+parsing. The code inside the _per-parse initializer_ can access the input
+string and the options passed to the parser using the `input` variable and the
+`options` variable respectively. It is the ideal location to create data
+structures that are unique to each parse or to modify the input before the
+parse.
 
-Let's look at the example grammar from above using a _top level initializer_ and
-a _parse level initializer_:
+Let's look at the example grammar from above using a _global initializer_ and
+a _per-parse initializer_:
 
 ```peggy
 {{
