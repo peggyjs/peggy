@@ -270,9 +270,28 @@ supported:</p>
 
   <dt><code>tracer</code></dt>
   <dd>Tracer to use.</dd>
+
+  <dt><code>...</code> (any others)</dt>
+  <dd>Made available in the "options" variable</dd>
 </dl>
 
-<p>Parsers can also support their own custom options.</p>
+<p>Parsers can also support their own custom options.  For example:</p>
+
+<pre><code>const parser = peggy.generate(`
+{
+  // options are available in the per-parse initializer
+  console.log(options.validWords);  // outputs "[ 'boo', 'baz', 'boop' ]"
+}
+
+validWord = word:$[a-z]+ &{ return options.validWords.includes(word) } { return word }
+`);
+
+const result = parser.parse("boo", {
+  validWords: [ "boo", "baz", "boop"]
+});
+
+console.log(result);  // outputs "boo"
+</code></pre>
 
 <h2 id="grammar-syntax-and-semantics">Grammar Syntax and Semantics</h2>
 
