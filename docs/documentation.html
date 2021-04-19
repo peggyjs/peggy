@@ -211,7 +211,11 @@ supported:</p>
   <dd>Parser dependencies, the value is an object which maps variables used to
   access the dependencies in the parser to module IDs used to load them; valid
   only when <code>format</code> is set to <code>"amd"</code>,
-  <code>"commonjs"</code>, or <code>"umd"</code> (default:
+  <code>"commonjs"</code>, <code>"es"</code>, or <code>"umd"</code>.
+  Dependencies variables will be available in both the <em>general
+  initializer</em> and the <em>per-parse initializer</em>. Unless the parser is
+  to be generated in different formats, it is recommended to rather import
+  dependencies from within the <em>global initializer</em> (default:
   <code>{}</code>).</dd>
 
   <dt><code>exportVar</code></dt>
@@ -222,9 +226,9 @@ supported:</p>
 
   <dt><code>format</code></dt>
   <dd>format of the generated parser (<code>"amd"</code>, <code>"bare"</code>,
-  <code>"commonjs"</code>, <code>"globals"</code>, or <code>"umd"</code>); valid
-  only when <code>output</code> is set to <code>"source"</code> (default:
-  <code>"bare"</code>).</dd>
+  <code>"commonjs"</code>, <code>"es"</code>, <code>"globals"</code>, or
+  <code>"umd"</code>); valid only when <code>output</code> is set to
+  <code>"source"</code> (default: <code>"bare"</code>).</dd>
 
   <dt><code>optimize</code></dt>
   <dd>Selects between optimizing the generated parser for parsing speed

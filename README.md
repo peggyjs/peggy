@@ -153,12 +153,15 @@ object to `peg.generate`. The following options are supported:
   `false`)
 - `dependencies` — parser dependencies, the value is an object which maps
   variables used to access the dependencies in the parser to module IDs used
-  to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, `"es"`, or
-  `"umd"` (default: `{}`)
+  to load them; valid only when `format` is set to `"amd"`, `"commonjs"`,
+  `"es"`, or `"umd"`. Dependencies variables will be available in both the
+  _general initializer_ and the _per-parse initializer_. Unless the parser is
+  to be generated in different formats, it is recommended to rather import
+  dependencies from within the _global initializer_. (default: `{}`)
 - `exportVar` — name of a global variable into which the parser object is
   assigned to when no module loader is detected; valid only when `format` is
   set to `"globals"` or `"umd"` (default: `null`)
-- `format` — format of the genreated parser (`"amd"`, `"bare"`, `"commonjs"`,
+- `format` — format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`,
   `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"`
   (default: `"bare"`)
 - `optimize`— selects between optimizing the generated parser for parsing
