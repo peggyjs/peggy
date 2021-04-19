@@ -5,12 +5,12 @@
 // Pass list of files on command line.
 
 const fs = require("fs");
-const pkg = require("../package.json");
+const version = require("../lib/version.js");
 
 const header = `\
-// peggy ${pkg.version}
+// peggy ${version}
 //
-// https://github.com/peggyjs/peggy
+// https://peggyjs.org/
 //
 // Copyright (c) ${new Date().getFullYear()}- the Peggy authors
 // Licensed under the MIT License.

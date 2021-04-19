@@ -58,10 +58,12 @@ async function main() {
   await fs.writeFile(pkg, JSON.stringify(pjson, null, 2));
 
   // update VERSION in lib/peg.js
-  const pn = path.join(root, "lib", "peg.js");
-  let pegTxt = await fs.readFile(pn, "utf8");
-  pegTxt = pegTxt.replace(/^(\s+)VERSION: "[^"]*",$/m, `$1VERSION: "${VERSION}",`);
-  await fs.writeFile(pn, pegTxt);
+  const vjs = path.join(root, 'lib', 'version.js');
+  await fs.writeFile(vjs, `\
+"use strict";
+
+module.exports = "${VERSION}";
+`)
 
   // build
   await e("npm run build");
@@ -70,7 +72,7 @@ async function main() {
   await e("npm run test:node");
 
   // add files
-  await e(`git add ${pkg} ${pn} docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js docs/vendor/peggy/peggy.min.js`);
+  await e(`git add ${pkg} ${vjs} docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js docs/vendor/peggy/peggy.min.js`);
 
   // check in
   await e(`git commit -m "Update for v${VERSION}"`);
