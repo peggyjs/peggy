@@ -1,8 +1,7 @@
 {
-  "name": "peggy-monorepo",
+  "name": "peggy",
   "version": "1.0.0",
   "description": "Parser generator for JavaScript",
-  "private": true,
   "keywords": [
     "parser generator",
     "PEG",
@@ -14,25 +13,37 @@
   "license": "MIT",
   "author": "David Majda <david@majda.cz> (https://majda.cz/)",
   "main": "lib/peg.js",
-  "unpkg": "browser/peggy.min.js",
-  "jsdelivr": "browser/peggy.min.js",
-  "types": "lib/peg.d.ts",
-  "bin": "bin/peggy",
+  "unpkg": "peggy.min.js",
+  "jsdelivr": "peggy.min.js",
+  "types": "peggy.d.ts",
+  "files": [
+    "peggy.min.js",
+    "peggy.d.ts"
+  ],
   "scripts": {
-    "build": "pnpm run -r --if-present --filter ./pkg build",
-    "pretest": "npm run build",
+    "parser": "./pkg/peggy-cli/bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs",
+    "prebuild": "npm run parser",
+    "build": "webpack",
+    "postbuild": "tools/header peggy.min.js && cp peggy.min.js docs/vendor/peggy",
+    "pretest": "npm run build && (cd pkg/test; npm run build)",
     "test": "npm run test:bare",
-    "test:bare": "pnpm run -r --if-present --filter ./pkg test",
+    "test:bare": "cd pkg/test; npm run test",
     "pretest:node": "npm run build",
     "test:node": "nve 10,12,14,15 npm run test:bare",
     "lint": "eslint . --ext .js",
-    "benchmark": "./benchmark run",
-    "parser": "bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs"
+    "benchmark:build": "cd pkg/benchmarks; npm run build",
+    "prebenchmark": "npm run benchmark:build",
+    "benchmark": "./pkg/benchmarks/run"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.15",
+    "@babel/preset-env": "^7.13.15",
+    "babel-loader": "^8.2.2",
+    "eslint": "^7.24.0",
     "nve": "^13.0.0",
     "open": "^8.0.6",
-    "pnpm": "5.18.8"
+    "webpack": "^5.33.2",
+    "webpack-cli": "^4.6.0"
   },
   "engines": {
     "node": ">=10"

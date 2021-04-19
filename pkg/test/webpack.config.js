@@ -49,7 +49,14 @@ module.exports = (env, options) => {
       new webpack.DefinePlugin({
         process: fakeProcess
       })
-    ]
+    ],
+    resolve: {
+      fallback: {
+        // Note: this is just a hack to get sinon working again.
+        // Fix by replacing sinon or actually understanding the problem.
+        util: require.resolve("node-inspect-extracted")
+      }
+    }
   };
   if (options.mode === "development") {
     ret.devtool = "inline-source-map";

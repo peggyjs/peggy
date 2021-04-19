@@ -11,7 +11,7 @@ const pkg = require("../package.json");
 const header = `\
 // peggy ${pkg.version}
 //
-// https://github.com/peggyjs/peggy
+// https://peggyjs.org/
 //
 // Copyright (c) ${new Date().getFullYear()}- the Peggy authors
 // Licensed under the MIT License.

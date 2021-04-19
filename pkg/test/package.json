@@ -22,6 +22,7 @@
     "babel-loader": "^8.2.2",
     "css-loader": "^5.2.2",
     "mocha-loader": "^5.1.5",
+    "node-inspect-extracted": "^1.0.5",
     "style-loader": "^2.0.0",
     "webpack": "^5.33.2",
     "webpack-cli": "^4.6.0"
