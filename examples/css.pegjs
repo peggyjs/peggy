@@ -17,7 +17,7 @@
 // [2] http://www.w3.org/Style/css2-updates/REC-CSS2-20110607-errata.html
 // [3] http://www.w3.org/TR/DOM-Level-2-Style/css.html
 
-{
+{{
   function extractOptional(optional, index) {
     return optional ? optional[index] : null;
   }
@@ -41,7 +41,7 @@
       };
     }, head);
   }
-}
+}}
 
 start
   = stylesheet:stylesheet comment* { return stylesheet; }

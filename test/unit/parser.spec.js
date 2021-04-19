@@ -55,16 +55,18 @@ describe("Peggy grammar parser", function() {
     type: "choice",
     alternatives: [actionAbcd, actionEfgh, actionIjkl, actionMnop]
   };
-  const named             = { type: "named",       name: "start rule", expression: literalAbcd };
-  const ruleA             = { type: "rule",        name: "a",          expression: literalAbcd };
-  const ruleB             = { type: "rule",        name: "b",          expression: literalEfgh };
-  const ruleC             = { type: "rule",        name: "c",          expression: literalIjkl };
-  const ruleStart         = { type: "rule",        name: "start",      expression: literalAbcd };
-  const initializer       = { type: "initializer", code: " code " };
+  const named               = { type: "named",       name: "start rule", expression: literalAbcd };
+  const ruleA               = { type: "rule",        name: "a",          expression: literalAbcd };
+  const ruleB               = { type: "rule",        name: "b",          expression: literalEfgh };
+  const ruleC               = { type: "rule",        name: "c",          expression: literalIjkl };
+  const ruleStart           = { type: "rule",        name: "start",      expression: literalAbcd };
+  const topLevelInitializer = { type: "top_level_initializer", code: " top level code " };
+  const initializer         = { type: "initializer",           code: " code " };
 
   function oneRuleGrammar(expression) {
     return {
       type: "grammar",
+      topLevelInitializer: null,
       initializer: null,
       rules: [{ type: "rule", name: "start", expression: expression }]
     };
@@ -102,6 +104,7 @@ describe("Peggy grammar parser", function() {
   const trivialGrammar = literalGrammar("abcd", false);
   const twoRuleGrammar = {
     type: "grammar",
+    topLevelInitializer: null,
     initializer: null,
     rules: [ruleA, ruleB]
   };
@@ -135,12 +138,16 @@ describe("Peggy grammar parser", function() {
       grammar(node) {
         delete node.location;
 
+        if (node.topLevelInitializer) {
+          strip(node.topLevelInitializer);
+        }
         if (node.initializer) {
           strip(node.initializer);
         }
         node.rules.forEach(strip);
       },
 
+      top_level_initializer: stripLeaf,
       initializer: stripLeaf,
       rule: stripExpression,
       named: stripExpression,
@@ -226,20 +233,33 @@ describe("Peggy grammar parser", function() {
   // Canonical Grammar is "a = 'abcd'; b = 'efgh'; c = 'ijkl';".
   it("parses Grammar", function() {
     expect("\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", initializer: null, rules: [ruleA] }
+      { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA] }
     );
     expect("\na = 'abcd';\nb = 'efgh';\nc = 'ijkl';\n").to.parseAs(
-      { type: "grammar", initializer: null, rules: [ruleA, ruleB, ruleC] }
+      { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA, ruleB, ruleC] }
     );
     expect("\n{ code };\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", initializer: initializer, rules: [ruleA] }
+      { type: "grammar", topLevelInitializer: null, initializer: initializer, rules: [ruleA] }
+    );
+    expect("\n{{ top level code }};\na = 'abcd';\n").to.parseAs(
+      { type: "grammar", topLevelInitializer: topLevelInitializer, initializer: null, rules: [ruleA] }
+    );
+    expect("\n{{ top level code }};\n{ code };\na = 'abcd';\n").to.parseAs(
+      { type: "grammar", topLevelInitializer: topLevelInitializer, initializer: initializer, rules: [ruleA] }
+    );
+  });
+
+  // Canonical Top-Level Initializer is "{ top level code }".
+  it("parses Top-Level Initializer", function() {
+    expect("{{ top level code }};start = 'abcd'").to.parseAs(
+      { type: "grammar", topLevelInitializer: topLevelInitializer, initializer: null, rules: [ruleStart] }
     );
   });
 
   // Canonical Initializer is "{ code }".
   it("parses Initializer", function() {
     expect("{ code };start = 'abcd'").to.parseAs(
-      { type: "grammar", initializer: initializer, rules: [ruleStart] }
+      { type: "grammar", topLevelInitializer: null, initializer: initializer, rules: [ruleStart] }
     );
   });
 

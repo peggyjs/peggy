@@ -21,7 +21,7 @@
 //
 // [1] http://www.ecma-international.org/publications/standards/Ecma-262.htm
 
-{
+{{
   const OPS_TO_PREFIXED_TYPES = {
     "$": "text",
     "&": "simple_and",
@@ -50,19 +50,25 @@
   function buildList(head, tail, index) {
     return [head].concat(extractList(tail, index));
   }
-}
+}}
 
 // ---- Syntactic Grammar -----
 
 Grammar
-  = __ initializer:(Initializer __)? rules:(Rule __)+ {
+  = __ topLevelInitializer:(TopLevelInitializer __)? initializer:(Initializer __)? rules:(Rule __)+ {
       return {
         type: "grammar",
+        topLevelInitializer: extractOptional(topLevelInitializer, 0),
         initializer: extractOptional(initializer, 0),
         rules: extractList(rules, 0),
         location: location()
       };
     }
+
+TopLevelInitializer
+  = "{" code:CodeBlock "}" EOS {
+      return { type: "top_level_initializer", code: code, location: location() };
+  }
 
 Initializer
   = code:CodeBlock EOS {

@@ -211,7 +211,11 @@ supported:</p>
   <dd>Parser dependencies, the value is an object which maps variables used to
   access the dependencies in the parser to module IDs used to load them; valid
   only when <code>format</code> is set to <code>"amd"</code>,
-  <code>"commonjs"</code>, or <code>"umd"</code> (default:
+  <code>"commonjs"</code>, <code>"es"</code>, or <code>"umd"</code>.
+  Dependencies variables will be available in both the <em>general
+  initializer</em> and the <em>per-parse initializer</em>. Unless the parser is
+  to be generated in different formats, it is recommended to rather import
+  dependencies from within the <em>global initializer</em> (default:
   <code>{}</code>).</dd>
 
   <dt><code>exportVar</code></dt>
@@ -222,9 +226,9 @@ supported:</p>
 
   <dt><code>format</code></dt>
   <dd>format of the generated parser (<code>"amd"</code>, <code>"bare"</code>,
-  <code>"commonjs"</code>, <code>"globals"</code>, or <code>"umd"</code>); valid
-  only when <code>output</code> is set to <code>"source"</code> (default:
-  <code>"bare"</code>).</dd>
+  <code>"commonjs"</code>, <code>"es"</code>, <code>"globals"</code>, or
+  <code>"umd"</code>); valid only when <code>output</code> is set to
+  <code>"source"</code> (default: <code>"bare"</code>).</dd>
 
   <dt><code>optimize</code></dt>
   <dd>Selects between optimizing the generated parser for parsing speed
@@ -316,18 +320,35 @@ Rules need to be separated only by whitespace (their beginning is easily
 recognizable), but a semicolon (“;”) after the parsing expression is
 allowed.</p>
 
-<p>The first rule can be preceded by an <em>initializer</em> &mdash; a piece of
-JavaScript code in curly braces (“{” and “}”). This code is executed before the
-generated parser starts parsing. All variables and functions defined in the
-initializer are accessible in rule actions and semantic predicates. The code
-inside the initializer can access options passed to the parser using the
-<code>options</code> variable. Curly braces in the initializer code must be
-balanced. Let's look at the example grammar from above using a simple
-initializer.</p>
+<p>The first rule can be preceded by a <em>global initializer</em> and/or a
+<em>per-parse initializer</em>, in that order. Both are pieces of JavaScript
+code in double curly braces (“{{” and “}}”) and single curly braces (“{” and
+“}”) respectively. All variables and functions defined in both
+<em>initializers</em> are accessible in rule actions and semantic predicates.
+Curly braces in both <em>initializers</em> code must be balanced.</p>
+<p>The <em>global initializer</em> is executed once and only once, when the
+generated parser is loaded (through a <code>require</code> or an
+<code>import</code> statement for instance). It is the ideal location to
+require, to import or to declare utility functions to be used in rule actions
+and semantic predicates.</p>
+<p>The <em>per-parse initializer</em> is called before the generated parser
+starts parsing. The code inside the <em>per-parse initializer</em> can access
+the input string and the options passed to the parser using the
+<code>input</code> variable and the <code>options</code> variable respectively.
+It is the ideal location to create data structures that are unique to each
+parse or to modify the input before the parse.</p>
+<p>Let's look at the example grammar from above using a <em>global
+initializer</em> and a <em>per-parse initializer</em>:</p>
 
-<pre><code>{
+<pre><code>{{
   function makeInteger(o) {
     return parseInt(o.join(""), 10);
+  }
+}}
+
+{
+  if (options.multiplier) {
+    input = "(" + input + ")*(" + options.multiplier + ")";
   }
 }
 

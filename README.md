@@ -153,12 +153,15 @@ object to `peg.generate`. The following options are supported:
   `false`)
 - `dependencies` — parser dependencies, the value is an object which maps
   variables used to access the dependencies in the parser to module IDs used
-  to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, `"es"`, or
-  `"umd"` (default: `{}`)
+  to load them; valid only when `format` is set to `"amd"`, `"commonjs"`,
+  `"es"`, or `"umd"`. Dependencies variables will be available in both the
+  _general initializer_ and the _per-parse initializer_. Unless the parser is
+  to be generated in different formats, it is recommended to rather import
+  dependencies from within the _global initializer_. (default: `{}`)
 - `exportVar` — name of a global variable into which the parser object is
   assigned to when no module loader is detected; valid only when `format` is
   set to `"globals"` or `"umd"` (default: `null`)
-- `format` — format of the genreated parser (`"amd"`, `"bare"`, `"commonjs"`,
+- `format` — format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`,
   `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"`
   (default: `"bare"`)
 - `optimize`— selects between optimizing the generated parser for parsing
@@ -235,18 +238,38 @@ written as a JavaScript string between the name and separating equality sign.
 Rules need to be separated only by whitespace (their beginning is easily
 recognizable), but a semicolon (“;”) after the parsing expression is allowed.
 
-The first rule can be preceded by an _initializer_ — a piece of JavaScript code
-in curly braces (“{” and “}”). This code is executed before the generated parser
-starts parsing. All variables and functions defined in the initializer are
-accessible in rule actions and semantic predicates. The code inside the
-initializer can access options passed to the parser using the `options`
-variable. Curly braces in the initializer code must be balanced. Let's look at
-the example grammar from above using a simple initializer.
+The first rule can be preceded by a _global initializer_ and/or a _per-parse
+initializer_, in that order. Both are pieces of JavaScript code in double
+curly braces (“{{” and “}}”) and single curly braces (“{” and “}”) respectively.
+All variables and functions defined in both _initializers_ are accessible in
+rule actions and semantic predicates. Curly braces in both _initializers_ code
+must be balanced.
+
+The _global initializer_ is executed once and only once, when the generated
+parser is loaded (through a `require` or an `import` statement for instance). It
+is the ideal location to require, to import or to declare utility functions to
+be used in rule actions and semantic predicates.
+
+The _per-parse initializer_ is called before the generated parser starts
+parsing. The code inside the _per-parse initializer_ can access the input
+string and the options passed to the parser using the `input` variable and the
+`options` variable respectively. It is the ideal location to create data
+structures that are unique to each parse or to modify the input before the
+parse.
+
+Let's look at the example grammar from above using a _global initializer_ and
+a _per-parse initializer_:
 
 ```peggy
-{
+{{
   function makeInteger(o) {
     return parseInt(o.join(""), 10);
+  }
+}}
+
+{
+  if (options.multiplier) {
+    input = "(" + input + ")*(" + options.multiplier + ")";
   }
 }
 

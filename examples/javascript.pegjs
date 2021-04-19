@@ -30,7 +30,7 @@
 // [3] http://inimino.org/~inimino/blog/
 // [4] http://boshi.inimino.org/3box/asof/1270029991384/PEG/ECMAScript_unified.peg
 
-{
+{{
   var TYPES_TO_PROPERTY_NAMES = {
     CallExpression:   "callee",
     MemberExpression: "object",
@@ -78,7 +78,7 @@
   function optionalList(value) {
     return value !== null ? value : [];
   }
-}
+}}
 
 Start
   = __ program:Program __ { return program; }
