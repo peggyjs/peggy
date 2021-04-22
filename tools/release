@@ -72,7 +72,7 @@ module.exports = "${VERSION}";
   await e("npm run test");
 
   // add files
-  await e(`git add ${pkg} ${vjs} docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js docs/vendor/peggy/peggy.min.js`);
+  await e(`git add ${pkg} ${vjs} lib/parser.js docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js docs/vendor/peggy/peggy.min.js`);
 
   // check in
   await e(`git commit -m "Update for v${VERSION}"`);
