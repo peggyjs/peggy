@@ -58,12 +58,12 @@ async function main() {
   await fs.writeFile(pkg, JSON.stringify(pjson, null, 2));
 
   // update VERSION in lib/peg.js
-  const vjs = path.join(root, 'lib', 'version.js');
+  const vjs = path.join(root, "lib", "version.js");
   await fs.writeFile(vjs, `\
 "use strict";
 
 module.exports = "${VERSION}";
-`)
+`);
 
   // build
   await e("npm run build");
