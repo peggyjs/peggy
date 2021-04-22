@@ -6,7 +6,7 @@ This file documents all notable changes to Peggy.
 1.1.0
 -----
 
-Released: TBD
+Released: 2021-04-22
 
 ### Major Changes
 
