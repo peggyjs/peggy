@@ -6,12 +6,16 @@ This file documents all notable changes to Peggy.
 1.1.0
 -----
 
+Released: TBD
+
 ### Major Changes
 
 - Added global initializer blocks, which contain code that is only run once
   when the grammar is loaded, rather than once every time the parser runs.
   Global initializers are surrounded by `{{` and `}}`, and must come before
-  the per-parser initializer, which is surrounded by `{` and `}`. [@jaubourg](https://github.com/peggyjs/peggy/pull/73)
+  the per-parser initializer, which is surrounded by `{` and `}`.
+  [@jaubourg](https://github.com/peggyjs/peggy/pull/73)
+- Back-ported value plucking with `@` from pegjs head.  If your rule has a simple action that returns one or more of the values matched by the rule, you can instead mark those expressions with `@` and not need an action.  This works inside of parens as well.  [@hildjj](https://github.com/peggyjs/peggy/pull/89)
 
 ### Bug fixes
 - [#10](https://github.com/peggyjs/peggy/issues/10): Better docs for parser options
