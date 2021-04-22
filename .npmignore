@@ -10,3 +10,5 @@ src
 test
 tools
 .vscode/
+pnpm-lock.yaml
+yarn.lock
