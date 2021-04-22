@@ -1,4 +1,3 @@
----
 name: Tests
 
 on:
@@ -11,31 +10,18 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
-
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
+        node-version: [10.x, 12.x, 14.x, 15.x, 16.x]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-pnpm-modules
-        with:
-          # pnpm cache files are stored in `~/.pnpm-store` on Linux/macOS
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v1.2.1
-        with:
-          version: 5.18.9
-          run_install: true
       - name: Test ${{ matrix.node-version }}
-        run: npm run test:bare
+        run: npm install && npm run build && run test:bare
