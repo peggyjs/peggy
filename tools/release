@@ -69,7 +69,7 @@ module.exports = "${VERSION}";
   await e("npm run build");
 
   // test:node
-  await e("npm run test:node");
+  await e("npm run test");
 
   // add files
   await e(`git add ${pkg} ${vjs} docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js docs/vendor/peggy/peggy.min.js`);
