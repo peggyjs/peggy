@@ -318,6 +318,43 @@ describe("Peggy grammar parser", function() {
     );
   });
 
+  // Value Plucking
+  it("parses `@` (value plucking)", function() {
+    function $S(...elements) {
+      return oneRuleGrammar({
+        type: "sequence",
+        elements: elements,
+      });
+    }
+    function $P(label, expression) {
+      return {
+        type: "labeled",
+        pick: true,
+        label: label,
+        expression: expression,
+      };
+    }
+
+    expect("start = @'abcd'").to.parseAs(
+      $S($P(null, literalAbcd))
+    );
+    expect("start = @a:'abcd'").to.parseAs(
+      $S($P("a", literalAbcd))
+    );
+    expect("start = 'abcd' @'efgh'").to.parseAs(
+      $S(literalAbcd, $P(null, literalEfgh))
+    );
+    expect("start = a:'abcd' @b:'efgh'").to.parseAs(
+      $S(labeledAbcd, $P("b", literalEfgh))
+    );
+    expect("start = @'abcd' b:'efgh'").to.parseAs(
+      $S($P(null, literalAbcd), labeledEfgh)
+    );
+    expect("start = a:'abcd' @'efgh' 'ijkl' @d:'mnop'").to.parseAs(
+      $S(labeledAbcd, $P(null, literalEfgh), literalIjkl, $P("d", literalMnop))
+    );
+  });
+
   // Canonical LabeledExpression is "a:'abcd'".
   it("parses LabeledExpression", function() {
     expect("start = a\n:\n!'abcd'").to.parseAs(oneRuleGrammar(labeledSimpleNot));
