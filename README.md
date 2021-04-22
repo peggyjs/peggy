@@ -459,6 +459,20 @@ must be a JavaScript identifier.
 Labeled expressions are useful together with actions, where saved match results
 can be accessed by action's JavaScript code.
 
+#### _@_ ( _label_ : )? _expression_
+
+Match the expression and if the label exists, remember its match result under
+given label. The label must be a JavaScript identifier if it exists.
+
+Return the value of this expression from the rule, or "pluck" it. You may not
+have an action for this rule. The expression must not be a semantic predicate
+(&{predicate} or !{predicate}). There may be multiple pluck expressions in a
+given rule, in which case an array of the plucked expressions is returned from
+the rule.
+
+Pluck expressions are useful for writing terse grammars, or returning parts of
+an expression that is wrapped in parentheses.
+
 #### _expression<sub>1</sub>_ _expression<sub>2</sub>_ ... _expression<sub>n</sub>_
 
 Match a sequence of expressions and return their match results in an array.

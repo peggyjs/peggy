@@ -957,6 +957,52 @@ describe("generated parser behavior", function() {
 
           expect(parser).to.parse("abc", ["a", "b", "c"]);
         });
+
+        it("plucks a single value", function() {
+          let parser = peg.generate("start = @'a'", options);
+          expect(parser).to.parse("a", "a");
+
+          parser = peg.generate("start = @'a' / @'b'", options);
+          expect(parser).to.parse("a", "a");
+          expect(parser).to.parse("b", "b");
+
+          parser = peg.generate("start = 'a' @'b' 'c'", options);
+          expect(parser).to.parse("abc", "b");
+
+          parser = peg.generate("start = 'a' ( @'b' 'c' )", options);
+          expect(parser).to.parse("abc", [ "a", "b" ]);
+
+          parser = peg.generate("start = 'a' @( 'b' @'c' 'd' )", options);
+          expect(parser).to.parse("abcd", "c");
+
+          parser = peg.generate("start = 'a' ( @'b' 'c' ) @'d'", options);
+          expect(parser).to.parse("abcd", "d");
+
+          parser = peg.generate("start = 'a' @'b' 'c' / 'd' 'e' @'f'", options);
+          expect(parser).to.parse("def", "f");
+        });
+
+        it("plucks a multiple values", function() {
+          let parser = peg.generate("start = 'a' @'b' @'c'", options);
+          expect(parser).to.parse("abc", [ "b", "c" ]);
+
+          parser = peg.generate("start = 'a' ( @'b' @'c' )", options);
+          expect(parser).to.parse("abc", [ "a", [ "b", "c" ] ]);
+
+          parser = peg.generate("start = 'a' @( 'b' @'c' @'d' )", options);
+          expect(parser).to.parse("abcd", [ "c", "d" ]);
+
+          parser = peg.generate("start = 'a' @( @'b' 'c' ) @'d' 'e'", options);
+          expect(parser).to.parse("abcde", [ "b", "d" ]);
+
+          parser = peg.generate("start = 'a' @'b' 'c' / @'d' 'e' @'f'", options);
+          expect(parser).to.parse("def", [ "d", "f" ]);
+        });
+
+        it("prevents \"@\" on a semantic predicate", function() {
+          expect(() => peg.generate("start1 = 'a' @&{ /* semantic_and */ } 'c'")).to.throw();
+          expect(() => peg.generate("start2 = 'a' @!{ /* semantic_not */ } 'c'")).to.throw();
+        });
       });
 
       describe("when any expression doesn't match", function() {
