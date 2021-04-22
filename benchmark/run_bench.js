@@ -1,12 +1,11 @@
-#!/usr/bin/env node
 
 "use strict";
 
 /* eslint-env node */
 
-let Runner = require("./runner.js");
-let benchmarks = require("./benchmarks.js");
-let fs = require("fs");
+const Runner = require("./runner.js");
+const benchmarks = require("./benchmarks.js");
+const fs = require("fs");
 
 // Results Table Manipulation
 
@@ -29,7 +28,7 @@ function padRight(text, length) {
 }
 
 function center(text, length) {
-  let padLength = (length - text.length) / 2;
+  const padLength = (length - text.length) / 2;
 
   return dup(" ", Math.floor(padLength))
     + text
@@ -100,7 +99,7 @@ function abort(message) {
 
 // Arguments
 
-let args = process.argv.slice(2); // Trim "node" and the script path.
+const args = process.argv.slice(2); // Trim "node" and the script path.
 
 function isOption(arg) {
   return (/^-/).test(arg);
@@ -112,11 +111,12 @@ function nextArg() {
 
 // Main
 
-let runCount = 10;
-let options = {
+const options = {
   cache: false,
   optimize: "speed"
 };
+
+let runCount = 10;
 
 while (args.length > 0 && isOption(args[0])) {
   switch (args[0]) {
