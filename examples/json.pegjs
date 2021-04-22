@@ -16,7 +16,7 @@
 // ----- 2. JSON Grammar -----
 
 JSON_text
-  = ws value:value ws { return value; }
+  = ws @value ws
 
 begin_array     = ws "[" ws
 begin_object    = ws "{" ws
@@ -48,7 +48,7 @@ object
   = begin_object
     members:(
       head:member
-      tail:(value_separator m:member { return m; })*
+      tail:(value_separator @member)*
       {
         var result = {};
 
@@ -73,7 +73,7 @@ array
   = begin_array
     values:(
       head:value
-      tail:(value_separator v:value { return v; })*
+      tail:(value_separator @value)*
       { return [head].concat(tail); }
     )?
     end_array
