@@ -18,8 +18,10 @@
   "types": "lib/peg.d.ts",
   "bin": "bin/peggy",
   "scripts": {
-    "clean": "rimraf -f build && rimraf -f browser && mkdir build && mkdir browser",
-    "newbuild": "npm run clean",
+    "clean": "rimraf -f build && rimraf -f browser && mkdir build && cd build && mkdir ts && mkdir rollup && mkdir terser && cd .. && mkdir browser",
+    "rollup": "rollup -c",
+    "ts": "tsc --build tsconfig.json",
+    "newbuild": "npm run clean && npm run ts && npm run rollup",
     "test": "mocha --recursive test --exclude test/browser.stub.js --reporter min",
     "lint": "eslint . --ext .js",
     "benchmark": "./benchmark run",
@@ -40,6 +42,8 @@
     "open": "^8.0.6",
     "rimraf": "^3.0.2",
     "rollup": "^2.45.2",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
     "sinon": "10.0.0",
     "typescript": "^4.2.4"
   },
