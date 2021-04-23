@@ -27,9 +27,9 @@
     "browser:clean": "rm -rf browser/",
     "prebrowser:build": "npm run parser",
     "browser:build": "browserify lib/peg.js -s peggy -o browser/peggy.min.js",
-    "postbrowser:build": "tools/header browser/* && cp browser/peggy.min.js docs/vendor/peggy/peggy.min.js",
-    "benchmark:build": "browserify benchmark/browser.stub.js -o docs/js/benchmark-bundle.min.js && tools/header docs/js/benchmark-bundle.min.js",
-    "test:build": "browserify test/browser.stub.js -o docs/js/test-bundle.min.js && tools/header docs/js/test-bundle.min.js",
+    "postbrowser:build": "node tools/header browser/peggy.min.js && cp browser/peggy.min.js docs/vendor/peggy/peggy.min.js",
+    "benchmark:build": "browserify benchmark/browser.stub.js -o docs/js/benchmark-bundle.min.js && node tools/header docs/js/benchmark-bundle.min.js",
+    "test:build": "browserify test/browser.stub.js -o docs/js/test-bundle.min.js && node tools/header docs/js/test-bundle.min.js",
     "parser": "node bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs"
   },
   "devDependencies": {
