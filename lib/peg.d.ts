@@ -86,21 +86,12 @@ export interface ParserBuildOptions extends BuildOptionsBase {
   output?: "parser";
 }
 
-export interface OutputFormatES extends BuildOptionsBase {
+export interface OutputFormatAmdCommonjsEs extends BuildOptionsBase {
   /** if set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
   output: "source";
   /** format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
-  format: "es";
-  /** parser dependencies, the value is an object which maps variables used to access the dependencies in the parser to module IDs used to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, or `"umd"` (default: `{}`) */
-  dependencies?: any;
-}
-
-export interface OutputFormatAmdCommonjs extends BuildOptionsBase {
-  /** if set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
-  output: "source";
-  /** format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
-  format: "amd" | "commonjs";
-  /** parser dependencies, the value is an object which maps variables used to access the dependencies in the parser to module IDs used to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, or `"umd"` (default: `{}`) */
+  format: "amd" | "commonjs" | "es";
+  /** parser dependencies, the value is an object which maps variables used to access the dependencies in the parser to module IDs used to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, `"es"`, or `"umd"` (default: `{}`) */
   dependencies?: any;
 }
 
@@ -109,7 +100,7 @@ export interface OutputFormatUmd extends BuildOptionsBase {
   output: "source";
   /** format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "umd";
-  /** parser dependencies, the value is an object which maps variables used to access the dependencies in the parser to module IDs used to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, or `"umd"` (default: `{}`) */
+  /** parser dependencies, the value is an object which maps variables used to access the dependencies in the parser to module IDs used to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, `"es"`, or `"umd"` (default: `{}`) */
   dependencies?: any;
   /** name of a global variable into which the parser object is assigned to when no module loader is detected; valid only when `format` is set to `"globals"` or `"umd"` (default: `null`) */
   exportVar?: any;
@@ -136,10 +127,8 @@ export function generate(grammar: string, options?: ParserBuildOptions): Parser;
 /** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
 export function generate(
   grammar: string,
-  options: OutputFormatAmdCommonjs
+  options: OutputFormatAmdCommonjsEs
 ): string;
-/** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
-export function generate(grammar: string, options: OutputFormatES): string;
 /** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
 export function generate(grammar: string, options: OutputFormatUmd): string;
 /** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
