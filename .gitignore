@@ -1,3 +1,4 @@
 browser/*
 examples/*.js
 node_modules/
+build/*
