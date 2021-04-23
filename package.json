@@ -19,9 +19,10 @@
   "bin": "bin/peggy",
   "scripts": {
     "clean": "rimraf -f build && rimraf -f browser && mkdir build && cd build && mkdir ts && mkdir rollup && mkdir terser && cd .. && mkdir browser",
+    "terser": "terser build/rollup/peg.umd.js > build/terser/peggy.umd.min.js && terser build/rollup/peg.esmodule.js > build/terser/peggy.esmodule.min.js",
     "rollup": "rollup -c",
     "ts": "tsc --build tsconfig.json",
-    "newbuild": "npm run clean && npm run ts && npm run rollup",
+    "newbuild": "npm run clean && npm run ts && npm run rollup && npm run terser",
     "test": "mocha --recursive test --exclude test/browser.stub.js --reporter min",
     "lint": "eslint . --ext .js",
     "benchmark": "./benchmark run",
@@ -45,6 +46,7 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "sinon": "10.0.0",
+    "terser": "^5.6.1",
     "typescript": "^4.2.4"
   },
   "engines": {
