@@ -173,7 +173,7 @@ object to `peg.generate`. The following options are supported:
 - `trace` — makes the parser trace its progress (default: `false`)
 - `grammarSource` — this object will be passed to any `location()` objects as the
   `source` property (default: `undefined`). This object will be used even if
-  `options.grammarSource` would be redefined in the grammar. It is usefull to attach
+  `options.grammarSource` is redefined in the grammar. It is useful to attach
   the file information to the errors, for example
 
 ## Using the Parser
