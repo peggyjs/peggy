@@ -15,6 +15,11 @@ Released: TBD
   data,for example, path to the currently parsed file.
   [@Mingun](https://github.com/peggyjs/peggy/pull/95)
 
+### Bug fixes
+
+- [#112](https://github.com/peggyjs/peggy/pull/112): `"group"` node in the AST now have `location` information (back-ported)
+
+
 1.1.0
 -----
 
