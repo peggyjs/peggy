@@ -38,6 +38,7 @@
     "babelify": "10.0.0",
     "browserify": "17.0.0",
     "chai": "4.3.4",
+    "eslint": "^7.24.0",
     "express": "4.17.1",
     "mocha": "^8.3.2",
     "morgan": "1.10.0",

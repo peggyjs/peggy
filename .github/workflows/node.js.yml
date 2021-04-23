@@ -37,5 +37,7 @@ jobs:
         with:
           version: 5.18.9
           run_install: true
+      - name: Lint ${{ matrix.node-version }}
+        run: npm run lint
       - name: Test ${{ matrix.node-version }}
         run: npm run test:bare
