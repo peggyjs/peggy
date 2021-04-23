@@ -3,6 +3,18 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
+1.2.0
+-----
+
+Released: TBD
+
+### Minor Changes
+
+- `location()`s now will have additional `source` property which value is taken
+  from the `options.grammarSource` property. That property can contain arbitrary
+  data,for example, path to the currently parsed file.
+  [@Mingun](https://github.com/peggyjs/peggy/pull/95)
+
 1.1.0
 -----
 

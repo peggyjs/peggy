@@ -171,6 +171,10 @@ object to `peg.generate`. The following options are supported:
   (default: `"parser"`)
 - `plugins` — plugins to use
 - `trace` — makes the parser trace its progress (default: `false`)
+- `grammarSource` — this object will be passed to any `location()` objects as the
+  `source` property (default: `undefined`). This object will be used even if
+  `options.grammarSource` is redefined in the grammar. It is useful to attach
+  the file information to the errors, for example
 
 ## Using the Parser
 
@@ -401,6 +405,7 @@ The code inside the predicate can also access location information using the
 
 ```javascript
 {
+  source: options.grammarSource,
   start: { offset: 23, line: 5, column: 6 },
   end: { offset: 23, line: 5, column: 6 }
 }
@@ -432,6 +437,7 @@ The code inside the predicate can also access location information using the
 
 ```javascript
 {
+  source: options.grammarSource,
   start: { offset: 23, line: 5, column: 6 },
   end: { offset: 23, line: 5, column: 6 }
 }
@@ -512,6 +518,7 @@ The code inside the action can also access location information using the
 
 ```javascript
 {
+  source: options.grammarSource,
   start: { offset: 23, line: 5, column: 6 },
   end: { offset: 25, line: 5, column: 8 }
 }

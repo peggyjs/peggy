@@ -231,6 +231,13 @@ supported:</p>
   <code>"umd"</code>); valid only when <code>output</code> is set to
   <code>"source"</code> (default: <code>"bare"</code>).</dd>
 
+  <dt><code>grammarSource</code></dt>
+  <dd>any object that represent origin of the input grammar. The CLI will set
+  it to a string with the path to the file; parsers in network applications
+  might use the socket and so on. The supplied object will be available at key
+  <code>source</code> in the location objects, that returned by the
+  <code>location()</code> API function (default: <code>undefined</code>).</dd>
+
   <dt><code>optimize</code></dt>
   <dd>Selects between optimizing the generated parser for parsing speed
   (<code>"speed"</code>) or code size (<code>"size"</code>) (default:

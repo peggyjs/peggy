@@ -11,12 +11,18 @@ const expect = chai.expect;
 describe("compiler pass |reportIncorrectPlucking|", function() {
   it("prevents \"@\" from being used with an action block", function() {
     expect(pass).to.reportError("start1 = 'a' @'b' 'c' { /* empty action block */ }", {
-      message: "\"@\" cannot be used with an action block at line 1, column 14."
+      message: "\"@\" cannot be used with an action block at line 1, column 14.",
+      location: {
+        source: undefined,
+        start: { offset: 13, line: 1, column: 14 },
+        end: { offset: 17, line: 1, column: 18 }
+      }
     });
 
     expect(pass).to.reportError("start2 = 'a' @('b' @'c' { /* empty action block */ })", {
       message: "\"@\" cannot be used with an action block at line 1, column 20.",
       location: {
+        source: undefined,
         start: { offset: 19, line: 1, column: 20 },
         end: { offset: 23, line: 1, column: 24 }
       }

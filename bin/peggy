@@ -106,6 +106,8 @@ let inputFile = null;
 let outputFile = null;
 
 let options = {
+  // Path to the grammar file
+  grammarSource: null,
   cache: false,
   dependencies: {},
   exportVar: null,
@@ -297,6 +299,7 @@ if (inputFile === "-") {
     abort("Can't read from file \"" + inputFile + "\".");
   });
 } else {
+  options.grammarSource = inputFile;
   inputStream = fs.createReadStream(inputFile);
 }
 

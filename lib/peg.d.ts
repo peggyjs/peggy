@@ -10,6 +10,8 @@ declare namespace PEG {
   }
 
   interface LocationRange {
+    /** Any object that was supplied to the `parse()` call as the `grammarSource` option. */
+    source: any;
     start: Location;
     end: Location;
   }
@@ -48,6 +50,12 @@ export type GrammarError = PeggyError;
 export var GrammarError: any;
 
 export interface ParserOptions {
+  /**
+   * Object that will be attached to the each `LocationRange` object created by
+   * the parser. For example, this can be path to the parsed file or even the
+   * File object.
+   */
+  grammarSource?: any;
   startRule?: string;
   tracer?: ParserTracer;
   [key: string]: any;
@@ -73,6 +81,12 @@ export interface BuildOptionsBase {
   allowedStartRules?: string[];
   /** if `true`, makes the parser cache results, avoiding exponential parsing time in pathological cases but making the parser slower (default: `false`) */
   cache?: boolean;
+  /**
+   * Object that will be attached to the each `LocationRange` object created by
+   * the parser. For example, this can be path to the parsed file or even the
+   * File object.
+   */
+  grammarSource?: any;
   /** selects between optimizing the generated parser for parsing speed (`"speed"`) or code size (`"size"`) (default: `"speed"`) */
   optimize?: "speed" | "size";
   /** plugins to use */
