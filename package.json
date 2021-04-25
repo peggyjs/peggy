@@ -21,7 +21,7 @@
     "pretest": "npm run parser",
     "test": "npm run test:bare",
     "test:bare": "mocha --recursive test --exclude test/browser.stub.js --reporter min",
-    "lint": "eslint . --ext .js",
+    "lint": "eslint . --ext .js bin/peggy",
     "benchmark": "./benchmark/run",
     "build": "npm run browser:build && npm run benchmark:build && npm run test:build",
     "browser:clean": "rm -rf browser/",
@@ -35,6 +35,7 @@
   "devDependencies": {
     "@babel/core": "^7.13.16",
     "@babel/preset-env": "^7.13.15",
+    "@peggyjs/eslint-config": "^0.0.0",
     "babelify": "10.0.0",
     "browserify": "17.0.0",
     "chai": "4.3.4",
