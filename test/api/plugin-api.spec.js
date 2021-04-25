@@ -17,7 +17,7 @@ describe("plugin API", function() {
         { use() { pluginsUsed[2] = true; } }
       ];
 
-      peg.generate(grammar, { plugins: plugins });
+      peg.generate(grammar, { plugins });
 
       expect(pluginsUsed).to.deep.equal([true, true, true]);
     });
