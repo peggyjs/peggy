@@ -244,6 +244,7 @@ object to `peg.generate`. The following options are supported:
   _global initializer_ and the _per-parse initializer_. Unless the parser is
   to be generated in different formats, it is recommended to rather import
   dependencies from within the _global initializer_. (default: `{}`)
+- `error` — a callback for errors. See [Error Reporting](#error-reporting)
 - `exportVar` — name of a global variable into which the parser object is
   assigned to when no module loader is detected; valid only when `format` is
   set to `"globals"` or `"umd"` (default: `null`)
@@ -254,6 +255,7 @@ object to `peg.generate`. The following options are supported:
   `source` property (default: `undefined`). This object will be used even if
   `options.grammarSource` is redefined in the grammar. It is useful to attach
   the file information to the errors, for example
+- `info` — a callback for informational messages. See [Error Reporting](#error-reporting)
 - `output` — if set to `"parser"`, the method will return generated parser
   object; if set to `"source"`, it will return parser source code as a string.
   If set to `"source-and-map"`, it will return a [`SourceNode`] object; you can
@@ -265,6 +267,27 @@ object to `peg.generate`. The following options are supported:
   > a not-empty string if you set this value to `"source-and-map"`
 - `plugins` — plugins to use. See the [Plugins API](#plugins-api) section
 - `trace` — makes the parser trace its progress (default: `false`)
+- `warning` — a callback for warnings. See [Error Reporting](#error-reporting)
+
+#### Error Reporting
+
+While generating the parser, the compiler may throw a `GrammarError` which collects
+all of the issues that were seen.
+
+There is also another way to collect problems as fast as they are reported —
+register one or more of these callbacks:
+
+- `error(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void`
+- `warning(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void`
+- `info(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void`
+
+All parameters are the same as the parameters of the [reporting API](#session-api)
+except the first. The `stage` represent one of possible stages during which execution
+a diagnostic was generated. This is a string enumeration, that currently has one of
+three values:
+- `check`
+- `transform`
+- `generate`
 
 [`SourceNode`]: https://github.com/mozilla/source-map#sourcenode
 [source-map/444]: https://github.com/mozilla/source-map/issues/444
@@ -764,6 +787,10 @@ note: Step 3: call itself without input consumption - left recursion
   |        ^^^^^
 ```
 
+A plugin may register additional passes that can generate `GrammarError`s to report
+about problems, but they shouldn't do that by throwing an instance of `GrammarError`.
+They should use a [session API](#session-api) instead.
+
 ## Locations
 
 During the parsing you can access to the information of the current parse location,
@@ -858,12 +885,14 @@ method.
       the AST, add or remove nodes or their properties
     - `generate` — passes used for actual code generating
 
-    A plugin that implement a pass usually should push it to the end of one of that
-    arrays. Pass is a simple function with signature `pass(ast, options)`:
+    A plugin that implement a pass usually should push it to the end of the correct
+    array. Pass is a simple function with signature `pass(ast, options, session)`:
     - `ast` — the AST created by the `config.parser.parse()` method
     - `options` — compilation options passed to the `peggy.compiler.compile()` method.
       If parser generation is started because `generate()` function was called that
       is also an options, passed to the `generate()` method
+    - `session` — a [`Session`](#session-api) object that allows raising errors,
+      warnings and informational messages
   - `reservedWords` — string array with a list of words that shouldn't be used as
     label names. This list can be modified by plugins. That property is not required
     to be sorted or not contain duplicates, but it is recommend to remove duplicates.
@@ -872,6 +901,57 @@ method.
     in the `peggy.RESERVED_WORDS` property.
 - `options` — build options passed to the `generate()` method. A best practice for
   a plugin would look for its own options under a `<plugin_name>` key.
+
+### Session API
+
+Each compilation request is represented by a `Session` instance. An object of this class
+is created by the compiler and passed to an each pass as a 3rd parameter. The session
+object gives access to the various compiler services. At the present time there is only
+one such service: reporting of diagnostics.
+
+All diagnostics are divided into three groups: errors, warnings and informational
+messages. For each of them the `Session` object has a method, described below.
+
+All reporting methods have an identical signature:
+
+```typescript
+(message: string, location?: LocationRange, notes?: DiagnosticNote[]) => void;
+```
+
+- `message`: a main diagnostic message
+- `location`: an optional location information if diagnostic is related to the grammar
+  source code
+- `notes`: an array with additional details about diagnostic, pointing to the
+  different places in the grammar. For example, each note could be a location of
+  a duplicated rule definition
+
+#### `error(...)`
+
+Reports an error. Compilation process is subdivided into pieces called _stages_ and
+each stage consist of one or more _passes_. Within the one stage all errors, reported
+by different passes, are collected without interrupting the parsing process.
+
+When all passes in the stage are completed, the stage is checked for errors. If one
+was registered, a `GrammarError` with all found problems in the `problems` property
+is thrown. If there are no errors, then the next stage is processed.
+
+After processing all three stages (`check`, `transform` and `generate`) the compilation
+process is finished.
+
+The process, described above, means that passes should be careful about what they do.
+For example, if you place your pass into the `check` stage there is no guarantee that
+all rules exists, because checking for existing rules is also performed during the
+`check` stage. On the contrary, passes in the `transform` and `generate` stages can be
+sure that all rules exists, because that precondition was checked on the `check` stage.
+
+#### `warning(...)`
+
+Reports a warning. Warnings are similar to errors, but they do not interrupt a compilation.
+
+#### `info(...)`
+
+Report an informational message. This method can be used to inform user about significant
+changes in the grammar, for example, replacing proxy rules.
 
 ## Compatibility
 

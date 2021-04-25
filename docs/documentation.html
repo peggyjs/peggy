@@ -54,7 +54,12 @@
     <a href="#generating-a-parser">Generating a Parser</a>
     <ul>
       <li><a href="#generating-a-parser-command-line">Command Line</a></li>
-      <li><a href="#generating-a-parser-javascript-api">JavaScript API</a></li>
+      <li>
+        <a href="#generating-a-parser-javascript-api">JavaScript API</a>
+        <ul>
+          <li><a href="#error-reporting">Error Reporting</a></li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li><a href="#using-the-parser">Using the Parser</a></li>
@@ -68,7 +73,12 @@
   </li>
   <li><a href="#error-messages">Error Messages</a></li>
   <li><a href="#locations">Locations</a></li>
-  <li><a href="#plugins-api">Plugins API</a></li>
+  <li>
+    <a href="#plugins-api">Plugins API</a>
+    <ul>
+      <li><a href="#session-api">Session API</a></li>
+    </ul>
+  </li>
   <li><a href="#compatibility">Compatibility</a></li>
 </ul>
 
@@ -317,6 +327,9 @@ supported:</p>
   dependencies from within the <em>global initializer</em> (default:
   <code>{}</code>).</dd>
 
+  <dt><code>error</code></dt>
+  <dd>Callback for errors. See <a href="#error-reporting">Error Reporting</a></dd>
+
   <dt><code>exportVar</code></dt>
   <dd>Name of a global variable into which the parser object is assigned to when
   no module loader is detected; valid only when <code>format</code> is set to
@@ -336,6 +349,9 @@ supported:</p>
   <code>source</code> in the location objects, that returned by the
   <code>location()</code> API function (default: <code>undefined</code>).</dd>
 
+  <dt><code>info</code></dt>
+  <dd>Callback for informational messages. See <a href="#error-reporting">Error Reporting</a></dd>
+
   <dt><code>output</code></dt>
   <dd><p>If set to <code>"parser"</code>, the method will return generated parser
   object; if set to <code>"source"</code>, it will return parser source code as
@@ -354,7 +370,34 @@ supported:</p>
 
   <dt><code>trace</code></dt>
   <dd>Makes the parser trace its progress (default: <code>false</code>).</dd>
+
+  <dt><code>warning</code></dt>
+  <dd>Callback for warnings. See <a href="#error-reporting">Error Reporting</a></dd>
 </dl>
+
+<h4 id="error-reporting">Error Reporting</h4>
+
+<p>While generating the parser, the compiler may throw a <code>GrammarError</code> which collects
+all of the issues that were seen.</p>
+
+<p>There is also another way to collect problems as fast as they are reported —
+register one or more of these callbacks:</p>
+
+<ul>
+  <li><code>error(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
+  <li><code>warning(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
+  <li><code>info(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
+</ul>
+
+<p>All parameters are the same as the parameters of the <a href="#session-api">reporting API</a> except the first.
+The <code>stage</code> represent one of possible stages during which execution a diagnostic was generated.
+This is a string enumeration, that currently has one of three values:</p>
+
+<ul>
+  <li><code>check</code></li>
+  <li><code>transform</code></li>
+  <li><code>generate</code></li>
+</ul>
 
 <h2 id="using-the-parser">Using the Parser</h2>
 
@@ -868,6 +911,10 @@ note: Step 3: call itself without input consumption - left recursion
 3 | end = !start
   |        ^^^^^</code></pre>
 
+<p>A plugin may register additional passes that can generate <code>GrammarError</code>s to report about
+problems, but they shouldn't do that by throwing an instance of <code>GrammarError</code>. They should
+use a <a href="#session-api">session API</a> instead.</p>
+
 <h2 id="locations">Locations</h2>
 
 <p>During the parsing you can access to the information of the current parse location,
@@ -968,14 +1015,16 @@ method.</p>
       <li><code>generate</code> — passes used for actual code generating</li>
     </ul>
 
-    <p>A plugin that implement a pass usually should push it to the end of one of that
-    arrays. Pass is a simple function with signature <code>pass(ast, options)</code>:</p>
+    <p>A plugin that implement a pass usually should push it to the end of the correct
+    array. Pass is a simple function with signature <code>pass(ast, options, session)</code>:</p>
 
     <ul>
       <li><code>ast</code> — the AST created by the <code>config.parser.parse()</code> method</li>
       <li><code>options</code> — compilation options passed to the <code>peggy.compiler.compile()</code> method.
       If parser generation is started because <code>generate()</code> function was called that
       is also an options, passed to the <code>generate()</code> method</li>
+      <li><code>session</code> — a <a href="#session-api"><code>Session</code></a> object that allows raising errors,
+      warnings and informational messages</li>
     </ul>
   </dd>
 
@@ -993,6 +1042,60 @@ method.</p>
 <h3><code>options</code></h3>
 <dd>Build options passed to the <code>generate()</code> method. A best practice for
 a plugin would look for its own options under a <code>&lt;plugin_name&gt;</code> key.</dd>
+
+
+<h3 id="session-api">Session API</h3>
+
+<p>Each compilation request is represented by a <code>Session</code> instance. An object of this class
+is created by the compiler and passed to an each pass as a 3rd parameter. The session
+object gives access to the various compiler services. At the present time there is only
+one such service: reporting of diagnostics.</p>
+
+<p>All diagnostics are divided into three groups: errors, warnings and informational
+messages. For each of them the <code>Session</code> object has a method, described below.</p>
+
+<p>All reporting methods have an identical signature:</p>
+
+<pre><code class="language-typescript">(message: string, location?: LocationRange, notes?: DiagnosticNote[]) =&gt; void;
+</code></pre>
+
+<ul>
+  <li><code>message</code>: a main diagnostic message</li>
+  <li><code>location</code>: an optional location information if diagnostic is related to the grammar
+  source code</li>
+  <li><code>notes</code>: an array with additional details about diagnostic, pointing to the
+  different places in the grammar. For example, each note could be a location of
+  a duplicated rule definition</li>
+</ul>
+
+<dl>
+  <dt><code>error(...)</code></dt>
+  <dd>
+    <p>Reports an error. Compilation process is subdivided into pieces called <em>stages</em> and
+    each stage consist of one or more <em>passes</em>. Within the one stage all errors, reported
+    by different passes, are collected without interrupting the parsing process.</p>
+
+    <p>When all passes in the stage are completed, the stage is checked for errors. If one
+    was registered, a <code>GrammarError</code> with all found problems in the <code>problems</code> property
+    is thrown. If there are no errors, then the next stage is processed.</p>
+
+    <p>After processing all three stages (<code>check</code>, <code>transform</code> and <code>generate</code>) the compilation
+    process is finished.</p>
+
+    <p>The process, described above, means that passes should be careful about what they do.
+    For example, if you place your pass into the <code>check</code> stage there is no guarantee that
+    all rules exists, because checking for existing rules is also performed during the
+    <code>check</code> stage. On the contrary, passes in the <code>transform</code> and <code>generate</code> stages can be
+    sure that all rules exists, because that precondition was checked on the <code>check</code> stage.</p>
+  </dd>
+
+  <dt><code>warning(...)</code></dt>
+  <dd>Reports a warning. Warnings are similar to errors, but they do not interrupt a compilation.</dd>
+
+  <dt><code>info(...)</code></dt>
+  <dd>Report an informational message. This method can be used to inform user about
+  significant changes in the grammar, for example, replacing proxy rules.</dd>
+</dl>
 
 <h2 id="compatibility">Compatibility</h2>
 

@@ -1,6 +1,7 @@
 "use strict";
 
 const parser = require("../../../../lib/parser");
+const Session = require("../../../../lib/compiler/session");
 
 module.exports = function(chai, utils) {
   const Assertion = chai.Assertion;
@@ -46,7 +47,7 @@ module.exports = function(chai, utils) {
 
     const ast = parser.parse(grammar);
 
-    utils.flag(this, "object")(ast, options);
+    utils.flag(this, "object")(ast, options, new Session());
 
     this.assert(
       matchProps(ast, props),
@@ -63,7 +64,7 @@ module.exports = function(chai, utils) {
     let passed, result;
 
     try {
-      utils.flag(this, "object")(ast);
+      utils.flag(this, "object")(ast, {}, new Session());
       passed = true;
     } catch (e) {
       result = e;

@@ -13,6 +13,11 @@ Released: TBD
 - Add support for generating source maps.
   [@Mingun](https://github.com/peggyjs/peggy/pull/163)
 
+- Introduce an API for reporting errors, warnings and information messages from
+  passes. New API allows reporting several diagnostics at once with intermediate
+  results checking after each compilation stage.
+  [@Mingun](https://github.com/peggyjs/peggy/pull/160)
+
 ### Minor Changes
 
 - New CLI [@hildjj](https://github.com/peggyjs/peggy/pull/167)

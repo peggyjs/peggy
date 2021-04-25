@@ -810,8 +810,15 @@ export type ParserTracerEvent =
  * @param ast Reference to the parsed grammar. Pass can change it
  * @param options Options that was supplied to the `PEG.generate()` call.
  *        All passes shared the same options object
+ * @param session An object that stores information about current compilation
+ *        session and allows passes to report errors, warnings, and information
+ *        messages. All passes shares the same session object
  */
-export type Pass = (ast: ast.Grammar, options: ParserBuildOptions) => void;
+export type Pass = (
+  ast: ast.Grammar,
+  options: ParserBuildOptions,
+  session: Session
+) => void;
 
 /**
  * List of possible compilation stages. Each stage consist of the one or
@@ -875,6 +882,73 @@ export interface Plugin {
    *        options in the object with name of plugin to reduce possible clashes
    */
   use(config: Config, options: ParserBuildOptions): void;
+}
+
+/**
+ * Compiler session, that allow a pass to register an error, warning or
+ * an informational message.
+ *
+ * A new session is created for the each `PEG.generate()` call.
+ * All passes, involved in the compilation, shares the one session object.
+ *
+ * Passes should use that object to reporting errors instead of throwing
+ * exceptions, because reporting via this object allows report multiply
+ * errors from different passes. Throwing `GrammarError` are also allowed
+ * for backward compatibility.
+ *
+ * Errors will be reported after completion of each compilation stage where
+ * each of them can have multiply passes. Plugins can register as many
+ * stages as they want, but it is recommended to register pass in the
+ * one of default stages, if possible:
+ * - `check`
+ * - `transform`
+ * - `generate`
+ */
+export interface Session {
+  /**
+   * Reports an error. Pass shouldn't assume that after reporting error it
+   * will be interrupted by throwing exception or in the other way. Therefore,
+   * if after reporting error further execution of the pass is impossible, it
+   * should use control flow statements, such as `break`, `continue`, `return`
+   * to stop their execution.
+   *
+   * @param message Main message, which should describe error objectives
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  error(
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+  /**
+   * Reports a warning. Warning is a diagnostic, that doesn't prevent further
+   * execution of a pass, but possible points to the some mistake, that should
+   * be fixed.
+   *
+   * @param message Main message, which should describe warning objectives
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  warning(
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+  /**
+   * Reports an informational message. such messages can report some important
+   * details of pass execution that could be useful for the user, for example,
+   * performed transformations over the AST.
+   *
+   * @param message Main message, which gives information about an event
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  info(
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
 }
 
 /**
