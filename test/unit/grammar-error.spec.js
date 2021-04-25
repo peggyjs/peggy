@@ -1,7 +1,7 @@
 "use strict";
 
 const chai = require("chai");
-const GrammarError = require("../../lib/grammar-error");
+const { GrammarError } = require("../../lib/peg");
 
 const expect = chai.expect;
 
@@ -46,23 +46,26 @@ GrammarError: message
       source: "foo.peggy",
       text: "some error\nthat",
     };
+    /** @type {import("../../lib/peg").LocationRange} */
+    const subSpan = {
+      source: "foo.peggy",
+      start: { offset: 5, line: 1, column: 6 },
+      end: { offset: 11, line: 2, column: 1 },
+    };
     /** @type {import("../../lib/peg").DiagnosticNote} */
     const diagnostics = [{
       message: "Subinfo",
-      location: {
-        source: "foo.peggy",
-        start: { offset: 5, line: 1, column: 6 },
-        end: { offset: 11, line: 2, column: 1 },
-      },
+      location: subSpan,
     }];
 
-    describe("with main location", () => {
-      location.source = "foo.peggy";
-      const e = new GrammarError("message", location, diagnostics);
+    describe("single problem", () => {
+      describe("with main location", () => {
+        location.source = "foo.peggy";
+        const e = new GrammarError("message", location, diagnostics);
 
-      it("with source", () => {
-        expect(e.format([source])).to.equal(`\
-Error: message
+        it("with source", () => {
+          expect(e.format([source])).to.equal(`\
+error: message
  --> foo.peggy:1:1
   |
 1 | some error
@@ -72,33 +75,139 @@ note: Subinfo
   |
 1 | some error
   |      ^^^^^`);
-      });
+        });
 
-      it("without source", () => {
-        expect(e.format([])).to.equal(`\
-Error: message
+        it("without source", () => {
+          expect(e.format([])).to.equal(`\
+error: message
  at foo.peggy:1:1
  at foo.peggy:1:6: Subinfo`);
+        });
       });
-    });
 
-    describe("without main location", () => {
-      const e = new GrammarError("message", null, diagnostics);
+      describe("without main location", () => {
+        const e = new GrammarError("message", null, diagnostics);
 
-      it("with source", () => {
-        expect(e.format([source])).to.equal(`\
-Error: message
+        it("with source", () => {
+          expect(e.format([source])).to.equal(`\
+error: message
 note: Subinfo
  --> foo.peggy:1:6
   |
 1 | some error
   |      ^^^^^`);
+        });
+
+        it("without source", () => {
+          expect(e.format([])).to.equal(`\
+error: message
+ at foo.peggy:1:6: Subinfo`);
+        });
+      });
+    });
+
+    describe("several problems", () => {
+      describe("with main location", () => {
+        location.source = "foo.peggy";
+        const e = new GrammarError("message", location, diagnostics);
+        e.problems.push([
+          "warning",
+          "Warning message",
+          subSpan,
+          [{ message: "Warning Subinfo", location: subSpan }],
+        ]);
+        e.problems.push([
+          "info",
+          "Info message",
+          null,
+          [],
+        ]);
+
+        it("with source", () => {
+          expect(e.format([source])).to.equal(`\
+error: message
+ --> foo.peggy:1:1
+  |
+1 | some error
+  | ^^^^
+note: Subinfo
+ --> foo.peggy:1:6
+  |
+1 | some error
+  |      ^^^^^
+
+warning: Warning message
+ --> foo.peggy:1:6
+  |
+1 | some error
+  |      ^^^^^
+note: Warning Subinfo
+ --> foo.peggy:1:6
+  |
+1 | some error
+  |      ^^^^^
+
+info: Info message`);
+        });
+
+        it("without source", () => {
+          expect(e.format([])).to.equal(`\
+error: message
+ at foo.peggy:1:1
+ at foo.peggy:1:6: Subinfo
+
+warning: Warning message
+ at foo.peggy:1:6
+ at foo.peggy:1:6: Warning Subinfo
+
+info: Info message`);
+        });
       });
 
-      it("without source", () => {
-        expect(e.format([])).to.equal(`\
-Error: message
- at foo.peggy:1:6: Subinfo`);
+      describe("without main location", () => {
+        const e = new GrammarError("message", null, diagnostics);
+        e.problems.push([
+          "warning",
+          "Warning message",
+          null,
+          [{ message: "Warning Subinfo", location: subSpan }],
+        ]);
+        e.problems.push([
+          "info",
+          "Info message",
+          null,
+          [],
+        ]);
+
+        it("with source", () => {
+          expect(e.format([source])).to.equal(`\
+error: message
+note: Subinfo
+ --> foo.peggy:1:6
+  |
+1 | some error
+  |      ^^^^^
+
+warning: Warning message
+note: Warning Subinfo
+ --> foo.peggy:1:6
+  |
+1 | some error
+  |      ^^^^^
+
+info: Info message`);
+        });
+
+        it("without source", () => {
+          expect(e.format([])).to.equal(`\
+error: message
+ at foo.peggy:1:6: Subinfo
+
+warning: Warning message
+ at foo.peggy:1:6: Warning Subinfo
+
+info: Info message`);
+        });
       });
     });
   });

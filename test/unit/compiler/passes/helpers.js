@@ -1,5 +1,6 @@
 "use strict";
 
+const { GrammarError } = require("../../../../lib/peg");
 const parser = require("../../../../lib/parser");
 const Session = require("../../../../lib/compiler/session");
 
@@ -47,7 +48,9 @@ module.exports = function(chai, utils) {
 
     const ast = parser.parse(grammar);
 
-    utils.flag(this, "object")(ast, options, new Session());
+    utils.flag(this, "object")(ast, options, new Session({
+      error(stage, ...args) { throw new GrammarError(...args); },
+    }));
 
     this.assert(
       matchProps(ast, props),
@@ -64,7 +67,9 @@ module.exports = function(chai, utils) {
     let passed, result;
 
     try {
-      utils.flag(this, "object")(ast, {}, new Session());
+      utils.flag(this, "object")(ast, {}, new Session({
+        error(stage, ...args) { throw new GrammarError(...args); },
+      }));
       passed = true;
     } catch (e) {
       result = e;

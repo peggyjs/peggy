@@ -271,6 +271,22 @@ export interface DiagnosticNote {
   location: LocationRange;
 }
 
+/** Possible compilation stage name. */
+type Stage = keyof Stages;
+/** Severity level of problems that can be registered in compilation session. */
+type Severity = "error" | "warning" | "info";
+
+type Problem = [
+  /** Problem severity. */
+  Severity,
+  /** Diagnostic message. */
+  string,
+  /** Location where message is generated, if applicable. */
+  LocationRange?,
+  /** List of additional messages with their locations, if applicable. */
+  DiagnosticNote[]?,
+];
+
 /** Thrown if the grammar contains a semantic error. */
 export class GrammarError extends Error {
   /** Location of the error in the source. */
@@ -278,6 +294,15 @@ export class GrammarError extends Error {
 
   /** Additional messages with context information. */
   diagnostics: DiagnosticNote[];
+
+  /** Compilation stage during which error was generated. */
+  stage: Stage | null;
+
+  /**
+   * List of diagnostics containing all errors, warnings and information
+   * messages generated during compilation stage `stage`.
+   */
+  problems: Problem[];
 
   constructor(
     message: string,
@@ -951,6 +976,51 @@ export interface Session {
   ): void;
 }
 
+export interface DiagnosticCallback {
+  /**
+   * Called when compiler reports an error.
+   *
+   * @param stage Stage in which this diagnostic was originated
+   * @param message Main message, which should describe error objectives
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  error?(
+    stage: Stage,
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+  /**
+   * Called when compiler reports a warning.
+   *
+   * @param stage Stage in which this diagnostic was originated
+   * @param message Main message, which should describe warning objectives
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  warning?(
+    stage: Stage,
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+  /**
+   * Called when compiler reports an informational message.
+   *
+   * @param stage Stage in which this diagnostic was originated
+   * @param message Main message, which gives information about an event
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  info?(
+    stage: Stage,
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+}
+
 /**
  * Parser dependencies, is an object which maps variables used to access the
  * dependencies in the parser to module IDs used to load them
@@ -988,6 +1058,13 @@ export interface BuildOptionsBase {
 
   /** Makes the parser trace its progress (default: `false`) */
   trace?: boolean;
+
+  /** Called when a semantic error during build was detected. */
+  error?: DiagnosticCallback;
+  /** Called when a warning during build was registered. */
+  warning?: DiagnosticCallback;
+  /** Called when an informational message during build was registered. */
+  info?: DiagnosticCallback;
 }
 
 export interface ParserBuildOptions extends BuildOptionsBase {
