@@ -11,11 +11,11 @@ const expect = chai.expect;
 describe("compiler pass |generateBytecode|", function() {
   function bytecodeDetails(bytecode) {
     return {
-      rules: [{ bytecode: bytecode }]
+      rules: [{ bytecode }]
     };
   }
 
-  function constsDetails(consts) { return { consts: consts }; }
+  function constsDetails(consts) { return { consts }; }
 
   describe("for grammar", function() {
     it("generates correct bytecode", function() {

@@ -129,7 +129,7 @@ describe("Peggy API", function() {
           const parser = peg.generate(grammar);
           const tracer = { trace: sinon.spy() };
 
-          parser.parse("a", { tracer: tracer });
+          parser.parse("a", { tracer });
 
           expect(tracer.trace.called).to.equal(false);
         });
@@ -140,7 +140,7 @@ describe("Peggy API", function() {
           const parser = peg.generate(grammar, { trace: false });
           const tracer = { trace: sinon.spy() };
 
-          parser.parse("a", { tracer: tracer });
+          parser.parse("a", { tracer });
 
           expect(tracer.trace.called).to.equal(false);
         });
@@ -151,7 +151,7 @@ describe("Peggy API", function() {
           const parser = peg.generate(grammar, { trace: true });
           const tracer = { trace: sinon.spy() };
 
-          parser.parse("a", { tracer: tracer });
+          parser.parse("a", { tracer });
 
           expect(tracer.trace.called).to.equal(true);
         });

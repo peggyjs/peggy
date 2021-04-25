@@ -68,28 +68,28 @@ describe("Peggy grammar parser", function() {
       type: "grammar",
       topLevelInitializer: null,
       initializer: null,
-      rules: [{ type: "rule", name: "start", expression: expression }]
+      rules: [{ type: "rule", name: "start", expression }]
     };
   }
 
   function actionGrammar(code) {
     return oneRuleGrammar(
-      { type: "action", expression: literalAbcd, code: code }
+      { type: "action", expression: literalAbcd, code }
     );
   }
 
   function literalGrammar(value, ignoreCase) {
     return oneRuleGrammar(
-      { type: "literal", value: value, ignoreCase: ignoreCase }
+      { type: "literal", value, ignoreCase }
     );
   }
 
   function classGrammar(parts, inverted, ignoreCase) {
     return oneRuleGrammar({
       type: "class",
-      parts: parts,
-      inverted: inverted,
-      ignoreCase: ignoreCase
+      parts,
+      inverted,
+      ignoreCase
     });
   }
 
@@ -98,7 +98,7 @@ describe("Peggy grammar parser", function() {
   }
 
   function ruleRefGrammar(name) {
-    return oneRuleGrammar({ type: "rule_ref", name: name });
+    return oneRuleGrammar({ type: "rule_ref", name });
   }
 
   const trivialGrammar = literalGrammar("abcd", false);
@@ -239,27 +239,27 @@ describe("Peggy grammar parser", function() {
       { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA, ruleB, ruleC] }
     );
     expect("\n{ code };\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer: null, initializer: initializer, rules: [ruleA] }
+      { type: "grammar", topLevelInitializer: null, initializer, rules: [ruleA] }
     );
     expect("\n{{ top level code }};\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer: topLevelInitializer, initializer: null, rules: [ruleA] }
+      { type: "grammar", topLevelInitializer, initializer: null, rules: [ruleA] }
     );
     expect("\n{{ top level code }};\n{ code };\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer: topLevelInitializer, initializer: initializer, rules: [ruleA] }
+      { type: "grammar", topLevelInitializer, initializer, rules: [ruleA] }
     );
   });
 
   // Canonical Top-Level Initializer is "{ top level code }".
   it("parses Top-Level Initializer", function() {
     expect("{{ top level code }};start = 'abcd'").to.parseAs(
-      { type: "grammar", topLevelInitializer: topLevelInitializer, initializer: null, rules: [ruleStart] }
+      { type: "grammar", topLevelInitializer, initializer: null, rules: [ruleStart] }
     );
   });
 
   // Canonical Initializer is "{ code }".
   it("parses Initializer", function() {
     expect("{ code };start = 'abcd'").to.parseAs(
-      { type: "grammar", topLevelInitializer: null, initializer: initializer, rules: [ruleStart] }
+      { type: "grammar", topLevelInitializer: null, initializer, rules: [ruleStart] }
     );
   });
 
@@ -323,15 +323,15 @@ describe("Peggy grammar parser", function() {
     function $S(...elements) {
       return oneRuleGrammar({
         type: "sequence",
-        elements: elements,
+        elements,
       });
     }
     function $P(label, expression) {
       return {
         type: "labeled",
         pick: true,
-        label: label,
-        expression: expression,
+        label,
+        expression,
       };
     }
 

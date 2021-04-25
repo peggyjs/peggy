@@ -151,7 +151,7 @@ describe("generated parser API", function() {
 
             const tracer = { trace: sinon.spy() };
 
-            parser.parse("b", { tracer: tracer });
+            parser.parse("b", { tracer });
 
             expect(tracer.trace.callCount).to.equal(events.length);
             events.forEach((event, index) => {
