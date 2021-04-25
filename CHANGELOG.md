@@ -8,6 +8,13 @@ This file documents all notable changes to Peggy.
 
 Released: TBD
 
+### Major Changes
+
+- Introduce an API to reporting errors, warnings and information messages from
+  passes. New API allows to report several diagnostics at once with intermediate
+  results checking after each compilation stage.
+  [@Mingun](https://github.com/peggyjs/peggy/pull/160)
+
 ### Minor Changes
 
 - Infrastructural rebake [@StoneCypher](https://github.com/peggyjs/peggy/pull/107)
