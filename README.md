@@ -611,6 +611,3 @@ Peggy was originally developed by [David Majda](https://majda.cz/)
 You are welcome to contribute code. Unless your contribution is really trivial
 you should [get in touch with us](https://github.com/peggyjs/peggy/discussions)
 first — this can prevent wasted effort on both sides.
-
-Note that Peggy is still very much work in progress. There are no compatibility
-guarantees until version 1.0.
