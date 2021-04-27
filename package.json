@@ -27,10 +27,11 @@
     "lint": "eslint . --ext .js bin/peggy",
     "benchmark": "node ./benchmark/run_bench.js",
     "parser": "node bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs",
-    "audit": "echo \"Running Audits\" && npm run test && npm run benchmark",
-    "make": "echo \"Making libraries\" && npm run ts && npm run rollup && npm run terser && npm run parser",
-    "setup": "echo \"Setting up the build\" && npm run clean && npm run set_version",
-    "build": "npm run setup && npm run make && npm run audit && echo \"Complete!\""
+    "distro": "rm -f browser/peggy.min.js && cp build/terser/peggy.umd.min.js browser/peggy.min.js",
+    "audit": "npm run test && npm run benchmark",
+    "make": "npm run ts && npm run rollup && npm run terser && npm run parser",
+    "setup": "npm run clean && npm run set_version",
+    "build": "node ./bin/announce \"Setting up the build\" && npm run setup && node ./bin/announce \"Making libraries\" && npm run make && node ./bin/announce \"Running Audits\" && npm run audit && node ./bin/announce \"Creating distributions\" && npm run distro && node ./bin/announce \"Complete!\""
   },
   "devDependencies": {
     "@babel/core": "^7.13.16",

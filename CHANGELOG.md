@@ -10,6 +10,19 @@ Released: TBD
 
 ### Minor Changes
 
+- Infrastructural rebake [@StoneCypher](https://github.com/peggyjs/peggy/pull/107)
+    - Builds with `typescript`, removes `babel`
+    - Bundles with `rollup`, removes `webpack`
+        - Rollup is configured to create two bundles - es6 and umd
+        - Only umd is exposed; will expose es6 with #119
+    - Tests with `jest`, removes `mocha`
+        - Enables coverage analysis using `lcov` notation
+        - Coverage is not archived; will archive with #120
+    - Minifies with `terser`, removes `uglify`
+    - Adds `rimraf` for portable pre-build cleanup
+    - Extends CI testing to `windows`, `macintosh`
+    - Increases node testing range to include `node 16`
+    - Adds an announcer to make the build process more readable
 - `location()`s now will have additional `source` property which value is taken
   from the `options.grammarSource` property. That property can contain arbitrary
   data,for example, path to the currently parsed file.
