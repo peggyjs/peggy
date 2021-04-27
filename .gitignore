@@ -3,3 +3,4 @@ examples/*.js
 node_modules/
 pnpm-lock.yaml
 yarn.lock
+build/*
