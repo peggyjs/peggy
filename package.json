@@ -27,7 +27,10 @@
     "lint": "eslint . --ext .js bin/peggy",
     "benchmark": "node ./benchmark/run_bench.js",
     "parser": "node bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs",
-    "build": "npm run clean && npm run set_version && npm run ts && npm run rollup && npm run terser && npm run parser && npm run test"
+    "audit": "echo \"Running Audits\" && npm run test && npm run benchmark",
+    "make": "echo \"Making libraries\" && npm run ts && npm run rollup && npm run terser && npm run parser",
+    "setup": "echo \"Setting up the build\" && npm run clean && npm run set_version",
+    "build": "npm run setup && npm run make && npm run audit && echo \"Complete!\""
   },
   "devDependencies": {
     "@babel/core": "^7.13.16",
