@@ -2,9 +2,9 @@
 
 "use strict";
 
-let fs = require("fs");
-let path = require("path");
-let peg = require("../lib/peg");
+const fs = require("fs");
+const path = require("path");
+const peg = require("../lib/peg");
 
 // Helpers
 
@@ -82,7 +82,7 @@ function trim(s) {
 
 // Arguments
 
-let args = process.argv.slice(2); // Trim "node" and the script path.
+const args = process.argv.slice(2); // Trim "node" and the script path.
 
 function isOption(arg) {
   return (/^-.+/).test(arg);
@@ -105,7 +105,9 @@ function readStream(inputStream, callback) {
 let inputFile = null;
 let outputFile = null;
 
-let options = {
+const options = {
+  // Path to the grammar file
+  grammarSource: null,
   cache: false,
   dependencies: {},
   exportVar: null,
@@ -144,7 +146,7 @@ while (args.length > 0 && isOption(args[0])) {
         abort("Missing parameter of the -d/--dependency option.");
       }
       if (args[0].indexOf(":") !== -1) {
-        let parts = args[0].split(":");
+        const parts = args[0].split(":");
         options.dependencies[parts[0]] = parts[1];
       } else {
         options.dependencies[args[0]] = args[0];
@@ -297,6 +299,7 @@ if (inputFile === "-") {
     abort("Can't read from file \"" + inputFile + "\".");
   });
 } else {
+  options.grammarSource = inputFile;
   inputStream = fs.createReadStream(inputFile);
 }
 

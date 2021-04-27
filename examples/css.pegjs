@@ -80,10 +80,10 @@ media
     }
 
 media_list
-  = head:medium tail:("," S* medium)* { return buildList(head, tail, 2); }
+  = head:medium tail:("," S* @medium)* { return [head].concat(tail); }
 
 medium
-  = name:IDENT S* { return name; }
+  = @IDENT S*
 
 page
   = PAGE_SYM S* selector:pseudo_page?
@@ -103,15 +103,15 @@ pseudo_page
   = ":" value:IDENT S* { return { type: "PseudoSelector", value: value }; }
 
 operator
-  = "/" S* { return "/"; }
-  / "," S* { return ","; }
+  = @"/" S*
+  / @"," S*
 
 combinator
-  = "+" S* { return "+"; }
-  / ">" S* { return ">"; }
+  = @"+" S*
+  / @">" S*
 
 property
-  = name:IDENT S* { return name; }
+  = @IDENT S*
 
 ruleset
   = selectorsHead:selector
@@ -258,7 +258,7 @@ unicode
 
 escape
   = unicode
-  / "\\" ch:[^\r\n\f0-9a-f]i { return ch; }
+  / "\\" @[^\r\n\f0-9a-f]i
 
 nmstart
   = [_a-z]i
@@ -411,8 +411,8 @@ NUMBER "number"
   = comment* value:num { return { value: value, unit: null }; }
 
 URI "uri"
-  = comment* U R L "("i w url:string w ")" { return url; }
-  / comment* U R L "("i w url:url w ")"    { return url; }
+  = comment* U R L "("i w @string w ")"
+  / comment* U R L "("i w @url w ")"
 
 FUNCTION "function"
-  = comment* name:ident "(" { return name; }
+  = comment* @ident "("

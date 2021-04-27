@@ -13,6 +13,7 @@ describe("compiler pass |reportInfiniteRecursion|", function() {
     expect(pass).to.reportError("start = start", {
       message: "Possible infinite loop when parsing (left recursion: start -> start).",
       location: {
+        source: undefined,
         start: { offset: 8, line: 1, column: 9 },
         end: { offset: 13, line: 1, column: 14 }
       }
@@ -26,6 +27,7 @@ describe("compiler pass |reportInfiniteRecursion|", function() {
     ].join("\n"), {
       message: "Possible infinite loop when parsing (left recursion: start -> stop -> start).",
       location: {
+        source: undefined,
         start: { offset: 20, line: 2, column: 8 },
         end: { offset: 25, line: 2, column: 13 }
       }

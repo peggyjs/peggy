@@ -124,7 +124,7 @@ ActionExpression
 
 SequenceExpression
   = head:LabeledExpression tail:(__ LabeledExpression)* {
-      return tail.length > 0
+      return ((tail.length > 0) || (head.type === "labeled" && head.pick))
         ? {
             type: "sequence",
             elements: buildList(head, tail, 1),
@@ -134,7 +134,19 @@ SequenceExpression
     }
 
 LabeledExpression
-  = label:Identifier __ ":" __ expression:PrefixedExpression {
+  = "@" label:LabelColon? expression:PrefixedExpression {
+      if (expression.type.startsWith("semantic_")) {
+        error("\"@\" cannot be used on a semantic predicate");
+      }
+      return {
+        type: "labeled",
+        label: label,
+        pick: true,
+        expression: expression,
+        location: location()
+      };
+    }
+  / label:LabelColon __ expression:PrefixedExpression {
       return {
         type: "labeled",
         label: label,
@@ -143,6 +155,9 @@ LabeledExpression
       };
     }
   / PrefixedExpression
+
+LabelColon
+  = @Identifier __ ":"
 
 PrefixedExpression
   = operator:PrefixedOperator __ expression:SuffixedExpression {
@@ -186,7 +201,7 @@ PrimaryExpression
       // nodes that already isolate label scope themselves. This leaves us with
       // "labeled" and "sequence".
       return expression.type === "labeled" || expression.type === "sequence"
-          ? { type: "group", expression: expression }
+          ? { type: "group", expression: expression, location: location() }
           : expression;
     }
 
@@ -246,7 +261,7 @@ SingleLineComment
   = "//" (!LineTerminator SourceCharacter)*
 
 Identifier
-  = !ReservedWord name:IdentifierName { return name; }
+  = !ReservedWord @IdentifierName
 
 IdentifierName "identifier"
   = head:IdentifierStart tail:IdentifierPart* { return head + tail.join(""); }
@@ -386,7 +401,7 @@ ClassCharacterRange
 
 ClassCharacter
   = !("]" / "\\" / LineTerminator) SourceCharacter { return text(); }
-  / "\\" sequence:EscapeSequence { return sequence; }
+  / "\\" @EscapeSequence
   / LineContinuation
 
 LineContinuation
@@ -442,7 +457,7 @@ AnyMatcher
   = "." { return { type: "any", location: location() }; }
 
 CodeBlock "code block"
-  = "{" code:Code "}" { return code; }
+  = "{" @Code "}"
 
 Code
   = $((![{}] SourceCharacter)+ / "{" Code "}")*

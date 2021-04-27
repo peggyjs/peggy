@@ -155,7 +155,7 @@ object to `peg.generate`. The following options are supported:
   variables used to access the dependencies in the parser to module IDs used
   to load them; valid only when `format` is set to `"amd"`, `"commonjs"`,
   `"es"`, or `"umd"`. Dependencies variables will be available in both the
-  _general initializer_ and the _per-parse initializer_. Unless the parser is
+  _global initializer_ and the _per-parse initializer_. Unless the parser is
   to be generated in different formats, it is recommended to rather import
   dependencies from within the _global initializer_. (default: `{}`)
 - `exportVar` — name of a global variable into which the parser object is
@@ -171,6 +171,10 @@ object to `peg.generate`. The following options are supported:
   (default: `"parser"`)
 - `plugins` — plugins to use
 - `trace` — makes the parser trace its progress (default: `false`)
+- `grammarSource` — this object will be passed to any `location()` objects as the
+  `source` property (default: `undefined`). This object will be used even if
+  `options.grammarSource` is redefined in the grammar. It is useful to attach
+  the file information to the errors, for example
 
 ## Using the Parser
 
@@ -401,6 +405,7 @@ The code inside the predicate can also access location information using the
 
 ```javascript
 {
+  source: options.grammarSource,
   start: { offset: 23, line: 5, column: 6 },
   end: { offset: 23, line: 5, column: 6 }
 }
@@ -432,6 +437,7 @@ The code inside the predicate can also access location information using the
 
 ```javascript
 {
+  source: options.grammarSource,
   start: { offset: 23, line: 5, column: 6 },
   end: { offset: 23, line: 5, column: 6 }
 }
@@ -458,6 +464,20 @@ must be a JavaScript identifier.
 
 Labeled expressions are useful together with actions, where saved match results
 can be accessed by action's JavaScript code.
+
+#### _@_ ( _label_ : )? _expression_
+
+Match the expression and if the label exists, remember its match result under
+given label. The label must be a JavaScript identifier if it exists.
+
+Return the value of this expression from the rule, or "pluck" it. You may not
+have an action for this rule. The expression must not be a semantic predicate
+(&{predicate} or !{predicate}). There may be multiple pluck expressions in a
+given rule, in which case an array of the plucked expressions is returned from
+the rule.
+
+Pluck expressions are useful for writing terse grammars, or returning parts of
+an expression that is wrapped in parentheses.
 
 #### _expression<sub>1</sub>_ _expression<sub>2</sub>_ ... _expression<sub>n</sub>_
 
@@ -498,6 +518,7 @@ The code inside the action can also access location information using the
 
 ```javascript
 {
+  source: options.grammarSource,
   start: { offset: 23, line: 5, column: 6 },
   end: { offset: 25, line: 5, column: 8 }
 }

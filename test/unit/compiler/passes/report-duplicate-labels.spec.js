@@ -14,6 +14,7 @@ describe("compiler pass |reportDuplicateLabels|", function() {
       expect(pass).to.reportError("start = a:'a' a:'a'", {
         message: "Label \"a\" is already defined at line 1, column 9.",
         location: {
+          source: undefined,
           start: { offset: 14, line: 1, column: 15 },
           end: { offset: 19, line: 1, column: 20 }
         }
@@ -46,6 +47,7 @@ describe("compiler pass |reportDuplicateLabels|", function() {
       expect(pass).to.reportError("start = a:'a' (a:'a')", {
         message: "Label \"a\" is already defined at line 1, column 9.",
         location: {
+          source: undefined,
           start: { offset: 15, line: 1, column: 16 },
           end: { offset: 20, line: 1, column: 21 }
         }

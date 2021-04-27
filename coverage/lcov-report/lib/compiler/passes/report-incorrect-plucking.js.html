@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for lib/compiler/passes/remove-proxy-rules.js</title>
+    <title>Code coverage report for lib/compiler/passes/report-incorrect-plucking.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../../prettify.css" />
     <link rel="stylesheet" href="../../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">lib/compiler/passes</a> remove-proxy-rules.js</h1>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">lib/compiler/passes</a> report-incorrect-plucking.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>16/16</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>8/8</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>15/15</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
@@ -93,87 +93,78 @@
 <a name='L34'></a><a href='#L34'>34</a>
 <a name='L35'></a><a href='#L35'>35</a>
 <a name='L36'></a><a href='#L36'>36</a>
-<a name='L37'></a><a href='#L37'>37</a>
-<a name='L38'></a><a href='#L38'>38</a>
-<a name='L39'></a><a href='#L39'>39</a>
-<a name='L40'></a><a href='#L40'>40</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L37'></a><a href='#L37'>37</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1602x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">28x</span>
+<span class="cline-any cline-yes">1318x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">72x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">404x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1317x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1317x</span>
-<span class="cline-any cline-yes">1602x</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">817x</span>
+<span class="cline-any cline-yes">207x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1317x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1317x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">815x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1318x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">"use strict";
 &nbsp;
+const GrammarError = require("../../grammar-error");
 const visitor = require("../visitor");
 &nbsp;
-// Removes proxy rules -- that is, rules that only delegate to other rule.
-function removeProxyRules(ast, options) {
-  function isProxyRule(node) {
-    return node.type === "rule" &amp;&amp; node.expression.type === "rule_ref";
-  }
+//
+// Compiler pass to ensure the following are enforced:
+//
+//   - plucking can not be done with an action block
+//
+function reportIncorrectPlucking(ast) {
+  const check = visitor.build({
+    action(node) {
+      check(node.expression, true);
+    },
 &nbsp;
-  function replaceRuleRefs(ast, from, to) {
-    const replace = visitor.build({
-      rule_ref(node) {
-        if (node.name === from) {
-          node.name = to;
+    labeled(node, action) {
+      if (node.pick) {
+        if (action) {
+          throw new GrammarError(
+            "\"@\" cannot be used with an action block "
+              + "at line " + node.location.start.line + ", "
+              + "column " + node.location.start.column + ".",
+            node.location
+          );
         }
       }
-    });
 &nbsp;
-    replace(ast);
-  }
-&nbsp;
-  const indices = [];
-&nbsp;
-  ast.rules.forEach((rule, i) =&gt; {
-    if (isProxyRule(rule)) {
-      replaceRuleRefs(ast, rule.name, rule.expression.name);
-      if (options.allowedStartRules.indexOf(rule.name) === -1) {
-        indices.push(i);
-      }
+      check(node.expression);
     }
   });
 &nbsp;
-  indices.reverse();
-&nbsp;
-  indices.forEach(i =&gt; { ast.rules.splice(i, 1); });
+  check(ast);
 }
 &nbsp;
-module.exports = removeProxyRules;
+module.exports = reportIncorrectPlucking;
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->

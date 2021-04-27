@@ -22,6 +22,7 @@ require("./api/plugin-api.spec.js");
 require("./unit/compiler/passes/remove-proxy-rules.spec.js");
 require("./unit/compiler/passes/report-duplicate-labels.spec.js");
 require("./unit/compiler/passes/report-duplicate-rules.spec.js");
+require("./unit/compiler/passes/report-incorrect-plucking.spec.js");
 require("./unit/compiler/passes/report-infinite-recursion.spec.js");
 require("./unit/compiler/passes/report-infinite-repetition.spec.js");
 require("./unit/compiler/passes/report-undefined-rules.spec.js");

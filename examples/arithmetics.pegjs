@@ -20,7 +20,7 @@ Term
     }
 
 Factor
-  = "(" _ expr:Expression _ ")" { return expr; }
+  = "(" _ @Expression _ ")"
   / Integer
 
 Integer "integer"

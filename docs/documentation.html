@@ -62,6 +62,7 @@
     <a href="#grammar-syntax-and-semantics">Grammar Syntax and Semantics</a>
     <ul>
       <li><a href="#grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</a></li>
+      <li><a href="#parsing-lists">Parsing Lists</a></li>
     </ul>
   </li>
   <li><a href="#compatibility">Compatibility</a></li>
@@ -212,7 +213,7 @@ supported:</p>
   access the dependencies in the parser to module IDs used to load them; valid
   only when <code>format</code> is set to <code>"amd"</code>,
   <code>"commonjs"</code>, <code>"es"</code>, or <code>"umd"</code>.
-  Dependencies variables will be available in both the <em>general
+  Dependencies variables will be available in both the <em>global
   initializer</em> and the <em>per-parse initializer</em>. Unless the parser is
   to be generated in different formats, it is recommended to rather import
   dependencies from within the <em>global initializer</em> (default:
@@ -229,6 +230,13 @@ supported:</p>
   <code>"commonjs"</code>, <code>"es"</code>, <code>"globals"</code>, or
   <code>"umd"</code>); valid only when <code>output</code> is set to
   <code>"source"</code> (default: <code>"bare"</code>).</dd>
+
+  <dt><code>grammarSource</code></dt>
+  <dd>any object that represent origin of the input grammar. The CLI will set
+  it to a string with the path to the file; parsers in network applications
+  might use the socket and so on. The supplied object will be available at key
+  <code>source</code> in the location objects, that returned by the
+  <code>location()</code> API function (default: <code>undefined</code>).</dd>
 
   <dt><code>optimize</code></dt>
   <dd>Selects between optimizing the generated parser for parsing speed
@@ -283,7 +291,7 @@ supported:</p>
   console.log(options.validWords);  // outputs "[ 'boo', 'baz', 'boop' ]"
 }
 
-validWord = word:$[a-z]+ &{ return options.validWords.includes(word) } { return word }
+validWord = @word:$[a-z]+ &{ return options.validWords.includes(word) }
 `);
 
 const result = parser.parse("boo", {
@@ -594,6 +602,24 @@ subexpressions and thus forming a recursive structure:</p>
     results can be accessed by action's JavaScript code.</p>
   </dd>
 
+  <dt><code><em>@</em> (<em>label</em>:)? <em>expression</em></code></dt>
+
+  <dd>
+    <p>Match the expression and if the label exists, remember its match result
+    under given label. The label must be a JavaScript identifier if it
+    exists.</p>
+
+    <p>Return the value of this expression from the rule, or "pluck" it.  You
+    may not have an action for this rule.  The expression must not be a
+    semantic predicate (<code>&{predicate}</code> or
+    <code>!{predicate}</code>).  There may be multiple pluck expressions in a
+    given rule, in which case an array of the plucked expressions is returned
+    from the rule.</p>
+
+    <p>Pluck expressions are useful for writing terse grammars, or returning
+    parts of an expression that is wrapped in parentheses.</p>
+  </dd>
+
   <dt><code><em>expression<sub>1</sub></em> <em>expression<sub>2</sub></em> ...  <em>expression<sub>n</sub></em></code></dt>
 
   <dd>
@@ -660,6 +686,18 @@ subexpressions and thus forming a recursive structure:</p>
     expression. If no expression matches, consider the match failed.</p>
   </dd>
 </dl>
+
+<h3 id="parsing-lists">Parsing Lists</h3>
+
+<p>One of the most frequent questions about Peggy grammars is how to parse a
+delimited list of items.  The cleanest current approach is:</p>
+
+<pre><code>list = head:word tail:(_ "," _ @word)* { return [head].concat(tail); }
+word = $[a-z]i+
+_ = [ \t]*</code></pre>
+
+<p>Note that the <code>@</code> in the tail section plucks the word out of the
+parentheses, NOT out of the rule itself.</p>
 
 <h2 id="compatibility">Compatibility</h2>
 

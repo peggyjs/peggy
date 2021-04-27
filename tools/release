@@ -58,21 +58,21 @@ async function main() {
   await fs.writeFile(pkg, JSON.stringify(pjson, null, 2));
 
   // update VERSION in lib/peg.js
-  const vjs = path.join(root, 'lib', 'version.js');
+  const vjs = path.join(root, "lib", "version.js");
   await fs.writeFile(vjs, `\
 "use strict";
 
 module.exports = "${VERSION}";
-`)
+`);
 
   // build
   await e("npm run build");
 
   // test:node
-  await e("npm run test:node");
+  await e("npm run test");
 
   // add files
-  await e(`git add ${pkg} ${vjs} docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js docs/vendor/peggy/peggy.min.js`);
+  await e(`git add ${pkg} ${vjs} lib/parser.js docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js docs/vendor/peggy/peggy.min.js`);
 
   // check in
   await e(`git commit -m "Update for v${VERSION}"`);

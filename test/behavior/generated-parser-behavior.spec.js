@@ -567,16 +567,19 @@ describe("generated parser behavior", function() {
           ].join("\n"), options);
 
           expect(parser).to.parse("1\n2\n\n3\n\n\n4 5 x", {
+            source: undefined,
             start: { offset: 13, line: 7, column: 5 },
             end: { offset: 13, line: 7, column: 5 }
           });
 
           // Newline representations
           expect(parser).to.parse("1\nx", {     // Unix
+            source: undefined,
             start: { offset: 2, line: 2, column: 1 },
             end: { offset: 2, line: 2, column: 1 }
           });
           expect(parser).to.parse("1\r\nx", {   // Windows
+            source: undefined,
             start: { offset: 3, line: 2, column: 1 },
             end: { offset: 3, line: 2, column: 1 }
           });
@@ -760,16 +763,19 @@ describe("generated parser behavior", function() {
           ].join("\n"), options);
 
           expect(parser).to.parse("1\n2\n\n3\n\n\n4 5 x", {
+            source: undefined,
             start: { offset: 13, line: 7, column: 5 },
             end: { offset: 13, line: 7, column: 5 }
           });
 
           // Newline representations
           expect(parser).to.parse("1\nx", {     // Unix
+            source: undefined,
             start: { offset: 2, line: 2, column: 1 },
             end: { offset: 2, line: 2, column: 1 }
           });
           expect(parser).to.parse("1\r\nx", {   // Windows
+            source: undefined,
             start: { offset: 3, line: 2, column: 1 },
             end: { offset: 3, line: 2, column: 1 }
           });
@@ -957,6 +963,52 @@ describe("generated parser behavior", function() {
 
           expect(parser).to.parse("abc", ["a", "b", "c"]);
         });
+
+        it("plucks a single value", function() {
+          let parser = peg.generate("start = @'a'", options);
+          expect(parser).to.parse("a", "a");
+
+          parser = peg.generate("start = @'a' / @'b'", options);
+          expect(parser).to.parse("a", "a");
+          expect(parser).to.parse("b", "b");
+
+          parser = peg.generate("start = 'a' @'b' 'c'", options);
+          expect(parser).to.parse("abc", "b");
+
+          parser = peg.generate("start = 'a' ( @'b' 'c' )", options);
+          expect(parser).to.parse("abc", [ "a", "b" ]);
+
+          parser = peg.generate("start = 'a' @( 'b' @'c' 'd' )", options);
+          expect(parser).to.parse("abcd", "c");
+
+          parser = peg.generate("start = 'a' ( @'b' 'c' ) @'d'", options);
+          expect(parser).to.parse("abcd", "d");
+
+          parser = peg.generate("start = 'a' @'b' 'c' / 'd' 'e' @'f'", options);
+          expect(parser).to.parse("def", "f");
+        });
+
+        it("plucks a multiple values", function() {
+          let parser = peg.generate("start = 'a' @'b' @'c'", options);
+          expect(parser).to.parse("abc", [ "b", "c" ]);
+
+          parser = peg.generate("start = 'a' ( @'b' @'c' )", options);
+          expect(parser).to.parse("abc", [ "a", [ "b", "c" ] ]);
+
+          parser = peg.generate("start = 'a' @( 'b' @'c' @'d' )", options);
+          expect(parser).to.parse("abcd", [ "c", "d" ]);
+
+          parser = peg.generate("start = 'a' @( @'b' 'c' ) @'d' 'e'", options);
+          expect(parser).to.parse("abcde", [ "b", "d" ]);
+
+          parser = peg.generate("start = 'a' @'b' 'c' / @'d' 'e' @'f'", options);
+          expect(parser).to.parse("def", [ "d", "f" ]);
+        });
+
+        it("prevents \"@\" on a semantic predicate", function() {
+          expect(() => peg.generate("start1 = 'a' @&{ /* semantic_and */ } 'c'")).to.throw();
+          expect(() => peg.generate("start2 = 'a' @!{ /* semantic_not */ } 'c'")).to.throw();
+        });
       });
 
       describe("when any expression doesn't match", function() {
@@ -1137,16 +1189,19 @@ describe("generated parser behavior", function() {
             ].join("\n"), options);
 
             expect(parser).to.parse("1\n2\n\n3\n\n\n4 5 x", {
+              source: undefined,
               start: { offset: 13, line: 7, column: 5 },
               end: { offset: 14, line: 7, column: 6 }
             });
 
             // Newline representations
             expect(parser).to.parse("1\nx", {     // Unix
+              source: undefined,
               start: { offset: 2, line: 2, column: 1 },
               end: { offset: 3, line: 2, column: 2 }
             });
             expect(parser).to.parse("1\r\nx", {   // Windows
+              source: undefined,
               start: { offset: 3, line: 2, column: 1 },
               end: { offset: 4, line: 2, column: 2 }
             });
@@ -1164,6 +1219,7 @@ describe("generated parser behavior", function() {
                 expected: [{ type: "other", description: "a" }],
                 found: "a",
                 location: {
+                  source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
                   end: { offset: 1, line: 1, column: 2 }
                 }
@@ -1204,6 +1260,7 @@ describe("generated parser behavior", function() {
                 found: null,
                 expected: null,
                 location: {
+                  source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
                   end: { offset: 1, line: 1, column: 2 }
                 }
@@ -1391,6 +1448,7 @@ describe("generated parser behavior", function() {
 
           expect(parser).to.failToParse("", {
             location: {
+              source: undefined,
               start: { offset: 0, line: 1, column: 1 },
               end: { offset: 0, line: 1, column: 1 }
             }
@@ -1402,6 +1460,7 @@ describe("generated parser behavior", function() {
 
           expect(parser).to.failToParse("b", {
             location: {
+              source: undefined,
               start: { offset: 0, line: 1, column: 1 },
               end: { offset: 1, line: 1, column: 2 }
             }
@@ -1413,6 +1472,7 @@ describe("generated parser behavior", function() {
 
           expect(parser).to.failToParse("aa", {
             location: {
+              source: undefined,
               start: { offset: 1, line: 1, column: 2 },
               end: { offset: 2, line: 1, column: 3 }
             }
@@ -1429,6 +1489,7 @@ describe("generated parser behavior", function() {
 
           expect(parser).to.failToParse("1\n2\n\n3\n\n\n4 5 x", {
             location: {
+              source: undefined,
               start: { offset: 13, line: 7, column: 5 },
               end: { offset: 14, line: 7, column: 6 }
             }
@@ -1437,16 +1498,36 @@ describe("generated parser behavior", function() {
           // Newline representations
           expect(parser).to.failToParse("1\nx", {     // Old Mac
             location: {
+              source: undefined,
               start: { offset: 2, line: 2, column: 1 },
               end: { offset: 3, line: 2, column: 2 }
             }
           });
           expect(parser).to.failToParse("1\r\nx", {   // Windows
             location: {
+              source: undefined,
               start: { offset: 3, line: 2, column: 1 },
               end: { offset: 4, line: 2, column: 2 }
             }
           });
+        });
+
+        it("reports location source correctly", function() {
+          const source = { source: "object" };
+          const parser = peg.generate([
+            "start = line (nl+ line)*",
+            "line = digit (' '+ digit)*",
+            "digit = [0-9]",
+            "nl = '\\r'? '\\n'"
+          ].join("\n"), options);
+
+          expect(parser).to.failToParse("1\n2\n\n3\n\n\n4 5 x", {
+            location: {
+              source,
+              start: { offset: 13, line: 7, column: 5 },
+              end: { offset: 14, line: 7, column: 6 }
+            }
+          }, { grammarSource: source });
         });
       });
     });

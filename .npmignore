@@ -11,3 +11,5 @@ test
 tools
 .vscode/
 build/*
+pnpm-lock.yaml
+yarn.lock

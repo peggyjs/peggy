@@ -11,11 +11,11 @@ const expect = chai.expect;
 describe("compiler pass |generateBytecode|", function() {
   function bytecodeDetails(bytecode) {
     return {
-      rules: [{ bytecode: bytecode }]
+      rules: [{ bytecode }]
     };
   }
 
-  function constsDetails(consts) { return { consts: consts }; }
+  function constsDetails(consts) { return { consts }; }
 
   describe("for grammar", function() {
     it("generates correct bytecode", function() {
@@ -44,6 +44,48 @@ describe("compiler pass |generateBytecode|", function() {
         "peg$literalExpectation(\"b\", false)",
         "\"c\"",
         "peg$literalExpectation(\"c\", false)"
+      ]));
+    });
+
+    it("generates correct plucking bytecode", function() {
+      expect(pass).to.changeAST("start = 'a' @'b' 'c'", bytecodeDetails([
+        5,                         // PUSH_CURR_POS
+        18, 0, 2, 2, 22, 0, 23, 1, // <expression>
+        15, 34, 3,                 // IF_NOT_ERROR
+        18, 2, 2, 2, 22, 2, 23, 3, //   * <expression>
+        15, 19, 4,                 //     IF_NOT_ERROR
+        18, 4, 2, 2, 22, 4, 23, 5, //       * <expression>
+        15, 4, 4,                  //         IF_NOT_ERROR
+        36, 4, 1, 1,               //           * PLUCK <pop 4, push [1]>
+        8, 3,                      //           * POP_N <3>
+        7,                         //             POP_CURR_POS
+        3,                         //             PUSH_FAILED
+        8, 2,                      //       * POP_N <2>
+        7,                         //         POP_CURR_POS
+        3,                         //         PUSH_FAILED
+        6,                         //   * POP
+        7,                         //     POP_CURR_POS
+        3                          //     PUSH_FAILED
+      ]));
+
+      expect(pass).to.changeAST("start = 'a' @'b' @'c'", bytecodeDetails([
+        5,                          // PUSH_CURR_POS
+        18, 0, 2, 2, 22, 0, 23, 1,  // <expression>
+        15, 35, 3,                  // IF_NOT_ERROR
+        18, 2, 2, 2, 22, 2, 23, 3,  //   * <expression>
+        15, 20, 4,                  //     IF_NOT_ERROR
+        18, 4, 2, 2, 22, 4, 23, 5,  //       * <expression>
+        15, 5, 4,                   //         IF_NOT_ERROR
+        36, 4, 2, 1, 0,             //           * PLUCK <pop 4, push [1, 0]>
+        8, 3,                       //           * POP_N <3>
+        7,                          //             POP_CURR_POS
+        3,                          //             PUSH_FAILED
+        8, 2,                       //       * POP_N <2>
+        7,                          //         POP_CURR_POS
+        3,                          //         PUSH_FAILED
+        6,                          //   * POP
+        7,                          //     POP_CURR_POS
+        3                           //     PUSH_FAILED
       ]));
     });
   });
@@ -146,14 +188,13 @@ describe("compiler pass |generateBytecode|", function() {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
           5,                           // PUSH_CURR_POS
           18, 0, 2, 2, 22, 0, 23, 1,   // <elements[0]>
-          15, 40, 3,                   // IF_NOT_ERROR
+          15, 39, 3,                   // IF_NOT_ERROR
           18, 2, 2, 2, 22, 2, 23, 3,   //   * <elements[1]>
-          15, 25, 4,                   //     IF_NOT_ERROR
+          15, 24, 4,                   //     IF_NOT_ERROR
           18, 4, 2, 2, 22, 4, 23, 5,   //       * <elements[2]>
-          15, 10, 4,                   //         IF_NOT_ERROR
+          15, 9, 4,                   //         IF_NOT_ERROR
           24, 3,                       //           * LOAD_SAVED_POS
-          26, 6, 3, 3, 2, 1, 0,        //             CALL
-          9,                           //             NIP
+          26, 6, 4, 3, 2, 1, 0,        //             CALL <6>
           8, 3,                        //           * POP_N
           7,                           //             POP_CURR_POS
           3,                           //             PUSH_FAILED
