@@ -13,3 +13,4 @@ tools
 build/*
 pnpm-lock.yaml
 yarn.lock
+coverage/*
