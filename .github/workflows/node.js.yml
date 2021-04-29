@@ -12,10 +12,27 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x, 16.x]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - node-version: 16.x   # fastest, so run first, to error fast
+            os: ubuntu-latest
+          - node-version: 16.x   # slowest, so run next. sort by slowest from here to get earliest end through parallelism
+            os: macos-latest
+          - node-version: 16.x   # finish check big-3 on latest current
+            os: windows-latest
+          - node-version: 10.x   # lastly check just ubuntu on historic node versions because speed, oldest (slowest) first
+            os: ubuntu-latest
+          - node-version: 11.x
+            os: ubuntu-latest
+          - node-version: 12.x
+            os: ubuntu-latest
+          - node-version: 13.x
+            os: ubuntu-latest
+          - node-version: 14.x
+            os: ubuntu-latest
+          - node-version: 15.x
+            os: ubuntu-latest
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{matrix.os}}
 
     steps:
       - uses: actions/checkout@v2
