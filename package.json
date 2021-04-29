@@ -11,7 +11,6 @@
   "repository": "peggyjs/peggy",
   "bugs": "https://github.com/peggyjs/peggy/issues",
   "license": "MIT",
-  "author": "David Majda <david@majda.cz> (https://majda.cz/)",
   "main": "lib/peg.js",
   "unpkg": "browser/peggy.min.js",
   "jsdelivr": "browser/peggy.min.js",
