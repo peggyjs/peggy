@@ -3,9 +3,10 @@
 
 /* eslint-env node */
 
+const fs = require("fs");
+const chalk = require("chalk");
 const Runner = require("./runner.js");
 const benchmarks = require("./benchmarks.js");
-const fs = require("fs");
 
 // Results Table Manipulation
 
@@ -35,39 +36,72 @@ function center(text, length) {
     + dup(" ", Math.ceil(padLength));
 }
 
+function boxcolor(text) {
+  return chalk.cyan(text);
+}
+
+function head(text) {
+  return chalk.white(text);
+}
+
+function bhead(text) {
+  return chalk.yellowBright(text);
+}
+
 function writeTableHeader() {
-  console.log("┌─────────────────────────────────────┬───────────┬────────────┬──────────────┐");
-  console.log("│                Test                 │ Inp. size │ Avg. time  │  Avg. speed  │");
+  console.log( boxcolor( "┌─────────────────────────────────────┬───────────┬────────────┬──────────────┐") );
+  console.log( boxcolor( `│                ${head("Test")}                 │ ${head("Inp. size")} │ ${head("Avg. time")}  │  ${head("Avg. speed")}  │`) );
 }
 
 function writeHeading(heading) {
-  console.log("├─────────────────────────────────────┴───────────┴────────────┴──────────────┤");
-  console.log("│ " + center(heading, 75) + " │");
-  console.log("├─────────────────────────────────────┬───────────┬────────────┬──────────────┤");
+  console.log( boxcolor( "├─────────────────────────────────────┴───────────┴────────────┴──────────────┤") );
+  console.log( boxcolor( `│ ${bhead(center(heading, 75))} │`) );
+  console.log( boxcolor( "├─────────────────────────────────────┬───────────┬────────────┬──────────────┤") );
 }
 
-function writeResult(title, inputSize, parseTime) {
+function writeResult(title, inputSize, parseTime, isRegression=false, isImprovement=false) {
+
   const KB = 1024;
   const MS_IN_S = 1000;
 
-  console.log("│ "
-    + padRight(title, 35)
-    + " │ "
-    + padLeft((inputSize / KB).toFixed(2), 6)
-    + " kB │ "
-    + padLeft(parseTime.toFixed(2), 7)
-    + " ms │ "
-    + padLeft(((inputSize / KB) / (parseTime / MS_IN_S)).toFixed(2), 7)
-    + " kB/s │"
-  );
+  const bar = boxcolor("│");
+
+  let fg = chalk.white;
+  let bg = chalk.bgBlack;
+
+  if (isRegression && isImprovement) {
+    throw new Error(`Regressions are slowdowns; improvements are speedups.  ${title} was marked as both.`)
+  }
+
+  if (isImprovement) {
+    fg = chalk.yellowBright;
+    bg = chalk.bgGreen;
+  }
+
+  if (isRegression) {
+    fg = chalk.whiteBright;
+    bg = chalk.bgRed;
+  }
+
+  // columns have the left padding space but not the right
+  const col1 = ` ${ fg( padRight(title, 35) ) } ${bar}`;
+  const col2 = ` ${ fg( padLeft((inputSize / KB).toFixed(2), 6) ) } kb ${bar}`;
+  const col3 = ` ${ fg( padLeft(parseTime.toFixed(2), 7) ) } ms ${bar}`;
+  const col4 = ` ${ fg( padLeft(((inputSize / KB) / (parseTime / MS_IN_S)).toFixed(2), 7) ) } kB/s`;
+
+  // the row has the last trailing right space
+  const row = `${col1}${col2}${col3}${col4} `;
+
+  console.log( `${bar}${ bg(row) }${bar}` );
+
 }
 
 function writeSeparator() {
-  console.log("├─────────────────────────────────────┼───────────┼────────────┼──────────────┤");
+  console.log( boxcolor( "├─────────────────────────────────────┼───────────┼────────────┼──────────────┤") );
 }
 
 function writeTableFooter() {
-  console.log("└─────────────────────────────────────┴───────────┴────────────┴──────────────┘");
+  console.log( boxcolor( "└─────────────────────────────────────┴───────────┴────────────┴──────────────┘") );
 }
 
 // Helpers
