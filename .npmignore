@@ -10,7 +10,7 @@ src
 test
 tools
 .vscode/
-build/*
+build/
 pnpm-lock.yaml
 yarn.lock
-coverage/*
+coverage/

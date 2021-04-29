@@ -2,10 +2,6 @@
 import nodeResolve from 'rollup-plugin-node-resolve';
 import commonjs    from 'rollup-plugin-commonjs';
 
-
-
-
-
 const umd_config = {
 
   onwarn: function (message) {
@@ -36,10 +32,6 @@ const umd_config = {
 
 };
 
-
-
-
-
 const es6_config = {
 
   onwarn: function (message) {
@@ -69,9 +61,5 @@ const es6_config = {
   ]
 
 };
-
-
-
-
 
 export default [ umd_config, es6_config ];
