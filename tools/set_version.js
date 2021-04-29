@@ -1,6 +1,8 @@
 
-const fs = require('fs');
-const pkg = JSON.parse(fs.readFileSync('./package.json'));
+"use strict";
+
+const fs = require("fs");
+const pkg = JSON.parse(fs.readFileSync("./package.json"));
 
 const file_contents = `
 // This file is generated.
