@@ -12,9 +12,7 @@ Released: TBD
 
 - Infrastructural rebake [@StoneCypher](https://github.com/peggyjs/peggy/pull/107)
     - Builds with `typescript`, removes `babel`
-    - Bundles with `rollup`, removes `webpack`
-        - Rollup is configured to create two bundles - es6 and umd
-        - Only umd is exposed; will expose es6 with #119
+    - Bundles with `rollup`, removes `browserify`
     - Tests with `jest`, removes `mocha`
         - Enables coverage analysis using `lcov` notation
         - Coverage is not archived; will archive with #120

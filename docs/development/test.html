@@ -20,6 +20,15 @@
     </script>
     <![endif]-->
 
+    <!-- replace with Jest one day -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.4/chai.min.js"></script>
+
+<script>
+  mocha.setup('bdd');
+</script>
+<script src='/js/test-bundle.min.js'></script>
 </head>
 
 <body>
@@ -37,25 +46,7 @@
         </nav>
 
         <div id="content">
-
-
-
-                <div id="mocha"></div>
-
-                <link href="/css/test.css" rel="stylesheet" />
-
-                <script>
-                    if ( window.MSInputMethodContext && document.documentMode )
-
-                        document.getElementById( "mocha" ).innerHTML = "Sorry, IE11 is not supported by the Spec Runner's dependencies.";
-
-                    else
-
-                        document.write( "<script src='/js/test-bundle.min.js'><\/script>" );
-                </script>
-
-
-
+          <div id="mocha"></div>
         </div>
 
         <footer id="footer">
@@ -65,5 +56,7 @@
         </footer>
     </div>
 </body>
-
+<script class="mocha-exec">
+  mocha.run();
+</script>
 </html>

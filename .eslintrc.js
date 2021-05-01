@@ -10,6 +10,8 @@ module.exports = {
     "benchmark/vendor/",
     "browser/",
     "node_modules/",
-    "*.min.js"
+    "*.min.js",
+    "build",
+    "rollup.config.js" // in .eslintrc-modules.js
   ]
 };
