@@ -270,13 +270,43 @@ export type GrammarError = PeggyError;
 export var GrammarError: any;
 
 export namespace parser {
-  function parse(input: string): any;
+  /**
+   * Parses grammar and returns the grammar AST.
+   *
+   * @param grammar Source text of the grammar
+   * @param options Parser options
+   *
+   * @throws {SyntaxError} If `grammar` has an incorrect format
+   */
+  function parse(grammar: string, options?: Options): ast.Grammar;
 
+  /** Options, accepted by the parser of PEG grammar. */
+  interface Options {
+    /**
+     * Object that will be attached to the each `LocationRange` object created by
+     * the parser. For example, this can be path to the parsed file or even the
+     * File object.
+     */
+    grammarSource?: any;
+    /** The only acceptable rule is `"Grammar"`, all other values leads to the exception */
+    startRule?: "Grammar";
+  }
+
+  /** Thrown if the grammar contains a syntax error. */
   class SyntaxError {
     name: string;
     message: string;
+    /** Location where error was originated. */
     location: LocationRange;
+    /**
+     * List of possible tokens in the parse position, or `null` if error was
+     * created by the `error()` call.
+     */
     expected: any[];
+    /**
+     * Character in the current parse position, or `null` if error was created
+     * by the `error()` call.
+     */
     found: any;
   }
 }
