@@ -1,4 +1,6 @@
-browser/*
+browser/
+build/
+coverage/
 examples/*.js
 node_modules/
 pnpm-lock.yaml

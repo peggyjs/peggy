@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 "use strict";
 
 // prepend header info to generated files, in-place.
