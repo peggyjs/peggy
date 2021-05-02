@@ -1,38 +1,7 @@
 // Based on PEG.js Type Definitions by: vvakame <https://github.com/vvakame>, Tobias Kahlert <https://github.com/SrTobi>, C.J. Bell <https://github.com/siegebell>
 
-export namespace parser {
-  function parse(input: string): any;
-
-  interface Location {
-    line: number;
-    column: number;
-    offset: number;
-  }
-
-  interface LocationRange {
-    /** Any object that was supplied to the `parse()` call as the `grammarSource` option. */
-    source: any;
-    start: Location;
-    end: Location;
-  }
-
-  class SyntaxError {
-    location: LocationRange;
-    expected: any[];
-    found: any;
-    name: string;
-    message: string;
-  }
-}
-
-export type Location = parser.Location;
-export type LocationRange = parser.LocationRange;
-
-export interface ExpectedItem {
-  type: string;
-  value?: string;
-  description: string;
-}
+/** Current Peggy version in semver format. */
+export const VERSION: string;
 
 /**
  * The entry that maps object in the `source` property of error locations
@@ -98,6 +67,40 @@ export type PegjsError = PeggyError;
 
 export type GrammarError = PeggyError;
 export var GrammarError: any;
+
+export namespace parser {
+  function parse(input: string): any;
+
+  interface Location {
+    line: number;
+    column: number;
+    offset: number;
+  }
+
+  interface LocationRange {
+    /** Any object that was supplied to the `parse()` call as the `grammarSource` option. */
+    source: any;
+    start: Location;
+    end: Location;
+  }
+
+  class SyntaxError {
+    name: string;
+    message: string;
+    location: LocationRange;
+    expected: any[];
+    found: any;
+  }
+}
+
+export type Location = parser.Location;
+export type LocationRange = parser.LocationRange;
+
+export interface ExpectedItem {
+  type: string;
+  value?: string;
+  description: string;
+}
 
 export interface ParserOptions {
   /**
@@ -206,8 +209,6 @@ export function generate(grammar: string, options: OutputFormatUmd): string;
 export function generate(grammar: string, options: OutputFormatGlobals): string;
 /** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
 export function generate(grammar: string, options: OutputFormatBare): string;
-
-export const VERSION: string;
 
 // Export all exported stuff under a global variable PEG in non-module environments
 export as namespace PEG;
