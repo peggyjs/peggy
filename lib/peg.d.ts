@@ -227,14 +227,14 @@ export interface DiagnosticNote {
   location: LocationRange;
 }
 
-export interface PeggyError extends Error {
-  name: string;
-  message: string;
+/** Thrown if the grammar contains a semantic error. */
+export class GrammarError extends Error {
+  /** Location of the error in the source. */
   location?: LocationRange;
+  /** Additional messages with context information. */
   diagnostics: DiagnosticNote[];
-  found?: any;
-  expected?: ExpectedItem[];
-  stack?: any;
+
+  constructor(message: string, location?: LocationRange, diagnostics?: DiagnosticNote[]);
 
   /**
    * Format the error with associated sources.  The `location.source` should have
@@ -262,12 +262,6 @@ export interface PeggyError extends Error {
   format(sources: SourceText[]): string;
   toString(): string;
 }
-
-// for backwards compatibility with PEGjs
-export type PegjsError = PeggyError;
-
-export type GrammarError = PeggyError;
-export var GrammarError: any;
 
 export namespace parser {
   /**
@@ -409,12 +403,6 @@ export interface LocationRange {
   start: Location;
   /** Position after the end of the expression. */
   end: Location;
-}
-
-export interface ExpectedItem {
-  type: string;
-  value?: string;
-  description: string;
 }
 
 export interface ParserOptions {
