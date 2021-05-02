@@ -71,19 +71,6 @@ export var GrammarError: any;
 export namespace parser {
   function parse(input: string): any;
 
-  interface Location {
-    line: number;
-    column: number;
-    offset: number;
-  }
-
-  interface LocationRange {
-    /** Any object that was supplied to the `parse()` call as the `grammarSource` option. */
-    source: any;
-    start: Location;
-    end: Location;
-  }
-
   class SyntaxError {
     name: string;
     message: string;
@@ -93,8 +80,25 @@ export namespace parser {
   }
 }
 
-export type Location = parser.Location;
-export type LocationRange = parser.LocationRange;
+/** Provides information pointing to a location within a source. */
+export interface Location {
+  /** Line in the parsed source (1-based). */
+  line: number;
+  /** Column in the parsed source (1-based). */
+  column: number;
+  /** Offset in the parsed source (0-based). */
+  offset: number;
+}
+
+/** The `start` and `end` position's of an object within the source. */
+export interface LocationRange {
+  /** Any object that was supplied to the `parse()` call as the `grammarSource` option. */
+  source: any;
+  /** Position at the beginning of the expression. */
+  start: Location;
+  /** Position after the end of the expression. */
+  end: Location;
+}
 
 export interface ExpectedItem {
   type: string;
