@@ -1,6 +1,6 @@
 // Based on PEG.js Type Definitions by: vvakame <https://github.com/vvakame>, Tobias Kahlert <https://github.com/SrTobi>, C.J. Bell <https://github.com/siegebell>
 
-declare namespace PEG {
+export namespace parser {
   function parse(input: string): any;
 
   interface Location {
@@ -25,8 +25,8 @@ declare namespace PEG {
   }
 }
 
-export type Location = PEG.Location;
-export type LocationRange = PEG.LocationRange;
+export type Location = parser.Location;
+export type LocationRange = parser.LocationRange;
 
 export interface ExpectedItem {
   type: string;
@@ -209,8 +209,5 @@ export function generate(grammar: string, options: OutputFormatBare): string;
 
 export const VERSION: string;
 
-export namespace parser {
-  type SyntaxError = PeggyError;
-  var SyntaxError: any;
-}
+// Export all exported stuff under a global variable PEG in non-module environments
 export as namespace PEG;
