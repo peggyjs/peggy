@@ -63,6 +63,22 @@ Released: TBD
   especially if your plugin replaces both `generateBytecode` as `generateJs` passes.
 
   [@Mingun](https://github.com/peggyjs/peggy/pull/117)
+- Default visitor functions, returned by the `visitor.build()`, that just forward
+  call to `node.expression`, now returns the result of underlying `visit` call.
+  [@Mingun](https://github.com/peggyjs/peggy/pull/144)
+
+  Affected functions:
+    - `rule`
+    - `named`
+    - `action`
+    - `labeled`
+    - `text`
+    - `simple_and`
+    - `simple_not`
+    - `optional`
+    - `zero_or_more`
+    - `one_or_more`
+    - `group`
 
 ### Bug fixes
 
