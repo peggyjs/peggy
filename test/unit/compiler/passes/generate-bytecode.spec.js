@@ -683,7 +683,7 @@ describe("compiler pass |generateBytecode|", function() {
   describe("for class", function() {
     it("generates correct bytecode", function() {
       expect(pass).to.changeAST("start = [a]", bytecodeDetails([
-        20, 0, 2, 2,   // MATCH_REGEXP
+        20, 0, 2, 2,   // MATCH_CHAR_CLASS <0>
         21, 1,         //   * ACCEPT_N <1>
         23, 0          //   * FAIL <0>
       ]));
