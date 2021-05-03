@@ -45,6 +45,9 @@ Released: TBD
   - `classes`
   - `expectations`
   - `functions`
+- Added missing type definitions to the `peg.d.ts` file. Added definitions for the
+  `compiler` and `visitor` modules, AST, and `plugins` option in the `generate()` function.
+  [@Mingun](https://github.com/peggyjs/peggy/pull/143)
 
   Now bytecode generation pass is independent from the JavaScript backend.
   [@Mingun](https://github.com/peggyjs/peggy/pull/117)
@@ -64,6 +67,7 @@ Released: TBD
 ### Bug fixes
 
 - [#112](https://github.com/peggyjs/peggy/pull/112): `"group"` node in the AST now have `location` information (back-ported)
+- [#143](https://github.com/peggyjs/peggy/pull/143): `peg.d.ts` had some errors in the type descriptions, which was fixed
 
 
 1.1.0
