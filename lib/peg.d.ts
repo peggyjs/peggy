@@ -196,19 +196,40 @@ export interface OutputFormatBare extends BuildOptionsBase {
   format?: "bare";
 }
 
-/** Returns a generated parser object. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
+/** Options for generating source code of the parser. */
+export type SourceBuildOptions
+  = OutputFormatUmd
+  | OutputFormatBare
+  | OutputFormatGlobals
+  | OutputFormatAmdCommonjsEs;
+
+/**
+ * Returns a generated parser object.
+ *
+ * @param grammar String in the format described by the meta-grammar in the
+ *        `parser.pegjs` file
+ * @param options Options that allow you to customize returned parser object
+ *
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
+ *         an unclosed brace
+ * @throws {GrammarError} If the grammar contains a semantic error, for example,
+ *         duplicated labels
+ */
 export function generate(grammar: string, options?: ParserBuildOptions): Parser;
-/** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
-export function generate(
-  grammar: string,
-  options: OutputFormatAmdCommonjsEs
-): string;
-/** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
-export function generate(grammar: string, options: OutputFormatUmd): string;
-/** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
-export function generate(grammar: string, options: OutputFormatGlobals): string;
-/** Returns the generated source code as a `string`. It will throw an exception if the grammar is invalid. The exception will contain `message` property with more details about the error. */
-export function generate(grammar: string, options: OutputFormatBare): string;
+
+/**
+ * Returns the generated source code as a `string` in the specified module format.
+ *
+ * @param grammar String in the format described by the meta-grammar in the
+ *        `parser.pegjs` file
+ * @param options Options that allow you to customize returned parser object
+ *
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
+ *         an unclosed brace
+ * @throws {GrammarError} If the grammar contains a semantic error, for example,
+ *         duplicated labels
+ */
+export function generate(grammar: string, options: SourceBuildOptions): string;
 
 // Export all exported stuff under a global variable PEG in non-module environments
 export as namespace PEG;
