@@ -385,6 +385,284 @@ export namespace parser {
   }
 }
 
+export namespace compiler {
+  namespace visitor {
+    /** List of possible visitors of AST nodes. */
+    interface NodeTypes {
+      /**
+       * Default behavior: run visitor:
+       * - on the top level initializer, if it is defined
+       * - on the initializer, if it is defined
+       * - on each element in `rules`
+       *
+       * At the end return `undefined`
+       *
+       * @param node Reference to the whole AST
+       * @param args Any arguments passed to the `Visitor`
+       */
+      grammar?              (node: ast.Grammar,             ...args: any[]): any;
+
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Node, representing user-defined code that executed only once
+       *        when initializing the generated parser (during importing generated
+       *        code)
+       * @param args Any arguments passed to the `Visitor`
+       */
+      top_level_initializer?(node: ast.TopLevelInitializer, ...args: any[]): any;
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Node, representing user-defined code that executed on each
+       *        run of the `parse()` method of the generated parser
+       * @param args Any arguments passed to the `Visitor`
+       */
+      initializer?          (node: ast.Initializer,         ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing one structural element of the grammar
+       * @param args Any arguments passed to the `Visitor`
+       */
+      rule?                 (node: ast.Rule,                ...args: any[]): any;
+
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing assigning a human-readable name to
+       *        the rule
+       * @param args Any arguments passed to the `Visitor`
+       */
+      named?                (node: ast.Named,               ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on each element in `alternatives`,
+       * return `undefined`
+       *
+       * @param node Node, representing ordered choice of the one expression
+       *        to match
+       * @param args Any arguments passed to the `Visitor`
+       */
+      choice?               (node: ast.Choice,              ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing execution of the user-defined action
+       *        in the grammar
+       * @param args Any arguments passed to the `Visitor`
+       */
+      action?               (node: ast.Action,              ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on each element in `elements`,
+       * return `undefined`
+       *
+       * @param node Node, representing ordered sequence of expressions to match
+       * @param args Any arguments passed to the `Visitor`
+       */
+      sequence?             (node: ast.Sequence,            ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing labeling of the `expression` result
+       * @param args Any arguments passed to the `Visitor`
+       */
+      labeled?              (node: ast.Labeled,             ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing usage of part of matched input
+       * @param args Any arguments passed to the `Visitor`
+       */
+      text?                 (node: ast.Prefixed,            ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing positive lookahead check
+       * @param args Any arguments passed to the `Visitor`
+       */
+      simple_and?           (node: ast.Prefixed,            ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing negative lookahead check
+       * @param args Any arguments passed to the `Visitor`
+       */
+      simple_not?           (node: ast.Prefixed,            ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing optional presenting of the `expression`
+       * @param args Any arguments passed to the `Visitor`
+       */
+      optional?             (node: ast.Suffixed,            ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing repetition of the `expression` any number of times
+       * @param args Any arguments passed to the `Visitor`
+       */
+      zero_or_more?         (node: ast.Suffixed,            ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, representing repetition of the `expression` at least once
+       * @param args Any arguments passed to the `Visitor`
+       */
+      one_or_more?          (node: ast.Suffixed,            ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `expression` and return it result
+       *
+       * @param node Node, introducing new scope for the labels
+       * @param args Any arguments passed to the `Visitor`
+       */
+      group?                (node: ast.Group,               ...args: any[]): any;
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Leaf node, representing positive lookahead check
+       * @param args Any arguments passed to the `Visitor`
+       */
+      semantic_and?         (node: ast.SemanticPredicate,   ...args: any[]): any;
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Leaf node, representing negative lookahead check
+       * @param args Any arguments passed to the `Visitor`
+       */
+      semantic_not?         (node: ast.SemanticPredicate,   ...args: any[]): any;
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Leaf node, representing using of the another rule
+       * @param args Any arguments passed to the `Visitor`
+       */
+      rule_ref?             (node: ast.RuleReference,       ...args: any[]): any;
+
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Leaf node, representing match of a continuous sequence of symbols
+       * @param args Any arguments passed to the `Visitor`
+       */
+      literal?              (node: ast.Literal,             ...args: any[]): any;
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Leaf node, representing match of a characters range
+       * @param args Any arguments passed to the `Visitor`
+       */
+      class?                (node: ast.CharacterClass,      ...args: any[]): any;
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Leaf node, representing match of an any character
+       * @param args Any arguments passed to the `Visitor`
+       */
+      any?                  (node: ast.Any,                 ...args: any[]): any;
+    }
+
+    type AnyFunction = (...args: any[]) => any;
+
+    /**
+     * Callable object that runs traversal of the AST starting from the node
+     * `node` by calling corresponding visitor function. All additional
+     * arguments of the call will be forwarded to the visitor function.
+     *
+     * Visitors are created by calling `build()` with object, containing all
+     * necessary visit functions. All functions, not defined explicitly, will
+     * receive appropriate default. See the function definitions in the type
+     * `Nodes` for description of the default behavior.
+     *
+     * @template {F} Object with visitors of AST nodes
+     */
+    interface Visitor<F extends NodeTypes> {
+      /**
+       * Runs visitor function registered for the specified node type.
+       * Returns value from the visitor function for the node.
+       *
+       * @param node Reference to the AST node
+       * @param args Extra arguments that will be forwarded to the corresponding
+       *        visitor function, associated with `T`
+       *
+       * @template {T} Type of the AST node
+       */
+      <T extends keyof NodeTypes>(node: ast.Node<T>, ...args: any[]): ReturnType<F[T] & AnyFunction>;
+    }
+
+    /**
+     * Creates visitor object for traversing the AST.
+     *
+     * @param functions Object with visitor functions
+     */
+    function build<F extends NodeTypes>(functions: F): Visitor<F>;
+  }
+
+  /** Mapping from the pass name to the function that represents pass. */
+  interface Passes {
+    /** List of passes in the stage. Any concrete set of passes are not guaranteed. */
+    [key: string]: Pass;
+  }
+
+  /**
+   * Mapping from the stage name to the default pass suite.
+   * Plugins can extend or replace the list of passes during configuration.
+   */
+  interface Stages {
+    /**
+     * Pack of passes that performing checks on the AST. This bunch of passes
+     * executed in the very beginning of the compilation stage.
+     */
+    check: Passes;
+    /**
+     * Pack of passes that performing transformation of the AST.
+     * Various types of optimizations are performed here.
+     */
+    transform: Passes;
+    /** Pack of passes that generates the code. */
+    generate: Passes;
+
+    /** Any additional stages that can be added in the future. */
+    [key: string]: Passes;
+  }
+
+  /** List of the compilation stages. */
+  let passes: Stages;
+
+  /**
+   * Generates a parser from a specified grammar AST.
+   *
+   * Note that not all errors are detected during the generation and some may
+   * protrude to the generated parser and cause its malfunction.
+   *
+   * @param ast Abstract syntax tree of the grammar from a parser
+   * @param stages List of compilation stages
+   * @param options Compilation options
+   *
+   * @return A parser object
+   *
+   * @throws {GrammarError} If the AST contains a semantic error, for example,
+   *         duplicated labels
+   */
+  function compile(ast: ast.Grammar, stages: Stages, options?: ParserBuildOptions): Parser;
+
+  /**
+   * Generates a parser source from a specified grammar AST.
+   *
+   * Note that not all errors are detected during the generation and some may
+   * protrude to the generated parser and cause its malfunction.
+   *
+   * @param ast Abstract syntax tree of the grammar from a parser
+   * @param stages List of compilation stages
+   * @param options Compilation options
+   *
+   * @return A parser source code
+   *
+   * @throws {GrammarError} If the AST contains a semantic error, for example,
+   *         duplicated labels
+   */
+  function compile(ast: ast.Grammar, stages: Stages, options: SourceBuildOptions): string;
+}
+
 /** Provides information pointing to a location within a source. */
 export interface Location {
   /** Line in the parsed source (1-based). */
