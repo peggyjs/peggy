@@ -38,29 +38,17 @@
     "&": "semantic_and",
     "!": "semantic_not"
   };
-
-  function extractOptional(optional, index) {
-    return optional ? optional[index] : null;
-  }
-
-  function extractList(list, index) {
-    return list.map(element => element[index]);
-  }
-
-  function buildList(head, tail, index) {
-    return [head].concat(extractList(tail, index));
-  }
 }}
 
 // ---- Syntactic Grammar -----
 
 Grammar
-  = __ topLevelInitializer:(TopLevelInitializer __)? initializer:(Initializer __)? rules:(Rule __)+ {
+  = __ topLevelInitializer:(@TopLevelInitializer __)? initializer:(@Initializer __)? rules:(@Rule __)+ {
       return {
         type: "grammar",
-        topLevelInitializer: extractOptional(topLevelInitializer, 0),
-        initializer: extractOptional(initializer, 0),
-        rules: extractList(rules, 0),
+        topLevelInitializer,
+        initializer,
+        rules,
         location: location()
       };
     }
@@ -77,7 +65,7 @@ Initializer
 
 Rule
   = name:IdentifierName __
-    displayName:(StringLiteral __)?
+    displayName:(@StringLiteral __)?
     "=" __
     expression:Expression EOS
     {
@@ -87,7 +75,7 @@ Rule
         expression: displayName !== null
           ? {
               type: "named",
-              name: displayName[0],
+              name: displayName,
               expression,
               location: location()
             }
@@ -100,34 +88,34 @@ Expression
   = ChoiceExpression
 
 ChoiceExpression
-  = head:ActionExpression tail:(__ "/" __ ActionExpression)* {
+  = head:ActionExpression tail:(__ "/" __ @ActionExpression)* {
       return tail.length > 0
         ? {
             type: "choice",
-            alternatives: buildList(head, tail, 3),
+            alternatives: [head].concat(tail),
             location: location()
           }
         : head;
     }
 
 ActionExpression
-  = expression:SequenceExpression code:(__ CodeBlock)? {
+  = expression:SequenceExpression code:(__ @CodeBlock)? {
       return code !== null
         ? {
             type: "action",
             expression,
-            code: code[1],
+            code,
             location: location()
           }
         : expression;
     }
 
 SequenceExpression
-  = head:LabeledExpression tail:(__ LabeledExpression)* {
+  = head:LabeledExpression tail:(__ @LabeledExpression)* {
       return ((tail.length > 0) || (head.type === "labeled" && head.pick))
         ? {
             type: "sequence",
-            elements: buildList(head, tail, 1),
+            elements: [head].concat(tail),
             location: location()
           }
         : head;
@@ -270,7 +258,7 @@ IdentifierStart
   = UnicodeLetter
   / "$"
   / "_"
-  / "\\" sequence:UnicodeEscapeSequence { return sequence; }
+  / "\\" @UnicodeEscapeSequence
 
 IdentifierPart
   = IdentifierStart
@@ -364,12 +352,12 @@ StringLiteral "string"
 
 DoubleStringCharacter
   = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
-  / "\\" sequence:EscapeSequence { return sequence; }
+  / "\\" @EscapeSequence
   / LineContinuation
 
 SingleStringCharacter
   = !("'" / "\\" / LineTerminator) SourceCharacter { return text(); }
-  / "\\" sequence:EscapeSequence { return sequence; }
+  / "\\" @EscapeSequence
   / LineContinuation
 
 CharacterClassMatcher "character class"
