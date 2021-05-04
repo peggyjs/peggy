@@ -46,6 +46,11 @@ describe("plugin API", function() {
           config.passes.generate.forEach(pass => {
             expect(pass).to.be.a("function");
           });
+
+          expect(config.reservedWords).to.be.an("array");
+          config.reservedWords.forEach(word => {
+            expect(word).to.be.a("string");
+          });
         }
       };
 
@@ -102,6 +107,21 @@ describe("plugin API", function() {
       const parser = peg.generate(grammar, { plugins: [plugin] });
 
       expect(parser.parse("a")).to.equal(42);
+    });
+
+    it("can change list of reserved words", function() {
+      const plugin = {
+        use(config) {
+          config.reservedWords = [];
+        }
+      };
+
+      expect(() => {
+        peg.generate(
+          "start = " + peg.RESERVED_WORDS[0] + ":'a'",
+          { plugins: [plugin], output: "source" }
+        );
+      }).to.not.throw();
     });
 
     it("can change options", function() {
