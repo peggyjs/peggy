@@ -289,8 +289,9 @@ if (inputFile === "-") {
   process.stdin.resume();
   inputStream = process.stdin;
   inputStream.on("error", () => {
-    abort("Can't read from file \"" + inputFile + "\".");
+    abort("Can't read from stdin.");
   });
+  options.grammarSource = "stdin";
 } else {
   options.grammarSource = inputFile;
   inputStream = fs.createReadStream(inputFile);
@@ -311,8 +312,11 @@ readStream(inputStream, input => {
   try {
     source = peg.generate(input, options);
   } catch (e) {
-    if (e.location !== undefined) {
-      abort(e.location.start.line + ":" + e.location.start.column + ": " + e.message);
+    if (typeof e.format === "function") {
+      abort(e.format([{
+        source: options.grammarSource,
+        text: input
+      }]));
     } else {
       abort(e.message);
     }

@@ -541,8 +541,10 @@ expression matches, consider the match failed.
 As described above, you can annotate your grammar rules with human-readable
 names that will be used in error messages. For example, this production:
 
-    integer "integer"
-      = digits:[0-9]+
+```peggy
+integer "integer"
+  = digits:[0-9]+
+```
 
 will produce an error message like:
 
@@ -562,8 +564,10 @@ subexpressions.
 
 For example, for this rule matching a comma-separated list of integers:
 
-    seq
-      = integer ("," integer)*
+```peggy
+seq
+  = integer ("," integer)*
+```
 
 an input like `1,2,a` produces this error message:
 
@@ -571,13 +575,70 @@ an input like `1,2,a` produces this error message:
 
 But if we add a human-readable name to the `seq` production:
 
-    seq "list of numbers"
-      = integer ("," integer)*
+```peggy
+seq "list of numbers"
+  = integer ("," integer)*
+```
 
 then Peggy prefers an error message that implies a smaller attempted parse
 tree:
 
 > Expected end of input but "," found.
+
+There are two classes of errors in Peggy:
+
+- `SyntaxError`: Syntax errors, found during parsing the input. This kind of
+  errors can be thrown both during _grammar_ parsing and during _input_ parsing.
+  Although name is the same, errors of each generated parser (including Peggy
+  parser itself) has its own unique class.
+- `GrammarError`: Grammar errors, found during construction of the parser.
+  That errors can be thrown only on parser generation phase. This error
+  signals about logical mistake in the grammar, such as having rules with
+  the same name in one grammar, etc.
+
+Whatever error has caught, both of them have the `format()` method that takes
+an array of mappings from source to grammar text:
+
+```javascript
+let source = ...;
+try {
+  PEG.generate(input, { grammarSource: source, ...});// throws SyntaxError or GrammarError
+  parser.parse(input, { grammarSource: source, ...});// throws SyntaxError
+} catch (e) {
+  if (typeof e.format === "function") {
+    console.log(e.format([
+      { source, text: input },
+      { source: source2, text: input2 },
+      ...
+    ]));
+  }
+}
+```
+
+Generated message looks like:
+
+```console
+Error: Possible infinite loop when parsing (left recursion: start -> proxy -> end -> start)
+ --> .\recursion.pegjs:1:1
+  |
+1 | start = proxy;
+  | ^^^^^
+note: Step 1: call of the rule "proxy" without input consumption
+ --> .\recursion.pegjs:1:9
+  |
+1 | start = proxy;
+  |         ^^^^^
+note: Step 2: call of the rule "end" without input consumption
+ --> .\recursion.pegjs:2:11
+  |
+2 | proxy = a:end { return a; };
+  |           ^^^
+note: Step 3: call itself without input consumption - left recursion
+ --> .\recursion.pegjs:3:8
+  |
+3 | end = !start
+  |        ^^^^^
+```
 
 ## Compatibility
 
