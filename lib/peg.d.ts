@@ -204,6 +204,9 @@ declare namespace ast {
 /** Current Peggy version in semver format. */
 export const VERSION: string;
 
+/** Default list of reserved words. Contains list of JavaScript reserved words */
+export const RESERVED_WORDS: string[];
+
 /**
  * The entry that maps object in the `source` property of error locations
  * to the actual source text of a grammar. That entries is necessary for
@@ -282,6 +285,11 @@ export namespace parser {
      * File object.
      */
     grammarSource?: any;
+    /**
+     * List of words that won't be allowed as label names. Using such word will
+     * produce a syntax error.
+     */
+    reservedWords: string[];
     /** The only acceptable rule is `"Grammar"`, all other values leads to the exception */
     startRule?: "Grammar";
   }
@@ -759,6 +767,13 @@ export interface Config {
    * to add their own pass.
    */
   passes: Stages;
+  /**
+   * List of words that won't be allowed as label names. Using such word will
+   * produce a syntax error. This property can be replaced by the plugin if
+   * it want to change list of reserved words. By default this list is equals
+   * to `RESERVED_WORDS`.
+   */
+  reservedWords: string[];
 }
 
 /** Interface for the Peggy extenders. */
