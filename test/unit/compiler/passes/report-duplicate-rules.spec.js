@@ -14,12 +14,20 @@ describe("compiler pass |reportDuplicateRules|", function() {
       "start = 'a'",
       "start = 'b'"
     ].join("\n"), {
-      message: "Rule \"start\" is already defined at line 1, column 1.",
+      message: "Rule \"start\" is already defined",
       location: {
         source: undefined,
         start: { offset: 12, line: 2, column: 1 },
-        end: { offset: 23, line: 2, column: 12 }
-      }
+        end: { offset: 17, line: 2, column: 6 }
+      },
+      diagnostics: [{
+        message: "Original rule location",
+        location: {
+          source: undefined,
+          start: { offset: 0, line: 1, column: 1 },
+          end: { offset: 5, line: 1, column: 6 }
+        }
+      }]
     });
   });
 });

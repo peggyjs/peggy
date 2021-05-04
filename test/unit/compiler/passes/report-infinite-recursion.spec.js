@@ -11,11 +11,11 @@ const expect = chai.expect;
 describe("compiler pass |reportInfiniteRecursion|", function() {
   it("reports direct left recursion", function() {
     expect(pass).to.reportError("start = start", {
-      message: "Possible infinite loop when parsing (left recursion: start -> start).",
+      message: "Possible infinite loop when parsing (left recursion: start -> start)",
       location: {
         source: undefined,
-        start: { offset: 8, line: 1, column: 9 },
-        end: { offset: 13, line: 1, column: 14 }
+        start: { offset: 0, line: 1, column: 1 },
+        end: { offset: 5, line: 1, column: 6 }
       }
     });
   });
@@ -25,11 +25,11 @@ describe("compiler pass |reportInfiniteRecursion|", function() {
       "start = stop",
       "stop = start"
     ].join("\n"), {
-      message: "Possible infinite loop when parsing (left recursion: start -> stop -> start).",
+      message: "Possible infinite loop when parsing (left recursion: start -> stop -> start)",
       location: {
         source: undefined,
-        start: { offset: 20, line: 2, column: 8 },
-        end: { offset: 25, line: 2, column: 13 }
+        start: { offset: 0, line: 1, column: 1 },
+        end: { offset: 5, line: 1, column: 6 }
       }
     });
   });
