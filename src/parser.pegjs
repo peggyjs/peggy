@@ -351,12 +351,12 @@ StringLiteral "string"
   / "'" chars:SingleStringCharacter* "'" { return chars.join(""); }
 
 DoubleStringCharacter
-  = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
+  = $(!('"' / "\\" / LineTerminator) SourceCharacter)
   / "\\" @EscapeSequence
   / LineContinuation
 
 SingleStringCharacter
-  = !("'" / "\\" / LineTerminator) SourceCharacter { return text(); }
+  = $(!("'" / "\\" / LineTerminator) SourceCharacter)
   / "\\" @EscapeSequence
   / LineContinuation
 
@@ -388,7 +388,7 @@ ClassCharacterRange
     }
 
 ClassCharacter
-  = !("]" / "\\" / LineTerminator) SourceCharacter { return text(); }
+  = $(!("]" / "\\" / LineTerminator) SourceCharacter)
   / "\\" @EscapeSequence
   / LineContinuation
 
@@ -417,7 +417,7 @@ SingleEscapeCharacter
   / "v"  { return "\v"; }
 
 NonEscapeCharacter
-  = !(EscapeCharacter / LineTerminator) SourceCharacter { return text(); }
+  = $(!(EscapeCharacter / LineTerminator) SourceCharacter)
 
 EscapeCharacter
   = SingleEscapeCharacter
