@@ -25,7 +25,7 @@
     "set_version": "node ./tools/set_version",
     "headers": "node ./tools/header.js browser/peggy.min.js docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js",
     "test": "jest --coverage test",
-    "lint": "eslint . --ext .js bin/peggy && eslint --no-eslintrc -c .eslintrc-modules.js rollup.config.js",
+    "lint": "eslint . --ext .js bin/peggy",
     "benchmark": "node ./benchmark/run_bench.js",
     "parser": "node bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs",
     "deploy": "cp browser/peggy.min.js docs/vendor/peggy/peggy.min.js",
