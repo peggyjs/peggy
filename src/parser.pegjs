@@ -55,12 +55,22 @@ Grammar
 
 TopLevelInitializer
   = "{" code:CodeBlock "}" EOS {
-      return { type: "top_level_initializer", code, location: location() };
-  }
+      return {
+        type: "top_level_initializer",
+        code: code[0],
+        codeLocation: code[1],
+        location: location()
+      };
+    }
 
 Initializer
   = code:CodeBlock EOS {
-      return { type: "initializer", code, location: location() };
+      return {
+        type: "initializer",
+        code: code[0],
+        codeLocation: code[1],
+        location: location()
+      };
     }
 
 Rule
@@ -71,7 +81,8 @@ Rule
     {
       return {
         type: "rule",
-        name,
+        name: name[0],
+        nameLocation: name[1],
         expression: displayName !== null
           ? {
               type: "named",
@@ -104,7 +115,8 @@ ActionExpression
         ? {
             type: "action",
             expression,
-            code,
+            code: code[0],
+            codeLocation: code[1],
             location: location()
           }
         : expression;
@@ -122,13 +134,15 @@ SequenceExpression
     }
 
 LabeledExpression
-  = "@" label:LabelColon? expression:PrefixedExpression {
+  = pluck:Pluck label:LabelColon? expression:PrefixedExpression {
       if (expression.type.startsWith("semantic_")) {
-        error("\"@\" cannot be used on a semantic predicate");
+        error("\"@\" cannot be used on a semantic predicate", pluck);
       }
       return {
         type: "labeled",
-        label,
+        label: label !== null ? label[0] : null,
+        // Use location of "@" if label is unavailable
+        labelLocation: label !== null ? label[1] : pluck,
         pick: true,
         expression,
         location: location()
@@ -137,12 +151,16 @@ LabeledExpression
   / label:LabelColon __ expression:PrefixedExpression {
       return {
         type: "labeled",
-        label,
+        label: label[0],
+        labelLocation: label[1],
         expression,
         location: location()
       };
     }
   / PrefixedExpression
+
+Pluck
+  = "@" { return location(); }
 
 LabelColon
   = @Identifier __ ":"
@@ -195,14 +213,15 @@ PrimaryExpression
 
 RuleReferenceExpression
   = name:IdentifierName !(__ (StringLiteral __)? "=") {
-      return { type: "rule_ref", name, location: location() };
+      return { type: "rule_ref", name: name[0], location: location() };
     }
 
 SemanticPredicateExpression
   = operator:SemanticPredicateOperator __ code:CodeBlock {
       return {
         type: OPS_TO_SEMANTIC_PREDICATE_TYPES[operator],
-        code,
+        code: code[0],
+        codeLocation: code[1],
         location: location()
       };
     }
@@ -252,7 +271,9 @@ Identifier
   = !ReservedWord @IdentifierName
 
 IdentifierName "identifier"
-  = head:IdentifierStart tail:IdentifierPart* { return head + tail.join(""); }
+  = head:IdentifierStart tail:IdentifierPart* {
+      return [head + tail.join(""), location()];
+    }
 
 IdentifierStart
   = UnicodeLetter
@@ -445,7 +466,10 @@ AnyMatcher
   = "." { return { type: "any", location: location() }; }
 
 CodeBlock "code block"
-  = "{" @Code "}"
+  = "{" @BareCodeBlock "}"
+
+BareCodeBlock
+  = code:Code { return [code, location()]; }
 
 Code
   = $((![{}] SourceCharacter)+ / "{" Code "}")*
