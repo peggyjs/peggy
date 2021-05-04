@@ -67,12 +67,12 @@ Grammar
 
 TopLevelInitializer
   = "{" code:CodeBlock "}" EOS {
-      return { type: "top_level_initializer", code: code, location: location() };
+      return { type: "top_level_initializer", code, location: location() };
   }
 
 Initializer
   = code:CodeBlock EOS {
-      return { type: "initializer", code: code, location: location() };
+      return { type: "initializer", code, location: location() };
     }
 
 Rule
@@ -83,12 +83,12 @@ Rule
     {
       return {
         type: "rule",
-        name: name,
+        name,
         expression: displayName !== null
           ? {
               type: "named",
               name: displayName[0],
-              expression: expression,
+              expression,
               location: location()
             }
           : expression,
@@ -115,7 +115,7 @@ ActionExpression
       return code !== null
         ? {
             type: "action",
-            expression: expression,
+            expression,
             code: code[1],
             location: location()
           }
@@ -140,17 +140,17 @@ LabeledExpression
       }
       return {
         type: "labeled",
-        label: label,
+        label,
         pick: true,
-        expression: expression,
+        expression,
         location: location()
       };
     }
   / label:LabelColon __ expression:PrefixedExpression {
       return {
         type: "labeled",
-        label: label,
-        expression: expression,
+        label,
+        expression,
         location: location()
       };
     }
@@ -163,7 +163,7 @@ PrefixedExpression
   = operator:PrefixedOperator __ expression:SuffixedExpression {
       return {
         type: OPS_TO_PREFIXED_TYPES[operator],
-        expression: expression,
+        expression,
         location: location()
       };
     }
@@ -178,7 +178,7 @@ SuffixedExpression
   = expression:PrimaryExpression __ operator:SuffixedOperator {
       return {
         type: OPS_TO_SUFFIXED_TYPES[operator],
-        expression: expression,
+        expression,
         location: location()
       };
     }
@@ -201,20 +201,20 @@ PrimaryExpression
       // nodes that already isolate label scope themselves. This leaves us with
       // "labeled" and "sequence".
       return expression.type === "labeled" || expression.type === "sequence"
-          ? { type: "group", expression: expression, location: location() }
+          ? { type: "group", expression, location: location() }
           : expression;
     }
 
 RuleReferenceExpression
   = name:IdentifierName !(__ (StringLiteral __)? "=") {
-      return { type: "rule_ref", name: name, location: location() };
+      return { type: "rule_ref", name, location: location() };
     }
 
 SemanticPredicateExpression
   = operator:SemanticPredicateOperator __ code:CodeBlock {
       return {
         type: OPS_TO_SEMANTIC_PREDICATE_TYPES[operator],
-        code: code,
+        code,
         location: location()
       };
     }
@@ -352,7 +352,7 @@ LiteralMatcher "literal"
   = value:StringLiteral ignoreCase:"i"? {
       return {
         type: "literal",
-        value: value,
+        value,
         ignoreCase: ignoreCase !== null,
         location: location()
       };
