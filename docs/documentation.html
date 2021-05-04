@@ -160,11 +160,6 @@ override this using the <code>--format</code> option.</p>
   <dd>Format of the generated parser: <code>amd</code>, <code>commonjs</code>,
   <code>globals</code>, <code>umd</code>, <code>es</code> (default: <code>commonjs</code>).</dd>
 
-  <dt><code>--optimize</code></dt>
-  <dd>Selects between optimizing the generated parser for parsing speed
-  (<code>speed</code>) or code size (<code>size</code>) (default:
-  <code>speed</code>)</dd>
-
   <dt><code>--plugin</code></dt>
   <dd>Makes Peggy use a specified plugin (can be specified multiple
   times).</dd>
@@ -237,11 +232,6 @@ supported:</p>
   might use the socket and so on. The supplied object will be available at key
   <code>source</code> in the location objects, that returned by the
   <code>location()</code> API function (default: <code>undefined</code>).</dd>
-
-  <dt><code>optimize</code></dt>
-  <dd>Selects between optimizing the generated parser for parsing speed
-  (<code>"speed"</code>) or code size (<code>"size"</code>) (default:
-  <code>"speed"</code>).</dd>
 
   <dt><code>output</code></dt>
   <dd>If set to <code>"parser"</code>, the method will return generated parser

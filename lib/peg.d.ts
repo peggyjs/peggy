@@ -87,7 +87,14 @@ export interface BuildOptionsBase {
    * File object.
    */
   grammarSource?: any;
-  /** selects between optimizing the generated parser for parsing speed (`"speed"`) or code size (`"size"`) (default: `"speed"`) */
+  /**
+   * Selects between optimizing the generated parser for parsing speed (`"speed"`)
+   * or code size (`"size"`) (default: `"speed"`)
+   *
+   * @deprecated This feature was deleted in 1.2.0 release and has no effect anymore.
+   *             It will be deleted in 2.0.
+   *             Parser is always generated in the former `"speed"` mode
+   */
   optimize?: "speed" | "size";
   /** plugins to use */
   plugins?: any[];

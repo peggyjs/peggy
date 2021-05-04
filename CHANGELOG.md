@@ -21,6 +21,12 @@ Released: TBD
     - Extends CI testing to `windows`, `macintosh`
     - Increases node testing range to include `node 16`
     - Adds an announcer to make the build process more readable
+- Option for selection optimization mode removed as it has no significant effect on
+  majority of generated parsers and represents only academic interest mostly. You should
+  use minifiers to get smaller parsers. Option `optimize` is deleted from the `generate()`
+  options, flag `--optimize` is deleted from the CLI (you still can supply it, but the CLI
+  will issue a warning that the option is removed).
+  [@Mingun](https://github.com/peggyjs/peggy/pull/147)
 - `location()`s now will have additional `source` property which value is taken
   from the `options.grammarSource` property. That property can contain arbitrary
   data,for example, path to the currently parsed file.

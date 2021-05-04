@@ -136,7 +136,6 @@
 
 #content #settings { padding: .5em 0; }
 #content #settings label { padding-right: 1em; }
-#content #settings label[for=option-optimize] { padding-left: 2em; }
 #content #parser-var { width: 15em; }
 #content #options { padding-top: 1em; }
 #content #parser-download {

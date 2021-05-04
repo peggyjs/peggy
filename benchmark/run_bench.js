@@ -80,8 +80,6 @@ function printHelp() {
   console.log("Options:");
   console.log("  -n, --run-count <n>          number of runs (default: 10)");
   console.log("      --cache                  make tested parsers cache results");
-  console.log("  -o, --optimize <goal>        select optimization for speed or size (default:");
-  console.log("                               speed)");
 }
 
 function exitSuccess() {
@@ -113,7 +111,6 @@ function nextArg() {
 
 const options = {
   cache: false,
-  optimize: "speed"
 };
 
 let runCount = 10;
@@ -134,18 +131,6 @@ while (args.length > 0 && isOption(args[0])) {
 
     case "--cache":
       options.cache = true;
-      break;
-
-    case "-o":
-    case "--optimize":
-      nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the -o/--optimize option.");
-      }
-      if (args[0] !== "speed" && args[0] !== "size") {
-        abort("Optimization goal must be either \"speed\" or \"size\".");
-      }
-      options.optimize = args[0];
       break;
 
     case "-h":
