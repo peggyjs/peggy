@@ -25,7 +25,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm run lint
-      - run: npm run clean
       - run: npm run set_version
       - run: npm run parser
       - run: npm run ts
@@ -35,4 +34,3 @@ jobs:
       - run: npm run benchmark
       - run: npm run headers
       - run: npm run deploy
-      - run: npm run tidy
