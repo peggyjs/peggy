@@ -162,15 +162,15 @@ object to `peg.generate`. The following options are supported:
 - `format` — format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`,
   `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"`
   (default: `"bare"`)
+- `grammarSource` — this object will be passed to any `location()` objects as the
+  `source` property (default: `undefined`). This object will be used even if
+  `options.grammarSource` is redefined in the grammar. It is useful to attach
+  the file information to the errors, for example
 - `output` — if set to `"parser"`, the method will return generated parser
   object; if set to `"source"`, it will return parser source code as a string
   (default: `"parser"`)
 - `plugins` — plugins to use
 - `trace` — makes the parser trace its progress (default: `false`)
-- `grammarSource` — this object will be passed to any `location()` objects as the
-  `source` property (default: `undefined`). This object will be used even if
-  `options.grammarSource` is redefined in the grammar. It is useful to attach
-  the file information to the errors, for example
 
 ## Using the Parser
 
@@ -668,6 +668,3 @@ Peggy was originally developed by [David Majda](https://majda.cz/)
 You are welcome to contribute code. Unless your contribution is really trivial
 you should [get in touch with us](https://github.com/peggyjs/peggy/discussions)
 first — this can prevent wasted effort on both sides.
-
-Note that Peggy is still very much work in progress. There are no compatibility
-guarantees until version 1.0.
