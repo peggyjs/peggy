@@ -20,9 +20,9 @@
   "scripts": {
     "clean": "rimraf -f build && rimraf -f browser && mkdir browser",
     "terser": "npm run terser:peggy && npm run terser:tests && npm run terser:bench",
-    "terser:peggy": "terser -c passes=2 -m --sequences 40 build/rollup/peggy.umd.js > browser/peggy.min.js",
-    "terser:tests": "terser -c passes=2 -m --sequences 40 --module build/rollup/test.umd.js > docs/js/test-bundle.min.js",
-    "terser:bench": "terser -c passes=2 -m --sequences 40 --module build/rollup/benchmark.umd.js > docs/js/benchmark-bundle.min.js",
+    "terser:peggy": "terser -c passes=2 -m --sequences 40 build/rollup/peggy.umd.js -o browser/peggy.min.js",
+    "terser:tests": "terser -c passes=2 -m --sequences 40 --module build/rollup/test.umd.js -o docs/js/test-bundle.min.js",
+    "terser:bench": "terser -c passes=2 -m --sequences 40 --module build/rollup/benchmark.umd.js -o docs/js/benchmark-bundle.min.js",
     "rollup": "cp package.json build/ts && rollup -c",
     "ts": "tsc --build tsconfig.json",
     "set_version": "node ./tools/set_version",
