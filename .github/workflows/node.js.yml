@@ -26,8 +26,4 @@ jobs:
       - run: npm install
       - run: npm run lint
       - run: npm run ts
-      - run: npm run rollup
-      - run: npm run terser
       - run: npm run test
-      - run: npm run headers
-      - run: npm run deploy
