@@ -29,6 +29,5 @@ jobs:
       - run: npm run rollup
       - run: npm run terser
       - run: npm run test
-      - run: npm run benchmark
       - run: npm run headers
       - run: npm run deploy
