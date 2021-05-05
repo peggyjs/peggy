@@ -23,5 +23,16 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Test ${{ matrix.node-version }}
-        run: npm install && npm run build
+      - run: npm install
+      - run: npm run lint
+      - run: npm run clean
+      - run: npm run set_version
+      - run: npm run parser
+      - run: npm run ts
+      - run: npm run rollup
+      - run: npm run terser
+      - run: npm run test
+      - run: npm run benchmark
+      - run: npm run headers
+      - run: npm run deploy
+      - run: npm run tidy
