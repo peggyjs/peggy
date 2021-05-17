@@ -31,6 +31,12 @@ Released: TBD
   from the `options.grammarSource` property. That property can contain arbitrary
   data,for example, path to the currently parsed file.
   [@Mingun](https://github.com/peggyjs/peggy/pull/95)
+- Made usage of `GrammarError` and `peg$SyntaxError` more consistent.  Use the
+  `format` method to get pretty string outputs.  Updated the `peggy` binary to
+  make pretty errors. Slight breaking change: the format of a few error
+  messages have changed; use the `toString()` method on `GrammarError` to get
+  something close to the old text.
+  [@hildjj](https://github.com/peggyjs/peggy/pull/116)
 
 ### Bug fixes
 

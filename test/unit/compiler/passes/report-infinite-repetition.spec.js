@@ -11,7 +11,7 @@ const expect = chai.expect;
 describe("compiler pass |reportInfiniteRepetition|", function() {
   it("reports infinite loops for zero_or_more", function() {
     expect(pass).to.reportError("start = ('')*", {
-      message: "Possible infinite loop when parsing (repetition used with an expression that may not consume any input).",
+      message: "Possible infinite loop when parsing (repetition used with an expression that may not consume any input)",
       location: {
         source: undefined,
         start: { offset: 8, line: 1, column: 9 },
@@ -22,7 +22,7 @@ describe("compiler pass |reportInfiniteRepetition|", function() {
 
   it("reports infinite loops for one_or_more", function() {
     expect(pass).to.reportError("start = ('')+", {
-      message: "Possible infinite loop when parsing (repetition used with an expression that may not consume any input).",
+      message: "Possible infinite loop when parsing (repetition used with an expression that may not consume any input)",
       location: {
         source: undefined,
         start: { offset: 8, line: 1, column: 9 },

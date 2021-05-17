@@ -65,6 +65,7 @@
       <li><a href="#parsing-lists">Parsing Lists</a></li>
     </ul>
   </li>
+  <li><a href="#error-messages">Error Messages</a></li>
   <li><a href="#compatibility">Compatibility</a></li>
 </ul>
 
@@ -252,7 +253,10 @@ method and pass an input string as a parameter. The method will return a parse
 result (the exact value depends on the grammar used to generate the parser) or
 throw an exception if the input is invalid. The exception will contain
 <code>location</code>, <code>expected</code>, <code>found</code> and
-<code>message</code> properties with more details about the error.</p>
+<code>message</code> properties with more details about the error.  The error
+will have a <code>format(SourceText[])</code> function, to which you pass an array
+of objects that look like <code>{source: grammarSource, text: string}</code>; this
+will return a nicely-formatted error suitable for human consumption.</p>
 
 <pre><code>parser.parse("abba"); // returns ["a", "b", "b", "a"]
 
@@ -689,14 +693,91 @@ _ = [ \t]*</code></pre>
 <p>Note that the <code>@</code> in the tail section plucks the word out of the
 parentheses, NOT out of the rule itself.</p>
 
+<h2 id="error-messages">Error Messages</h2>
+<p>As described above, you can annotate your grammar rules with human-readable names that will be used in error messages. For example, this production:</p>
+
+<pre><code>integer "integer"
+  = digits:[0-9]+</code></pre>
+<p>will produce an error message like:</p>
+
+Expected integer but "a" found.
+
+<p>when parsing a non-number, referencing the human-readable name "integer." Without the human-readable name, Peggy instead uses a description of the character class that failed to match:</p>
+
+Expected [0-9] but "a" found.
+
+<p>Aside from the text content of messages, human-readable names also have a subtler effect on where errors are reported. Peggy prefers to match named rules completely or not at all, but not partially. Unnamed rules, on the other hand, can produce an error in the middle of their subexpressions.</p>
+
+<p>For example, for this rule matching a comma-separated list of integers:</p>
+
+<pre><code>seq
+  = integer ("," integer)*</code></pre>
+<p>an input like 1,2,a produces this error message:</p>
+
+<blockquote>Expected integer but "a" found.</blockquote>
+
+<p>But if we add a human-readable name to the seq production:</p>
+
+<pre><code>seq "list of numbers"
+  = integer ("," integer)*</code></pre>
+<p>then Peggy prefers an error message that implies a smaller attempted parse tree:</p>
+
+<blockquote>Expected end of input but "," found.</blockquote>
+
+<p>There are two classes of errors in Peggy:</p>
+
+<ul>
+  <li><code>SyntaxError</code> Syntax errors, found during parsing the input. This kind of errors can be thrown both during <em>grammar</em> parsing and during <em>input</em> parsing. Although name is the same, errors of each generated parser (including Peggy parser itself) has its own unique class.</li>
+  <li><code>GrammarError</code>: Grammar errors, found during construction of the parser. That errors can be thrown only on parser generation phase. This error signals about logical mistake in the grammar, such as having rules with the same name in one grammar, etc.</li>
+</ul>
+
+<p>Whatever error has caught, both of them have the <code>format()</code> method that takes an array of mappings from source to grammar text:</p>
+
+<pre><code>let source = ...;
+try {
+  PEG.generate(input, { grammarSource: source, ...});// throws SyntaxError or GrammarError
+  parser.parse(input, { grammarSource: source, ...});// throws SyntaxError
+} catch (e) {
+  if (typeof e.format === "function") {
+    console.log(e.format([
+      { source, text: input },
+      { source: source2, text: input2 },
+      ...
+    ]));
+  }
+}</code></pre>
+
+<p>Generated message looks like:</p>
+
+<pre><code>Error: Possible infinite loop when parsing (left recursion: start -> proxy -> end -> start)
+ --> .\recursion.pegjs:1:1
+  |
+1 | start = proxy;
+  | ^^^^^
+note: Step 1: call of the rule "proxy" without input consumption
+ --> .\recursion.pegjs:1:9
+  |
+1 | start = proxy;
+  |         ^^^^^
+note: Step 2: call of the rule "end" without input consumption
+ --> .\recursion.pegjs:2:11
+  |
+2 | proxy = a:end { return a; };
+  |           ^^^
+note: Step 3: call itself without input consumption - left recursion
+ --> .\recursion.pegjs:3:8
+  |
+3 | end = !start
+  |        ^^^^^</code></pre>
+
 <h2 id="compatibility">Compatibility</h2>
 
 <p>Both the parser generator and generated parsers should run well in the
 following environments:</p>
 
 <ul>
-  <li>Node.js 0.10.0+</li>
-  <li>Internet Explorer 8+</li>
+  <li>Node.js 4+</li>
+  <li>Internet Explorer 9+</li>
   <li>Edge</li>
   <li>Firefox</li>
   <li>Chrome</li>

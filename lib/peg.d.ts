@@ -34,13 +34,51 @@ export interface ExpectedItem {
   description: string;
 }
 
+// String passed in as `grammarSource` -> string version of source
+export interface Sources {
+  source: string;
+  text: string;
+}
+
+export interface DiagnosticNote {
+  message: string;
+  location: LocationRange;
+}
+
 export interface PeggyError extends Error {
   name: string;
   message: string;
-  location: LocationRange;
+  location?: LocationRange;
+  diagnostics: DiagnosticNote[];
   found?: any;
   expected?: ExpectedItem[];
   stack?: any;
+
+  /**
+   * Format the error with associated sources.  The `location.source` should have
+   * a `toString()` representation in order the result to look nice. If source
+   * is `null` or `undefined`, it is skipped from the output
+   *
+   * Sample output:
+   * ```
+   * Error: Label "head" is already defined
+   *  --> examples/arithmetics.pegjs:15:17
+   *    |
+   * 15 |   = head:Factor head:(_ ("*" / "/") _ Factor)* {
+   *    |                 ^^^^
+   * note: Original label location
+   *  --> examples/arithmetics.pegjs:15:5
+   *    |
+   * 15 |   = head:Factor head:(_ ("*" / "/") _ Factor)* {
+   *    |     ^^^^
+   * ```
+   *
+   * @param sources mapping from location source to source text
+   *
+   * @returns the formatted error
+   */
+  format(sources: SourceText[]): string;
+  toString(): string;
 }
 
 // for backwards compatibility with PEGjs

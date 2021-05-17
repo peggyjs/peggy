@@ -1632,4 +1632,33 @@ describe("generated parser behavior", function() {
       });
     });
   });
+  describe("syntax errors", function() {
+    it("formats", function() {
+      expect(function() {
+        const source = { source: "stdin",  text: "===" };
+        try {
+          peg.generate(source.text, { grammarSource: source.source });
+        } catch (er) {
+          expect(er.format([source])).to.equal(`\
+Error: Expected "{", code block, comment, end of line, identifier, or whitespace but "=" found.
+ --> stdin:1:1
+  |
+1 | ===
+  | ^`);
+          throw er;
+        }
+      }).to.throw(peg.parser.SyntaxError);
+
+      expect(function() {
+        try {
+          peg.generate("===", { grammarSource: "stdin" });
+        } catch (er) {
+          expect(er.format([])).to.equal(`\
+Error: Expected "{", code block, comment, end of line, identifier, or whitespace but "=" found.
+ at stdin:1:1`);
+          throw er;
+        }
+      }).to.throw(peg.parser.SyntaxError);
+    });
+  });
 });

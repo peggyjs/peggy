@@ -118,10 +118,16 @@ describe("Peggy grammar parser", function() {
 
     function stripLeaf(node) {
       delete node.location;
+      delete node.codeLocation;
+      delete node.nameLocation;
+      delete node.labelLocation;
     }
 
     function stripExpression(node) {
       delete node.location;
+      delete node.codeLocation;
+      delete node.nameLocation;
+      delete node.labelLocation;
 
       strip(node.expression);
     }
@@ -129,6 +135,9 @@ describe("Peggy grammar parser", function() {
     function stripChildren(property) {
       return function(node) {
         delete node.location;
+        delete node.codeLocation;
+        delete node.nameLocation;
+        delete node.labelLocation;
 
         node[property].forEach(strip);
       };
@@ -137,6 +146,9 @@ describe("Peggy grammar parser", function() {
     const strip = buildVisitor({
       grammar(node) {
         delete node.location;
+        delete node.codeLocation;
+        delete node.nameLocation;
+        delete node.labelLocation;
 
         if (node.topLevelInitializer) {
           strip(node.topLevelInitializer);
@@ -713,5 +725,241 @@ describe("Peggy grammar parser", function() {
   // Canonical EOF is the end of input.
   it("parses EOF", function() {
     expect("start = 'abcd'\n").to.parseAs(trivialGrammar);
+  });
+
+  it("generates codeLocation / nameLocation / labelLocation", function() {
+    const result = parser.parse(`
+{{
+  const foo = 12;
+}}
+{
+  const bar = 13;
+}
+a = label:'abcd' &{ return true; } !{ return false; } { return 'so true'; }
+b = @LABEL:'efgh'
+c = @'ijkl'
+`);
+    expect(result).to.eql({
+      type: "grammar",
+      topLevelInitializer: {
+        type: "top_level_initializer",
+        code: "\n  const foo = 12;\n",
+        codeLocation: {
+          source: undefined,
+          start: { offset: 3, line: 2, column: 3 },
+          end: { offset: 22, line: 4, column: 1 }
+        },
+        location: {
+          source: undefined,
+          start: { offset: 1, line: 2, column: 1 },
+          end: { offset: 25, line: 5, column: 1 }
+        }
+      },
+      initializer: {
+        type: "initializer",
+        code: "\n  const bar = 13;\n",
+        codeLocation: {
+          source: undefined,
+          start: { offset: 26, line: 5, column: 2 },
+          end: { offset: 45, line: 7, column: 1 }
+        },
+        location: {
+          source: undefined,
+          start: { offset: 25, line: 5, column: 1 },
+          end: { offset: 47, line: 8, column: 1 }
+        }
+      },
+      rules: [
+        {
+          type: "rule",
+          name: "a",
+          nameLocation: {
+            source: undefined,
+            start: { offset: 47, line: 8, column: 1 },
+            end: { offset: 48, line: 8, column: 2 }
+          },
+          expression: {
+            type: "action",
+            expression: {
+              type: "sequence",
+              elements: [
+                {
+                  type: "labeled",
+                  label: "label",
+                  labelLocation: {
+                    source: undefined,
+                    start: { offset: 51, line: 8, column: 5 },
+                    end: { offset: 56, line: 8, column: 10 }
+                  },
+                  expression: {
+                    type: "literal",
+                    value: "abcd",
+                    ignoreCase: false,
+                    location: {
+                      source: undefined,
+                      start: { offset: 57, line: 8, column: 11 },
+                      end: { offset: 63, line: 8, column: 17 }
+                    }
+                  },
+                  location: {
+                    source: undefined,
+                    start: { offset: 51, line: 8, column: 5 },
+                    end: { offset: 63, line: 8, column: 17 }
+                  }
+                },
+                {
+                  type: "semantic_and",
+                  code: " return true; ",
+                  codeLocation: {
+                    source: undefined,
+                    start: { offset: 66, line: 8, column: 20 },
+                    end: { offset: 80, line: 8, column: 34 }
+                  },
+                  location: {
+                    source: undefined,
+                    start: { offset: 64, line: 8, column: 18 },
+                    end: { offset: 81, line: 8, column: 35 }
+                  }
+                },
+                {
+                  type: "semantic_not",
+                  code: " return false; ",
+                  codeLocation: {
+                    source: undefined,
+                    start: { offset: 84, line: 8, column: 38 },
+                    end: { offset: 99, line: 8, column: 53 }
+                  },
+                  location: {
+                    source: undefined,
+                    start: { offset: 82, line: 8, column: 36 },
+                    end: { offset: 100, line: 8, column: 54 }
+                  }
+                }
+              ],
+              location: {
+                source: undefined,
+                start: { offset: 51, line: 8, column: 5 },
+                end: { offset: 100, line: 8, column: 54 }
+              }
+            },
+            code: " return 'so true'; ",
+            codeLocation: {
+              source: undefined,
+              start: { offset: 102, line: 8, column: 56 },
+              end: { offset: 121, line: 8, column: 75 }
+            },
+            location: {
+              source: undefined,
+              start: { offset: 51, line: 8, column: 5 },
+              end: { offset: 122, line: 8, column: 76 }
+            }
+          },
+          location: {
+            source: undefined,
+            start: { offset: 47, line: 8, column: 1 },
+            end: { offset: 123, line: 9, column: 1 }
+          }
+        },
+        {
+          type: "rule",
+          name: "b",
+          nameLocation: {
+            source: undefined,
+            start: { offset: 123, line: 9, column: 1 },
+            end: { offset: 124, line: 9, column: 2 }
+          },
+          expression: {
+            type: "sequence",
+            elements: [{
+              type: "labeled",
+              label: "LABEL",
+              labelLocation: {
+                source: undefined,
+                start: { offset: 128, line: 9, column: 6 },
+                end: { offset: 133, line: 9, column: 11 }
+              },
+              pick: true,
+              expression: {
+                type: "literal",
+                value: "efgh",
+                ignoreCase: false,
+                location: {
+                  source: undefined,
+                  start: { offset: 134, line: 9, column: 12 },
+                  end: { offset: 140, line: 9, column: 18 }
+                }
+              },
+              location: {
+                source: undefined,
+                start: { offset: 127, line: 9, column: 5 },
+                end: { offset: 140, line: 9, column: 18 }
+              }
+            }],
+            location: {
+              source: undefined,
+              start: { offset: 127, line: 9, column: 5 },
+              end: { offset: 140, line: 9, column: 18 }
+            }
+          },
+          location: {
+            source: undefined,
+            start: { offset: 123, line: 9, column: 1 },
+            end: { offset: 141, line: 10, column: 1 }
+          }
+        },
+        {
+          type: "rule",
+          name: "c",
+          nameLocation: {
+            source: undefined,
+            start: { offset: 141, line: 10, column: 1 },
+            end: { offset: 142, line: 10, column: 2 }
+          },
+          expression: {
+            type: "sequence",
+            elements: [{
+              type: "labeled",
+              label: null,
+              labelLocation: {
+                source: undefined,
+                start: { offset: 145, line: 10, column: 5 },
+                end: { offset: 146, line: 10, column: 6 }
+              },
+              pick: true,
+              expression: {
+                type: "literal",
+                value: "ijkl",
+                ignoreCase: false,
+                location: {
+                  source: undefined,
+                  start: { offset: 146, line: 10, column: 6 },
+                  end: { offset: 152, line: 10, column: 12 }
+                }
+              },
+              location: {
+                source: undefined,
+                start: { offset: 145, line: 10, column: 5 },
+                end: { offset: 152, line: 10, column: 12 }
+              }
+            }],
+            location: {
+              source: undefined,
+              start: { offset: 145, line: 10, column: 5 },
+              end: { offset: 152, line: 10, column: 12 }
+            }
+          },
+          location: {
+            source: undefined,
+            start: { offset: 141, line: 10, column: 1 },
+            end: { offset: 153, line: 11, column: 1 }
+          }
+        }
+      ],
+      location: {
+        source: undefined,
+        start: { offset: 0, line: 1, column: 1 },
+        end: { offset: 153, line: 11, column: 1 }
+      }
+    });
   });
 });

@@ -38,57 +38,56 @@
     "&": "semantic_and",
     "!": "semantic_not"
   };
-
-  function extractOptional(optional, index) {
-    return optional ? optional[index] : null;
-  }
-
-  function extractList(list, index) {
-    return list.map(element => element[index]);
-  }
-
-  function buildList(head, tail, index) {
-    return [head].concat(extractList(tail, index));
-  }
 }}
 
 // ---- Syntactic Grammar -----
 
 Grammar
-  = __ topLevelInitializer:(TopLevelInitializer __)? initializer:(Initializer __)? rules:(Rule __)+ {
+  = __ topLevelInitializer:(@TopLevelInitializer __)? initializer:(@Initializer __)? rules:(@Rule __)+ {
       return {
         type: "grammar",
-        topLevelInitializer: extractOptional(topLevelInitializer, 0),
-        initializer: extractOptional(initializer, 0),
-        rules: extractList(rules, 0),
+        topLevelInitializer,
+        initializer,
+        rules,
         location: location()
       };
     }
 
 TopLevelInitializer
   = "{" code:CodeBlock "}" EOS {
-      return { type: "top_level_initializer", code: code, location: location() };
-  }
+      return {
+        type: "top_level_initializer",
+        code: code[0],
+        codeLocation: code[1],
+        location: location()
+      };
+    }
 
 Initializer
   = code:CodeBlock EOS {
-      return { type: "initializer", code: code, location: location() };
+      return {
+        type: "initializer",
+        code: code[0],
+        codeLocation: code[1],
+        location: location()
+      };
     }
 
 Rule
   = name:IdentifierName __
-    displayName:(StringLiteral __)?
+    displayName:(@StringLiteral __)?
     "=" __
     expression:Expression EOS
     {
       return {
         type: "rule",
-        name: name,
+        name: name[0],
+        nameLocation: name[1],
         expression: displayName !== null
           ? {
               type: "named",
-              name: displayName[0],
-              expression: expression,
+              name: displayName,
+              expression,
               location: location()
             }
           : expression,
@@ -100,61 +99,68 @@ Expression
   = ChoiceExpression
 
 ChoiceExpression
-  = head:ActionExpression tail:(__ "/" __ ActionExpression)* {
+  = head:ActionExpression tail:(__ "/" __ @ActionExpression)* {
       return tail.length > 0
         ? {
             type: "choice",
-            alternatives: buildList(head, tail, 3),
+            alternatives: [head].concat(tail),
             location: location()
           }
         : head;
     }
 
 ActionExpression
-  = expression:SequenceExpression code:(__ CodeBlock)? {
+  = expression:SequenceExpression code:(__ @CodeBlock)? {
       return code !== null
         ? {
             type: "action",
-            expression: expression,
-            code: code[1],
+            expression,
+            code: code[0],
+            codeLocation: code[1],
             location: location()
           }
         : expression;
     }
 
 SequenceExpression
-  = head:LabeledExpression tail:(__ LabeledExpression)* {
+  = head:LabeledExpression tail:(__ @LabeledExpression)* {
       return ((tail.length > 0) || (head.type === "labeled" && head.pick))
         ? {
             type: "sequence",
-            elements: buildList(head, tail, 1),
+            elements: [head].concat(tail),
             location: location()
           }
         : head;
     }
 
 LabeledExpression
-  = "@" label:LabelColon? expression:PrefixedExpression {
+  = pluck:Pluck label:LabelColon? expression:PrefixedExpression {
       if (expression.type.startsWith("semantic_")) {
-        error("\"@\" cannot be used on a semantic predicate");
+        error("\"@\" cannot be used on a semantic predicate", pluck);
       }
       return {
         type: "labeled",
-        label: label,
+        label: label !== null ? label[0] : null,
+        // Use location of "@" if label is unavailable
+        labelLocation: label !== null ? label[1] : pluck,
         pick: true,
-        expression: expression,
+        expression,
         location: location()
       };
     }
   / label:LabelColon __ expression:PrefixedExpression {
       return {
         type: "labeled",
-        label: label,
-        expression: expression,
+        label: label[0],
+        labelLocation: label[1],
+        expression,
         location: location()
       };
     }
   / PrefixedExpression
+
+Pluck
+  = "@" { return location(); }
 
 LabelColon
   = @Identifier __ ":"
@@ -163,7 +169,7 @@ PrefixedExpression
   = operator:PrefixedOperator __ expression:SuffixedExpression {
       return {
         type: OPS_TO_PREFIXED_TYPES[operator],
-        expression: expression,
+        expression,
         location: location()
       };
     }
@@ -178,7 +184,7 @@ SuffixedExpression
   = expression:PrimaryExpression __ operator:SuffixedOperator {
       return {
         type: OPS_TO_SUFFIXED_TYPES[operator],
-        expression: expression,
+        expression,
         location: location()
       };
     }
@@ -201,20 +207,21 @@ PrimaryExpression
       // nodes that already isolate label scope themselves. This leaves us with
       // "labeled" and "sequence".
       return expression.type === "labeled" || expression.type === "sequence"
-          ? { type: "group", expression: expression, location: location() }
+          ? { type: "group", expression, location: location() }
           : expression;
     }
 
 RuleReferenceExpression
   = name:IdentifierName !(__ (StringLiteral __)? "=") {
-      return { type: "rule_ref", name: name, location: location() };
+      return { type: "rule_ref", name: name[0], location: location() };
     }
 
 SemanticPredicateExpression
   = operator:SemanticPredicateOperator __ code:CodeBlock {
       return {
         type: OPS_TO_SEMANTIC_PREDICATE_TYPES[operator],
-        code: code,
+        code: code[0],
+        codeLocation: code[1],
         location: location()
       };
     }
@@ -264,13 +271,15 @@ Identifier
   = !ReservedWord @IdentifierName
 
 IdentifierName "identifier"
-  = head:IdentifierStart tail:IdentifierPart* { return head + tail.join(""); }
+  = head:IdentifierStart tail:IdentifierPart* {
+      return [head + tail.join(""), location()];
+    }
 
 IdentifierStart
   = UnicodeLetter
   / "$"
   / "_"
-  / "\\" sequence:UnicodeEscapeSequence { return sequence; }
+  / "\\" @UnicodeEscapeSequence
 
 IdentifierPart
   = IdentifierStart
@@ -352,7 +361,7 @@ LiteralMatcher "literal"
   = value:StringLiteral ignoreCase:"i"? {
       return {
         type: "literal",
-        value: value,
+        value,
         ignoreCase: ignoreCase !== null,
         location: location()
       };
@@ -363,13 +372,13 @@ StringLiteral "string"
   / "'" chars:SingleStringCharacter* "'" { return chars.join(""); }
 
 DoubleStringCharacter
-  = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
-  / "\\" sequence:EscapeSequence { return sequence; }
+  = $(!('"' / "\\" / LineTerminator) SourceCharacter)
+  / "\\" @EscapeSequence
   / LineContinuation
 
 SingleStringCharacter
-  = !("'" / "\\" / LineTerminator) SourceCharacter { return text(); }
-  / "\\" sequence:EscapeSequence { return sequence; }
+  = $(!("'" / "\\" / LineTerminator) SourceCharacter)
+  / "\\" @EscapeSequence
   / LineContinuation
 
 CharacterClassMatcher "character class"
@@ -400,7 +409,7 @@ ClassCharacterRange
     }
 
 ClassCharacter
-  = !("]" / "\\" / LineTerminator) SourceCharacter { return text(); }
+  = $(!("]" / "\\" / LineTerminator) SourceCharacter)
   / "\\" @EscapeSequence
   / LineContinuation
 
@@ -429,7 +438,7 @@ SingleEscapeCharacter
   / "v"  { return "\v"; }
 
 NonEscapeCharacter
-  = !(EscapeCharacter / LineTerminator) SourceCharacter { return text(); }
+  = $(!(EscapeCharacter / LineTerminator) SourceCharacter)
 
 EscapeCharacter
   = SingleEscapeCharacter
@@ -457,7 +466,10 @@ AnyMatcher
   = "." { return { type: "any", location: location() }; }
 
 CodeBlock "code block"
-  = "{" @Code "}"
+  = "{" @BareCodeBlock "}"
+
+BareCodeBlock
+  = code:Code { return [code, location()]; }
 
 Code
   = $((![{}] SourceCharacter)+ / "{" Code "}")*

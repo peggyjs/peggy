@@ -11,7 +11,7 @@ const expect = chai.expect;
 describe("compiler pass |reportUndefinedRules|", function() {
   it("reports undefined rules", function() {
     expect(pass).to.reportError("start = undefined", {
-      message: "Rule \"undefined\" is not defined.",
+      message: "Rule \"undefined\" is not defined",
       location: {
         source: undefined,
         start: { offset: 8, line: 1, column: 9 },
