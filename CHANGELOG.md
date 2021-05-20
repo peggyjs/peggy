@@ -37,6 +37,29 @@ Released: TBD
   messages have changed; use the `toString()` method on `GrammarError` to get
   something close to the old text.
   [@hildjj](https://github.com/peggyjs/peggy/pull/116)
+- The code generator was slightly reworked to simplify reusing the bytecode generator
+  (`generate.generateBytecode` pass). Property `consts` on the `grammar` AST node,
+  has been creating by the pass in the past, was decoupled into 4 other properties
+  with the structured information:
+  - `literals`
+  - `classes`
+  - `expectations`
+  - `functions`
+
+  Now bytecode generation pass is independent from the JavaScript backend.
+  [@Mingun](https://github.com/peggyjs/peggy/pull/117)
+- Some opcodes from `compiler/opcode.js` is deprecated. Although you shouldn't use
+  them directly because they are notconsidered as a public API, some plugins use them.
+  For that reason backward compatibility is preserved:
+  - Opcode `MATCH_REGEXP` is deprecated and replaced by `MATCH_CHAR_CLASS` with the same value.
+  - Added new opcode `PUSH_EMPTY_STRING` that put on stack new empty string
+  - Opcode `PUSH` is deprecated because it was used only for pushing empty string constants
+    and they now pushed with `PUSH_EMPTY_STRING`
+
+  Instead of relying on the library opcodes it is better to have a copy of them,
+  especially if your plugin replaces both `generateBytecode` as `generateJs` passes.
+
+  [@Mingun](https://github.com/peggyjs/peggy/pull/117)
 
 ### Bug fixes
 
