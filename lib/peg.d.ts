@@ -34,9 +34,21 @@ export interface ExpectedItem {
   description: string;
 }
 
-// String passed in as `grammarSource` -> string version of source
-export interface Sources {
-  source: string;
+/**
+ * The entry that maps object in the `source` property of error locations
+ * to the actual source text of a grammar. That entries is necessary for
+ * formatting errors.
+ */
+export interface SourceText {
+  /**
+   * Identifier of a grammar that stored in the `location().source` property
+   * of error and diagnostic messages.
+   *
+   * This one should be the same object that used in the `location().source`,
+   * because their compared using `===`.
+   */
+  source: any;
+  /** Source text of a grammar. */
   text: string;
 }
 
