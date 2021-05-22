@@ -62,10 +62,12 @@
     <a href="#grammar-syntax-and-semantics">Grammar Syntax and Semantics</a>
     <ul>
       <li><a href="#grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</a></li>
+      <li><a href="#action-execution-environment">Action Execution Environment</a></li>
       <li><a href="#parsing-lists">Parsing Lists</a></li>
     </ul>
   </li>
   <li><a href="#error-messages">Error Messages</a></li>
+  <li><a href="#locations">Locations</a></li>
   <li><a href="#compatibility">Compatibility</a></li>
 </ul>
 
@@ -75,11 +77,11 @@
 
 <p>To use the <code>peggy</code> command, install Peggy globally:</p>
 
-<pre><code>$ npm install -g peggy</code></pre>
+<pre><code class="language-console">$ npm install -g peggy</code></pre>
 
 <p>To use the JavaScript API, install Peggy locally:</p>
 
-<pre><code>$ npm install peggy</code></pre>
+<pre><code class="language-console">$ npm install peggy</code></pre>
 
 <p>If you need both the <code>peggy</code> command and the JavaScript API,
 install Peggy both ways.</p>
@@ -89,9 +91,9 @@ install Peggy both ways.</p>
 <p>The easiest way to use Peggy from the browser is to pull the latest version
 from a CDN. Either of these should work:</p>
 
-<pre><code>&lt;script src="https://unpkg.com/peggy">&lt;/script></code></pre>
+<pre><code class="language-html">&lt;script src="https://unpkg.com/peggy">&lt;/script></code></pre>
 
-<pre><code>&lt;script src="https://cdn.jsdelivr.net/npm/peggy">&lt;/script></code></pre>
+<pre><code class="language-html">&lt;script src="https://cdn.jsdelivr.net/npm/peggy">&lt;/script></code></pre>
 
 <p>Both of those CDNs support pinning a version number rather than always
 taking the latest. Not only is that good practice, it will save several
@@ -116,16 +118,16 @@ input). Generated parser itself is a JavaScript object with a simple API.</p>
 <p>To generate a parser from your grammar, use the <code>peggy</code>
 command:</p>
 
-<pre><code>$ peggy arithmetics.pegjs</code></pre>
+<pre><code class="language-console">$ peggy arithmetics.pegjs</code></pre>
 
 <p>This writes parser source code into a file with the same name as the grammar
 file but with “.js” extension. You can also specify the output file
 explicitly:</p>
 
-<pre><code>$ peggy -o arithmetics-parser.js arithmetics.pegjs</code></pre>
+<pre><code class="language-console">$ peggy -o arithmetics-parser.js arithmetics.pegjs</code></pre>
 
-<p>If you omit both input and output file, standard input and output are
-used.</p>
+<p>If you omit both input and output file, standard input and standard output
+are used.</p>
 
 <p>By default, the generated parser is in the Node.js module format. You can
 override this using the <code>--format</code> option.</p>
@@ -173,21 +175,25 @@ override this using the <code>--format</code> option.</p>
 
 <p>In Node.js, require the Peggy parser generator module:</p>
 
-<pre><code>var peg = require("peggy");</code></pre>
+<pre><code class="language-javascript">const peggy = require("peggy");</code></pre>
 
-<p>In browser, include the Peggy library in your web page or application using
+<p>or:</p>
+
+<pre><code class="language-javascript">import * as peggy from "peggy";</code></pre>
+
+<p>For use in browsers, include the Peggy library in your web page or application using
 the <code>&lt;script&gt;</code> tag. If Peggy detects an AMD loader, it will
 define itself as a module, otherwise the API will be available in the
 <code>peg</code> global object.</p>
 
-<p>To generate a parser, call the <code>peg.generate</code> method and pass your
+<p>To generate a parser, call the <code>peggy.generate</code> method and pass your
 grammar as a parameter:</p>
 
-<pre><code>var parser = peg.generate("start = ('a' / 'b')+");</code></pre>
+<pre><code class="language-javascript">const parser = peggy.generate("start = ('a' / 'b')+");</code></pre>
 
 <p>The method will return generated parser object or its source code as a string
 (depending on the value of the <code>output</code> option — see below). It will
-throw an exception if the grammar is invalid. The exception will contain
+throw an exception if the grammar is invalid. The exception will contain a
 <code>message</code> property with more details about the error.</p>
 
 <p>You can tweak the generated parser by passing a second parameter with an
@@ -248,17 +254,17 @@ supported:</p>
 
 <h2 id="using-the-parser">Using the Parser</h2>
 
-<p>Using the generated parser is simple &mdash; just call its <code>parse</code>
+<p>To use the generated parser, call its <code>parse</code>
 method and pass an input string as a parameter. The method will return a parse
 result (the exact value depends on the grammar used to generate the parser) or
 throw an exception if the input is invalid. The exception will contain
-<code>location</code>, <code>expected</code>, <code>found</code> and
-<code>message</code> properties with more details about the error.  The error
+<code>location</code>, <code>expected</code>, <code>found</code>,
+<code>message</code>, and <code>diagnostic</code> properties with more details about the error.  The error
 will have a <code>format(SourceText[])</code> function, to which you pass an array
-of objects that look like <code>{source: grammarSource, text: string}</code>; this
+of objects that look like <code>{ source: grammarSource, text: string }</code>; this
 will return a nicely-formatted error suitable for human consumption.</p>
 
-<pre><code>parser.parse("abba"); // returns ["a", "b", "b", "a"]
+<pre><code class="language-javascript">parser.parse("abba"); // returns ["a", "b", "b", "a"]
 
 parser.parse("abcd"); // throws an exception </code></pre>
 
@@ -274,12 +280,12 @@ supported:</p>
   <dd>Tracer to use.</dd>
 
   <dt><code>...</code> (any others)</dt>
-  <dd>Made available in the "options" variable</dd>
+  <dd>Made available in the <code>options</code> variable</dd>
 </dl>
 
-<p>Parsers can also support their own custom options.  For example:</p>
+<p>As you can see above, parsers can also support their own custom options.  For example:</p>
 
-<pre><code>const parser = peggy.generate(`
+<pre><code class="language-javascript">const parser = peggy.generate(`
 {
   // options are available in the per-parse initializer
   console.log(options.validWords);  // outputs "[ 'boo', 'baz', 'boop' ]"
@@ -289,7 +295,7 @@ validWord = @word:$[a-z]+ &{ return options.validWords.includes(word) }
 `);
 
 const result = parser.parse("boo", {
-  validWords: [ "boo", "baz", "boop"]
+  validWords: [ "boo", "baz", "boop" ]
 });
 
 console.log(result);  // outputs "boo"
@@ -305,7 +311,7 @@ comments (<code>// ...</code> and <code>/* ... */</code>).</p>
 like <code>2*(3+4)</code>. A parser generated from this grammar computes their
 values.</p>
 
-<pre><code>start
+<pre><code class="language-peggy">start
   = additive
 
 additive
@@ -336,7 +342,7 @@ first rule, which is also called the <em>start rule</em>.</p>
 
 <p>A rule name must be a JavaScript identifier. It is followed by an equality
 sign (“=”) and a parsing expression. If the rule has a human-readable name, it
-is written as a JavaScript string between the name and separating equality sign.
+is written as a JavaScript string between the rule name and the equality sign.
 Rules need to be separated only by whitespace (their beginning is easily
 recognizable), but a semicolon (“;”) after the parsing expression is
 allowed.</p>
@@ -350,7 +356,7 @@ Curly braces in both <em>initializers</em> code must be balanced.</p>
 <p>The <em>global initializer</em> is executed once and only once, when the
 generated parser is loaded (through a <code>require</code> or an
 <code>import</code> statement for instance). It is the ideal location to
-require, to import or to declare utility functions to be used in rule actions
+require, to import, to declare constants, or to declare utility functions to be used in rule actions
 and semantic predicates.</p>
 <p>The <em>per-parse initializer</em> is called before the generated parser
 starts parsing. The code inside the <em>per-parse initializer</em> can access
@@ -361,7 +367,7 @@ parse or to modify the input before the parse.</p>
 <p>Let's look at the example grammar from above using a <em>global
 initializer</em> and a <em>per-parse initializer</em>:</p>
 
-<pre><code>{{
+<pre><code class="language-peggy">{{
   function makeInteger(o) {
     return parseInt(o.join(""), 10);
   }
@@ -513,77 +519,46 @@ subexpressions and thus forming a recursive structure:</p>
     match failed.</p>
   </dd>
 
-  <dt><code>&amp; { <em>predicate</em> }</code></dt>
+  <dt id="-predicate-"><code>&amp; { <em>predicate</em> }</code></dt>
 
   <dd>
-    <p>The predicate is a piece of JavaScript code that is executed as if it was
-    inside a function. It gets the match results of labeled expressions in
-    preceding expression as its arguments. It should return some JavaScript
-    value using the <code>return</code> statement. If the returned value
-    evaluates to <code>true</code> in boolean context, just return
-    <code>undefined</code> and do not consume any input; otherwise consider the
-    match failed.</p>
+    <p>This is a positive assertion. No input is consumed.</p>
 
-    <p>The code inside the predicate can access all variables and functions
-    defined in the initializer at the beginning of the grammar.</p>
+    <p>The predicate should be JavaScript code, and it's executed as a
+    function. Curly braces in the predicate must be balanced.</p>
 
-    <p>The code inside the predicate can also access location information using
-    the <code>location</code> function. It returns an object like this:</p>
+    <p>The predicate should <code>return</code> a boolean value. If the result is
+    truthy, it's match result is <code>undefined</code>, otherwise the match is
+    considered failed.</p>
 
-    <pre><code>{
-  start: { offset: 23, line: 5, column: 6 },
-  end:   { offset: 23, line: 5, column: 6 }
-}</code></pre>
-
-    <p>The <code>start</code> and <code>end</code> properties both refer to the
-    current parse position. The <code>offset</code> property contains an offset
-    as a zero-based index and <code>line</code> and <code>column</code>
-    properties contain a line and a column as one-based indices.</p>
-
-    <p>The code inside the predicate can also access options passed to the
-    parser using the <code>options</code> variable.</p>
-
-    <p>Note that curly braces in the predicate code must be balanced.</p>
+    <p>The predicate has access to all variables and functions in the
+    <a href="#action-execution-environment">Action Execution Environment</a>.</p>
   </dd>
 
-  <dt><code>! { <em>predicate</em> }</code></dt>
+  <dt id="--predicate-"><code>! { <em>predicate</em> }</code></dt>
 
   <dd>
-    <p>The predicate is a piece of JavaScript code that is executed as if it was
-    inside a function. It gets the match results of labeled expressions in
-    preceding expression as its arguments. It should return some JavaScript
-    value using the <code>return</code> statement. If the returned value
-    evaluates to <code>false</code> in boolean context, just return
-    <code>undefined</code> and do not consume any input; otherwise consider the
-    match failed.</p>
+    <p>This is a negative assertion. No input is consumed.</p>
 
-    <p>The code inside the predicate can access all variables and functions
-    defined in the initializer at the beginning of the grammar.</p>
+    <p>The predicate should be JavaScript code, and it's executed as a
+    function. Curly braces in the predicate must be balanced.</p>
 
-    <p>The code inside the predicate can also access location information using
-    the <code>location</code> function. It returns an object like this:</p>
+    <p>The predicate should <code>return</code> a boolean value. If the result is
+    falsy, it's match result is <code>undefined</code>, otherwise the match is
+    considered failed.</p>
 
-    <pre><code>{
-  start: { offset: 23, line: 5, column: 6 },
-  end:   { offset: 23, line: 5, column: 6 }
-}</code></pre>
-
-    <p>The <code>start</code> and <code>end</code> properties both refer to the
-    current parse position. The <code>offset</code> property contains an offset
-    as a zero-based index and <code>line</code> and <code>column</code>
-    properties contain a line and a column as one-based indices.</p>
-
-    <p>The code inside the predicate can also access options passed to the
-    parser using the <code>options</code> variable.</p>
-
-    <p>Note that curly braces in the predicate code must be balanced.</p>
+    <p>The predicate has access to all variables and functions in the
+    <a href="#action-execution-environment">Action Execution Environment</a>.</p>
   </dd>
 
-  <dt><code>$ <em>expression</em></code></dt>
+  <dt id="-expression-2"><code>$ <em>expression</em></code></dt>
 
   <dd>
     <p>Try to match the expression. If the match succeeds, return the matched
     text instead of the match result.</p>
+
+    <p>If you need to return the matched text in an action, use the
+    <a href="#action-execution-environment"><code>text()</code> function</a>.</p>
   </dd>
 
   <dt><code><em>label</em> : <em>expression</em></code></dt>
@@ -596,7 +571,7 @@ subexpressions and thus forming a recursive structure:</p>
     results can be accessed by action's JavaScript code.</p>
   </dd>
 
-  <dt><code><em>@</em> (<em>label</em>:)? <em>expression</em></code></dt>
+  <dt><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
 
   <dd>
     <p>Match the expression and if the label exists, remember its match result
@@ -605,10 +580,10 @@ subexpressions and thus forming a recursive structure:</p>
 
     <p>Return the value of this expression from the rule, or "pluck" it.  You
     may not have an action for this rule.  The expression must not be a
-    semantic predicate (<code>&{predicate}</code> or
-    <code>!{predicate}</code>).  There may be multiple pluck expressions in a
-    given rule, in which case an array of the plucked expressions is returned
-    from the rule.</p>
+    semantic predicate (<a href="#-predicate-"><code>&{ predicate }</code></a> or
+    <a href="#--predicate-"><code>!{ predicate }</code></a>).  There may be multiple
+    pluck expressions in a given rule, in which case an array of the plucked
+    expressions is returned from the rule.</p>
 
     <p>Pluck expressions are useful for writing terse grammars, or returning
     parts of an expression that is wrapped in parentheses.</p>
@@ -623,53 +598,17 @@ subexpressions and thus forming a recursive structure:</p>
   <dt><code><em>expression</em> { <em>action</em> }</code></dt>
 
   <dd>
-    <p>Match the expression. If the match is successful, run the action,
-    otherwise consider the match failed.</p>
+    <p>If the expression matches successfully, run the action, otherwise
+    consider the match failed.</p>
 
-    <p>The action is a piece of JavaScript code that is executed as if it was
-    inside a function. It gets the match results of labeled expressions in
-    preceding expression as its arguments. The action should return some
-    JavaScript value using the <code>return</code> statement. This value is
-    considered match result of the preceding expression.</p>
+    <p>The action should be JavaScript code, and it's executed as a
+    function. Curly braces in the action must be balanced.</p>
 
-    <p>To indicate an error, the code inside the action can invoke the
-    <code>expected</code> function, which makes the parser throw an exception.
-    The function takes two parameters — a description of what was expected at
-    the current position and optional location information (the default is what
-    <code>location</code> would return — see below). The description will be
-    used as part of a message of the thrown exception.</p>
+    <p>The action should <code>return</code> some value, which will be used as the
+    match result of the expression.</p>
 
-    <p>The code inside an action can also invoke the <code>error</code>
-    function, which also makes the parser throw an exception. The function takes
-    two parameters — an error message and optional location information (the
-    default is what <code>location</code> would return — see below). The message
-    will be used by the thrown exception.</p>
-
-    <p>The code inside the action can access all variables and functions defined
-    in the initializer at the beginning of the grammar. Curly braces in the
-    action code must be balanced.</p>
-
-    <p>The code inside the action can also access the text matched by the
-    expression using the <code>text</code> function.</p>
-
-    <p>The code inside the action can also access location information using the
-    <code>location</code> function. It returns an object like this:</p>
-
-    <pre><code>{
-  start: { offset: 23, line: 5, column: 6 },
-  end:   { offset: 25, line: 5, column: 8 }
-}</code></pre>
-
-    <p>The <code>start</code> property refers to the position at the beginning
-    of the expression, the <code>end</code> property refers to position after
-    the end of the expression. The <code>offset</code> property contains an
-    offset as a zero-based index and <code>line</code> and <code>column</code>
-    properties contain a line and a column as one-based indices.</p>
-
-    <p>The code inside the action can also access options passed to the parser
-    using the <code>options</code> variable.</p>
-
-    <p>Note that curly braces in the action code must be balanced.</p>
+    <p>The action has access to all variables and functions in the
+    <a href="#action-execution-environment">Action Execution Environment</a>.</p>
   </dd>
 
   <dt><code><em>expression<sub>1</sub></em> / <em>expression<sub>2</sub></em> / ... / <em>expression<sub>n</sub></em></code></dt>
@@ -681,12 +620,55 @@ subexpressions and thus forming a recursive structure:</p>
   </dd>
 </dl>
 
+<h3 id="action-execution-environment">Action Execution Environment</h3>
+
+<p>Actions and predicates have these variables and functions
+available to them.</p>
+
+<ul>
+  <li><p>All variables and functions defined in the initializer or the top-level
+  initializer at the beginning of the grammar are available.</p>
+  </li>
+  <li><p>Note, that all functions and variables, described below, are unavailable
+  in the global initializer.</p>
+  </li>
+  <li><p>Labels from preceding expressions are available as local variables,
+  which will have the match result of the labelled expressions.</p>
+  <p>A label is only available after its labelled expression is matched:</p>
+  <pre><code class="language-peggy">rule = A:('a' B:'b' { /* B is available, A is not */ } )</code></pre>
+  <p>A label in a sub-expression is only valid within the
+  sub-expression:</p>
+  <pre><code class="language-peggy">rule = A:'a' (B:'b') (C:'b' { /* A and C are available, B is not */ })</code></pre>
+  </li>
+  <li><p><code>input</code> is a parsed string that was passed to the <code>parse()</code> method.</p>
+  </li>
+  <li><p><code>options</code> is a variable that contains the parser options.
+  That is the same object that was passed to the <code>parse()</code> method.</p>
+  </li>
+  <li><p><code>error(message, where)</code> will report an error and throw an exception.
+  <code>where</code> is optional; the default is the value of <code>location()</code>.</p>
+  </li>
+  <li><p><code>expected(message, where)</code> is similar to <code>error</code>, but reports</p>
+  <blockquote>
+  <p>Expected <em>message</em> but &quot;<em>other</em>&quot; found.</p>
+  </blockquote>
+  <p>where <code>other</code> is, by default, the character in the <code>location().start.offset</code> position.</p>
+  </li>
+  <li><p><code>location()</code> returns an object with the information about the parse position.
+  Refer to <a href="#locations">the corresponding section</a> for the details.</p>
+  </li>
+  <li><p><code>text()</code> returns the source text between <code>start</code> and <code>end</code> (which will be <code>&quot;&quot;</code> for
+  predicates). Instead of using that function as a return value for the rule consider
+  using the <a href="#-expression-2"><code>$</code> operator</a>.</p>
+  </li>
+</ul>
+
 <h3 id="parsing-lists">Parsing Lists</h3>
 
 <p>One of the most frequent questions about Peggy grammars is how to parse a
 delimited list of items.  The cleanest current approach is:</p>
 
-<pre><code>list = head:word tail:(_ "," _ @word)* { return [head].concat(tail); }
+<pre><code class="language-peggy">list = head:word tail:(_ "," _ @word)* { return [head, ...tail); }
 word = $[a-z]i+
 _ = [ \t]*</code></pre>
 
@@ -696,21 +678,21 @@ parentheses, NOT out of the rule itself.</p>
 <h2 id="error-messages">Error Messages</h2>
 <p>As described above, you can annotate your grammar rules with human-readable names that will be used in error messages. For example, this production:</p>
 
-<pre><code>integer "integer"
+<pre><code class="language-peggy">integer "integer"
   = digits:[0-9]+</code></pre>
 <p>will produce an error message like:</p>
 
-Expected integer but "a" found.
+<blockquote>Expected integer but "a" found.</blockquote>
 
 <p>when parsing a non-number, referencing the human-readable name "integer." Without the human-readable name, Peggy instead uses a description of the character class that failed to match:</p>
 
-Expected [0-9] but "a" found.
+<blockquote>Expected [0-9] but "a" found.</blockquote>
 
-<p>Aside from the text content of messages, human-readable names also have a subtler effect on where errors are reported. Peggy prefers to match named rules completely or not at all, but not partially. Unnamed rules, on the other hand, can produce an error in the middle of their subexpressions.</p>
+<p>Aside from the text content of messages, human-readable names also have a subtler effect on <em>where</em> errors are reported. Peggy prefers to match named rules completely or not at all, but not partially. Unnamed rules, on the other hand, can produce an error in the middle of their subexpressions.</p>
 
 <p>For example, for this rule matching a comma-separated list of integers:</p>
 
-<pre><code>seq
+<pre><code class="language-peggy">seq
   = integer ("," integer)*</code></pre>
 <p>an input like 1,2,a produces this error message:</p>
 
@@ -718,7 +700,7 @@ Expected [0-9] but "a" found.
 
 <p>But if we add a human-readable name to the seq production:</p>
 
-<pre><code>seq "list of numbers"
+<pre><code class="language-peggy">seq "list of numbers"
   = integer ("," integer)*</code></pre>
 <p>then Peggy prefers an error message that implies a smaller attempted parse tree:</p>
 
@@ -727,29 +709,31 @@ Expected [0-9] but "a" found.
 <p>There are two classes of errors in Peggy:</p>
 
 <ul>
-  <li><code>SyntaxError</code> Syntax errors, found during parsing the input. This kind of errors can be thrown both during <em>grammar</em> parsing and during <em>input</em> parsing. Although name is the same, errors of each generated parser (including Peggy parser itself) has its own unique class.</li>
-  <li><code>GrammarError</code>: Grammar errors, found during construction of the parser. That errors can be thrown only on parser generation phase. This error signals about logical mistake in the grammar, such as having rules with the same name in one grammar, etc.</li>
+  <li><code>SyntaxError</code>: Syntax errors, found during parsing the input. This kind of errors can be thrown both during <em>grammar</em> parsing and during <em>input</em> parsing. Although name is the same, errors of each generated parser (including Peggy parser itself) has its own unique class.</li>
+  <li><code>GrammarError</code>: Grammar errors, found during construction of the parser. These errors can be thrown only in the parser generation phase. This error signals a logical mistake in the grammar, such as having two rules with the same name in one grammar, etc.</li>
 </ul>
 
-<p>Whatever error has caught, both of them have the <code>format()</code> method that takes an array of mappings from source to grammar text:</p>
+<p>Both of these errors have the <code>format()</code> method that takes an array of mappings from source to grammar text:</p>
 
-<pre><code>let source = ...;
+<pre><code class="language-javascript">let source = ...;
 try {
-  PEG.generate(input, { grammarSource: source, ...});// throws SyntaxError or GrammarError
-  parser.parse(input, { grammarSource: source, ...});// throws SyntaxError
+  peggy.generate(text, { grammarSource: source, ... }); // throws SyntaxError or GrammarError
+  parser.parse(input, { grammarSource: source2, ... }); // throws SyntaxError
 } catch (e) {
   if (typeof e.format === "function") {
     console.log(e.format([
-      { source, text: input },
-      { source: source2, text: input2 },
+      { source, text },
+      { source: source2, text: input },
       ...
     ]));
+  } else {
+    throw e;
   }
 }</code></pre>
 
-<p>Generated message looks like:</p>
+<p>Messages generated by <code>format()</code> look like this</p>
 
-<pre><code>Error: Possible infinite loop when parsing (left recursion: start -> proxy -> end -> start)
+<pre><code class="language-console">Error: Possible infinite loop when parsing (left recursion: start -> proxy -> end -> start)
  --> .\recursion.pegjs:1:1
   |
 1 | start = proxy;
@@ -770,13 +754,66 @@ note: Step 3: call itself without input consumption - left recursion
 3 | end = !start
   |        ^^^^^</code></pre>
 
+<h2 id="locations">Locations</h2>
+
+<p>During the parsing you can access to the information of the current parse location,
+such as offset in the parsed string, line and column information. You can get this
+information by calling <code>location()</code> function, which returns you the following object:</p>
+
+<pre><code class="language-javascript">{
+  source: options.grammarSource,
+  start: { offset: 23, line: 5, column: 6 },
+  end: { offset: 25, line: 5, column: 8 }
+}
+</code></pre>
+
+<p><code>source</code> is an any object that was supplied in the <code>grammarSource</code> option in
+the <code>parse()</code> call. That object can be used to hold reference to the origin of
+the grammar, for example, it can be a filename. It is recommended that this
+object have a <code>toString()</code> implementation that returns meaningful string,
+because that string will be used when getting formatted error representation
+with <a href="#error-messages"><code>e.format()</code></a>.</p>
+
+<p>If <code>source</code> is <code>null</code> or <code>undefined</code> it doesn't appear in the formatted messages.
+The default value for <code>source</code> is <code>undefined</code>.</p>
+
+<p>For actions, <code>start</code> refers to the position at the beginning of the preceding
+expression, and <code>end</code> refers to the position after the end of the preceding
+expression.</p>
+
+<p>For semantic predicates, <code>start</code> and <code>end</code> are equal, denoting the location where
+the predicate is evaluated.</p>
+
+<p>For the per-parse initializer, the location is the start of the input, i.e.</p>
+
+<pre><code class="language-javascript">{
+  source: options.grammarSource,
+  start: { offset: 0, line: 1, column: 1 },
+  end: { offset: 0, line: 1, column: 1 }
+}
+</code></pre>
+
+<p><code>offset</code> is a 0-based character index within the source text.
+<code>line</code> and <code>column</code> are 1-based indices.</p>
+
+<p>The line number is incremented each time the parser finds an end of line sequence in
+  the input.</p>
+
+<p>Currently, Peggy only works with the <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic Multilingual Plane (BMP)</a> of Unicode.
+This means that all offsets are measured in UTF-16 code units. If you
+try to parse characters outside this Plane (for example, emoji, or any
+surrogate pairs), you may get an offset inside a code point.</p>
+
+<p>Changing this behavior may be a breaking change and will not to be done before
+Peggy 2.0.  You can join to the discussion for this topic on the <a href="https://github.com/peggyjs/peggy/discussions/15">GitHub Discussions page</a>.</p>
+
 <h2 id="compatibility">Compatibility</h2>
 
 <p>Both the parser generator and generated parsers should run well in the
 following environments:</p>
 
 <ul>
-  <li>Node.js 4+</li>
+  <li>Node.js 10+</li>
   <li>Internet Explorer 9+</li>
   <li>Edge</li>
   <li>Firefox</li>
