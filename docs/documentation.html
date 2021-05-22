@@ -75,11 +75,11 @@
 
 <p>To use the <code>peggy</code> command, install Peggy globally:</p>
 
-<pre><code>$ npm install -g peggy</code></pre>
+<pre><code class="language-console">$ npm install -g peggy</code></pre>
 
 <p>To use the JavaScript API, install Peggy locally:</p>
 
-<pre><code>$ npm install peggy</code></pre>
+<pre><code class="language-console">$ npm install peggy</code></pre>
 
 <p>If you need both the <code>peggy</code> command and the JavaScript API,
 install Peggy both ways.</p>
@@ -89,9 +89,9 @@ install Peggy both ways.</p>
 <p>The easiest way to use Peggy from the browser is to pull the latest version
 from a CDN. Either of these should work:</p>
 
-<pre><code>&lt;script src="https://unpkg.com/peggy">&lt;/script></code></pre>
+<pre><code class="language-html">&lt;script src="https://unpkg.com/peggy">&lt;/script></code></pre>
 
-<pre><code>&lt;script src="https://cdn.jsdelivr.net/npm/peggy">&lt;/script></code></pre>
+<pre><code class="language-html">&lt;script src="https://cdn.jsdelivr.net/npm/peggy">&lt;/script></code></pre>
 
 <p>Both of those CDNs support pinning a version number rather than always
 taking the latest. Not only is that good practice, it will save several
@@ -116,13 +116,13 @@ input). Generated parser itself is a JavaScript object with a simple API.</p>
 <p>To generate a parser from your grammar, use the <code>peggy</code>
 command:</p>
 
-<pre><code>$ peggy arithmetics.pegjs</code></pre>
+<pre><code class="language-console">$ peggy arithmetics.pegjs</code></pre>
 
 <p>This writes parser source code into a file with the same name as the grammar
 file but with “.js” extension. You can also specify the output file
 explicitly:</p>
 
-<pre><code>$ peggy -o arithmetics-parser.js arithmetics.pegjs</code></pre>
+<pre><code class="language-console">$ peggy -o arithmetics-parser.js arithmetics.pegjs</code></pre>
 
 <p>If you omit both input and output file, standard input and output are
 used.</p>
@@ -173,7 +173,7 @@ override this using the <code>--format</code> option.</p>
 
 <p>In Node.js, require the Peggy parser generator module:</p>
 
-<pre><code>var peg = require("peggy");</code></pre>
+<pre><code class="language-javascript">var peg = require("peggy");</code></pre>
 
 <p>In browser, include the Peggy library in your web page or application using
 the <code>&lt;script&gt;</code> tag. If Peggy detects an AMD loader, it will
@@ -183,7 +183,7 @@ define itself as a module, otherwise the API will be available in the
 <p>To generate a parser, call the <code>peg.generate</code> method and pass your
 grammar as a parameter:</p>
 
-<pre><code>var parser = peg.generate("start = ('a' / 'b')+");</code></pre>
+<pre><code class="language-javascript">var parser = peg.generate("start = ('a' / 'b')+");</code></pre>
 
 <p>The method will return generated parser object or its source code as a string
 (depending on the value of the <code>output</code> option — see below). It will
@@ -255,10 +255,10 @@ throw an exception if the input is invalid. The exception will contain
 <code>location</code>, <code>expected</code>, <code>found</code> and
 <code>message</code> properties with more details about the error.  The error
 will have a <code>format(SourceText[])</code> function, to which you pass an array
-of objects that look like <code>{source: grammarSource, text: string}</code>; this
+of objects that look like <code>{ source: grammarSource, text: string }</code>; this
 will return a nicely-formatted error suitable for human consumption.</p>
 
-<pre><code>parser.parse("abba"); // returns ["a", "b", "b", "a"]
+<pre><code class="language-javascript">parser.parse("abba"); // returns ["a", "b", "b", "a"]
 
 parser.parse("abcd"); // throws an exception </code></pre>
 
@@ -274,12 +274,12 @@ supported:</p>
   <dd>Tracer to use.</dd>
 
   <dt><code>...</code> (any others)</dt>
-  <dd>Made available in the "options" variable</dd>
+  <dd>Made available in the <code>options</code> variable</dd>
 </dl>
 
 <p>Parsers can also support their own custom options.  For example:</p>
 
-<pre><code>const parser = peggy.generate(`
+<pre><code class="language-javascript">const parser = peggy.generate(`
 {
   // options are available in the per-parse initializer
   console.log(options.validWords);  // outputs "[ 'boo', 'baz', 'boop' ]"
@@ -289,7 +289,7 @@ validWord = @word:$[a-z]+ &{ return options.validWords.includes(word) }
 `);
 
 const result = parser.parse("boo", {
-  validWords: [ "boo", "baz", "boop"]
+  validWords: [ "boo", "baz", "boop" ]
 });
 
 console.log(result);  // outputs "boo"
@@ -305,7 +305,7 @@ comments (<code>// ...</code> and <code>/* ... */</code>).</p>
 like <code>2*(3+4)</code>. A parser generated from this grammar computes their
 values.</p>
 
-<pre><code>start
+<pre><code class="language-peggy">start
   = additive
 
 additive
@@ -361,7 +361,7 @@ parse or to modify the input before the parse.</p>
 <p>Let's look at the example grammar from above using a <em>global
 initializer</em> and a <em>per-parse initializer</em>:</p>
 
-<pre><code>{{
+<pre><code class="language-peggy">{{
   function makeInteger(o) {
     return parseInt(o.join(""), 10);
   }
@@ -513,7 +513,7 @@ subexpressions and thus forming a recursive structure:</p>
     match failed.</p>
   </dd>
 
-  <dt><code>&amp; { <em>predicate</em> }</code></dt>
+  <dt id="-predicate-"><code>&amp; { <em>predicate</em> }</code></dt>
 
   <dd>
     <p>The predicate is a piece of JavaScript code that is executed as if it was
@@ -546,7 +546,7 @@ subexpressions and thus forming a recursive structure:</p>
     <p>Note that curly braces in the predicate code must be balanced.</p>
   </dd>
 
-  <dt><code>! { <em>predicate</em> }</code></dt>
+  <dt id="--predicate-"><code>! { <em>predicate</em> }</code></dt>
 
   <dd>
     <p>The predicate is a piece of JavaScript code that is executed as if it was
@@ -596,7 +596,7 @@ subexpressions and thus forming a recursive structure:</p>
     results can be accessed by action's JavaScript code.</p>
   </dd>
 
-  <dt><code><em>@</em> (<em>label</em>:)? <em>expression</em></code></dt>
+  <dt><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
 
   <dd>
     <p>Match the expression and if the label exists, remember its match result
@@ -605,10 +605,10 @@ subexpressions and thus forming a recursive structure:</p>
 
     <p>Return the value of this expression from the rule, or "pluck" it.  You
     may not have an action for this rule.  The expression must not be a
-    semantic predicate (<code>&{predicate}</code> or
-    <code>!{predicate}</code>).  There may be multiple pluck expressions in a
-    given rule, in which case an array of the plucked expressions is returned
-    from the rule.</p>
+    semantic predicate (<a href="#-predicate-"><code>&{ predicate }</code></a> or
+    <a href="#--predicate-"><code>!{ predicate }</code></a>).  There may be multiple
+    pluck expressions in a given rule, in which case an array of the plucked
+    expressions is returned from the rule.</p>
 
     <p>Pluck expressions are useful for writing terse grammars, or returning
     parts of an expression that is wrapped in parentheses.</p>
@@ -686,7 +686,7 @@ subexpressions and thus forming a recursive structure:</p>
 <p>One of the most frequent questions about Peggy grammars is how to parse a
 delimited list of items.  The cleanest current approach is:</p>
 
-<pre><code>list = head:word tail:(_ "," _ @word)* { return [head].concat(tail); }
+<pre><code class="language-peggy">list = head:word tail:(_ "," _ @word)* { return [head, ...tail); }
 word = $[a-z]i+
 _ = [ \t]*</code></pre>
 
@@ -696,21 +696,21 @@ parentheses, NOT out of the rule itself.</p>
 <h2 id="error-messages">Error Messages</h2>
 <p>As described above, you can annotate your grammar rules with human-readable names that will be used in error messages. For example, this production:</p>
 
-<pre><code>integer "integer"
+<pre><code class="language-peggy">integer "integer"
   = digits:[0-9]+</code></pre>
 <p>will produce an error message like:</p>
 
-Expected integer but "a" found.
+<blockquote>Expected integer but "a" found.</blockquote>
 
 <p>when parsing a non-number, referencing the human-readable name "integer." Without the human-readable name, Peggy instead uses a description of the character class that failed to match:</p>
 
-Expected [0-9] but "a" found.
+<blockquote>Expected [0-9] but "a" found.</blockquote>
 
-<p>Aside from the text content of messages, human-readable names also have a subtler effect on where errors are reported. Peggy prefers to match named rules completely or not at all, but not partially. Unnamed rules, on the other hand, can produce an error in the middle of their subexpressions.</p>
+<p>Aside from the text content of messages, human-readable names also have a subtler effect on <em>where</em> errors are reported. Peggy prefers to match named rules completely or not at all, but not partially. Unnamed rules, on the other hand, can produce an error in the middle of their subexpressions.</p>
 
 <p>For example, for this rule matching a comma-separated list of integers:</p>
 
-<pre><code>seq
+<pre><code class="language-peggy">seq
   = integer ("," integer)*</code></pre>
 <p>an input like 1,2,a produces this error message:</p>
 
@@ -718,7 +718,7 @@ Expected [0-9] but "a" found.
 
 <p>But if we add a human-readable name to the seq production:</p>
 
-<pre><code>seq "list of numbers"
+<pre><code class="language-peggy">seq "list of numbers"
   = integer ("," integer)*</code></pre>
 <p>then Peggy prefers an error message that implies a smaller attempted parse tree:</p>
 
@@ -727,13 +727,13 @@ Expected [0-9] but "a" found.
 <p>There are two classes of errors in Peggy:</p>
 
 <ul>
-  <li><code>SyntaxError</code> Syntax errors, found during parsing the input. This kind of errors can be thrown both during <em>grammar</em> parsing and during <em>input</em> parsing. Although name is the same, errors of each generated parser (including Peggy parser itself) has its own unique class.</li>
+  <li><code>SyntaxError</code>: Syntax errors, found during parsing the input. This kind of errors can be thrown both during <em>grammar</em> parsing and during <em>input</em> parsing. Although name is the same, errors of each generated parser (including Peggy parser itself) has its own unique class.</li>
   <li><code>GrammarError</code>: Grammar errors, found during construction of the parser. That errors can be thrown only on parser generation phase. This error signals about logical mistake in the grammar, such as having rules with the same name in one grammar, etc.</li>
 </ul>
 
 <p>Whatever error has caught, both of them have the <code>format()</code> method that takes an array of mappings from source to grammar text:</p>
 
-<pre><code>let source = ...;
+<pre><code class="language-javascript">let source = ...;
 try {
   PEG.generate(input, { grammarSource: source, ...});// throws SyntaxError or GrammarError
   parser.parse(input, { grammarSource: source, ...});// throws SyntaxError
@@ -749,7 +749,7 @@ try {
 
 <p>Generated message looks like:</p>
 
-<pre><code>Error: Possible infinite loop when parsing (left recursion: start -> proxy -> end -> start)
+<pre><code class="language-console">Error: Possible infinite loop when parsing (left recursion: start -> proxy -> end -> start)
  --> .\recursion.pegjs:1:1
   |
 1 | start = proxy;

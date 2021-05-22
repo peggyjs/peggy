@@ -178,7 +178,10 @@ Using the generated parser is simple — just call its `parse` method and pass a
 input string as a parameter. The method will return a parse result (the exact
 value depends on the grammar used to generate the parser) or throw an exception
 if the input is invalid. The exception will contain `location`, `expected`,
-`found`, and `message` properties with more details about the error.
+`found`, and `message` properties with more details about the error.  The error
+will have a `format(SourceText[])` function, to which you pass an array
+of objects that look like `{ source: grammarSource, text: string }`; this
+will return a nicely-formatted error suitable for human consumption.
 
 ```javascript
 parser.parse("abba"); // returns ["a", "b", "b", "a"]
@@ -191,8 +194,26 @@ object to the `parse` method. The following options are supported:
 
 - `startRule` — name of the rule to start parsing from
 - `tracer` — tracer to use
+- `...` (any others) — made available in the `options` variable
 
-Parsers can also support their own custom options.
+Parsers can also support their own custom options.  For example:
+
+```javascript
+const parser = peggy.generate(`
+{
+  // options are available in the per-parse initializer
+  console.log(options.validWords);  // outputs "[ 'boo', 'baz', 'boop' ]"
+}
+
+validWord = @word:$[a-z]+ &{ return options.validWords.includes(word) }
+`);
+
+const result = parser.parse("boo", {
+  validWords: [ "boo", "baz", "boop" ]
+});
+
+console.log(result);  // outputs "boo"
+```
 
 ## Grammar Syntax and Semantics
 
@@ -337,7 +358,7 @@ case-insensitive.
 
 Match exactly one character and return it as a string.
 
-#### [*characters*]
+#### [ _characters_ ]
 
 Match one character from a set and return it as a string. The characters in the
 list can be escaped in exactly the same way as in JavaScript string. The list of
@@ -468,9 +489,9 @@ given label. The label must be a JavaScript identifier if it exists.
 
 Return the value of this expression from the rule, or "pluck" it. You may not
 have an action for this rule. The expression must not be a semantic predicate
-(&{predicate} or !{predicate}). There may be multiple pluck expressions in a
-given rule, in which case an array of the plucked expressions is returned from
-the rule.
+([`&{ predicate }`](#-predicate-) or [`!{ predicate }`](#--predicate-)). There may
+be multiple pluck expressions in a given rule, in which case an array of the
+plucked expressions is returned from the rule.
 
 Pluck expressions are useful for writing terse grammars, or returning parts of
 an expression that is wrapped in parentheses.
@@ -535,6 +556,20 @@ Note that curly braces in the action code must be balanced.
 Try to match the first expression, if it does not succeed, try the second one,
 etc. Return the match result of the first successfully matched expression. If no
 expression matches, consider the match failed.
+
+### Parsing Lists
+
+One of the most frequent questions about Peggy grammars is how to parse a
+delimited list of items.  The cleanest current approach is:
+
+```peggy
+list = head:word tail:(_ "," _ @word)* { return [head, ...tail]; }
+word = $[a-z]i+
+_ = [ \t]*
+```
+
+Note that the `@` in the tail section plucks the word out of the
+parentheses, NOT out of the rule itself.
 
 ## Error Messages
 
