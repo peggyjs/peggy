@@ -92,7 +92,7 @@ file but with “.js” extension. You can also specify the output file explicit
 $ peggy -o arithmetics-parser.js arithmetics.peggy
 ```
 
-If you omit both input and output file, standard input and output are used.
+If you omit both input and output file, standard input and standard output are used.
 
 By default, the generated parser is in the Node.js module format. You can
 override this using the `--format` option.
@@ -122,23 +122,30 @@ You can tweak the generated parser with several options:
 In Node.js, require the Peggy parser generator module:
 
 ```javascript
-var peg = require("peggy");
+const peggy = require("peggy");
 ```
 
-In browser, include the Peggy library in your web page or application using the
-`<script>` tag. If Peggy detects an AMD loader, it will define itself as a
-module, otherwise the API will be available in the `peg` global object.
+or
 
-To generate a parser, call the `peg.generate` method and pass your grammar as a
+```javascript
+import * as peggy from "peggy";
+```
+
+For use in browsers, include the Peggy library in your web page or application
+using the `<script>` tag. If Peggy detects an AMD loader, it will define
+itself as a module, otherwise the API will be available in the `peggy` global
+object.
+
+To generate a parser, call the `peggy.generate` method and pass your grammar as a
 parameter:
 
 ```javascript
-var parser = peg.generate("start = ('a' / 'b')+");
+const parser = peggy.generate("start = ('a' / 'b')+");
 ```
 
 The method will return generated parser object or its source code as a string
 (depending on the value of the `output` option — see below). It will throw an
-exception if the grammar is invalid. The exception will contain `message`
+exception if the grammar is invalid. The exception will contain a `message`
 property with more details about the error.
 
 You can tweak the generated parser by passing a second parameter with an options
@@ -174,14 +181,14 @@ object to `peg.generate`. The following options are supported:
 
 ## Using the Parser
 
-Using the generated parser is simple — just call its `parse` method and pass an
-input string as a parameter. The method will return a parse result (the exact
-value depends on the grammar used to generate the parser) or throw an exception
-if the input is invalid. The exception will contain `location`, `expected`,
-`found`, and `message` properties with more details about the error.  The error
-will have a `format(SourceText[])` function, to which you pass an array
-of objects that look like `{ source: grammarSource, text: string }`; this
-will return a nicely-formatted error suitable for human consumption.
+To use the generated parser, call its `parse` method and pass an input string
+as a parameter. The method will return a parse result (the exact value depends
+on the grammar used to generate the parser) or throw an exception if the input
+is invalid. The exception will contain `location`, `expected`, `found`,
+`message`, and `diagnostics` properties with more details about the error.
+The error will have a `format(SourceText[])` function, to which you pass an
+array of objects that look like `{ source: grammarSource, text: string }`;
+this will return a nicely-formatted error suitable for human consumption.
 
 ```javascript
 parser.parse("abba"); // returns ["a", "b", "b", "a"]
@@ -196,7 +203,8 @@ object to the `parse` method. The following options are supported:
 - `tracer` — tracer to use
 - `...` (any others) — made available in the `options` variable
 
-Parsers can also support their own custom options.  For example:
+As you can see above, parsers can also support their own custom options.  For
+example:
 
 ```javascript
 const parser = peggy.generate(`
@@ -246,16 +254,17 @@ integer "integer"
 
 On the top level, the grammar consists of _rules_ (in our example, there are
 five of them). Each rule has a _name_ (e.g. `integer`) that identifies the rule,
-and a _parsing expression_ (e.g. `digits:[0-9]+ { return parseInt(digits.join(""), 10); }`) that defines a pattern to match against the
-input text and possibly contains some JavaScript code that determines what
-happens when the pattern matches successfully. A rule can also contain
-_human-readable name_ that is used in error messages (in our example, only the
-`integer` rule has a human-readable name). The parsing starts at the first rule,
-which is also called the _start rule_.
+and a _parsing expression_ (e.g. `digits:[0-9]+ { return parseInt(digits.join(""), 10); }`)
+that defines a pattern to match against the input text and possibly contains
+some JavaScript code that determines what happens when the pattern matches
+successfully. A rule can also contain _human-readable name_ that is used in
+error messages (in our example, only the `integer` rule has a human-readable
+name). The parsing starts at the first rule, which is also called the _start
+rule_.
 
 A rule name must be a JavaScript identifier. It is followed by an equality sign
 (“=”) and a parsing expression. If the rule has a human-readable name, it is
-written as a JavaScript string between the name and separating equality sign.
+written as a JavaScript string between the rule name and the equality sign.
 Rules need to be separated only by whitespace (their beginning is easily
 recognizable), but a semicolon (“;”) after the parsing expression is allowed.
 
@@ -267,9 +276,9 @@ rule actions and semantic predicates. Curly braces in both _initializers_ code
 must be balanced.
 
 The _global initializer_ is executed once and only once, when the generated
-parser is loaded (through a `require` or an `import` statement for instance). It
-is the ideal location to require, to import or to declare utility functions to
-be used in rule actions and semantic predicates.
+parser is loaded (through a `require` or an `import` statement for instance).
+It is the ideal location to require, to import, to declare constants, or to
+declare utility functions to be used in rule actions and semantic predicates.
 
 The _per-parse initializer_ is called before the generated parser starts
 parsing. The code inside the _per-parse initializer_ can access the input
@@ -604,30 +613,32 @@ There are two classes of errors in Peggy:
   Although name is the same, errors of each generated parser (including Peggy
   parser itself) has its own unique class.
 - `GrammarError`: Grammar errors, found during construction of the parser.
-  That errors can be thrown only on parser generation phase. This error
-  signals about logical mistake in the grammar, such as having rules with
+  These errors can be thrown only in the parser generation phase. This error
+  signals a logical mistake in the grammar, such as having two rules with
   the same name in one grammar, etc.
 
-Whatever error has caught, both of them have the `format()` method that takes
-an array of mappings from source to grammar text:
+Both of these errors have the `format()` method that takes an array of mappings from
+source to grammar text:
 
 ```javascript
 let source = ...;
 try {
-  PEG.generate(input, { grammarSource: source, ...});// throws SyntaxError or GrammarError
-  parser.parse(input, { grammarSource: source, ...});// throws SyntaxError
+  peggy.generate(text, { grammarSource: source, ... }); // throws SyntaxError or GrammarError
+  parser.parse(input, { grammarSource: source2, ... }); // throws SyntaxError
 } catch (e) {
   if (typeof e.format === "function") {
     console.log(e.format([
-      { source, text: input },
-      { source: source2, text: input2 },
+      { source, text },
+      { source: source2, text: input },
       ...
     ]));
+  } else {
+    throw e;
   }
 }
 ```
 
-Generated message looks like:
+Messages generated by `format()` look like this:
 
 ```console
 Error: Possible infinite loop when parsing (left recursion: start -> proxy -> end -> start)
@@ -673,17 +684,17 @@ object have a `toString()` implementation that returns meaningful string,
 because that string will be used when getting formatted error representation
 with [`e.format()`](#error-messages).
 
-If `source` is `null` or `undefined` it don't appeared in the formatted messages.
-Default value for `source` is `undefined`.
+If `source` is `null` or `undefined` it doesn't appear in the formatted messages.
+The default value for `source` is `undefined`.
 
 For actions, `start` refers to the position at the beginning of the preceding
 expression, and `end` refers to the position after the end of the preceding
 expression.
 
-For (semantic) predicates, `start` and `end` are the same, the location where
-the predicate is evaluated.
+For semantic predicates, `start` and `end` are equal, denoting the location
+where the predicate is evaluated.
 
-For pre-parse initializer, the location is the start location, i.e.
+For the per-parse initializer, the location is the start of the input, i.e.
 ```javascript
 {
   source: options.grammarSource,
@@ -695,16 +706,17 @@ For pre-parse initializer, the location is the start location, i.e.
 `offset` is a 0-based character index within the source text.
 `line` and `column` are 1-based indices.
 
-New line is started each time as parser found an `\n`, `\r`, or `\n\r` sequence in
-the input.
+The line number is incremented each time the parser finds an end of line
+sequence in the input.
 
-Currently, Peggy only works with the [Basic Multilingual Plane (BMP)][BMP] of the Unicode.
-That means that all offsets are measured in the UTF-16 code units, so, if you try
-to parse characters outside this Plane (for example, emoji, or any surrogate pairs),
-you will get an offset inside the character.
+Currently, Peggy only works with the [Basic Multilingual Plane (BMP)][BMP] of
+Unicode. This means that all offsets are measured in UTF-16 code units. If you
+try to parse characters outside this Plane (for example, emoji, or any
+surrogate pairs), you may get an offset inside a code point.
 
-Changing this behavior would be a breaking change and will not to be done until 2.0.
-You can join to the discussion for this topic on the [GitHub Discussions page][unicode].
+Changing this behavior may be a breaking change and will not to be done before
+Peggy 2.0. You can join to the discussion for this topic on the [GitHub
+Discussions page][unicode].
 
 [BMP]: https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane
 [unicode]: https://github.com/peggyjs/peggy/discussions/15
@@ -714,7 +726,7 @@ You can join to the discussion for this topic on the [GitHub Discussions page][u
 Both the parser generator and generated parsers should run well in the following
 environments:
 
-- Node.js 4+
+- Node.js 10+
 - Internet Explorer 9+
 - Edge
 - Firefox
