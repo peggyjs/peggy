@@ -5,6 +5,7 @@ const GrammarError = require("../../lib/grammar-error");
 
 const expect = chai.expect;
 
+/** @type {import("../../lib/peg").LocationRange} */
 const location = {
   source: undefined,
   start: { offset: 0, line: 1, column: 1 },

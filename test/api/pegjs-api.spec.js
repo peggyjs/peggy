@@ -159,13 +159,13 @@ describe("Peggy API", function() {
     });
 
     // The |format|, |exportVars|, and |dependencies| options are not tested
-    // becasue there is no meaningful way to thest their effects without turning
+    // because there is no meaningful way to test their effects without turning
     // this into an integration test.
 
     // The |plugins| option is tested in plugin API tests.
 
     it("accepts custom options", function() {
-      peg.generate("start = 'a'", { foo: 42 });
+      peg.generate("start = 'a'", { grammarSource: 42 });
     });
   });
 });
