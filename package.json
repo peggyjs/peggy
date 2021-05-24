@@ -36,7 +36,7 @@
     "deploy:tests": "cp build/test-bundle.min.js docs/js/test-bundle.min.js",
     "deploy:bench": "cp build/benchmark-bundle.min.js docs/js/benchmark-bundle.min.js",
     "build": "npm run build-notidy && npm run tidy",
-    "build-notidy": "node ./tools/announce \"Static source analysis\" && npm run lint && node ./tools/announce \"Setting up the build\" && npm run setup && node ./tools/announce \"Making libraries\" && npm run make && node ./tools/announce \"Running Audits\" && npm run audit && node ./tools/announce \"Creating distributions\" && npm run headers && npm run deploy && node ./tools/announce \"Complete!\"",
+    "build-notidy": "npm run lint && npm run setup && npm run make && npm run audit && npm run headers && npm run deploy",
     "setup": "npm run clean && npm run set_version",
     "make": "npm run parser && npm run ts && npm run rollup && npm run terser ",
     "audit": "npm run test && npm run benchmark",
