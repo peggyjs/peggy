@@ -657,6 +657,12 @@ available to them.</p>
   <li><p><code>location()</code> returns an object with the information about the parse position.
   Refer to <a href="#locations">the corresponding section</a> for the details.</p>
   </li>
+  <li><p><code>range()</code> is similar to <code>location()</code>, but returns an object with offsets only.
+  Refer to <a href="#locations">the &quot;Locations&quot; section</a> for the details.</p>
+  </li>
+  <li><p><code>offset()</code> returns only the start offset, i.e. <code>location().start.offset</code>.
+  Refer to <a href="#locations">the &quot;Locations&quot; section</a> for the details.</p>
+  </li>
   <li><p><code>text()</code> returns the source text between <code>start</code> and <code>end</code> (which will be <code>&quot;&quot;</code> for
   predicates). Instead of using that function as a return value for the rule consider
   using the <a href="#-expression-2"><code>$</code> operator</a>.</p>
@@ -798,6 +804,24 @@ the predicate is evaluated.</p>
 
 <p>The line number is incremented each time the parser finds an end of line sequence in
   the input.</p>
+
+<p>Line and column are somewhat expensive to compute, so if you just need the
+offset, there's also a function <code>offset()</code> that returns just the start offset,
+and a function <code>range()</code> that returns the object:</p>
+
+<pre><code class="language-javascript">
+{
+  source: options.grammarSource,
+  start: 23,
+  end: 25
+}
+</code></pre>
+
+<p>(i.e. difference from the <code>location()</code> result only in type of <code>start</code> and <code>end</code>
+properties, which contain just an offset instead of the <code>Location</code> object.)</p>
+
+<p>All notes about values for <code>location()</code> object is also applicable to the <code>range()</code>
+and <code>offset()</code> calls.</p>
 
 <p>Currently, Peggy only works with the <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic Multilingual Plane (BMP)</a> of Unicode.
 This means that all offsets are measured in UTF-16 code units. If you
