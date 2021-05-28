@@ -23,7 +23,7 @@
     "set_version": "node ./tools/set_version",
     "lint": "eslint . --ext .js bin/peggy",
     "ts": "tsc --build tsconfig.json",
-    "test": "jest --coverage --testPathIgnorePatterns=build",
+    "test": "jest",
     "benchmark": "node ./benchmark/run_bench.js",
     "rollup": "cp package.json build/ts && rollup -c",
     "terser": "npm run terser:peggy && npm run terser:tests && npm run terser:bench",
