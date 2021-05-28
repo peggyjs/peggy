@@ -176,7 +176,7 @@ object to `peg.generate`. The following options are supported:
 - `output` — if set to `"parser"`, the method will return generated parser
   object; if set to `"source"`, it will return parser source code as a string
   (default: `"parser"`)
-- `plugins` — plugins to use
+- `plugins` — plugins to use. See the [Plugins API](#plugins-api) section
 - `trace` — makes the parser trace its progress (default: `false`)
 
 ## Using the Parser
@@ -453,7 +453,9 @@ If you need to return the matched text in an action, use the
 #### _label_ : _expression_
 
 Match the expression and remember its match result under given label. The label
-must be a JavaScript identifier.
+must be a JavaScript identifier, but not in the list of reserved words.
+By default this is a list of [JavaScript reserved words][reserved],
+but [plugins](#plugins-api) can change it.
 
 Labeled expressions are useful together with actions, where saved match results
 can be accessed by action's JavaScript code.
@@ -461,7 +463,10 @@ can be accessed by action's JavaScript code.
 #### _@_ ( _label_ : )? _expression_
 
 Match the expression and if the label exists, remember its match result under
-given label. The label must be a JavaScript identifier if it exists.
+given label. The label must be a JavaScript identifier if it exists, but not
+in the list of reserved words. By default this is a list of
+[JavaScript reserved words][reserved], but [plugins](#plugins-api) can
+change it.
 
 Return the value of this expression from the rule, or "pluck" it. You may not
 have an action for this rule. The expression must not be a semantic predicate
@@ -745,6 +750,39 @@ Discussions page][unicode].
 [BMP]: https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane
 [unicode]: https://github.com/peggyjs/peggy/discussions/15
 
+## Plugins API
+
+A plugin is an object with the `use(config, options)` method. That method will be
+called for all plugins in the `options.plugins` array, supplied to the `generate()`
+method.
+
+`use` accepts these parameters:
+- `config` — object with the following properties:
+  - `parser` — `Parser` object, by default the `peggy.parser` instance. That object
+    will be used to parse the grammar. Plugin can replace this object
+  - `passes` — mapping `{ [stage: string]: Pass[] }` that represents compilation
+    stages that would applied to the AST, returned by the `parser` object. That
+    mapping will contain at least the following keys:
+    - `check` — passes that check AST for correctness. They shouldn't change the AST
+    - `transform` — passes that performs various optimizations. They can change
+      the AST, add or remove nodes or their properties
+    - `generate` — passes used for actual code generating
+
+    A plugin that implement a pass usually should push it to the end of one of that
+    arrays. Pass is a simple function with signature `pass(ast, options)`:
+    - `ast` — the AST created by the `config.parser.parse()` method
+    - `options` — compilation options passed to the `peggy.compiler.compile()` method.
+      If parser generation is started because `generate()` function was called that
+      is also an options, passed to the `generate()` method
+  - `reservedWords` — string array with a list of words that shouldn't be used as
+    label names. This list can be modified by plugins. That property is not required
+    to be sorted or not contain duplicates, but it is recommend to remove duplicates.
+
+    Default list contains [JavaScript reserved words][reserved], and can be found
+    in the `peggy.RESERVED_WORDS` property.
+- `options` — build options passed to the `generate()` method. A best practice for
+  a plugin would look for its own options under a `<plugin_name>` key.
+
 ## Compatibility
 
 Both the parser generator and generated parsers should run well in the following
@@ -773,3 +811,5 @@ Peggy was originally developed by [David Majda](https://majda.cz/)
 You are welcome to contribute code. Unless your contribution is really trivial
 you should [get in touch with us](https://github.com/peggyjs/peggy/discussions)
 first — this can prevent wasted effort on both sides.
+
+[reserved]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_keywords_as_of_ecmascript_2015

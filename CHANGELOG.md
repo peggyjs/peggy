@@ -84,6 +84,14 @@ Released: TBD
   location information, because it could be expensive to compute.
   That two functions always very efficient (back-ported pegjs/pegjs#528).
   [@felix9 and @Mingun](https://github.com/peggyjs/peggy/pull/145)
+- Add a new option `config.reservedWords: string[]`, avalible for plugins in their
+  `use()` method. Using this option, a plugin can change the list of words that
+  cannot be used.
+
+  By default this new option contains an array with [reserved JavaScript words][reserved]
+  [@Mingun](https://github.com/peggyjs/peggy/pull/150)
+
+[reserved]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_keywords_as_of_ecmascript_2015
 
 ### Bug fixes
 

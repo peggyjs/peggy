@@ -164,6 +164,34 @@ describe("Peggy API", function() {
 
     // The |plugins| option is tested in plugin API tests.
 
+    describe("reserved words", function() {
+      describe("throws an exception on reserved JS words used as a label", function() {
+        for (const label of peg.RESERVED_WORDS) {
+          it(label, function() {
+            expect(() => {
+              peg.generate([
+                "start = " + label + ":end",
+                "end = 'a'"
+              ].join("\n"), { output: "source" });
+            }).to.throw(peg.parser.SyntaxError);
+          });
+        }
+      });
+
+      describe("does not throws an exception on reserved JS words used as a rule name", function() {
+        for (const rule of peg.RESERVED_WORDS) {
+          it(rule, function() {
+            expect(() => {
+              peg.generate([
+                "start = " + rule,
+                rule + " = 'a'"
+              ].join("\n"), { output: "source" });
+            }).to.not.throw(peg.parser.SyntaxError);
+          });
+        }
+      });
+    });
+
     it("accepts custom options", function() {
       peg.generate("start = 'a'", { grammarSource: 42 });
     });

@@ -68,6 +68,7 @@
   </li>
   <li><a href="#error-messages">Error Messages</a></li>
   <li><a href="#locations">Locations</a></li>
+  <li><a href="#plugins-api">Plugins API</a></li>
   <li><a href="#compatibility">Compatibility</a></li>
 </ul>
 
@@ -246,7 +247,7 @@ supported:</p>
   a string (default: <code>"parser"</code>).</dd>
 
   <dt><code>plugins</code></dt>
-  <dd>Plugins to use.</dd>
+  <dd>Plugins to use. See the [Plugins API](#plugins-api) section.</dd>
 
   <dt><code>trace</code></dt>
   <dd>Makes the parser trace its progress (default: <code>false</code>).</dd>
@@ -565,7 +566,9 @@ subexpressions and thus forming a recursive structure:</p>
 
   <dd>
     <p>Match the expression and remember its match result under given label.
-    The label must be a JavaScript identifier.</p>
+    The label must be a JavaScript identifier, but not in the list of reserved words.
+    By default this is a list of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_keywords_as_of_ecmascript_2015">JavaScript reserved words</a>,
+    but <a href="#plugins-api">plugins</a> can change it.</p>
 
     <p>Labeled expressions are useful together with actions, where saved match
     results can be accessed by action's JavaScript code.</p>
@@ -576,7 +579,9 @@ subexpressions and thus forming a recursive structure:</p>
   <dd>
     <p>Match the expression and if the label exists, remember its match result
     under given label. The label must be a JavaScript identifier if it
-    exists.</p>
+    exists, but not in the list of reserved words.
+    By default this is a list of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_keywords_as_of_ecmascript_2015">JavaScript reserved words</a>,
+    but <a href="#plugins-api">plugins</a> can change it.</p>
 
     <p>Return the value of this expression from the rule, or "pluck" it.  You
     may not have an action for this rule.  The expression must not be a
@@ -830,6 +835,61 @@ surrogate pairs), you may get an offset inside a code point.</p>
 
 <p>Changing this behavior may be a breaking change and will not to be done before
 Peggy 2.0.  You can join to the discussion for this topic on the <a href="https://github.com/peggyjs/peggy/discussions/15">GitHub Discussions page</a>.</p>
+
+<h2 id="plugins-api">Plugins API</h2>
+
+<p>A plugin is an object with the <code>use(config, options)</code> method. That method will be
+called for all plugins in the <code>options.plugins</code> array, supplied to the <code>generate()</code>
+method.</p>
+
+<p><code>use</code> accepts these parameters:</p>
+
+<h3><code>config</code></h3>
+<p>Object with the following properties:</p>
+
+<dl>
+  <dt><code>parser</code></dt>
+  <dd><code>Parser</code> object, by default the <code>peggy.parser</code> instance. That object
+  will be used to parse the grammar. Plugin can replace this object</dd>
+
+  <dt><code>passes</code></dt>
+  <dd>
+    <p>Mapping <code>{ [stage: string]: Pass[] }</code> that represents compilation
+    stages that would applied to the AST, returned by the <code>parser</code> object. That
+    mapping will contain at least the following keys:</p>
+
+    <ul>
+      <li><code>check</code> — passes that check AST for correctness. They shouldn't change the AST</li>
+      <li><code>transform</code> — passes that performs various optimizations. They can change
+      the AST, add or remove nodes or their properties</li>
+      <li><code>generate</code> — passes used for actual code generating</li>
+    </ul>
+
+    <p>A plugin that implement a pass usually should push it to the end of one of that
+    arrays. Pass is a simple function with signature <code>pass(ast, options)</code>:</p>
+
+    <ul>
+      <li><code>ast</code> — the AST created by the <code>config.parser.parse()</code> method</li>
+      <li><code>options</code> — compilation options passed to the <code>peggy.compiler.compile()</code> method.
+      If parser generation is started because <code>generate()</code> function was called that
+      is also an options, passed to the <code>generate()</code> method</li>
+    </ul>
+  </dd>
+
+  <dt><code>reservedWords</code></dt>
+  <dd>
+    <p>String array with a list of words that shouldn't be used as
+    label names. This list can be modified by plugins. That property is not required
+    to be sorted or not contain duplicates, but it is recommend to remove duplicates.</p>
+
+    <p>Default list contains <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_keywords_as_of_ecmascript_2015">JavaScript reserved words</a>, and can be found
+    in the <code>peggy.RESERVED_WORDS</code> property.</p>
+  </dd>
+</dl>
+
+<h3><code>options</code></h3>
+<dd>Build options passed to the <code>generate()</code> method. A best practice for
+a plugin would look for its own options under a <code>&lt;plugin_name&gt;</code> key.</dd>
 
 <h2 id="compatibility">Compatibility</h2>
 
