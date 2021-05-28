@@ -7,6 +7,10 @@ module.exports = {
     "<rootDir>/test"
   ],
   "testMatch": [
-    "**/*.spec.js"
+    "**/*.spec.js",
+    "**/*.test-d.ts"
   ],
+  "transform": {
+    "^.+\\.ts$": "ts-jest",
+  }
 };

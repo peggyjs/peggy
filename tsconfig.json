@@ -6,15 +6,18 @@
     "allowJs": true,                                /* Allow javascript files to be compiled. */
     "checkJs": false,                               /* Report errors in .js files. */
     // "jsx": "preserve",                           /* Specify JSX code generation: 'preserve', 'react-native', 'react', 'react-jsx' or 'react-jsxdev'. */
-    "declaration": true,                            /* Generates corresponding '.d.ts' file. */
+    "declaration": false,                            /* Generates corresponding '.d.ts' file. */
     "declarationMap": false,                         /* Generates a sourcemap for each corresponding '.d.ts' file. */
-    "sourceMap": false,                              /* Generates corresponding '.map' file. */
+    "sourceMap": true,                              /* Generates corresponding '.map' file. */
     "outDir": "./build/ts/",                        /* Redirect output structure to the directory. */
     "rootDir": "./",                                /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
     "removeComments": true,                         /* Do not emit comments to output. */
+    "strict": true,                                 /* Enable all strict type-checking options. */
+    "esModuleInterop": true,                        /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
+    "skipLibCheck": false,                          /* Skip type checking of declaration files. */
+    "forceConsistentCasingInFileNames": true        /* Disallow inconsistently-cased references to the same file. */
 
   /* over time we will enable these */
-    // "strict": true,                              /* Enable all strict type-checking options. */
     // "noImplicitAny": true,                       /* Raise error on expressions and declarations with an implied 'any' type. */
     // "strictNullChecks": true,                    /* Enable strict null checks. */
     // "strictFunctionTypes": true,                 /* Enable strict checking of function types. */
@@ -30,9 +33,6 @@
     // "noPropertyAccessFromIndexSignature": true,  /* Require undeclared properties from index signatures to use element accesses. */
 
     // "allowSyntheticDefaultImports": true,        /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */
-    "esModuleInterop": true,                        /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
-    "skipLibCheck": true,                           /* Skip type checking of declaration files. */
-    "forceConsistentCasingInFileNames": true        /* Disallow inconsistently-cased references to the same file. */
   },
-  "include": ["./lib/**/*.js", "./test/**/*.spec.js", "./benchmark/*.js"]
+  "include": ["./lib/**/*.js", "./test/**/*.spec.js", "./test/**/*.ts", "./benchmark/*.js"]
 }
