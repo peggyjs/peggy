@@ -273,7 +273,11 @@ export class GrammarError extends Error {
   /** Additional messages with context information. */
   diagnostics: DiagnosticNote[];
 
-  constructor(message: string, location?: LocationRange, diagnostics?: DiagnosticNote[]);
+  constructor(
+    message: string,
+    location?: LocationRange,
+    diagnostics?: DiagnosticNote[]
+  );
 
   /**
    * Format the error with associated sources.  The `location.source` should have
@@ -444,7 +448,7 @@ export namespace compiler {
        * @param node Reference to the whole AST
        * @param args Any arguments passed to the `Visitor`
        */
-      grammar?              (node: ast.Grammar,             ...args: any[]): any;
+      grammar?(node: ast.Grammar, ...args: any[]): any;
 
       /**
        * Default behavior: do nothing
@@ -454,7 +458,10 @@ export namespace compiler {
        *        code)
        * @param args Any arguments passed to the `Visitor`
        */
-      top_level_initializer?(node: ast.TopLevelInitializer, ...args: any[]): any;
+      top_level_initializer?(
+        node: ast.TopLevelInitializer,
+        ...args: any[]
+      ): any;
       /**
        * Default behavior: do nothing
        *
@@ -462,14 +469,14 @@ export namespace compiler {
        *        run of the `parse()` method of the generated parser
        * @param args Any arguments passed to the `Visitor`
        */
-      initializer?          (node: ast.Initializer,         ...args: any[]): any;
+      initializer?(node: ast.Initializer, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
        * @param node Node, representing one structural element of the grammar
        * @param args Any arguments passed to the `Visitor`
        */
-      rule?                 (node: ast.Rule,                ...args: any[]): any;
+      rule?(node: ast.Rule, ...args: any[]): any;
 
       /**
        * Default behavior: run visitor on `expression` and return it result
@@ -478,7 +485,7 @@ export namespace compiler {
        *        the rule
        * @param args Any arguments passed to the `Visitor`
        */
-      named?                (node: ast.Named,               ...args: any[]): any;
+      named?(node: ast.Named, ...args: any[]): any;
       /**
        * Default behavior: run visitor on each element in `alternatives`,
        * return `undefined`
@@ -487,7 +494,7 @@ export namespace compiler {
        *        to match
        * @param args Any arguments passed to the `Visitor`
        */
-      choice?               (node: ast.Choice,              ...args: any[]): any;
+      choice?(node: ast.Choice, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
@@ -495,7 +502,7 @@ export namespace compiler {
        *        in the grammar
        * @param args Any arguments passed to the `Visitor`
        */
-      action?               (node: ast.Action,              ...args: any[]): any;
+      action?(node: ast.Action, ...args: any[]): any;
       /**
        * Default behavior: run visitor on each element in `elements`,
        * return `undefined`
@@ -503,84 +510,84 @@ export namespace compiler {
        * @param node Node, representing ordered sequence of expressions to match
        * @param args Any arguments passed to the `Visitor`
        */
-      sequence?             (node: ast.Sequence,            ...args: any[]): any;
+      sequence?(node: ast.Sequence, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
        * @param node Node, representing labeling of the `expression` result
        * @param args Any arguments passed to the `Visitor`
        */
-      labeled?              (node: ast.Labeled,             ...args: any[]): any;
+      labeled?(node: ast.Labeled, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
        * @param node Node, representing usage of part of matched input
        * @param args Any arguments passed to the `Visitor`
        */
-      text?                 (node: ast.Prefixed,            ...args: any[]): any;
+      text?(node: ast.Prefixed, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
        * @param node Node, representing positive lookahead check
        * @param args Any arguments passed to the `Visitor`
        */
-      simple_and?           (node: ast.Prefixed,            ...args: any[]): any;
+      simple_and?(node: ast.Prefixed, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
        * @param node Node, representing negative lookahead check
        * @param args Any arguments passed to the `Visitor`
        */
-      simple_not?           (node: ast.Prefixed,            ...args: any[]): any;
+      simple_not?(node: ast.Prefixed, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
        * @param node Node, representing optional presenting of the `expression`
        * @param args Any arguments passed to the `Visitor`
        */
-      optional?             (node: ast.Suffixed,            ...args: any[]): any;
+      optional?(node: ast.Suffixed, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
        * @param node Node, representing repetition of the `expression` any number of times
        * @param args Any arguments passed to the `Visitor`
        */
-      zero_or_more?         (node: ast.Suffixed,            ...args: any[]): any;
+      zero_or_more?(node: ast.Suffixed, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
        * @param node Node, representing repetition of the `expression` at least once
        * @param args Any arguments passed to the `Visitor`
        */
-      one_or_more?          (node: ast.Suffixed,            ...args: any[]): any;
+      one_or_more?(node: ast.Suffixed, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
        * @param node Node, introducing new scope for the labels
        * @param args Any arguments passed to the `Visitor`
        */
-      group?                (node: ast.Group,               ...args: any[]): any;
+      group?(node: ast.Group, ...args: any[]): any;
       /**
        * Default behavior: do nothing
        *
        * @param node Leaf node, representing positive lookahead check
        * @param args Any arguments passed to the `Visitor`
        */
-      semantic_and?         (node: ast.SemanticPredicate,   ...args: any[]): any;
+      semantic_and?(node: ast.SemanticPredicate, ...args: any[]): any;
       /**
        * Default behavior: do nothing
        *
        * @param node Leaf node, representing negative lookahead check
        * @param args Any arguments passed to the `Visitor`
        */
-      semantic_not?         (node: ast.SemanticPredicate,   ...args: any[]): any;
+      semantic_not?(node: ast.SemanticPredicate, ...args: any[]): any;
       /**
        * Default behavior: do nothing
        *
        * @param node Leaf node, representing using of the another rule
        * @param args Any arguments passed to the `Visitor`
        */
-      rule_ref?             (node: ast.RuleReference,       ...args: any[]): any;
+      rule_ref?(node: ast.RuleReference, ...args: any[]): any;
 
       /**
        * Default behavior: do nothing
@@ -588,21 +595,21 @@ export namespace compiler {
        * @param node Leaf node, representing match of a continuous sequence of symbols
        * @param args Any arguments passed to the `Visitor`
        */
-      literal?              (node: ast.Literal,             ...args: any[]): any;
+      literal?(node: ast.Literal, ...args: any[]): any;
       /**
        * Default behavior: do nothing
        *
        * @param node Leaf node, representing match of a characters range
        * @param args Any arguments passed to the `Visitor`
        */
-      class?                (node: ast.CharacterClass,      ...args: any[]): any;
+      class?(node: ast.CharacterClass, ...args: any[]): any;
       /**
        * Default behavior: do nothing
        *
        * @param node Leaf node, representing match of an any character
        * @param args Any arguments passed to the `Visitor`
        */
-      any?                  (node: ast.Any,                 ...args: any[]): any;
+      any?(node: ast.Any, ...args: any[]): any;
     }
 
     type AnyFunction = (...args: any[]) => any;
@@ -630,7 +637,10 @@ export namespace compiler {
        *
        * @template {T} Type of the AST node
        */
-      <T extends keyof NodeTypes>(node: ast.Node<T>, ...args: any[]): ReturnType<F[T] & AnyFunction>;
+      <T extends keyof NodeTypes>(
+        node: ast.Node<T>,
+        ...args: any[]
+      ): ReturnType<F[T] & AnyFunction>;
     }
 
     /**
@@ -681,7 +691,11 @@ export namespace compiler {
    * @throws {GrammarError} If the AST contains a semantic error, for example,
    *         duplicated labels
    */
-  function compile(ast: ast.Grammar, stages: Stages, options?: ParserBuildOptions): Parser;
+  function compile(
+    ast: ast.Grammar,
+    stages: Stages,
+    options?: ParserBuildOptions
+  ): Parser;
 
   /**
    * Generates a parser source from a specified grammar AST.
@@ -698,7 +712,11 @@ export namespace compiler {
    * @throws {GrammarError} If the AST contains a semantic error, for example,
    *         duplicated labels
    */
-  function compile(ast: ast.Grammar, stages: Stages, options: SourceBuildOptions): string;
+  function compile(
+    ast: ast.Grammar,
+    stages: Stages,
+    options: SourceBuildOptions
+  ): string;
 }
 
 /** Provides information pointing to a location within a source. */

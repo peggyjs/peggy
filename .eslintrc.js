@@ -11,12 +11,90 @@ module.exports = {
     "browser/",
     "node_modules/",
     "*.min.js",
-    "build"
+    "build",
   ],
   overrides: [
     {
       files: ["rollup.config.js"],
       parserOptions: { sourceType: "module" },
-    }
-  ]
+    },
+
+    // Put here for now so we can see the change all at once, then move to @peggyjs
+    {
+      files: [ "*.ts" ],
+      extends: [
+        "plugin:@typescript-eslint/base",
+        "plugin:@typescript-eslint/eslint-recommended",
+      ],
+      rules: {
+        // for all of these that have a non-plugin "off" to go with them,
+        // the typescript-eslint plugin provides a superset of the original
+        // rule.
+        "@typescript-eslint/array-type": "error",
+        "@typescript-eslint/ban-ts-comment": ["error", {
+          "ts-expect-error": "allow-with-description",
+        }],
+        "brace-style": "off",
+        "@typescript-eslint/brace-style": ["error", "1tbs", {
+          "allowSingleLine": true
+        }],
+        "comma-dangle": "off",
+        "@typescript-eslint/comma-dangle": ["error", "always-multiline"],
+        "comma-spacing": "off",
+        "@typescript-eslint/comma-spacing": "error",
+        "default-param-last": "off",
+        "@typescript-eslint/default-param-last": "error",
+        "func-call-spacing": "off",
+        "@typescript-eslint/func-call-spacing": ["error", "never"],
+        "@typescript-eslint/member-delimiter-style": "error",
+        "no-array-constructor": "off",
+        "no-dupe-class-members": "off",
+        "@typescript-eslint/no-dupe-class-members": "error",
+        "@typescript-eslint/no-array-constructor": "error",
+        "no-empty-function": "off",
+        "@typescript-eslint/no-empty-function": "error",
+        "@typescript-eslint/no-extra-non-null-assertion": "error",
+        "no-extra-semi": "off",
+        "@typescript-eslint/no-extra-semi": "error",
+        "@typescript-eslint/no-for-in-array": "error",
+        "@typescript-eslint/no-inferrable-types": "error",
+        "no-loop-func": "off",
+        "@typescript-eslint/no-loop-func": "error",
+        "@typescript-eslint/no-misused-new": "error",
+        "@typescript-eslint/no-namespace": "error",
+        "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
+        "@typescript-eslint/no-non-null-assertion": "error",
+        "no-redeclare": "off",
+        "@typescript-eslint/no-redeclare": "error",
+        "@typescript-eslint/no-require-imports": "error",
+        "@typescript-eslint/no-this-alias": "error",
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "error",
+        "@typescript-eslint/no-var-requires": "error",
+        "object-curly-spacing": "off",
+        "@typescript-eslint/object-curly-spacing": ["error", "always"],
+        "@typescript-eslint/prefer-as-const": "error",
+        "@typescript-eslint/prefer-for-of": "error",
+        "@typescript-eslint/prefer-namespace-keyword": "error",
+        "quotes": "off",
+        "@typescript-eslint/quotes": ["error", "double"],
+        "semi": "off",
+        "@typescript-eslint/semi": ["error", "always"],
+        "space-before-function-paren": "off",
+        "@typescript-eslint/space-before-function-paren": ["error", "never"],
+        "space-infix-ops": "off",
+        "@typescript-eslint/space-infix-ops": ["error", { "int32Hint": true }],
+        "@typescript-eslint/triple-slash-reference": "error",
+        "@typescript-eslint/type-annotation-spacing": "error",
+      },
+    },
+    {
+      files: [ "*.d.ts" ],
+      rules: {
+        "no-unused-vars": "off",
+        "one-var": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+      },
+    },
+  ],
 };
