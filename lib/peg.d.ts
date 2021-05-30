@@ -197,7 +197,7 @@ declare namespace ast {
     ignoreCase: boolean;
   }
 
-  /** Matches any UTF-16 character in the input, but doesn't match the empty string. */
+  /** Matches any UTF-16 code unit in the input, but doesn't match the empty string. */
   interface Any extends Node<"any"> {}
 }
 
@@ -350,7 +350,7 @@ export namespace parser {
     | OtherExpectation;
 
   /** Thrown if the grammar contains a syntax error. */
-  class SyntaxError implements Error {
+  class SyntaxError extends Error {
     /** Location where error was originated. */
     location: LocationRange;
     /**
