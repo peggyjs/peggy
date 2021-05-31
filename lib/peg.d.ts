@@ -641,12 +641,6 @@ export namespace compiler {
     function build<F extends NodeTypes>(functions: F): Visitor<F>;
   }
 
-  /** Mapping from the pass name to the function that represents pass. */
-  interface Passes {
-    /** List of passes in the stage. Any concrete set of passes are not guaranteed. */
-    [key: string]: Pass;
-  }
-
   /**
    * Mapping from the stage name to the default pass suite.
    * Plugins can extend or replace the list of passes during configuration.
@@ -656,17 +650,17 @@ export namespace compiler {
      * Pack of passes that performing checks on the AST. This bunch of passes
      * executed in the very beginning of the compilation stage.
      */
-    check: Passes;
+    check: Pass[];
     /**
      * Pack of passes that performing transformation of the AST.
      * Various types of optimizations are performed here.
      */
-    transform: Passes;
+    transform: Pass[];
     /** Pack of passes that generates the code. */
-    generate: Passes;
+    generate: Pass[];
 
     /** Any additional stages that can be added in the future. */
-    [key: string]: Passes;
+    [key: string]: Pass[];
   }
 
   /** List of the compilation stages. */
