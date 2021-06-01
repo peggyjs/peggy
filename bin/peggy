@@ -102,6 +102,7 @@ function readStream(inputStream, callback) {
 
 let inputFile = null;
 let outputFile = null;
+let generateSourceMap = false;
 
 const options = {
   // Path to the grammar file
@@ -110,7 +111,7 @@ const options = {
   dependencies: {},
   exportVar: null,
   format: "commonjs",
-  output: "source",
+  output: "source-with-map",
   plugins: [],
   trace: false
 };
@@ -230,6 +231,11 @@ while (args.length > 0 && isOption(args[0])) {
       options.plugins.push(mod);
       break;
 
+    case "-m":
+    case "--source-map":
+      generateSourceMap = true;
+      break;
+
     case "--trace":
       options.trace = true;
       break;
@@ -262,7 +268,7 @@ if (options.exportVar !== null) {
   }
 }
 
-let inputStream, outputStream;
+let inputStream, outputStream, sourceMapStream;
 
 switch (args.length) {
   case 0:
@@ -306,6 +312,15 @@ if (outputFile === "-") {
   });
 }
 
+if (generateSourceMap) {
+  const sourceMapFile = outputFile === "-" ? "source.map" : outputFile + ".map";
+
+  sourceMapStream = fs.createWriteStream(sourceMapFile);
+  sourceMapStream.on("error", () => {
+    abort("Can't write to file \"" + sourceMapFile + "\".");
+  });
+}
+
 readStream(inputStream, input => {
   let source;
 
@@ -322,8 +337,17 @@ readStream(inputStream, input => {
     }
   }
 
-  outputStream.write(source);
+  source = source.toStringWithSourceMap({
+    file: outputFile === "-" ? null : outputFile
+  });
+
+  outputStream.write(source.code);
   if (outputStream !== process.stdout) {
     outputStream.end();
+  }
+
+  if (sourceMapStream) {
+    sourceMapStream.write(source.map.toString());
+    sourceMapStream.end();
   }
 });
