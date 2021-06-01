@@ -8,6 +8,11 @@ This file documents all notable changes to Peggy.
 
 Released: TBD
 
+### Major Changes
+
+- Add support for generating source maps.
+  [@Mingun](https://github.com/peggyjs/peggy/pull/163)
+
 ### Minor Changes
 
 - New CLI [@hildjj](https://github.com/peggyjs/peggy/pull/167)

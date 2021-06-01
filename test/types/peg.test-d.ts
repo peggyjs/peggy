@@ -1,5 +1,6 @@
 import * as peggy from "../..";
 import tsd, { expectType } from "tsd";
+import { SourceNode } from "source-map";
 import formatter from "tsd/dist/lib/formatter";
 import { join } from "path";
 import { readFileSync } from "fs";
@@ -56,6 +57,53 @@ describe("peg.d.ts", () => {
 
     const p2 = peggy.generate(src, { output: "source", grammarSource: { foo: "src" } });
     expectType<string>(p2);
+  });
+
+  it("generates a source map", () => {
+    const p1 = peggy.generate(src, { output: "source" });
+    expectType<string>(p1);
+
+    const p2 = peggy.generate(src, { output: "source", sourceMap: false });
+    expectType<string>(p2);
+
+    const p3 = peggy.generate(src, { output: "source", sourceMap: true });
+    expectType<SourceNode>(p3);
+
+    const p4 = peggy.generate(src, { output: "source", sourceMap: true as boolean });
+    expectType<string | SourceNode>(p4);
+  });
+
+  it("compiles with source map", () => {
+    const ast = peggy.parser.parse(src);
+    expectType<peggy.ast.Grammar>(ast);
+
+    const p1 = peggy.compiler.compile(
+      ast,
+      peggy.compiler.passes,
+      { output: "source" }
+    );
+    expectType<string>(p1);
+
+    const p2 = peggy.compiler.compile(
+      ast,
+      peggy.compiler.passes,
+      { output: "source", sourceMap: false }
+    );
+    expectType<string>(p2);
+
+    const p3 = peggy.compiler.compile(
+      ast,
+      peggy.compiler.passes,
+      { output: "source", sourceMap: true }
+    );
+    expectType<SourceNode>(p3);
+
+    const p4 = peggy.compiler.compile(
+      ast,
+      peggy.compiler.passes,
+      { output: "source", sourceMap: true as boolean }
+    );
+    expectType<string | SourceNode>(p4);
   });
 
   it("creates an AST", () => {

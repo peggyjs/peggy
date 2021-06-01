@@ -726,8 +726,35 @@ export namespace compiler {
   function compile(
     ast: ast.Grammar,
     stages: Stages,
-    options: SourceBuildOptions
+    options: SourceBuildOptions & { sourceMap?: false }
   ): string;
+
+  /**
+   * Generates a parser source and source map from a specified grammar AST.
+   *
+   * Note that not all errors are detected during the generation and some may
+   * protrude to the generated parser and cause its malfunction.
+   *
+   * @param ast Abstract syntax tree of the grammar from a parser
+   * @param stages List of compilation stages
+   * @param options Compilation options
+   *
+   * @return An object used to obtain a parser source code and source map
+   *
+   * @throws {GrammarError} If the AST contains a semantic error, for example,
+   *         duplicated labels
+   */
+  function compile(
+    ast: ast.Grammar,
+    stages: Stages,
+    options: SourceBuildOptions & { sourceMap: true }
+  ): SourceNode;
+
+  function compile(
+    ast: ast.Grammar,
+    stages: Stages,
+    options: SourceBuildOptions & { sourceMap: boolean }
+  ): string | SourceNode;
 }
 
 /** Provides information pointing to a location within a source. */
@@ -987,7 +1014,53 @@ export function generate(grammar: string, options?: ParserBuildOptions): Parser;
  * @throws {GrammarError} If the grammar contains a semantic error, for example,
  *         duplicated labels
  */
-export function generate(grammar: string, options: SourceBuildOptions): string;
+export function generate(
+  grammar: string,
+  options: SourceBuildOptions & { sourceMap?: false }
+): string;
+
+/**
+ * Returns the generated source code and its source map as a `SourceNode`
+ * object. You can get the generated code and the source map by using a
+ * `SourceNode` API. Generated code will be in the specified module format.
+ *
+ * Note, that `SourceNode.source`s of the generated source map will depend
+ * on the `options.grammarSource` value. Therefore, value `options.grammarSource`
+ * will propagate to the `sources` array of the source map. That array MUST
+ * contains absolute paths or paths, relative to the source map location.
+ *
+ * Because at that level we don't known location of the source map, you probably
+ * will need to fix locations:
+ *
+ * ```ts
+ * const mapDir = path.dirname(generatedParserJsMap);
+ * const source = peggy.generate(...).toStringWithSourceMap({
+ *   file: path.relative(mapDir, generatedParserJs),
+ * });
+ * const json = source.map.toJSON();
+ * json.sources = json.sources.map(src => {
+ *   return src === null ? null : path.relative(mapDir, src);
+ * });
+ * ```
+ *
+ * @param grammar String in the format described by the meta-grammar in the
+ *        `parser.pegjs` file
+ * @param options Options that allow you to customize returned parser object
+ *
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
+ *         an unclosed brace
+ * @throws {GrammarError} If the grammar contains a semantic error, for example,
+ *         duplicated labels
+ */
+export function generate(
+  grammar: string,
+  options: SourceBuildOptions & { sourceMap: true }
+): SourceNode;
+
+export function generate(
+  grammar: string,
+  options: SourceBuildOptions & { sourceMap: boolean }
+): string | SourceNode;
 
 // Export all exported stuff under a global variable PEG in non-module environments
 export as namespace PEG;

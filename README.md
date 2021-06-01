@@ -31,6 +31,7 @@ Follow these steps to upgrade:
   — more powerful than traditional LL(_k_) and LR(_k_) parsers
 - Usable [from your browser](https://peggyjs.org/online), from the command line,
   or via JavaScript API
+- [Source map](https://developer.mozilla.org/en-US/docs/Tools/Debugger/How_to/Use_a_source_map) support
 
 ## Getting Started
 
@@ -210,7 +211,18 @@ object to `peg.generate`. The following options are supported:
   object; if set to `"source"`, it will return parser source code as a string
   (default: `"parser"`)
 - `plugins` — plugins to use. See the [Plugins API](#plugins-api) section
+- `sourceMap` — if set to `true`, the method will return a [`SourceNode`] object
+  instead of the string; you can get source code by calling `toString()` method
+  or source code and mapping by calling `toStringWithSourceMap()` method, see
+  the [`SourceNode`] documentation; valid only when `output` is set to `"source"`
+  (default: `false`)
+
+  > **Note**: because of bug [source-map/444] you should also set `grammarSource` to
+  > a not-empty string if you set this value to `true`
 - `trace` — makes the parser trace its progress (default: `false`)
+
+[`SourceNode`]: https://github.com/mozilla/source-map#sourcenode
+[source-map/444]: https://github.com/mozilla/source-map/issues/444
 
 ## Using the Parser
 
