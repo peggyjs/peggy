@@ -3,6 +3,7 @@
 const chai = require("chai");
 const helpers = require("./helpers");
 const pass = require("../../../../lib/compiler/passes/generate-bytecode");
+const { SourceNode } = require("source-map");
 
 chai.use(helpers);
 
@@ -162,7 +163,11 @@ describe("compiler pass |generateBytecode|", function() {
           ["a"],
           [],
           [{ type: "literal", value: "a", ignoreCase: false }],
-          [{ predicate: false, params: [], body: " code " }]
+          [{
+            predicate: false,
+            params: [],
+            source: new SourceNode(1, 13, null, " code ")
+          }]
         ));
       });
     });
@@ -186,7 +191,11 @@ describe("compiler pass |generateBytecode|", function() {
           ["a"],
           [],
           [{ type: "literal", value: "a", ignoreCase: false }],
-          [{ predicate: false, params: ["a"], body: " code " }]
+          [{
+            predicate: false,
+            params: ["a"],
+            source: new SourceNode(1, 15, null, " code ")
+          }]
         ));
       });
     });
@@ -226,7 +235,11 @@ describe("compiler pass |generateBytecode|", function() {
             { type: "literal", value: "b", ignoreCase: false },
             { type: "literal", value: "c", ignoreCase: false }
           ],
-          [{ predicate: false, params: ["a", "b", "c"], body: " code " }]
+          [{
+            predicate: false,
+            params: ["a", "b", "c"],
+            source: new SourceNode(1, 27, null, " code ")
+          }]
         ));
       });
     });
@@ -467,7 +480,11 @@ describe("compiler pass |generateBytecode|", function() {
             [],
             [],
             [],
-            [{ predicate: true, params: [], body: " code " }]
+            [{
+              predicate: true,
+              params: [],
+              source: new SourceNode(1, 10, null, " code ")
+            }]
           )
         );
       });
@@ -519,7 +536,11 @@ describe("compiler pass |generateBytecode|", function() {
             { type: "literal", value: "b", ignoreCase: false },
             { type: "literal", value: "c", ignoreCase: false }
           ],
-          [{ predicate: true, params: ["a", "b", "c"], body: " code " }]
+          [{
+            predicate: true,
+            params: ["a", "b", "c"],
+            source: new SourceNode(1, 28, null, " code ")
+          }]
         ));
       });
     });
@@ -548,7 +569,11 @@ describe("compiler pass |generateBytecode|", function() {
             [],
             [],
             [],
-            [{ predicate: true, params: [], body: " code " }]
+            [{
+              predicate: true,
+              params: [],
+              source: new SourceNode(1, 10, null, " code ")
+            }]
           )
         );
       });
@@ -600,7 +625,11 @@ describe("compiler pass |generateBytecode|", function() {
             { type: "literal", value: "b", ignoreCase: false },
             { type: "literal", value: "c", ignoreCase: false }
           ],
-          [{ predicate: true, params: ["a", "b", "c"], body: " code " }]
+          [{
+            predicate: true,
+            params: ["a", "b", "c"],
+            source: new SourceNode(1, 28, null, " code ")
+          }]
         ));
       });
     });
