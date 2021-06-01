@@ -1,5 +1,7 @@
 // Based on PEG.js Type Definitions by: vvakame <https://github.com/vvakame>, Tobias Kahlert <https://github.com/SrTobi>, C.J. Bell <https://github.com/siegebell>
 
+import { SourceNode } from "source-map";
+
 /** Interfaces that describe the abstract syntax tree used by Peggy. */
 declare namespace ast {
   /**
@@ -50,8 +52,11 @@ declare namespace ast {
     /** List of all rules in that grammar. */
     rules: Rule[];
 
-    /** Added by the `generateJs` pass and contains the JS code. */
-    code?: string;
+    /**
+     * Added by the `generateJs` pass and contains the JS code and the source
+     * map for it.
+     */
+    code?: SourceNode;
   }
 
   /**
