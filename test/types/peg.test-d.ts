@@ -308,6 +308,21 @@ describe("peg.d.ts", () => {
       "zero_or_more",
     ]);
   });
+
+  it("compiles", () => {
+    const ast = peggy.parser.parse("start = 'foo'", {
+      grammarSource: "it compiles",
+      reservedWords: peggy.RESERVED_WORDS.slice(),
+    });
+    expectType<peggy.ast.Grammar>(ast);
+    const parser = peggy.compiler.compile(
+      ast,
+      peggy.compiler.passes
+    );
+    expectType<peggy.Parser>(parser);
+    expectType<peggy.ast.MatchResult|undefined>(ast.rules[0].match);
+    expect(ast.rules[0].match).toBe(0);
+  });
 });
 
 describe("run tsd", () => {

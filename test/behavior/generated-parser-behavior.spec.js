@@ -158,30 +158,74 @@ describe("generated parser behavior", function() {
       }
 
       describe("when the expression matches", function() {
-        it("returns its match result", function() {
-          const parser = peg.generate("start = 'a'");
-
-          expect(parser).to.parse("a", "a");
-        });
-      });
-
-      describe("when the expression doesn't match", function() {
         describe("without display name", function() {
-          it("reports match failure and doesn't record any expectation", function() {
-            const parser = peg.generate("start = 'a'");
+          describe("returns its match result", function() {
+            it("when expression may match", function() {
+              const parser = peg.generate("start = 'a'");
 
-            expect(parser).to.failToParse("b", {
-              expected: [{ type: "literal", text: "a", ignoreCase: false }]
+              expect(parser).to.parse("a", "a");
+            });
+
+            it("when expression always match", function() {
+              const parser = peg.generate("start = 'a'*");
+
+              expect(parser).to.parse("", []);
             });
           });
         });
 
         describe("with display name", function() {
-          it("reports match failure and records an expectation of type \"other\"", function() {
+          describe("returns its match result", function() {
+            it("when expression may match", function() {
+              const parser = peg.generate("start 'start' = 'a'");
+
+              expect(parser).to.parse("a", "a");
+            });
+
+            it("when expression always match", function() {
+              const parser = peg.generate("start 'start' = 'a'*");
+
+              expect(parser).to.parse("", []);
+            });
+          });
+        });
+      });
+
+      describe("when the expression doesn't match", function() {
+        describe("without display name", function() {
+          describe("reports match failure and records an expectation", function() {
+            it("when expression may match", function() {
+              const parser = peg.generate("start = 'a'");
+
+              expect(parser).to.failToParse("b", {
+                expected: [{ type: "literal", text: "a", ignoreCase: false }]
+              });
+            });
+
+            it("when expression never match", function() {
+              const parser = peg.generate("start = []");
+
+              expect(parser).to.failToParse("b", {
+                expected: [{ type: "class", parts: [], inverted: false, ignoreCase: false }]
+              });
+            });
+          });
+        });
+
+        describe("with display name", function() {
+          it("reports match failure and records an expectation of type \"other\" when expression may match", function() {
             const parser = peg.generate("start 'start' = 'a'");
 
             expect(parser).to.failToParse("b", {
               expected: [{ type: "other", description: "start" }]
+            });
+          });
+
+          it("reports match failure and doesn't records any expectations when expression never match", function() {
+            const parser = peg.generate("start 'start' = []");
+
+            expect(parser).to.failToParse("b", {
+              expected: []
             });
           });
 
@@ -1651,6 +1695,62 @@ describe("generated parser behavior", function() {
           "(*abc(*def*)ghi(*(*(*jkl*)*)*)mno*)",
           "(*abc(*def*)ghi(*(*(*jkl*)*)*)mno*)"
         );
+      });
+    });
+
+    describe("run side-effects in non-matching", function() {
+      it("positive semantic predicate", function() {
+        let parser = peg.generate(`
+        { let i = 0; }
+        start = (neverMatched / .) { return i; };
+        neverMatched = &{ i = 1; return true; } [];
+        `, options);
+
+        expect(parser).to.parse("b", 1);
+
+        parser = peg.generate(`
+        { let i = 0; }
+        start = ("a" / neverMatched / .) { return i; };
+        neverMatched = &{ i = 1; return true; } [];
+        `, options);
+
+        expect(parser).to.parse("b", 1);
+      });
+
+      it("negative semantic predicate", function() {
+        let parser = peg.generate(`
+        { let i = 0; }
+        start = (neverMatched / .) { return i; };
+        neverMatched = !{ i = 1; return false; } [];
+        `, options);
+
+        expect(parser).to.parse("b", 1);
+
+        parser = peg.generate(`
+        { let i = 0; }
+        start = ("a" / neverMatched / .) { return i; };
+        neverMatched = !{ i = 1; return false; } [];
+        `, options);
+
+        expect(parser).to.parse("b", 1);
+      });
+
+      it("action", function() {
+        let parser = peg.generate(`
+        { let i = 0; }
+        start = (neverMatched / .) { return i; };
+        neverMatched = (. { i = 1; }) [];
+        `, options);
+
+        expect(parser).to.parse("b", 1);
+
+        parser = peg.generate(`
+        { let i = 0; }
+        start = ("a" / neverMatched / .) { return i; };
+        neverMatched = (. { i = 1; }) [];
+        `, options);
+
+        expect(parser).to.parse("b", 1);
       });
     });
   });

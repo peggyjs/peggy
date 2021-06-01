@@ -17,6 +17,30 @@ declare namespace ast {
     location: LocationRange;
   }
 
+  enum MatchResult {
+    ALWAYS = 1,
+    SOMETIMES = 0,
+    NEVER = -1,
+  }
+
+  /**
+   * Base interface for all nodes that forming a rule expression.
+   *
+   * @template {T} Type of the node
+   */
+  interface Expr<T> extends Node<T> {
+    /**
+     * The estimated result of matching this node against any input:
+     *
+     * - `-1`: negative result, matching of that node always fails
+     * -  `0`: neutral result, may be fail, may be match
+     * -  `1`: positive result, always match
+     *
+     * This property is created by the `inferenceMatchResult` pass.
+     */
+    match?: MatchResult;
+  }
+
   /** The main Peggy AST class returned by the parser. */
   interface Grammar extends Node<"grammar"> {
     /** Initializer that run once when importing generated parser module. */
@@ -31,11 +55,23 @@ declare namespace ast {
   }
 
   /**
-   * Base interface for all nodes with the code.
+   * Base interface for all initializer nodes with the code.
    *
    * @template {T} Type of the node
    */
   interface CodeBlock<T> extends Node<T> {
+    /** The code from the grammar. */
+    code: string;
+    /** Span that covers all code between `{` and `}`. */
+    codeLocation: LocationRange;
+  }
+
+  /**
+   * Base interface for all expression nodes with the code.
+   *
+   * @template {T} Type of the node
+   */
+  interface CodeBlockExpr<T> extends Expr<T> {
     /** The code from the grammar. */
     code: string;
     /** Span that covers all code between `{` and `}`. */
@@ -51,7 +87,7 @@ declare namespace ast {
   /** Code that runs on each `parse()` call of the generated parser. */
   interface Initializer extends CodeBlock<"initializer"> {}
 
-  interface Rule extends Node<"rule"> {
+  interface Rule extends Expr<"rule"> {
     /** Identifier of the rule. Should be unique in the grammar. */
     name: string;
     /**
@@ -67,7 +103,7 @@ declare namespace ast {
   }
 
   /** Represents rule body if it has a name. */
-  interface Named extends Node<"named"> {
+  interface Named extends Expr<"named"> {
     /** Name of the rule that will appear in the error messages. */
     name: string;
     expression: Expression;
@@ -92,7 +128,7 @@ declare namespace ast {
     | Suffixed
     | Primary;
 
-  interface Choice extends Node<"choice"> {
+  interface Choice extends Expr<"choice"> {
     /**
      * List of expressions to match. Only one of them could match the input,
      * the first one that matched is used as a result of the `choice` node.
@@ -100,7 +136,7 @@ declare namespace ast {
     alternatives: Alternative[];
   }
 
-  interface Action extends CodeBlock<"action"> {
+  interface Action extends CodeBlockExpr<"action"> {
     expression: (
         Sequence
       | Labeled
@@ -117,12 +153,12 @@ declare namespace ast {
     | Suffixed
     | Primary;
 
-  interface Sequence extends Node<"sequence"> {
+  interface Sequence extends Expr<"sequence"> {
     /** List of expressions each of them should match in order to match the sequence. */
     elements: Element[];
   }
 
-  interface Labeled extends Node<"labeled"> {
+  interface Labeled extends Expr<"labeled"> {
     /** If `true`, labeled expression is one of automatically returned. */
     pick?: true;
     /**
@@ -141,12 +177,12 @@ declare namespace ast {
   }
 
   /** Expression with a preceding operator. */
-  interface Prefixed extends Node<"text" | "simple_and" | "simple_not"> {
+  interface Prefixed extends Expr<"text" | "simple_and" | "simple_not"> {
     expression: Suffixed | Primary;
   }
 
   /** Expression with a following operator. */
-  interface Suffixed extends Node<"optional" | "zero_or_more" | "one_or_more"> {
+  interface Suffixed extends Expr<"optional" | "zero_or_more" | "one_or_more"> {
     expression: Primary;
   }
 
@@ -158,20 +194,20 @@ declare namespace ast {
     | CharacterClass
     | Any;
 
-  interface RuleReference extends Node<"rule_ref"> {
+  interface RuleReference extends Expr<"rule_ref"> {
     /** Name of the rule to refer. */
     name: string;
   }
 
-  interface SemanticPredicate extends CodeBlock<"semantic_and" | "semantic_not"> {}
+  interface SemanticPredicate extends CodeBlockExpr<"semantic_and" | "semantic_not"> {}
 
   /** Group node introduces new scope for labels. */
-  interface Group extends Node<"group"> {
+  interface Group extends Expr<"group"> {
     expression: Labeled | Sequence;
   }
 
   /** Matches continuous sequence of symbols. */
-  interface Literal extends Node<"literal"> {
+  interface Literal extends Expr<"literal"> {
     /** Sequence of symbols to match. */
     value: string;
     /** If `true`, symbols matches even if they case do not match case in the `value`. */
@@ -179,7 +215,7 @@ declare namespace ast {
   }
 
   /** Matches single UTF-16 character. */
-  interface CharacterClass extends Node<"class"> {
+  interface CharacterClass extends Expr<"class"> {
     /**
      * Each part represents either symbol range or single symbol.
      * If empty, such character class never matches anything, even end-of-stream marker.
@@ -198,7 +234,7 @@ declare namespace ast {
   }
 
   /** Matches any UTF-16 code unit in the input, but doesn't match the empty string. */
-  interface Any extends Node<"any"> {}
+  interface Any extends Expr<"any"> {}
 }
 
 /** Current Peggy version in semver format. */
@@ -605,12 +641,6 @@ export namespace compiler {
     function build<F extends NodeTypes>(functions: F): Visitor<F>;
   }
 
-  /** Mapping from the pass name to the function that represents pass. */
-  interface Passes {
-    /** List of passes in the stage. Any concrete set of passes are not guaranteed. */
-    [key: string]: Pass;
-  }
-
   /**
    * Mapping from the stage name to the default pass suite.
    * Plugins can extend or replace the list of passes during configuration.
@@ -620,17 +650,17 @@ export namespace compiler {
      * Pack of passes that performing checks on the AST. This bunch of passes
      * executed in the very beginning of the compilation stage.
      */
-    check: Passes;
+    check: Pass[];
     /**
      * Pack of passes that performing transformation of the AST.
      * Various types of optimizations are performed here.
      */
-    transform: Passes;
+    transform: Pass[];
     /** Pack of passes that generates the code. */
-    generate: Passes;
+    generate: Pass[];
 
     /** Any additional stages that can be added in the future. */
-    [key: string]: Passes;
+    [key: string]: Pass[];
   }
 
   /** List of the compilation stages. */

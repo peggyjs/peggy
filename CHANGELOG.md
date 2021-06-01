@@ -90,6 +90,8 @@ Released: TBD
 
   By default this new option contains an array with [reserved JavaScript words][reserved]
   [@Mingun](https://github.com/peggyjs/peggy/pull/150)
+- Several optimizations in the generator. Generated parsers should now be faster and smaller
+  [@Mingun](https://github.com/peggyjs/peggy/pull/118)
 
 [reserved]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_keywords_as_of_ecmascript_2015
 
