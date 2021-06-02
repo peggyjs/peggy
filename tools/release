@@ -69,7 +69,7 @@ async function main() {
   await e(`git commit -m "Update for v${VERSION}"`);
 
   // check that we're clean
-  await e("git git diff-index --quiet HEAD");
+  await e("git diff-index --quiet HEAD");
 
   if (DRY) {
     console.log("Stopping.  Dry run.  Reverse last commit with `git reset --hard HEAD~1`");
