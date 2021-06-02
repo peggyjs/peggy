@@ -17,3 +17,4 @@ test
 tools
 tsconfig.json
 yarn.lock
+jest.config.js

@@ -10,13 +10,18 @@
 const { spawn } = require("child_process");
 const fs = require("fs").promises;
 const path = require("path");
-const open = require("open");
 
 if (process.argv.length < 3) {
-  console.error(`usage: ${process.argv[1]} <VERSION>`);
+  console.error(`usage: ${process.argv[1]} [--dry-run] <VERSION>`);
   process.exit(1);
 }
-const VERSION = process.argv[2];
+const args = process.argv.slice(2);
+let DRY = false;
+if (args[0] === "--dry-run") {
+  DRY = true;
+  args.shift();
+}
+const VERSION = args[0];
 
 function e(cmd) {
   console.log(`>>> ${cmd} <<<`);
@@ -42,13 +47,10 @@ async function main() {
   process.chdir(root);
 
   // check that we're clean
-  await e("git diff --quiet --exit-code --cached");
+  await e("git diff-index --quiet HEAD");
 
   // check that we're on main
   await e("[[ `git branch --show-current` == main ]]");
-
-  // lint clean?
-  await e("npm run lint");
 
   // update version in package.json
   const pkg = path.join(root, "package.json");
@@ -57,28 +59,22 @@ async function main() {
   pjson.version = VERSION;
   await fs.writeFile(pkg, JSON.stringify(pjson, null, 2));
 
-  // update VERSION in lib/peg.js
-  const vjs = path.join(root, "lib", "version.js");
-  await fs.writeFile(vjs, `\
-"use strict";
-
-module.exports = "${VERSION}";
-`);
-
   // build
   await e("npm run build");
 
-  // test:node
-  await e("npm run test");
-
   // add files
-  await e(`git add ${pkg} ${vjs} lib/parser.js docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js docs/vendor/peggy/peggy.min.js`);
+  await e(`git add ${pkg} lib/version.js lib/parser.js docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js docs/vendor/peggy/peggy.min.js`);
 
   // check in
   await e(`git commit -m "Update for v${VERSION}"`);
 
   // check that we're clean
-  await e("git diff --quiet --exit-code --cached");
+  await e("git git diff-index --quiet HEAD");
+
+  if (DRY) {
+    console.log("Stopping.  Dry run.  Reverse last commit with `git reset --hard HEAD~1`");
+    process.exit(0);
+  }
 
   // tag
   await e(`git tag "v${VERSION}"`);
@@ -90,7 +86,7 @@ module.exports = "${VERSION}";
   await e("npm publish");
 
   // go to GitHub Release page
-  await open("https://github.com/peggyjs/peggy/releases/new");
+  console.log("Go to https://github.com/peggyjs/peggy/releases/new");
 }
 
 main().catch(e => console.error(e.message));

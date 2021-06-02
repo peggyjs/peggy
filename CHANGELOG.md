@@ -6,7 +6,7 @@ This file documents all notable changes to Peggy.
 1.2.0
 -----
 
-Released: TBD
+Released: 2021-06-02
 
 ### Minor Changes
 
@@ -14,22 +14,19 @@ Released: TBD
     - Builds with `typescript`, removes `babel`
     - Bundles with `rollup`, removes `browserify`
     - Tests with `jest`, removes `mocha`
-        - Enables coverage analysis using `lcov` notation
-        - Coverage is not archived; will archive with #120
     - Minifies with `terser`, removes `uglify`
     - Adds `rimraf` for portable pre-build cleanup
     - Extends CI testing to `windows`, `macintosh`
     - Increases node testing range to include `node 16`
-    - Adds an announcer to make the build process more readable
-- Option for selection optimization mode removed as it has no significant effect on
-  majority of generated parsers and represents only academic interest mostly. You should
+- Option to select optimization mode removed as it had no significant effect on the
+  majority of generated parsers and as such represented only academic interest. You should
   use minifiers to get smaller parsers. Option `optimize` is deleted from the `generate()`
   options, flag `--optimize` is deleted from the CLI (you still can supply it, but the CLI
   will issue a warning that the option is removed).
   [@Mingun](https://github.com/peggyjs/peggy/pull/147)
 - `location()`s now will have additional `source` property which value is taken
   from the `options.grammarSource` property. That property can contain arbitrary
-  data,for example, path to the currently parsed file.
+  data, for example, path to the currently parsed file.
   [@Mingun](https://github.com/peggyjs/peggy/pull/95)
 - Made usage of `GrammarError` and `peg$SyntaxError` more consistent.  Use the
   `format` method to get pretty string outputs.  Updated the `peggy` binary to
@@ -51,20 +48,19 @@ Released: TBD
 
   Now bytecode generation pass is independent from the JavaScript backend.
   [@Mingun](https://github.com/peggyjs/peggy/pull/117)
-- Some opcodes from `compiler/opcode.js` is deprecated. Although you shouldn't use
-  them directly because they are notconsidered as a public API, some plugins use them.
+- Some opcodes from `compiler/opcode.js` were deprecated. Although you shouldn't use
+  them directly because they are not considered as a public API, some plugins use them.
   For that reason backward compatibility is preserved:
   - Opcode `MATCH_REGEXP` is deprecated and replaced by `MATCH_CHAR_CLASS` with the same value.
-  - Added new opcode `PUSH_EMPTY_STRING` that put on stack new empty string
+  - Added new opcode `PUSH_EMPTY_STRING` that puts a new empty string on the stack.
   - Opcode `PUSH` is deprecated because it was used only for pushing empty string constants
-    and they now pushed with `PUSH_EMPTY_STRING`
+    and they now pushed with `PUSH_EMPTY_STRING`.
 
-  Instead of relying on the library opcodes it is better to have a copy of them,
-  especially if your plugin replaces both `generateBytecode` as `generateJs` passes.
-
-  [@Mingun](https://github.com/peggyjs/peggy/pull/117)
+  Instead of relying on the library opcodes it is better to have a copy of
+  them, especially if your plugin replaces both the `generateBytecode` and
+  the `generateJs` passes. [@Mingun](https://github.com/peggyjs/peggy/pull/117)
 - Default visitor functions, returned by the `visitor.build()`, that just forward
-  call to `node.expression`, now returns the result of underlying `visit` call.
+  call to `node.expression`, now return the result of underlying `visit` call.
   [@Mingun](https://github.com/peggyjs/peggy/pull/144)
 
   Affected functions:
@@ -81,8 +77,8 @@ Released: TBD
     - `group`
 - Parsers now can use two new functions to get location information:
   `offset()` and `range()`. Use them if you don't need the whole
-  location information, because it could be expensive to compute.
-  That two functions always very efficient (back-ported pegjs/pegjs#528).
+  location information, because it is expensive to compute.
+  These two new functions are always very efficient (back-ported pegjs/pegjs#528).
   [@felix9 and @Mingun](https://github.com/peggyjs/peggy/pull/145)
 - Add a new option `config.reservedWords: string[]`, avalible for plugins in their
   `use()` method. Using this option, a plugin can change the list of words that
@@ -98,7 +94,7 @@ Released: TBD
 ### Bug fixes
 
 - [#112](https://github.com/peggyjs/peggy/pull/112): `"group"` node in the AST now have `location` information (back-ported)
-- [#143](https://github.com/peggyjs/peggy/pull/143): `peg.d.ts` had some errors in the type descriptions, which was fixed
+- [#143](https://github.com/peggyjs/peggy/pull/143): `peg.d.ts` had some errors in the type descriptions, which were fixed
 
 
 1.1.0
