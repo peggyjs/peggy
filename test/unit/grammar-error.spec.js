@@ -1,7 +1,7 @@
 "use strict";
 
 const chai = require("chai");
-const GrammarError = require("../../lib/grammar-error");
+const { GrammarError } = require("../../lib/peg");
 
 const expect = chai.expect;
 

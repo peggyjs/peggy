@@ -49,6 +49,7 @@
     "@rollup/plugin-multi-entry": "^4.0.0",
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
+    "@types/chai": "^4.2.18",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.6.2",
     "chai": "^4.3.4",
