@@ -917,9 +917,12 @@ export interface OutputFormatUmd extends BuildOptionsBase {
    * (default: `{}`)
    */
   dependencies?: Dependencies;
-
-  /** Name of a global variable into which the parser object is assigned to when no module loader is detected; valid only when `format` is set to `"globals"` or `"umd"` (default: `null`) */
-  exportVar?: any;
+  /**
+   * Name of a global variable into which the parser object is assigned to when
+   * no module loader is detected; valid only when `format` is set to `"globals"`
+   * (and in that case it should be defined) or `"umd"` (default: `null`)
+   */
+  exportVar?: string;
 }
 
 export interface OutputFormatGlobals extends BuildOptionsBase {
@@ -928,9 +931,12 @@ export interface OutputFormatGlobals extends BuildOptionsBase {
 
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "globals";
-
-  /** Name of a global variable into which the parser object is assigned to when no module loader is detected; valid only when `format` is set to `"globals"` or `"umd"` (default: `null`) */
-  exportVar?: any;
+  /**
+   * Name of a global variable into which the parser object is assigned to when
+   * no module loader is detected; valid only when `format` is set to `"globals"`
+   * (and in that case it should be defined) or `"umd"` (default: `null`)
+   */
+  exportVar: string;
 }
 
 export interface OutputFormatBare extends BuildOptionsBase {
