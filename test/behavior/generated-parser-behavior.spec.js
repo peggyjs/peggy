@@ -159,13 +159,13 @@ describe("generated parser behavior", () => {
         describe("without display name", () => {
           describe("returns its match result", () => {
             it("when expression may match", () => {
-              const parser = peg.generate("start = 'a'");
+              const parser = peg.generate("start = 'a'", options);
 
               expect(parser).to.parse("a", "a");
             });
 
             it("when expression always match", () => {
-              const parser = peg.generate("start = 'a'*");
+              const parser = peg.generate("start = 'a'*", options);
 
               expect(parser).to.parse("", []);
             });
@@ -175,13 +175,13 @@ describe("generated parser behavior", () => {
         describe("with display name", () => {
           describe("returns its match result", () => {
             it("when expression may match", () => {
-              const parser = peg.generate("start 'start' = 'a'");
+              const parser = peg.generate("start 'start' = 'a'", options);
 
               expect(parser).to.parse("a", "a");
             });
 
             it("when expression always match", () => {
-              const parser = peg.generate("start 'start' = 'a'*");
+              const parser = peg.generate("start 'start' = 'a'*", options);
 
               expect(parser).to.parse("", []);
             });
@@ -193,7 +193,7 @@ describe("generated parser behavior", () => {
         describe("without display name", () => {
           describe("reports match failure and records an expectation", () => {
             it("when expression may match", () => {
-              const parser = peg.generate("start = 'a'");
+              const parser = peg.generate("start = 'a'", options);
 
               expect(parser).to.failToParse("b", {
                 expected: [{ type: "literal", text: "a", ignoreCase: false }],
@@ -201,7 +201,7 @@ describe("generated parser behavior", () => {
             });
 
             it("when expression never match", () => {
-              const parser = peg.generate("start = []");
+              const parser = peg.generate("start = []", options);
 
               expect(parser).to.failToParse("b", {
                 expected: [{ type: "class", parts: [], inverted: false, ignoreCase: false }],
@@ -212,7 +212,7 @@ describe("generated parser behavior", () => {
 
         describe("with display name", () => {
           it("reports match failure and records an expectation of type \"other\" when expression may match", () => {
-            const parser = peg.generate("start 'start' = 'a'");
+            const parser = peg.generate("start 'start' = 'a'", options);
 
             expect(parser).to.failToParse("b", {
               expected: [{ type: "other", description: "start" }],
@@ -220,7 +220,7 @@ describe("generated parser behavior", () => {
           });
 
           it("reports match failure and doesn't records any expectations when expression never match", () => {
-            const parser = peg.generate("start 'start' = []");
+            const parser = peg.generate("start 'start' = []", options);
 
             expect(parser).to.failToParse("b", {
               expected: [],
@@ -228,7 +228,7 @@ describe("generated parser behavior", () => {
           });
 
           it("discards any expectations recorded when matching the expression", () => {
-            const parser = peg.generate("start 'start' = 'a'");
+            const parser = peg.generate("start 'start' = 'a'", options);
 
             expect(parser).to.failToParse("b", {
               expected: [{ type: "other", description: "start" }],
@@ -1070,8 +1070,8 @@ describe("generated parser behavior", () => {
         });
 
         it("prevents \"@\" on a semantic predicate", () => {
-          expect(() => peg.generate("start1 = 'a' @&{ /* semantic_and */ } 'c'")).to.throw();
-          expect(() => peg.generate("start2 = 'a' @!{ /* semantic_not */ } 'c'")).to.throw();
+          expect(() => peg.generate("start1 = 'a' @&{ /* semantic_and */ } 'c'"), options).to.throw();
+          expect(() => peg.generate("start2 = 'a' @!{ /* semantic_not */ } 'c'"), options).to.throw();
         });
       });
 
