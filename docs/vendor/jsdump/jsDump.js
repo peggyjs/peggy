@@ -25,7 +25,7 @@ var jsDump;
 			arr = arr.join( ',' + s + inner );
 		if( !arr )
 			return pre + post;
-		return [ pre, inner + arr, base + post ].join(s);
+		return [pre, inner + arr, base + post].join(s);
 	}
 	function array( arr ){
 		var i = arr.length, ret = Array(i);
@@ -130,7 +130,7 @@ var jsDump;
 				if( name )
 					ret += ' ' + name;
 				ret += '(';
-				ret = [ ret, this.parse( fn, 'functionArgs' ), '){'].join('');
+				ret = [ret, this.parse( fn, 'functionArgs' ), '){'].join('');
 				return join( ret, this.parse(fn,'functionCode'), '}' );
 			},
 			array: array,
@@ -142,7 +142,7 @@ var jsDump;
 					this._depth_ = 1; // Reset for future use
 					throw new Error("Object nesting exceeded jsDump.maxDepth (" + jsDump.maxDepth + ")");
 				}
-				var ret = [ ];
+				var ret = [];
 				this.up();
 				for( var key in map )
 					ret.push( this.parse(key,'key') + ': ' + this.parse(map[key]) );

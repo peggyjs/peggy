@@ -50,7 +50,8 @@ function writeResult(title, inputSize, parseTime) {
   const KB = 1024;
   const MS_IN_S = 1000;
 
-  console.log("│ "
+  console.log(
+    "│ "
     + padRight(title, 35)
     + " │ "
     + padLeft((inputSize / KB).toFixed(2), 6)
@@ -179,5 +180,5 @@ Runner.run(benchmarks, runCount, options, {
     writeSeparator();
     writeResult("Total", inputSize, parseTime);
     writeTableFooter();
-  }
+  },
 });

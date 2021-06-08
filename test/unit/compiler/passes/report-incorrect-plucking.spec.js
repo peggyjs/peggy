@@ -8,23 +8,23 @@ chai.use(helpers);
 
 const expect = chai.expect;
 
-describe("compiler pass |reportIncorrectPlucking|", function() {
-  it("prevents \"@\" from being used with an action block", function() {
+describe("compiler pass |reportIncorrectPlucking|", () => {
+  it("prevents \"@\" from being used with an action block", () => {
     expect(pass).to.reportError("start1 = 'a' @'b' 'c' { /* empty action block */ }", {
       message: "\"@\" cannot be used with an action block",
       location: {
         source: undefined,
         start: { offset: 13, line: 1, column: 14 },
-        end: { offset: 14, line: 1, column: 15 }
+        end: { offset: 14, line: 1, column: 15 },
       },
       diagnostics: [{
         message: "Action block location",
         location: {
           source: undefined,
           start: { offset: 23, line: 1, column: 24 },
-          end: { offset: 49, line: 1, column: 50 }
-        }
-      }]
+          end: { offset: 49, line: 1, column: 50 },
+        },
+      }],
     });
 
     expect(pass).to.reportError("start2 = 'a' @('b' @'c' { /* empty action block */ })", {
@@ -32,20 +32,20 @@ describe("compiler pass |reportIncorrectPlucking|", function() {
       location: {
         source: undefined,
         start: { offset: 19, line: 1, column: 20 },
-        end: { offset: 20, line: 1, column: 21 }
+        end: { offset: 20, line: 1, column: 21 },
       },
       diagnostics: [{
         message: "Action block location",
         location: {
           source: undefined,
           start: { offset: 25, line: 1, column: 26 },
-          end: { offset: 51, line: 1, column: 52 }
-        }
-      }]
+          end: { offset: 51, line: 1, column: 52 },
+        },
+      }],
     });
   });
 
-  it("allows valid plucking", function() {
+  it("allows valid plucking", () => {
     expect(pass).not.to.reportError(`
 
       start1 =  @'1'               // return '1'

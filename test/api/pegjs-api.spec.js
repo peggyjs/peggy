@@ -7,36 +7,36 @@ const pkg = require("../../package.json");
 
 const expect = chai.expect;
 
-describe("Peggy API", function() {
-  it("has the correct VERSION", function() {
+describe("Peggy API", () => {
+  it("has the correct VERSION", () => {
     expect(peg.VERSION).to.equal(pkg.version);
   });
 
-  describe("generate", function() {
-    it("generates a parser", function() {
+  describe("generate", () => {
+    it("generates a parser", () => {
       const parser = peg.generate("start = 'a'");
 
       expect(parser).to.be.an("object");
       expect(parser.parse("a")).to.equal("a");
     });
 
-    it("throws an exception on syntax error", function() {
+    it("throws an exception on syntax error", () => {
       expect(() => { peg.generate("start = @"); }).to.throw();
     });
 
-    it("throws an exception on semantic error", function() {
+    it("throws an exception on semantic error", () => {
       expect(() => { peg.generate("start = undefined"); }).to.throw();
     });
 
-    describe("allowed start rules", function() {
+    describe("allowed start rules", () => {
       const grammar = [
         "a = 'x'",
         "b = 'x'",
-        "c = 'x'"
+        "c = 'x'",
       ].join("\n");
 
-      describe("when |allowedStartRules| is not set", function() {
-        it("generated parser can start only from the first rule", function() {
+      describe("when |allowedStartRules| is not set", () => {
+        it("generated parser can start only from the first rule", () => {
           const parser = peg.generate(grammar);
 
           expect(parser.parse("x", { startRule: "a" })).to.equal("x");
@@ -45,10 +45,10 @@ describe("Peggy API", function() {
         });
       });
 
-      describe("when |allowedStartRules| is set", function() {
-        it("generated parser can start only from specified rules", function() {
+      describe("when |allowedStartRules| is set", () => {
+        it("generated parser can start only from specified rules", () => {
           const parser = peg.generate(grammar, {
-            allowedStartRules: ["b", "c"]
+            allowedStartRules: ["b", "c"],
           });
 
           expect(() => { parser.parse("x", { startRule: "a" }); }).to.throw();
@@ -58,31 +58,31 @@ describe("Peggy API", function() {
       });
     });
 
-    describe("intermediate results caching", function() {
+    describe("intermediate results caching", () => {
       const grammar = [
         "{ var n = 0; }",
         "start = (a 'b') / (a 'c') { return n; }",
-        "a = 'a' { n++; }"
+        "a = 'a' { n++; }",
       ].join("\n");
 
-      describe("when |cache| is not set", function() {
-        it("generated parser doesn't cache intermediate parse results", function() {
+      describe("when |cache| is not set", () => {
+        it("generated parser doesn't cache intermediate parse results", () => {
           const parser = peg.generate(grammar);
 
           expect(parser.parse("ac")).to.equal(2);
         });
       });
 
-      describe("when |cache| is set to |false|", function() {
-        it("generated parser doesn't cache intermediate parse results", function() {
+      describe("when |cache| is set to |false|", () => {
+        it("generated parser doesn't cache intermediate parse results", () => {
           const parser = peg.generate(grammar, { cache: false });
 
           expect(parser.parse("ac")).to.equal(2);
         });
       });
 
-      describe("when |cache| is set to |true|", function() {
-        it("generated parser caches intermediate parse results", function() {
+      describe("when |cache| is set to |true|", () => {
+        it("generated parser caches intermediate parse results", () => {
           const parser = peg.generate(grammar, { cache: true });
 
           expect(parser.parse("ac")).to.equal(1);
@@ -90,11 +90,11 @@ describe("Peggy API", function() {
       });
     });
 
-    describe("tracing", function() {
+    describe("tracing", () => {
       const grammar = "start = 'a'";
 
-      describe("when |trace| is not set", function() {
-        it("generated parser doesn't trace", function() {
+      describe("when |trace| is not set", () => {
+        it("generated parser doesn't trace", () => {
           const parser = peg.generate(grammar);
           const tracer = { trace: sinon.spy() };
 
@@ -104,8 +104,8 @@ describe("Peggy API", function() {
         });
       });
 
-      describe("when |trace| is set to |false|", function() {
-        it("generated parser doesn't trace", function() {
+      describe("when |trace| is set to |false|", () => {
+        it("generated parser doesn't trace", () => {
           const parser = peg.generate(grammar, { trace: false });
           const tracer = { trace: sinon.spy() };
 
@@ -115,8 +115,8 @@ describe("Peggy API", function() {
         });
       });
 
-      describe("when |trace| is set to |true|", function() {
-        it("generated parser traces", function() {
+      describe("when |trace| is set to |true|", () => {
+        it("generated parser traces", () => {
           const parser = peg.generate(grammar, { trace: true });
           const tracer = { trace: sinon.spy() };
 
@@ -127,11 +127,11 @@ describe("Peggy API", function() {
       });
     });
 
-    describe("output", function() {
+    describe("output", () => {
       const grammar = "start = 'a'";
 
-      describe("when |output| is not set", function() {
-        it("returns generated parser object", function() {
+      describe("when |output| is not set", () => {
+        it("returns generated parser object", () => {
           const parser = peg.generate(grammar);
 
           expect(parser).to.be.an("object");
@@ -139,8 +139,8 @@ describe("Peggy API", function() {
         });
       });
 
-      describe("when |output| is set to |\"parser\"|", function() {
-        it("returns generated parser object", function() {
+      describe("when |output| is set to |\"parser\"|", () => {
+        it("returns generated parser object", () => {
           const parser = peg.generate(grammar, { output: "parser" });
 
           expect(parser).to.be.an("object");
@@ -148,8 +148,8 @@ describe("Peggy API", function() {
         });
       });
 
-      describe("when |output| is set to |\"source\"|", function() {
-        it("returns generated parser source code", function() {
+      describe("when |output| is set to |\"source\"|", () => {
+        it("returns generated parser source code", () => {
           const source = peg.generate(grammar, { output: "source" });
 
           expect(source).to.be.a("string");
@@ -164,27 +164,27 @@ describe("Peggy API", function() {
 
     // The |plugins| option is tested in plugin API tests.
 
-    describe("reserved words", function() {
-      describe("throws an exception on reserved JS words used as a label", function() {
+    describe("reserved words", () => {
+      describe("throws an exception on reserved JS words used as a label", () => {
         for (const label of peg.RESERVED_WORDS) {
-          it(label, function() {
+          it(label, () => {
             expect(() => {
               peg.generate([
                 "start = " + label + ":end",
-                "end = 'a'"
+                "end = 'a'",
               ].join("\n"), { output: "source" });
             }).to.throw(peg.parser.SyntaxError);
           });
         }
       });
 
-      describe("does not throws an exception on reserved JS words used as a rule name", function() {
+      describe("does not throws an exception on reserved JS words used as a rule name", () => {
         for (const rule of peg.RESERVED_WORDS) {
-          it(rule, function() {
+          it(rule, () => {
             expect(() => {
               peg.generate([
                 "start = " + rule,
-                rule + " = 'a'"
+                rule + " = 'a'",
               ].join("\n"), { output: "source" });
             }).to.not.throw(peg.parser.SyntaxError);
           });
@@ -192,7 +192,7 @@ describe("Peggy API", function() {
       });
     });
 
-    it("accepts custom options", function() {
+    it("accepts custom options", () => {
       peg.generate("start = 'a'", { grammarSource: 42 });
     });
   });

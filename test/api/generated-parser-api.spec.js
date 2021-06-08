@@ -6,63 +6,63 @@ const sinon = require("sinon");
 
 const expect = chai.expect;
 
-describe("generated parser API", function() {
-  describe("parse", function() {
-    it("parses input", function() {
+describe("generated parser API", () => {
+  describe("parse", () => {
+    it("parses input", () => {
       const parser = peg.generate("start = 'a'");
 
       expect(parser.parse("a")).to.equal("a");
     });
 
-    it("throws an exception on syntax error", function() {
+    it("throws an exception on syntax error", () => {
       const parser = peg.generate("start = 'a'");
 
       expect(() => { parser.parse("b"); }).to.throw();
     });
 
-    describe("start rule", function() {
+    describe("start rule", () => {
       const parser = peg.generate([
         "a = 'x' { return 'a'; }",
         "b = 'x' { return 'b'; }",
-        "c = 'x' { return 'c'; }"
+        "c = 'x' { return 'c'; }",
       ].join("\n"), { allowedStartRules: ["b", "c"] });
 
-      describe("when |startRule| is not set", function() {
-        it("starts parsing from the first allowed rule", function() {
+      describe("when |startRule| is not set", () => {
+        it("starts parsing from the first allowed rule", () => {
           expect(parser.parse("x")).to.equal("b");
         });
       });
 
-      describe("when |startRule| is set to an allowed rule", function() {
-        it("starts parsing from specified rule", function() {
+      describe("when |startRule| is set to an allowed rule", () => {
+        it("starts parsing from specified rule", () => {
           expect(parser.parse("x", { startRule: "b" })).to.equal("b");
           expect(parser.parse("x", { startRule: "c" })).to.equal("c");
         });
       });
 
-      describe("when |startRule| is set to a disallowed start rule", function() {
-        it("throws an exception", function() {
+      describe("when |startRule| is set to a disallowed start rule", () => {
+        it("throws an exception", () => {
           expect(() => { parser.parse("x", { startRule: "a" }); }).to.throw();
         });
       });
     });
 
-    describe("tracing", function() {
+    describe("tracing", () => {
       const parser = peg.generate([
         "start = a / b",
         "a = 'a'",
-        "b = 'b'"
+        "b = 'b'",
       ].join("\n"), { trace: true });
 
-      describe("default tracer", function() {
-        it("traces using console.log (if console is defined)", function() {
+      describe("default tracer", () => {
+        it("traces using console.log (if console is defined)", () => {
           const messages = [
             "1:1-1:1 rule.enter start",
             "1:1-1:1 rule.enter   a",
             "1:1-1:1 rule.fail    a",
             "1:1-1:1 rule.enter   b",
             "1:1-1:2 rule.match   b",
-            "1:1-1:2 rule.match start"
+            "1:1-1:2 rule.match start",
           ];
 
           if (typeof console === "object") {
@@ -87,9 +87,9 @@ describe("generated parser API", function() {
         });
       });
 
-      describe("custom tracers", function() {
-        describe("trace", function() {
-          it("receives tracing events", function() {
+      describe("custom tracers", () => {
+        describe("trace", () => {
+          it("receives tracing events", () => {
             const events = [
               {
                 type: "rule.enter",
@@ -97,8 +97,8 @@ describe("generated parser API", function() {
                 location: {
                   source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
-                  end: { offset: 0, line: 1, column: 1 }
-                }
+                  end: { offset: 0, line: 1, column: 1 },
+                },
               },
               {
                 type: "rule.enter",
@@ -106,8 +106,8 @@ describe("generated parser API", function() {
                 location: {
                   source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
-                  end: { offset: 0, line: 1, column: 1 }
-                }
+                  end: { offset: 0, line: 1, column: 1 },
+                },
               },
               {
                 type: "rule.fail",
@@ -115,8 +115,8 @@ describe("generated parser API", function() {
                 location: {
                   source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
-                  end: { offset: 0, line: 1, column: 1 }
-                }
+                  end: { offset: 0, line: 1, column: 1 },
+                },
               },
               {
                 type: "rule.enter",
@@ -124,8 +124,8 @@ describe("generated parser API", function() {
                 location: {
                   source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
-                  end: { offset: 0, line: 1, column: 1 }
-                }
+                  end: { offset: 0, line: 1, column: 1 },
+                },
               },
               {
                 type: "rule.match",
@@ -134,8 +134,8 @@ describe("generated parser API", function() {
                 location: {
                   source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
-                  end: { offset: 1, line: 1, column: 2 }
-                }
+                  end: { offset: 1, line: 1, column: 2 },
+                },
               },
               {
                 type: "rule.match",
@@ -144,9 +144,9 @@ describe("generated parser API", function() {
                 location: {
                   source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
-                  end: { offset: 1, line: 1, column: 2 }
-                }
-              }
+                  end: { offset: 1, line: 1, column: 2 },
+                },
+              },
             ];
 
             const tracer = { trace: sinon.spy() };
@@ -163,7 +163,7 @@ describe("generated parser API", function() {
       });
     });
 
-    it("accepts custom options", function() {
+    it("accepts custom options", () => {
       const parser = peg.generate("start = 'a'");
 
       parser.parse("a", { foo: 42 });

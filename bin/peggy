@@ -112,7 +112,7 @@ const options = {
   format: "commonjs",
   output: "source",
   plugins: [],
-  trace: false
+  trace: false,
 };
 
 const MODULE_FORMATS = ["amd", "commonjs", "es", "globals", "umd"];
@@ -315,7 +315,7 @@ readStream(inputStream, input => {
     if (typeof e.format === "function") {
       abort(e.format([{
         source: options.grammarSource,
-        text: input
+        text: input,
       }]));
     } else {
       abort(e.message);

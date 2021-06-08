@@ -8,19 +8,19 @@ chai.use(helpers);
 
 const expect = chai.expect;
 
-describe("compiler pass |inferenceMatchResult|", function() {
-  it("calculate |match| property for |any| correctly", function() {
+describe("compiler pass |inferenceMatchResult|", () => {
+  it("calculate |match| property for |any| correctly", () => {
     expect(pass).to.changeAST("start = .",       { rules: [{ match:  0 }] });
   });
 
-  it("calculate |match| property for |literal| correctly", function() {
+  it("calculate |match| property for |literal| correctly", () => {
     expect(pass).to.changeAST("start = ''",      { rules: [{ match:  1 }] });
     expect(pass).to.changeAST("start = ''i",     { rules: [{ match:  1 }] });
     expect(pass).to.changeAST("start = 'a'",     { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = 'a'i",    { rules: [{ match:  0 }] });
   });
 
-  it("calculate |match| property for |class| correctly", function() {
+  it("calculate |match| property for |class| correctly", () => {
     expect(pass).to.changeAST("start = []",      { rules: [{ match: -1 }] });
     expect(pass).to.changeAST("start = []i",     { rules: [{ match: -1 }] });
     expect(pass).to.changeAST("start = [a]",     { rules: [{ match:  0 }] });
@@ -29,7 +29,7 @@ describe("compiler pass |inferenceMatchResult|", function() {
     expect(pass).to.changeAST("start = [a-b]i",  { rules: [{ match:  0 }] });
   });
 
-  it("calculate |match| property for |sequence| correctly", function() {
+  it("calculate |match| property for |sequence| correctly", () => {
     expect(pass).to.changeAST("start = 'a' 'b'", { rules: [{ match:  0 }] });
 
     expect(pass).to.changeAST("start = 'a' ''",  { rules: [{ match:  0 }] });
@@ -41,7 +41,7 @@ describe("compiler pass |inferenceMatchResult|", function() {
     expect(pass).to.changeAST("start = [] []",   { rules: [{ match: -1 }] });
   });
 
-  it("calculate |match| property for |choice| correctly", function() {
+  it("calculate |match| property for |choice| correctly", () => {
     expect(pass).to.changeAST("start = 'a' / 'b'", { rules: [{ match:  0 }] });
 
     expect(pass).to.changeAST("start = 'a' / ''",  { rules: [{ match:  0 }] });
@@ -53,7 +53,7 @@ describe("compiler pass |inferenceMatchResult|", function() {
     expect(pass).to.changeAST("start = []  / []",  { rules: [{ match: -1 }] });
   });
 
-  it("calculate |match| property for predicates correctly", function() {
+  it("calculate |match| property for predicates correctly", () => {
     expect(pass).to.changeAST("start = &.",  { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = &''", { rules: [{ match:  1 }] });
     expect(pass).to.changeAST("start = &[]", { rules: [{ match: -1 }] });
@@ -66,55 +66,55 @@ describe("compiler pass |inferenceMatchResult|", function() {
     expect(pass).to.changeAST("start = !{ code }", { rules: [{ match: 0 }] });
   });
 
-  it("calculate |match| property for |text| correctly", function() {
+  it("calculate |match| property for |text| correctly", () => {
     expect(pass).to.changeAST("start = $.",  { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = $''", { rules: [{ match:  1 }] });
     expect(pass).to.changeAST("start = $[]", { rules: [{ match: -1 }] });
   });
 
-  it("calculate |match| property for |action| correctly", function() {
+  it("calculate |match| property for |action| correctly", () => {
     expect(pass).to.changeAST("start = .  { code }", { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = '' { code }", { rules: [{ match:  1 }] });
     expect(pass).to.changeAST("start = [] { code }", { rules: [{ match: -1 }] });
   });
 
-  it("calculate |match| property for |labeled| correctly", function() {
+  it("calculate |match| property for |labeled| correctly", () => {
     expect(pass).to.changeAST("start = a:.",  { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = a:''", { rules: [{ match:  1 }] });
     expect(pass).to.changeAST("start = a:[]", { rules: [{ match: -1 }] });
   });
 
-  it("calculate |match| property for |named| correctly", function() {
+  it("calculate |match| property for |named| correctly", () => {
     expect(pass).to.changeAST("start 'start' = .",  { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start 'start' = ''", { rules: [{ match:  1 }] });
     expect(pass).to.changeAST("start 'start' = []", { rules: [{ match: -1 }] });
   });
 
-  it("calculate |match| property for |optional| correctly", function() {
+  it("calculate |match| property for |optional| correctly", () => {
     expect(pass).to.changeAST("start = .?",  { rules: [{ match: 1 }] });
     expect(pass).to.changeAST("start = ''?", { rules: [{ match: 1 }] });
     expect(pass).to.changeAST("start = []?", { rules: [{ match: 1 }] });
   });
 
-  it("calculate |match| property for |zero_or_more| correctly", function() {
+  it("calculate |match| property for |zero_or_more| correctly", () => {
     expect(pass).to.changeAST("start = .*",  { rules: [{ match: 1 }] });
     expect(pass).to.changeAST("start = ''*", { rules: [{ match: 1 }] });
     expect(pass).to.changeAST("start = []*", { rules: [{ match: 1 }] });
   });
 
-  it("calculate |match| property for |one_or_more| correctly", function() {
+  it("calculate |match| property for |one_or_more| correctly", () => {
     expect(pass).to.changeAST("start = .+",  { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = ''+", { rules: [{ match:  1 }] });
     expect(pass).to.changeAST("start = []+", { rules: [{ match: -1 }] });
   });
 
-  it("calculate |match| property for |group| correctly", function() {
+  it("calculate |match| property for |group| correctly", () => {
     expect(pass).to.changeAST("start = (.)",  { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = ('')", { rules: [{ match:  1 }] });
     expect(pass).to.changeAST("start = ([])", { rules: [{ match: -1 }] });
   });
 
-  it("calculate |match| property for |rule_ref| correctly", function() {
+  it("calculate |match| property for |rule_ref| correctly", () => {
     expect(pass).to.changeAST(
       ["start = end", "end = . "].join("\n"),
       { rules: [{ match:  0 }, { match:  0 }] }

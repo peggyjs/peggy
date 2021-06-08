@@ -197,7 +197,7 @@ $(document).ready(function() {
   $( "#parser-download" )
     .click(function(){
 
-      var blob = new Blob( [ $( "#parser-var" ).val() + " = " + parserSource + ";\n" ], { type: "application/javascript" } );
+      var blob = new Blob( [$( "#parser-var" ).val() + " = " + parserSource + ";\n"], {type: "application/javascript"} );
       window.saveAs( blob, "parser.js" );
 
     });

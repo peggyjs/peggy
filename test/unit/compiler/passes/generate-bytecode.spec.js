@@ -8,10 +8,10 @@ chai.use(helpers);
 
 const expect = chai.expect;
 
-describe("compiler pass |generateBytecode|", function() {
+describe("compiler pass |generateBytecode|", () => {
   function bytecodeDetails(bytecode) {
     return {
-      rules: [{ bytecode }]
+      rules: [{ bytecode }],
     };
   }
 
@@ -19,39 +19,39 @@ describe("compiler pass |generateBytecode|", function() {
     return { literals, classes, expectations, functions };
   }
 
-  describe("for grammar", function() {
-    it("generates correct bytecode", function() {
+  describe("for grammar", () => {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST([
         "a = 'a'",
         "b = 'b'",
-        "c = 'c'"
+        "c = 'c'",
       ].join("\n"), {
         rules: [
           { bytecode: [18, 0, 2, 2, 22, 0, 23, 0] },
           { bytecode: [18, 1, 2, 2, 22, 1, 23, 1] },
-          { bytecode: [18, 2, 2, 2, 22, 2, 23, 2] }
-        ]
+          { bytecode: [18, 2, 2, 2, 22, 2, 23, 2] },
+        ],
       });
     });
 
-    it("defines correct constants", function() {
+    it("defines correct constants", () => {
       expect(pass).to.changeAST([
         "a = 'a'",
         "b = 'b'",
-        "c = 'c'"
+        "c = 'c'",
       ].join("\n"), constsDetails(
         ["a", "b", "c"],
         [],
         [
           { type: "literal", value: "a", ignoreCase: false },
           { type: "literal", value: "b", ignoreCase: false },
-          { type: "literal", value: "c", ignoreCase: false }
+          { type: "literal", value: "c", ignoreCase: false },
         ],
         []
       ));
     });
 
-    it("generates correct plucking bytecode", function() {
+    it("generates correct plucking bytecode", () => {
       expect(pass).to.changeAST("start = 'a' @'b' 'c'", bytecodeDetails([
         5,                         // PUSH_CURR_POS
         18, 0, 2, 2, 22, 0, 23, 0, // <expression>
@@ -69,7 +69,7 @@ describe("compiler pass |generateBytecode|", function() {
         3,                         //         PUSH_FAILED
         6,                         //   * POP
         7,                         //     POP_CURR_POS
-        3                          //     PUSH_FAILED
+        3,                          //     PUSH_FAILED
       ]));
 
       expect(pass).to.changeAST("start = 'a' @'b' @'c'", bytecodeDetails([
@@ -89,47 +89,47 @@ describe("compiler pass |generateBytecode|", function() {
         3,                          //         PUSH_FAILED
         6,                          //   * POP
         7,                          //     POP_CURR_POS
-        3                           //     PUSH_FAILED
+        3,                           //     PUSH_FAILED
       ]));
     });
   });
 
-  describe("for rule", function() {
-    it("generates correct bytecode", function() {
+  describe("for rule", () => {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST("start = 'a'", bytecodeDetails([
-        18, 0, 2, 2, 22, 0, 23, 0   // <expression>
+        18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
       ]));
     });
   });
 
-  describe("for named", function() {
+  describe("for named", () => {
     const grammar = "start 'start' = 'a'";
 
-    it("generates correct bytecode", function() {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
         28,                          // SILENT_FAILS_ON
         18, 0, 2, 2, 22, 0, 23, 1,   // <expression>
         29,                          // SILENT_FAILS_OFF
         14, 2, 0,                    // IF_ERROR
-        23, 0                        //   * FAIL
+        23, 0,                        //   * FAIL
       ]));
     });
 
-    it("defines correct constants", function() {
+    it("defines correct constants", () => {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["a"],
         [],
         [
           { type: "rule", value: "start" },
-          { type: "literal", value: "a", ignoreCase: false }
+          { type: "literal", value: "a", ignoreCase: false },
         ],
         []
       ));
     });
   });
 
-  describe("for choice", function() {
-    it("generates correct bytecode", function() {
+  describe("for choice", () => {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST("start = 'a' / 'b' / 'c'", bytecodeDetails([
         18, 0, 2, 2, 22, 0, 23, 0,   // <alternatives[0]>
         14, 21, 0,                   // IF_ERROR
@@ -137,27 +137,27 @@ describe("compiler pass |generateBytecode|", function() {
         18, 1, 2, 2, 22, 1, 23, 1,   //     <alternatives[1]>
         14, 9, 0,                    //     IF_ERROR
         6,                           //       * POP
-        18, 2, 2, 2, 22, 2, 23, 2    //         <alternatives[2]>
+        18, 2, 2, 2, 22, 2, 23, 2,    //         <alternatives[2]>
       ]));
     });
   });
 
-  describe("for action", function() {
-    describe("without labels", function() {
+  describe("for action", () => {
+    describe("without labels", () => {
       const grammar = "start = 'a' { code }";
 
-      it("generates correct bytecode", function() {
+      it("generates correct bytecode", () => {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
           5,                           // PUSH_CURR_POS
           18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
           15, 6, 0,                    // IF_NOT_ERROR
           24, 1,                       //   * LOAD_SAVED_POS
           26, 0, 1, 0,                 //     CALL <0>
-          9                            // NIP
+          9,                            // NIP
         ]));
       });
 
-      it("defines correct constants", function() {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["a"],
           [],
@@ -167,21 +167,21 @@ describe("compiler pass |generateBytecode|", function() {
       });
     });
 
-    describe("with one label", function() {
+    describe("with one label", () => {
       const grammar = "start = a:'a' { code }";
 
-      it("generates correct bytecode", function() {
+      it("generates correct bytecode", () => {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
           5,                           // PUSH_CURR_POS
           18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
           15, 7, 0,                    // IF_NOT_ERROR
           24, 1,                       //   * LOAD_SAVED_POS
           26, 0, 1, 1, 0,              //     CALL <0>
-          9                            // NIP
+          9,                            // NIP
         ]));
       });
 
-      it("defines correct constants", function() {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["a"],
           [],
@@ -191,10 +191,10 @@ describe("compiler pass |generateBytecode|", function() {
       });
     });
 
-    describe("with multiple labels", function() {
+    describe("with multiple labels", () => {
       const grammar = "start = a:'a' b:'b' c:'c' { code }";
 
-      it("generates correct bytecode", function() {
+      it("generates correct bytecode", () => {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
           5,                           // PUSH_CURR_POS
           18, 0, 2, 2, 22, 0, 23, 0,   // <elements[0]>
@@ -213,18 +213,18 @@ describe("compiler pass |generateBytecode|", function() {
           3,                           //         PUSH_FAILED
           6,                           //   * POP
           7,                           //     POP_CURR_POS
-          3                            //     PUSH_FAILED
+          3,                            //     PUSH_FAILED
         ]));
       });
 
-      it("defines correct constants", function() {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["a", "b", "c"],
           [],
           [
             { type: "literal", value: "a", ignoreCase: false },
             { type: "literal", value: "b", ignoreCase: false },
-            { type: "literal", value: "c", ignoreCase: false }
+            { type: "literal", value: "c", ignoreCase: false },
           ],
           [{ predicate: false, params: ["a", "b", "c"], body: " code " }]
         ));
@@ -232,10 +232,10 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for sequence", function() {
+  describe("for sequence", () => {
     const grammar = "start = 'a' 'b' 'c'";
 
-    it("generates correct bytecode", function() {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
         5,                           // PUSH_CURR_POS
         18, 0, 2, 2, 22, 0, 23, 0,   // <elements[0]>
@@ -254,49 +254,49 @@ describe("compiler pass |generateBytecode|", function() {
         3,                           //         PUSH_FAILED
         6,                           //   * POP
         7,                           //     POP_CURR_POS
-        3                            //     PUSH_FAILED
+        3,                            //     PUSH_FAILED
       ]));
     });
 
-    it("defines correct constants", function() {
+    it("defines correct constants", () => {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["a", "b", "c"],
         [],
         [
           { type: "literal", value: "a", ignoreCase: false },
           { type: "literal", value: "b", ignoreCase: false },
-          { type: "literal", value: "c", ignoreCase: false }
+          { type: "literal", value: "c", ignoreCase: false },
         ],
         []
       ));
     });
   });
 
-  describe("for labeled", function() {
-    it("generates correct bytecode", function() {
+  describe("for labeled", () => {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST("start = a:'a'", bytecodeDetails([
-        18, 0, 2, 2, 22, 0, 23, 0   // <expression>
+        18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
       ]));
     });
   });
 
-  describe("for text", function() {
-    it("generates correct bytecode", function() {
+  describe("for text", () => {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST("start = $'a'", bytecodeDetails([
         5,                           // PUSH_CURR_POS
         18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
         15, 2, 1,                    // IF_NOT_ERROR
         6,                           //   * POP
         12,                          //     TEXT
-        9                            //   * NIP
+        9,                            //   * NIP
       ]));
     });
   });
 
-  describe("for simple_and", function() {
+  describe("for simple_and", () => {
     const grammar = "start = &'a'";
 
-    it("generates correct bytecode", function() {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
         5,                           // PUSH_CURR_POS
         28,                          // SILENT_FAILS_ON
@@ -308,11 +308,11 @@ describe("compiler pass |generateBytecode|", function() {
         1,                           //     PUSH_UNDEFINED
         6,                           //   * POP
         6,                           //     POP
-        3                            //     PUSH_FAILED
+        3,                            //     PUSH_FAILED
       ]));
     });
 
-    it("defines correct constants", function() {
+    it("defines correct constants", () => {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["a"],
         [],
@@ -322,10 +322,10 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for simple_not", function() {
+  describe("for simple_not", () => {
     const grammar = "start = !'a'";
 
-    it("generates correct bytecode", function() {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
         5,                           // PUSH_CURR_POS
         28,                          // SILENT_FAILS_ON
@@ -337,11 +337,11 @@ describe("compiler pass |generateBytecode|", function() {
         1,                           //     PUSH_UNDEFINED
         6,                           //   * POP
         7,                           //     POP_CURR_POS
-        3                            //     PUSH_FAILED
+        3,                            //     PUSH_FAILED
       ]));
     });
 
-    it("defines correct constants", function() {
+    it("defines correct constants", () => {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["a"],
         [],
@@ -351,19 +351,19 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for optional", function() {
+  describe("for optional", () => {
     const grammar = "start = 'a'?";
 
-    it("generates correct bytecode", function() {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
         18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
         14, 2, 0,                    // IF_ERROR
         6,                           //   * POP
-        2                            //     PUSH_NULL
+        2,                            //     PUSH_NULL
       ]));
     });
 
-    it("defines correct constants", function() {
+    it("defines correct constants", () => {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["a"],
         [],
@@ -373,21 +373,21 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for zero_or_more", function() {
+  describe("for zero_or_more", () => {
     const grammar = "start = 'a'*";
 
-    it("generates correct bytecode", function() {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
         4,                           // PUSH_EMPTY_ARRAY
         18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
         16, 9,                       // WHILE_NOT_ERROR
         10,                          //   * APPEND
         18, 0, 2, 2, 22, 0, 23, 0,   //     <expression>
-        6                            // POP
+        6,                            // POP
       ]));
     });
 
-    it("defines correct constants", function() {
+    it("defines correct constants", () => {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["a"],
         [],
@@ -397,10 +397,10 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for one_or_more", function() {
+  describe("for one_or_more", () => {
     const grammar = "start = 'a'+";
 
-    it("generates correct bytecode", function() {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
         4,                           // PUSH_EMPTY_ARRAY
         18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
@@ -411,11 +411,11 @@ describe("compiler pass |generateBytecode|", function() {
         6,                           //     POP
         6,                           //   * POP
         6,                           //     POP
-        3                            //     PUSH_FAILED
+        3,                            //     PUSH_FAILED
       ]));
     });
 
-    it("defines correct constants", function() {
+    it("defines correct constants", () => {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["a"],
         [],
@@ -425,16 +425,16 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for group", function() {
+  describe("for group", () => {
     const grammar = "start = ('a')";
 
-    it("generates correct bytecode", function() {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
-        18, 0, 2, 2, 22, 0, 23, 0   // <expression>
+        18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
       ]));
     });
 
-    it("defines correct constants", function() {
+    it("defines correct constants", () => {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["a"],
         [],
@@ -444,11 +444,11 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for semantic_and", function() {
-    describe("without labels", function() {
+  describe("for semantic_and", () => {
+    describe("without labels", () => {
       const grammar = "start = &{ code }";
 
-      it("generates correct bytecode", function() {
+      it("generates correct bytecode", () => {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
           25,            // UPDATE_SAVED_POS
           26, 0, 0, 0,   // CALL <0>
@@ -456,11 +456,11 @@ describe("compiler pass |generateBytecode|", function() {
           6,             //   * POP
           1,             //     PUSH_UNDEFINED
           6,             //   * POP
-          3              //     PUSH_FAILED
+          3,              //     PUSH_FAILED
         ]));
       });
 
-      it("defines correct constants", function() {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST(
           grammar,
           constsDetails(
@@ -473,10 +473,10 @@ describe("compiler pass |generateBytecode|", function() {
       });
     });
 
-    describe("with labels", function() {
+    describe("with labels", () => {
       const grammar = "start = a:'a' b:'b' c:'c' &{ code }";
 
-      it("generates correct bytecode", function() {
+      it("generates correct bytecode", () => {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
           5,                           // PUSH_CURR_POS
           18, 0, 2, 2, 22, 0, 23, 0,   // <elements[0]>
@@ -506,18 +506,18 @@ describe("compiler pass |generateBytecode|", function() {
           3,                           //         PUSH_FAILED
           6,                           //   * POP
           7,                           //     POP_CURR_POS
-          3                            //     PUSH_FAILED
+          3,                            //     PUSH_FAILED
         ]));
       });
 
-      it("defines correct constants", function() {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["a", "b", "c"],
           [],
           [
             { type: "literal", value: "a", ignoreCase: false },
             { type: "literal", value: "b", ignoreCase: false },
-            { type: "literal", value: "c", ignoreCase: false }
+            { type: "literal", value: "c", ignoreCase: false },
           ],
           [{ predicate: true, params: ["a", "b", "c"], body: " code " }]
         ));
@@ -525,11 +525,11 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for semantic_not", function() {
-    describe("without labels", function() {
+  describe("for semantic_not", () => {
+    describe("without labels", () => {
       const grammar = "start = !{ code }";
 
-      it("generates correct bytecode", function() {
+      it("generates correct bytecode", () => {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
           25,            // UPDATE_SAVED_POS
           26, 0, 0, 0,   // CALL <0>
@@ -537,11 +537,11 @@ describe("compiler pass |generateBytecode|", function() {
           6,             //   * POP
           3,             //     PUSH_FAILED
           6,             //   * POP
-          1              //     PUSH_UNDEFINED
+          1,              //     PUSH_UNDEFINED
         ]));
       });
 
-      it("defines correct constants", function() {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST(
           grammar,
           constsDetails(
@@ -554,10 +554,10 @@ describe("compiler pass |generateBytecode|", function() {
       });
     });
 
-    describe("with labels", function() {
+    describe("with labels", () => {
       const grammar = "start = a:'a' b:'b' c:'c' !{ code }";
 
-      it("generates correct bytecode", function() {
+      it("generates correct bytecode", () => {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
           5,                           // PUSH_CURR_POS
           18, 0, 2, 2, 22, 0, 23, 0,   // <elements[0]>
@@ -587,18 +587,18 @@ describe("compiler pass |generateBytecode|", function() {
           3,                           //         PUSH_FAILED
           6,                           //   * POP
           7,                           //     POP_CURR_POS
-          3                            //     PUSH_FAILED
+          3,                            //     PUSH_FAILED
         ]));
       });
 
-      it("defines correct constants", function() {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["a", "b", "c"],
           [],
           [
             { type: "literal", value: "a", ignoreCase: false },
             { type: "literal", value: "b", ignoreCase: false },
-            { type: "literal", value: "c", ignoreCase: false }
+            { type: "literal", value: "c", ignoreCase: false },
           ],
           [{ predicate: true, params: ["a", "b", "c"], body: " code " }]
         ));
@@ -606,49 +606,49 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for rule_ref", function() {
-    it("generates correct bytecode", function() {
+  describe("for rule_ref", () => {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST([
         "start = other",
-        "other = 'other'"
+        "other = 'other'",
       ].join("\n"), {
         rules: [
           {
-            bytecode: [27, 1]   // RULE <1>
+            bytecode: [27, 1],   // RULE <1>
           },
-          { }
-        ]
+          {},
+        ],
       });
     });
   });
 
-  describe("for literal", function() {
-    describe("empty", function() {
+  describe("for literal", () => {
+    describe("empty", () => {
       const grammar = "start = ''";
 
-      it("generates correct bytecode", function() {
+      it("generates correct bytecode", () => {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
-          35     // PUSH_EMPTY_STRING
+          35,     // PUSH_EMPTY_STRING
         ]));
       });
 
-      it("defines correct constants", function() {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST(grammar, constsDetails([], [], [], []));
       });
     });
 
-    describe("non-empty case-sensitive", function() {
+    describe("non-empty case-sensitive", () => {
       const grammar = "start = 'a'";
 
-      it("generates correct bytecode", function() {
+      it("generates correct bytecode", () => {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
           18, 0, 2, 2,   // MATCH_STRING
           22, 0,         //   * ACCEPT_STRING <0>
-          23, 0          //   * FAIL <0>
+          23, 0,          //   * FAIL <0>
         ]));
       });
 
-      it("defines correct constants", function() {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["a"],
           [],
@@ -658,18 +658,18 @@ describe("compiler pass |generateBytecode|", function() {
       });
     });
 
-    describe("non-empty case-insensitive", function() {
+    describe("non-empty case-insensitive", () => {
       const grammar = "start = 'A'i";
 
-      it("generates correct bytecode", function() {
+      it("generates correct bytecode", () => {
         expect(pass).to.changeAST(grammar, bytecodeDetails([
           19, 0, 2, 2,   // MATCH_STRING_IC
           21, 1,         //   * ACCEPT_N <1>
-          23, 0          //   * FAIL <0>
+          23, 0,          //   * FAIL <0>
         ]));
       });
 
-      it("defines correct constants", function() {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST(grammar, constsDetails(
           ["a"],
           [],
@@ -680,17 +680,17 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for class", function() {
-    it("generates correct bytecode", function() {
+  describe("for class", () => {
+    it("generates correct bytecode", () => {
       expect(pass).to.changeAST("start = [a]", bytecodeDetails([
         20, 0, 2, 2,   // MATCH_CHAR_CLASS <0>
         21, 1,         //   * ACCEPT_N <1>
-        23, 0          //   * FAIL <0>
+        23, 0,          //   * FAIL <0>
       ]));
     });
 
-    describe("non-inverted case-sensitive", function() {
-      it("defines correct constants", function() {
+    describe("non-inverted case-sensitive", () => {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST("start = [a]", constsDetails(
           [],
           [{ value: ["a"], ignoreCase: false, inverted: false }],
@@ -700,8 +700,8 @@ describe("compiler pass |generateBytecode|", function() {
       });
     });
 
-    describe("inverted case-sensitive", function() {
-      it("defines correct constants", function() {
+    describe("inverted case-sensitive", () => {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST("start = [^a]", constsDetails(
           [],
           [{ value: ["a"], ignoreCase: false, inverted: true }],
@@ -711,8 +711,8 @@ describe("compiler pass |generateBytecode|", function() {
       });
     });
 
-    describe("non-inverted case-insensitive", function() {
-      it("defines correct constants", function() {
+    describe("non-inverted case-insensitive", () => {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST("start = [a]i", constsDetails(
           [],
           [{ value: ["a"], ignoreCase: true, inverted: false }],
@@ -722,8 +722,8 @@ describe("compiler pass |generateBytecode|", function() {
       });
     });
 
-    describe("complex", function() {
-      it("defines correct constants", function() {
+    describe("complex", () => {
+      it("defines correct constants", () => {
         expect(pass).to.changeAST("start = [ab-def-hij-l]", constsDetails(
           [],
           [{ value: ["a", ["b", "d"], "e", ["f", "h"], "i", ["j", "l"]], ignoreCase: false, inverted: false }],
@@ -734,18 +734,18 @@ describe("compiler pass |generateBytecode|", function() {
     });
   });
 
-  describe("for any", function() {
+  describe("for any", () => {
     const grammar = "start = .";
 
-    it("generates bytecode", function() {
+    it("generates bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
         17, 2, 2,   // MATCH_ANY
         21, 1,      //   * ACCEPT_N <1>
-        23, 0       //   * FAIL <0>
+        23, 0,       //   * FAIL <0>
       ]));
     });
 
-    it("defines correct constants", function() {
+    it("defines correct constants", () => {
       expect(pass).to.changeAST(
         grammar,
         constsDetails([], [], [{ type: "any" }], [])

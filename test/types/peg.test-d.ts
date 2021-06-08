@@ -1,9 +1,8 @@
 import * as peggy from "../..";
-import tsd from "tsd";
-import {expectType} from "tsd";
+import tsd, { expectType } from "tsd";
 import formatter from "tsd/dist/lib/formatter";
-import {readFileSync} from "fs";
-import {join} from "path";
+import { join } from "path";
+import { readFileSync } from "fs";
 
 // The goals of these tests are:
 // - Check that the current types are valid
@@ -28,14 +27,14 @@ describe("peg.d.ts", () => {
     expect(res).toStrictEqual([1]);
 
     res = parser.parse("buzz\n11\nfizz\n", { start: 10 });
-    expect(res).toStrictEqual([ "buzz", 11, "fizz" ]);
+    expect(res).toStrictEqual(["buzz", 11, "fizz"]);
   });
 
   it("takes a valid tracer", () => {
     const parser = peggy.generate(src, { trace: true });
     expectType<peggy.Parser>(parser);
 
-    const res = parser.parse(" /**/ 1\n", {
+    parser.parse(" /**/ 1\n", {
       startRule: "top",
       tracer: {
         trace(event) {
@@ -46,16 +45,16 @@ describe("peg.d.ts", () => {
           if (event.type === "rule.match") {
             expectType<any>(event.result);
           }
-        }
-      }
-    })
+        },
+      },
+    });
   });
 
   it("takes an output and grammarSource", () => {
     const p1 = peggy.generate(src, { output: "parser", grammarSource: "src" });
     expectType<peggy.Parser>(p1);
 
-    const p2 = peggy.generate(src, { output: "source", grammarSource: {foo: "src"} });
+    const p2 = peggy.generate(src, { output: "source", grammarSource: { foo: "src" } });
     expectType<string>(p2);
   });
 
@@ -63,12 +62,12 @@ describe("peg.d.ts", () => {
     const grammar = peggy.parser.parse(src);
     expectType<peggy.ast.Grammar>(grammar);
 
-    const visited: { [key: string]: number; } = {};
+    const visited: Record<string, number> = {};
     function add(typ: string): void {
       if (!visited[typ]) {
         visited[typ] = 1;
       } else {
-        visited[typ]++
+        visited[typ]++;
       }
     }
 
@@ -78,8 +77,10 @@ describe("peg.d.ts", () => {
         expectType<peggy.ast.Grammar>(node);
         expectType<"grammar">(node.type);
         expectType<peggy.LocationRange>(node.location);
-        expectType<peggy.ast.TopLevelInitializer|undefined>(node.topLevelInitializer);
-        expectType<peggy.ast.Initializer|undefined>(node.initializer);
+        expectType<peggy.ast.TopLevelInitializer | undefined>(
+          node.topLevelInitializer
+        );
+        expectType<peggy.ast.Initializer | undefined>(node.initializer);
         expectType<peggy.ast.Rule[]>(node.rules);
 
         if (node.topLevelInitializer) {
@@ -113,7 +114,7 @@ describe("peg.d.ts", () => {
         expectType<peggy.LocationRange>(node.location);
         expectType<string>(node.name);
         expectType<peggy.LocationRange>(node.nameLocation);
-        expectType<peggy.ast.Expression|peggy.ast.Named>(node.expression);
+        expectType<peggy.ast.Expression | peggy.ast.Named>(node.expression);
         visit(node.expression);
       },
       named(node) {
@@ -161,8 +162,8 @@ describe("peg.d.ts", () => {
         expectType<peggy.ast.Labeled>(node);
         expectType<"labeled">(node.type);
         expectType<peggy.LocationRange>(node.location);
-        expectType<true|undefined>(node.pick);
-        expectType<string|null>(node.label);
+        expectType<true | undefined>(node.pick);
+        expectType<string | null>(node.label);
         expectType<peggy.LocationRange>(node.labelLocation);
         expectType<
           peggy.ast.Prefixed |
@@ -270,7 +271,7 @@ describe("peg.d.ts", () => {
         expectType<"class">(node.type);
         expectType<peggy.LocationRange>(node.location);
         expectType<boolean>(node.inverted);
-        expectType<boolean>(node.ignoreCase)
+        expectType<boolean>(node.ignoreCase);
         expectType<(string | string[])[]>(node.parts);
       },
       any(node) {
@@ -278,7 +279,7 @@ describe("peg.d.ts", () => {
         expectType<peggy.ast.Any>(node);
         expectType<"any">(node.type);
         expectType<peggy.LocationRange>(node.location);
-      }
+      },
     });
 
     visit(grammar);
@@ -320,14 +321,14 @@ describe("peg.d.ts", () => {
       peggy.compiler.passes
     );
     expectType<peggy.Parser>(parser);
-    expectType<peggy.ast.MatchResult|undefined>(ast.rules[0].match);
+    expectType<peggy.ast.MatchResult | undefined>(ast.rules[0].match);
     expect(ast.rules[0].match).toBe(0);
   });
 });
 
 describe("run tsd", () => {
   it("has no strict diagnostic warnings", async() => {
-    // this is slow because it causes another typescript compilation, but
+    // This is slow because it causes another typescript compilation, but
     // tsd catches things like ensuring string types are narrowed to their
     // set of correct choices.  It could be that setting a few more flags in
     // tsconfig.json would also catch these.

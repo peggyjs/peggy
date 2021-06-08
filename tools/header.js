@@ -1,6 +1,6 @@
 "use strict";
 
-// prepend header info to generated files, in-place.
+// Prepend header info to generated files, in-place.
 // Pass list of files on command line.
 
 const fs = require("fs");

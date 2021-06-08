@@ -9,7 +9,7 @@ const expect = chai.expect;
 const location = {
   source: undefined,
   start: { offset: 0, line: 1, column: 1 },
-  end: { offset: 4, line: 1, column: 5 }
+  end: { offset: 4, line: 1, column: 5 },
 };
 
 describe("Grammar Errors", () => {
@@ -44,15 +44,15 @@ GrammarError: message
     location.source = "foo.peggy";
     const source = {
       source: "foo.peggy",
-      text: "some error\nthat"
+      text: "some error\nthat",
     };
     let e = new GrammarError("message", location, [{
       message: "Subinfo",
       location: {
         source: "foo.peggy",
         start: { offset: 5, line: 1, column: 6 },
-        end: { offset: 11, line: 2, column: 1 }
-      }
+        end: { offset: 11, line: 2, column: 1 },
+      },
     }]);
     expect(e.format([source])).to.equal(`\
 Error: message
@@ -65,7 +65,7 @@ note: Subinfo
   |
 1 | some error
   |      ^^^^^`);
-    expect (e.format([])).to.equal(`\
+    expect(e.format([])).to.equal(`\
 Error: message
  at foo.peggy:1:1
  at foo.peggy:1:6: Subinfo`);
@@ -75,8 +75,8 @@ Error: message
       location: {
         source: "foo.peggy",
         start: { offset: 5, line: 1, column: 6 },
-        end: { offset: 11, line: 2, column: 1 }
-      }
+        end: { offset: 11, line: 2, column: 1 },
+      },
     }]);
     expect(e.format([source])).to.equal(`\
 Error: message
