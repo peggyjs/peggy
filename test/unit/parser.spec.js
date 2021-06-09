@@ -5,7 +5,7 @@ const parser = require("../../lib/parser");
 
 const expect = chai.expect;
 
-describe("Peggy grammar parser", function() {
+describe("Peggy grammar parser", () => {
   const literalAbcd       = { type: "literal",      value: "abcd", ignoreCase: false };
   const literalEfgh       = { type: "literal",      value: "efgh", ignoreCase: false };
   const literalIjkl       = { type: "literal",      value: "ijkl", ignoreCase: false };
@@ -15,29 +15,29 @@ describe("Peggy grammar parser", function() {
   const optional          = { type: "optional",     expression: literalAbcd };
   const zeroOrMore        = { type: "zero_or_more", expression: literalAbcd };
   const oneOrMore         = { type: "one_or_more",  expression: literalAbcd };
-  const textOptional      = { type: "text",         expression: optional    };
+  const textOptional      = { type: "text",         expression: optional };
   const simpleNotAbcd     = { type: "simple_not",   expression: literalAbcd };
-  const simpleAndOptional = { type: "simple_and",   expression: optional    };
-  const simpleNotOptional = { type: "simple_not",   expression: optional    };
-  const labeledAbcd       = { type: "labeled",      label: "a", expression: literalAbcd   };
-  const labeledEfgh       = { type: "labeled",      label: "b", expression: literalEfgh   };
-  const labeledIjkl       = { type: "labeled",      label: "c", expression: literalIjkl   };
-  const labeledMnop       = { type: "labeled",      label: "d", expression: literalMnop   };
+  const simpleAndOptional = { type: "simple_and",   expression: optional };
+  const simpleNotOptional = { type: "simple_not",   expression: optional };
+  const labeledAbcd       = { type: "labeled",      label: "a", expression: literalAbcd };
+  const labeledEfgh       = { type: "labeled",      label: "b", expression: literalEfgh };
+  const labeledIjkl       = { type: "labeled",      label: "c", expression: literalIjkl };
+  const labeledMnop       = { type: "labeled",      label: "d", expression: literalMnop };
   const labeledSimpleNot  = { type: "labeled",      label: "a", expression: simpleNotAbcd };
   const sequence          = {
     type: "sequence",
-    elements: [literalAbcd, literalEfgh, literalIjkl]
+    elements: [literalAbcd, literalEfgh, literalIjkl],
   };
   const sequence2         = {
     type: "sequence",
-    elements: [labeledAbcd, labeledEfgh]
+    elements: [labeledAbcd, labeledEfgh],
   };
   const sequence4         = {
     type: "sequence",
-    elements: [labeledAbcd, labeledEfgh, labeledIjkl, labeledMnop]
+    elements: [labeledAbcd, labeledEfgh, labeledIjkl, labeledMnop],
   };
   const groupLabeled      = { type: "group",  expression: labeledAbcd };
-  const groupSequence     = { type: "group",  expression: sequence    };
+  const groupSequence     = { type: "group",  expression: sequence };
   const actionAbcd        = { type: "action", expression: literalAbcd, code: " code " };
   const actionEfgh        = { type: "action", expression: literalEfgh, code: " code " };
   const actionIjkl        = { type: "action", expression: literalIjkl, code: " code " };
@@ -45,15 +45,15 @@ describe("Peggy grammar parser", function() {
   const actionSequence    = { type: "action", expression: sequence,    code: " code " };
   const choice            = {
     type: "choice",
-    alternatives: [literalAbcd, literalEfgh, literalIjkl]
+    alternatives: [literalAbcd, literalEfgh, literalIjkl],
   };
   const choice2           = {
     type: "choice",
-    alternatives: [actionAbcd, actionEfgh]
+    alternatives: [actionAbcd, actionEfgh],
   };
   const choice4           = {
     type: "choice",
-    alternatives: [actionAbcd, actionEfgh, actionIjkl, actionMnop]
+    alternatives: [actionAbcd, actionEfgh, actionIjkl, actionMnop],
   };
   const named               = { type: "named",       name: "start rule", expression: literalAbcd };
   const ruleA               = { type: "rule",        name: "a",          expression: literalAbcd };
@@ -68,7 +68,7 @@ describe("Peggy grammar parser", function() {
       type: "grammar",
       topLevelInitializer: null,
       initializer: null,
-      rules: [{ type: "rule", name: "start", expression }]
+      rules: [{ type: "rule", name: "start", expression }],
     };
   }
 
@@ -89,7 +89,7 @@ describe("Peggy grammar parser", function() {
       type: "class",
       parts,
       inverted,
-      ignoreCase
+      ignoreCase,
     });
   }
 
@@ -106,7 +106,7 @@ describe("Peggy grammar parser", function() {
     type: "grammar",
     topLevelInitializer: null,
     initializer: null,
-    rules: [ruleA, ruleB]
+    rules: [ruleA, ruleB],
   };
 
   const stripLocation = (function() {
@@ -179,7 +179,7 @@ describe("Peggy grammar parser", function() {
       rule_ref: stripLeaf,
       literal: stripLeaf,
       class: stripLeaf,
-      any: stripLeaf
+      any: stripLeaf,
     });
 
     return strip;
@@ -238,12 +238,12 @@ describe("Peggy grammar parser", function() {
   // Helper activation needs to put inside a |beforeEach| block because the
   // helpers conflict with the ones in
   // test/behavior/generated-parser-behavior.spec.js.
-  beforeEach(function() {
+  beforeEach(() => {
     chai.use(helpers);
   });
 
   // Canonical Grammar is "a = 'abcd'; b = 'efgh'; c = 'ijkl';".
-  it("parses Grammar", function() {
+  it("parses Grammar", () => {
     expect("\na = 'abcd';\n").to.parseAs(
       { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA] }
     );
@@ -262,21 +262,21 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical Top-Level Initializer is "{ top level code }".
-  it("parses Top-Level Initializer", function() {
+  it("parses Top-Level Initializer", () => {
     expect("{{ top level code }};start = 'abcd'").to.parseAs(
       { type: "grammar", topLevelInitializer, initializer: null, rules: [ruleStart] }
     );
   });
 
   // Canonical Initializer is "{ code }".
-  it("parses Initializer", function() {
+  it("parses Initializer", () => {
     expect("{ code };start = 'abcd'").to.parseAs(
       { type: "grammar", topLevelInitializer: null, initializer, rules: [ruleStart] }
     );
   });
 
   // Canonical Rule is "a = 'abcd';".
-  it("parses Rule", function() {
+  it("parses Rule", () => {
     expect("start\n=\n'abcd';").to.parseAs(
       oneRuleGrammar(literalAbcd)
     );
@@ -286,14 +286,14 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical Expression is "'abcd'".
-  it("parses Expression", function() {
+  it("parses Expression", () => {
     expect("start = 'abcd' / 'efgh' / 'ijkl'").to.parseAs(
       oneRuleGrammar(choice)
     );
   });
 
   // Canonical ChoiceExpression is "'abcd' / 'efgh' / 'ijkl'".
-  it("parses ChoiceExpression", function() {
+  it("parses ChoiceExpression", () => {
     expect("start = 'abcd' { code }").to.parseAs(
       oneRuleGrammar(actionAbcd)
     );
@@ -308,7 +308,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical ActionExpression is "'abcd' { code }".
-  it("parses ActionExpression", function() {
+  it("parses ActionExpression", () => {
     expect("start = 'abcd' 'efgh' 'ijkl'").to.parseAs(
       oneRuleGrammar(sequence)
     );
@@ -318,7 +318,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical SequenceExpression is "'abcd' 'efgh' 'ijkl'".
-  it("parses SequenceExpression", function() {
+  it("parses SequenceExpression", () => {
     expect("start = a:'abcd'").to.parseAs(
       oneRuleGrammar(labeledAbcd)
     );
@@ -331,7 +331,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Value Plucking
-  it("parses `@` (value plucking)", function() {
+  it("parses `@` (value plucking)", () => {
     function $S(...elements) {
       return oneRuleGrammar({
         type: "sequence",
@@ -368,39 +368,39 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical LabeledExpression is "a:'abcd'".
-  it("parses LabeledExpression", function() {
+  it("parses LabeledExpression", () => {
     expect("start = a\n:\n!'abcd'").to.parseAs(oneRuleGrammar(labeledSimpleNot));
     expect("start = !'abcd'").to.parseAs(oneRuleGrammar(simpleNotAbcd));
   });
 
   // Canonical PrefixedExpression is "!'abcd'".
-  it("parses PrefixedExpression", function() {
+  it("parses PrefixedExpression", () => {
     expect("start = !\n'abcd'?").to.parseAs(oneRuleGrammar(simpleNotOptional));
     expect("start = 'abcd'?").to.parseAs(oneRuleGrammar(optional));
   });
 
   // Canonical PrefixedOperator is "!".
-  it("parses PrefixedOperator", function() {
+  it("parses PrefixedOperator", () => {
     expect("start = $'abcd'?").to.parseAs(oneRuleGrammar(textOptional));
     expect("start = &'abcd'?").to.parseAs(oneRuleGrammar(simpleAndOptional));
     expect("start = !'abcd'?").to.parseAs(oneRuleGrammar(simpleNotOptional));
   });
 
   // Canonical SuffixedExpression is "'abcd'?".
-  it("parses SuffixedExpression", function() {
+  it("parses SuffixedExpression", () => {
     expect("start = 'abcd'\n?").to.parseAs(oneRuleGrammar(optional));
     expect("start = 'abcd'").to.parseAs(oneRuleGrammar(literalAbcd));
   });
 
   // Canonical SuffixedOperator is "?".
-  it("parses SuffixedOperator", function() {
+  it("parses SuffixedOperator", () => {
     expect("start = 'abcd'?").to.parseAs(oneRuleGrammar(optional));
     expect("start = 'abcd'*").to.parseAs(oneRuleGrammar(zeroOrMore));
     expect("start = 'abcd'+").to.parseAs(oneRuleGrammar(oneOrMore));
   });
 
   // Canonical PrimaryExpression is "'abcd'".
-  it("parses PrimaryExpression", function() {
+  it("parses PrimaryExpression", () => {
     expect("start = 'abcd'").to.parseAs(trivialGrammar);
     expect("start = [a-d]").to.parseAs(classGrammar([["a", "d"]], false, false));
     expect("start = .").to.parseAs(anyGrammar());
@@ -413,7 +413,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical RuleReferenceExpression is "a".
-  it("parses RuleReferenceExpression", function() {
+  it("parses RuleReferenceExpression", () => {
     expect("start = a").to.parseAs(ruleRefGrammar("a"));
 
     expect("start = a\n=").to.failToParse();
@@ -421,12 +421,12 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical SemanticPredicateExpression is "!{ code }".
-  it("parses SemanticPredicateExpression", function() {
+  it("parses SemanticPredicateExpression", () => {
     expect("start = !\n{ code }").to.parseAs(oneRuleGrammar(semanticNot));
   });
 
   // Canonical SemanticPredicateOperator is "!".
-  it("parses SemanticPredicateOperator", function() {
+  it("parses SemanticPredicateOperator", () => {
     expect("start = &{ code }").to.parseAs(oneRuleGrammar(semanticAnd));
     expect("start = !{ code }").to.parseAs(oneRuleGrammar(semanticNot));
   });
@@ -434,7 +434,7 @@ describe("Peggy grammar parser", function() {
   // The SourceCharacter rule is not tested.
 
   // Canonical WhiteSpace is " ".
-  it("parses WhiteSpace", function() {
+  it("parses WhiteSpace", () => {
     expect("start =\t'abcd'").to.parseAs(trivialGrammar);
     expect("start =\v'abcd'").to.parseAs(trivialGrammar);
     expect("start =\f'abcd'").to.parseAs(trivialGrammar);
@@ -445,7 +445,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical LineTerminator is "\n".
-  it("parses LineTerminator", function() {
+  it("parses LineTerminator", () => {
     expect("start = '\n'").to.failToParse();
     expect("start = '\r'").to.failToParse();
     expect("start = '\u2028'").to.failToParse();
@@ -453,7 +453,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical LineTerminatorSequence is "\r\n".
-  it("parses LineTerminatorSequence", function() {
+  it("parses LineTerminatorSequence", () => {
     expect("start =\n'abcd'").to.parseAs(trivialGrammar);
     expect("start =\r\n'abcd'").to.parseAs(trivialGrammar);
     expect("start =\r'abcd'").to.parseAs(trivialGrammar);
@@ -462,13 +462,13 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical Comment is "/* comment */".
-  it("parses Comment", function() {
+  it("parses Comment", () => {
     expect("start =// comment\n'abcd'").to.parseAs(trivialGrammar);
     expect("start =/* comment */'abcd'").to.parseAs(trivialGrammar);
   });
 
   // Canonical MultiLineComment is "/* comment */".
-  it("parses MultiLineComment", function() {
+  it("parses MultiLineComment", () => {
     expect("start =/**/'abcd'").to.parseAs(trivialGrammar);
     expect("start =/*a*/'abcd'").to.parseAs(trivialGrammar);
     expect("start =/*abc*/'abcd'").to.parseAs(trivialGrammar);
@@ -477,7 +477,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical MultiLineCommentNoLineTerminator is "/* comment */".
-  it("parses MultiLineCommentNoLineTerminator", function() {
+  it("parses MultiLineCommentNoLineTerminator", () => {
     expect("a = 'abcd'/**/\r\nb = 'efgh'").to.parseAs(twoRuleGrammar);
     expect("a = 'abcd'/*a*/\r\nb = 'efgh'").to.parseAs(twoRuleGrammar);
     expect("a = 'abcd'/*abc*/\r\nb = 'efgh'").to.parseAs(twoRuleGrammar);
@@ -487,7 +487,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical SingleLineComment is "// comment".
-  it("parses SingleLineComment", function() {
+  it("parses SingleLineComment", () => {
     expect("start =//\n'abcd'").to.parseAs(trivialGrammar);
     expect("start =//a\n'abcd'").to.parseAs(trivialGrammar);
     expect("start =//abc\n'abcd'").to.parseAs(trivialGrammar);
@@ -496,19 +496,19 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical Identifier is "a".
-  it("parses Identifier", function() {
+  it("parses Identifier", () => {
     expect("start = a:'abcd'").to.parseAs(oneRuleGrammar(labeledAbcd));
   });
 
   // Canonical IdentifierName is "a".
-  it("parses IdentifierName", function() {
+  it("parses IdentifierName", () => {
     expect("start = a").to.parseAs(ruleRefGrammar("a"));
     expect("start = ab").to.parseAs(ruleRefGrammar("ab"));
     expect("start = abcd").to.parseAs(ruleRefGrammar("abcd"));
   });
 
   // Canonical IdentifierStart is "a".
-  it("parses IdentifierStart", function() {
+  it("parses IdentifierStart", () => {
     expect("start = a").to.parseAs(ruleRefGrammar("a"));
     expect("start = $").to.parseAs(ruleRefGrammar("$"));
     expect("start = _").to.parseAs(ruleRefGrammar("_"));
@@ -516,7 +516,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical IdentifierPart is "a".
-  it("parses IdentifierPart", function() {
+  it("parses IdentifierPart", () => {
     expect("start = aa").to.parseAs(ruleRefGrammar("aa"));
     expect("start = a\u0300").to.parseAs(ruleRefGrammar("a\u0300"));
     expect("start = a0").to.parseAs(ruleRefGrammar("a0"));
@@ -528,13 +528,13 @@ describe("Peggy grammar parser", function() {
   // Unicode rules and reserved word rules are not tested.
 
   // Canonical LiteralMatcher is "'abcd'".
-  it("parses LiteralMatcher", function() {
+  it("parses LiteralMatcher", () => {
     expect("start = 'abcd'").to.parseAs(literalGrammar("abcd", false));
     expect("start = 'abcd'i").to.parseAs(literalGrammar("abcd", true));
   });
 
   // Canonical StringLiteral is "'abcd'".
-  it("parses StringLiteral", function() {
+  it("parses StringLiteral", () => {
     expect("start = \"\"").to.parseAs(literalGrammar("",    false));
     expect("start = \"a\"").to.parseAs(literalGrammar("a",   false));
     expect("start = \"abc\"").to.parseAs(literalGrammar("abc", false));
@@ -545,7 +545,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical DoubleStringCharacter is "a".
-  it("parses DoubleStringCharacter", function() {
+  it("parses DoubleStringCharacter", () => {
     expect("start = \"a\"").to.parseAs(literalGrammar("a",  false));
     expect("start = \"\\n\"").to.parseAs(literalGrammar("\n", false));
     expect("start = \"\\\n\"").to.parseAs(literalGrammar("",   false));
@@ -556,7 +556,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical SingleStringCharacter is "a".
-  it("parses SingleStringCharacter", function() {
+  it("parses SingleStringCharacter", () => {
     expect("start = 'a'").to.parseAs(literalGrammar("a",  false));
     expect("start = '\\n'").to.parseAs(literalGrammar("\n", false));
     expect("start = '\\\n'").to.parseAs(literalGrammar("",   false));
@@ -567,7 +567,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical CharacterClassMatcher is "[a-d]".
-  it("parses CharacterClassMatcher", function() {
+  it("parses CharacterClassMatcher", () => {
     expect("start = []").to.parseAs(
       classGrammar([], false, false)
     );
@@ -597,17 +597,17 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical ClassCharacterRange is "a-d".
-  it("parses ClassCharacterRange", function() {
+  it("parses ClassCharacterRange", () => {
     expect("start = [a-d]").to.parseAs(classGrammar([["a", "d"]], false, false));
 
     expect("start = [a-a]").to.parseAs(classGrammar([["a", "a"]], false, false));
     expect("start = [b-a]").to.failToParse({
-      message: "Invalid character range: b-a."
+      message: "Invalid character range: b-a.",
     });
   });
 
   // Canonical ClassCharacter is "a".
-  it("parses ClassCharacter", function() {
+  it("parses ClassCharacter", () => {
     expect("start = [a]").to.parseAs(classGrammar(["a"],  false, false));
     expect("start = [\\n]").to.parseAs(classGrammar(["\n"], false, false));
     expect("start = [\\\n]").to.parseAs(classGrammar([],     false, false));
@@ -618,12 +618,12 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical LineContinuation is "\\\n".
-  it("parses LineContinuation", function() {
+  it("parses LineContinuation", () => {
     expect("start = '\\\r\n'").to.parseAs(literalGrammar("", false));
   });
 
   // Canonical EscapeSequence is "n".
-  it("parses EscapeSequence", function() {
+  it("parses EscapeSequence", () => {
     expect("start = '\\n'").to.parseAs(literalGrammar("\n",     false));
     expect("start = '\\0'").to.parseAs(literalGrammar("\x00",   false));
     expect("start = '\\xFF'").to.parseAs(literalGrammar("\xFF",   false));
@@ -633,13 +633,13 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical CharacterEscapeSequence is "n".
-  it("parses CharacterEscapeSequence", function() {
+  it("parses CharacterEscapeSequence", () => {
     expect("start = '\\n'").to.parseAs(literalGrammar("\n", false));
     expect("start = '\\a'").to.parseAs(literalGrammar("a",  false));
   });
 
   // Canonical SingleEscapeCharacter is "n".
-  it("parses SingleEscapeCharacter", function() {
+  it("parses SingleEscapeCharacter", () => {
     expect("start = '\\''").to.parseAs(literalGrammar("'",  false));
     expect("start = '\\\"'").to.parseAs(literalGrammar("\"", false));
     expect("start = '\\\\'").to.parseAs(literalGrammar("\\", false));
@@ -652,7 +652,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical NonEscapeCharacter is "a".
-  it("parses NonEscapeCharacter", function() {
+  it("parses NonEscapeCharacter", () => {
     expect("start = '\\a'").to.parseAs(literalGrammar("a", false));
 
     // The negative predicate is impossible to test with Peggy grammar
@@ -663,29 +663,29 @@ describe("Peggy grammar parser", function() {
   // structure.
 
   // Canonical HexEscapeSequence is "xFF".
-  it("parses HexEscapeSequence", function() {
+  it("parses HexEscapeSequence", () => {
     expect("start = '\\xFF'").to.parseAs(literalGrammar("\xFF", false));
   });
 
   // Canonical UnicodeEscapeSequence is "uFFFF".
-  it("parses UnicodeEscapeSequence", function() {
+  it("parses UnicodeEscapeSequence", () => {
     expect("start = '\\uFFFF'").to.parseAs(literalGrammar("\uFFFF", false));
   });
 
   // Digit rules are not tested.
 
   // Canonical AnyMatcher is ".".
-  it("parses AnyMatcher", function() {
+  it("parses AnyMatcher", () => {
     expect("start = .").to.parseAs(anyGrammar());
   });
 
   // Canonical CodeBlock is "{ code }".
-  it("parses CodeBlock", function() {
+  it("parses CodeBlock", () => {
     expect("start = 'abcd' { code }").to.parseAs(actionGrammar(" code "));
   });
 
   // Canonical Code is " code ".
-  it("parses Code", function() {
+  it("parses Code", () => {
     expect("start = 'abcd' {a}").to.parseAs(actionGrammar("a"));
     expect("start = 'abcd' {abc}").to.parseAs(actionGrammar("abc"));
     expect("start = 'abcd' {{a}}").to.parseAs(actionGrammar("{a}"));
@@ -698,7 +698,7 @@ describe("Peggy grammar parser", function() {
   // Unicode character category rules and token rules are not tested.
 
   // Canonical __ is "\n".
-  it("parses __", function() {
+  it("parses __", () => {
     expect("start ='abcd'").to.parseAs(trivialGrammar);
     expect("start = 'abcd'").to.parseAs(trivialGrammar);
     expect("start =\r\n'abcd'").to.parseAs(trivialGrammar);
@@ -707,7 +707,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical _ is " ".
-  it("parses _", function() {
+  it("parses _", () => {
     expect("a = 'abcd'\r\nb = 'efgh'").to.parseAs(twoRuleGrammar);
     expect("a = 'abcd' \r\nb = 'efgh'").to.parseAs(twoRuleGrammar);
     expect("a = 'abcd'/* comment */\r\nb = 'efgh'").to.parseAs(twoRuleGrammar);
@@ -715,7 +715,7 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical EOS is ";".
-  it("parses EOS", function() {
+  it("parses EOS", () => {
     expect("a = 'abcd'\n;b = 'efgh'").to.parseAs(twoRuleGrammar);
     expect("a = 'abcd' \r\nb = 'efgh'").to.parseAs(twoRuleGrammar);
     expect("a = 'abcd' // comment\r\nb = 'efgh'").to.parseAs(twoRuleGrammar);
@@ -723,11 +723,11 @@ describe("Peggy grammar parser", function() {
   });
 
   // Canonical EOF is the end of input.
-  it("parses EOF", function() {
+  it("parses EOF", () => {
     expect("start = 'abcd'\n").to.parseAs(trivialGrammar);
   });
 
-  it("generates codeLocation / nameLocation / labelLocation", function() {
+  it("generates codeLocation / nameLocation / labelLocation", () => {
     const result = parser.parse(`
 {{
   const foo = 12;
@@ -747,13 +747,13 @@ c = @'ijkl'
         codeLocation: {
           source: undefined,
           start: { offset: 3, line: 2, column: 3 },
-          end: { offset: 22, line: 4, column: 1 }
+          end: { offset: 22, line: 4, column: 1 },
         },
         location: {
           source: undefined,
           start: { offset: 1, line: 2, column: 1 },
-          end: { offset: 25, line: 5, column: 1 }
-        }
+          end: { offset: 25, line: 5, column: 1 },
+        },
       },
       initializer: {
         type: "initializer",
@@ -761,13 +761,13 @@ c = @'ijkl'
         codeLocation: {
           source: undefined,
           start: { offset: 26, line: 5, column: 2 },
-          end: { offset: 45, line: 7, column: 1 }
+          end: { offset: 45, line: 7, column: 1 },
         },
         location: {
           source: undefined,
           start: { offset: 25, line: 5, column: 1 },
-          end: { offset: 47, line: 8, column: 1 }
-        }
+          end: { offset: 47, line: 8, column: 1 },
+        },
       },
       rules: [
         {
@@ -776,7 +776,7 @@ c = @'ijkl'
           nameLocation: {
             source: undefined,
             start: { offset: 47, line: 8, column: 1 },
-            end: { offset: 48, line: 8, column: 2 }
+            end: { offset: 48, line: 8, column: 2 },
           },
           expression: {
             type: "action",
@@ -789,7 +789,7 @@ c = @'ijkl'
                   labelLocation: {
                     source: undefined,
                     start: { offset: 51, line: 8, column: 5 },
-                    end: { offset: 56, line: 8, column: 10 }
+                    end: { offset: 56, line: 8, column: 10 },
                   },
                   expression: {
                     type: "literal",
@@ -798,14 +798,14 @@ c = @'ijkl'
                     location: {
                       source: undefined,
                       start: { offset: 57, line: 8, column: 11 },
-                      end: { offset: 63, line: 8, column: 17 }
-                    }
+                      end: { offset: 63, line: 8, column: 17 },
+                    },
                   },
                   location: {
                     source: undefined,
                     start: { offset: 51, line: 8, column: 5 },
-                    end: { offset: 63, line: 8, column: 17 }
-                  }
+                    end: { offset: 63, line: 8, column: 17 },
+                  },
                 },
                 {
                   type: "semantic_and",
@@ -813,13 +813,13 @@ c = @'ijkl'
                   codeLocation: {
                     source: undefined,
                     start: { offset: 66, line: 8, column: 20 },
-                    end: { offset: 80, line: 8, column: 34 }
+                    end: { offset: 80, line: 8, column: 34 },
                   },
                   location: {
                     source: undefined,
                     start: { offset: 64, line: 8, column: 18 },
-                    end: { offset: 81, line: 8, column: 35 }
-                  }
+                    end: { offset: 81, line: 8, column: 35 },
+                  },
                 },
                 {
                   type: "semantic_not",
@@ -827,38 +827,38 @@ c = @'ijkl'
                   codeLocation: {
                     source: undefined,
                     start: { offset: 84, line: 8, column: 38 },
-                    end: { offset: 99, line: 8, column: 53 }
+                    end: { offset: 99, line: 8, column: 53 },
                   },
                   location: {
                     source: undefined,
                     start: { offset: 82, line: 8, column: 36 },
-                    end: { offset: 100, line: 8, column: 54 }
-                  }
-                }
+                    end: { offset: 100, line: 8, column: 54 },
+                  },
+                },
               ],
               location: {
                 source: undefined,
                 start: { offset: 51, line: 8, column: 5 },
-                end: { offset: 100, line: 8, column: 54 }
-              }
+                end: { offset: 100, line: 8, column: 54 },
+              },
             },
             code: " return 'so true'; ",
             codeLocation: {
               source: undefined,
               start: { offset: 102, line: 8, column: 56 },
-              end: { offset: 121, line: 8, column: 75 }
+              end: { offset: 121, line: 8, column: 75 },
             },
             location: {
               source: undefined,
               start: { offset: 51, line: 8, column: 5 },
-              end: { offset: 122, line: 8, column: 76 }
-            }
+              end: { offset: 122, line: 8, column: 76 },
+            },
           },
           location: {
             source: undefined,
             start: { offset: 47, line: 8, column: 1 },
-            end: { offset: 123, line: 9, column: 1 }
-          }
+            end: { offset: 123, line: 9, column: 1 },
+          },
         },
         {
           type: "rule",
@@ -866,7 +866,7 @@ c = @'ijkl'
           nameLocation: {
             source: undefined,
             start: { offset: 123, line: 9, column: 1 },
-            end: { offset: 124, line: 9, column: 2 }
+            end: { offset: 124, line: 9, column: 2 },
           },
           expression: {
             type: "sequence",
@@ -876,7 +876,7 @@ c = @'ijkl'
               labelLocation: {
                 source: undefined,
                 start: { offset: 128, line: 9, column: 6 },
-                end: { offset: 133, line: 9, column: 11 }
+                end: { offset: 133, line: 9, column: 11 },
               },
               pick: true,
               expression: {
@@ -886,26 +886,26 @@ c = @'ijkl'
                 location: {
                   source: undefined,
                   start: { offset: 134, line: 9, column: 12 },
-                  end: { offset: 140, line: 9, column: 18 }
-                }
+                  end: { offset: 140, line: 9, column: 18 },
+                },
               },
               location: {
                 source: undefined,
                 start: { offset: 127, line: 9, column: 5 },
-                end: { offset: 140, line: 9, column: 18 }
-              }
+                end: { offset: 140, line: 9, column: 18 },
+              },
             }],
             location: {
               source: undefined,
               start: { offset: 127, line: 9, column: 5 },
-              end: { offset: 140, line: 9, column: 18 }
-            }
+              end: { offset: 140, line: 9, column: 18 },
+            },
           },
           location: {
             source: undefined,
             start: { offset: 123, line: 9, column: 1 },
-            end: { offset: 141, line: 10, column: 1 }
-          }
+            end: { offset: 141, line: 10, column: 1 },
+          },
         },
         {
           type: "rule",
@@ -913,7 +913,7 @@ c = @'ijkl'
           nameLocation: {
             source: undefined,
             start: { offset: 141, line: 10, column: 1 },
-            end: { offset: 142, line: 10, column: 2 }
+            end: { offset: 142, line: 10, column: 2 },
           },
           expression: {
             type: "sequence",
@@ -923,7 +923,7 @@ c = @'ijkl'
               labelLocation: {
                 source: undefined,
                 start: { offset: 145, line: 10, column: 5 },
-                end: { offset: 146, line: 10, column: 6 }
+                end: { offset: 146, line: 10, column: 6 },
               },
               pick: true,
               expression: {
@@ -933,33 +933,33 @@ c = @'ijkl'
                 location: {
                   source: undefined,
                   start: { offset: 146, line: 10, column: 6 },
-                  end: { offset: 152, line: 10, column: 12 }
-                }
+                  end: { offset: 152, line: 10, column: 12 },
+                },
               },
               location: {
                 source: undefined,
                 start: { offset: 145, line: 10, column: 5 },
-                end: { offset: 152, line: 10, column: 12 }
-              }
+                end: { offset: 152, line: 10, column: 12 },
+              },
             }],
             location: {
               source: undefined,
               start: { offset: 145, line: 10, column: 5 },
-              end: { offset: 152, line: 10, column: 12 }
-            }
+              end: { offset: 152, line: 10, column: 12 },
+            },
           },
           location: {
             source: undefined,
             start: { offset: 141, line: 10, column: 1 },
-            end: { offset: 153, line: 11, column: 1 }
-          }
-        }
+            end: { offset: 153, line: 11, column: 1 },
+          },
+        },
       ],
       location: {
         source: undefined,
         start: { offset: 0, line: 1, column: 1 },
-        end: { offset: 153, line: 11, column: 1 }
-      }
+        end: { offset: 153, line: 11, column: 1 },
+      },
     });
   });
 });

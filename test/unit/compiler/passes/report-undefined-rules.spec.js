@@ -8,15 +8,15 @@ chai.use(helpers);
 
 const expect = chai.expect;
 
-describe("compiler pass |reportUndefinedRules|", function() {
-  it("reports undefined rules", function() {
+describe("compiler pass |reportUndefinedRules|", () => {
+  it("reports undefined rules", () => {
     expect(pass).to.reportError("start = undefined", {
       message: "Rule \"undefined\" is not defined",
       location: {
         source: undefined,
         start: { offset: 8, line: 1, column: 9 },
-        end: { offset: 17, line: 1, column: 18 }
-      }
+        end: { offset: 17, line: 1, column: 18 },
+      },
     });
   });
 });

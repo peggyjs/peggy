@@ -11,12 +11,12 @@ module.exports = {
     "browser/",
     "node_modules/",
     "*.min.js",
-    "build"
+    "build",
   ],
   overrides: [
     {
       files: ["rollup.config.js"],
       parserOptions: { sourceType: "module" },
-    }
-  ]
+    },
+  ],
 };

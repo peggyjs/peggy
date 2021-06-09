@@ -21,7 +21,7 @@ const Runner = {
           // messed-up in that case.
           setTimeout(() => { Q.run(); }, 0);
         }
-      }
+      },
     };
 
     // The benchmark itself is factored out into several functions (some of them
@@ -110,7 +110,7 @@ const Runner = {
     Q.add(finalize);
 
     Q.run();
-  }
+  },
 };
 
 module.exports = Runner;

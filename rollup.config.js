@@ -15,18 +15,18 @@ const umd_config = {
   output: {
     file   : "build/rollup/peggy.umd.js",
     format : "umd",
-    name   : "peggy"
+    name   : "peggy",
   },
 
   plugins : [
     nodeResolve({
       mainFields     : ["module", "main"],
       browser        : true,
-      extensions     : [ ".js", ".json", ".ts", ".tsx" ],
-      preferBuiltins : false
+      extensions     : [".js", ".json", ".ts", ".tsx"],
+      preferBuiltins : false,
     }),
-    commonjs()
-  ]
+    commonjs(),
+  ],
 };
 
 const browser_test_config = {
@@ -42,16 +42,16 @@ const browser_test_config = {
     format : "umd",
     name   : "browser",
     globals: {
-      chai: "chai"
-    }
+      chai: "chai",
+    },
   },
   external: ["chai"],
   plugins : [
     json(),
     nodeResolve(),
     commonjs(),
-    multiEntry()
-  ]
+    multiEntry(),
+  ],
 };
 
 const browser_benchmark_config = {
@@ -69,8 +69,8 @@ const browser_benchmark_config = {
   },
   plugins : [
     nodeResolve(),
-    commonjs()
-  ]
+    commonjs(),
+  ],
 };
 
-export default [ umd_config, browser_test_config, browser_benchmark_config ];
+export default [umd_config, browser_test_config, browser_benchmark_config];

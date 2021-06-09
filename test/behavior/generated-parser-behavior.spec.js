@@ -6,7 +6,7 @@ const sinon = require("sinon");
 
 const expect = chai.expect;
 
-describe("generated parser behavior", function() {
+describe("generated parser behavior", () => {
   function varyOptimizationOptions(block) {
     function clone(object) {
       const result = {};
@@ -20,19 +20,19 @@ describe("generated parser behavior", function() {
 
     const optionsVariants = [
       { cache: false, trace: false },
-      { cache: false, trace: true  },
+      { cache: false, trace: true },
       { cache: false, trace: false },
-      { cache: false, trace: true  },
+      { cache: false, trace: true },
       { cache: true,  trace: false },
-      { cache: true,  trace: true  },
+      { cache: true,  trace: true },
       { cache: true,  trace: false },
-      { cache: true,  trace: true  }
+      { cache: true,  trace: true },
     ];
 
     optionsVariants.forEach(variant => {
       describe(
         "with options " + chai.util.inspect(variant),
-        function() { block(clone(variant)); }
+        () => { block(clone(variant)); }
       );
     });
   }
@@ -57,9 +57,8 @@ describe("generated parser behavior", function() {
     Assertion.addMethod("parse", function(input, expected, options) {
       options = options !== undefined ? options : {};
 
-      const result = withConsoleStub(() =>
-        utils.flag(this, "object").parse(input, options)
-      );
+      const result = withConsoleStub(() => utils.flag(this, "object")
+        .parse(input, options));
 
       if (expected !== undefined) {
         this.assert(
@@ -79,9 +78,8 @@ describe("generated parser behavior", function() {
       let passed, result;
 
       try {
-        result = withConsoleStub(() =>
-          utils.flag(this, "object").parse(input, options)
-        );
+        result = withConsoleStub(() => utils.flag(this, "object")
+          .parse(input, options));
         passed = true;
       } catch (e) {
         result = e;
@@ -107,26 +105,26 @@ describe("generated parser behavior", function() {
 
   // Helper activation needs to put inside a |beforeEach| block because the
   // helpers conflict with the ones in test/unit/parser.spec.js.
-  beforeEach(function() {
+  beforeEach(() => {
     chai.use(helpers);
   });
 
-  varyOptimizationOptions(function(options) {
-    describe("initializer", function() {
-      it("executes the code before parsing starts", function() {
+  varyOptimizationOptions(options => {
+    describe("initializer", () => {
+      it("executes the code before parsing starts", () => {
         const parser = peg.generate([
           "{ var result = 42; }",
-          "start = 'a' { return result; }"
+          "start = 'a' { return result; }",
         ].join("\n"), options);
 
         expect(parser).to.parse("a", 42);
       });
 
-      describe("available variables and functions", function() {
-        it("|options| contains options", function() {
+      describe("available variables and functions", () => {
+        it("|options| contains options", () => {
           const parser = peg.generate([
             "{ var result = options; }",
-            "start = 'a' { return result; }"
+            "start = 'a' { return result; }",
           ].join("\n"), options);
 
           expect(parser).to.parse("a", { a: 42 }, { a: 42 });
@@ -134,39 +132,39 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("rule", function() {
+    describe("rule", () => {
       if (options.cache) {
-        it("caches rule match results", function() {
+        it("caches rule match results", () => {
           const parser = peg.generate([
             "{ var n = 0; }",
             "start = (a 'b') / (a 'c') { return n; }",
-            "a = 'a' { n++; }"
+            "a = 'a' { n++; }",
           ].join("\n"), options);
 
           expect(parser).to.parse("ac", 1);
         });
       } else {
-        it("doesn't cache rule match results", function() {
+        it("doesn't cache rule match results", () => {
           const parser = peg.generate([
             "{ var n = 0; }",
             "start = (a 'b') / (a 'c') { return n; }",
-            "a = 'a' { n++; }"
+            "a = 'a' { n++; }",
           ].join("\n"), options);
 
           expect(parser).to.parse("ac", 2);
         });
       }
 
-      describe("when the expression matches", function() {
-        describe("without display name", function() {
-          describe("returns its match result", function() {
-            it("when expression may match", function() {
+      describe("when the expression matches", () => {
+        describe("without display name", () => {
+          describe("returns its match result", () => {
+            it("when expression may match", () => {
               const parser = peg.generate("start = 'a'");
 
               expect(parser).to.parse("a", "a");
             });
 
-            it("when expression always match", function() {
+            it("when expression always match", () => {
               const parser = peg.generate("start = 'a'*");
 
               expect(parser).to.parse("", []);
@@ -174,15 +172,15 @@ describe("generated parser behavior", function() {
           });
         });
 
-        describe("with display name", function() {
-          describe("returns its match result", function() {
-            it("when expression may match", function() {
+        describe("with display name", () => {
+          describe("returns its match result", () => {
+            it("when expression may match", () => {
               const parser = peg.generate("start 'start' = 'a'");
 
               expect(parser).to.parse("a", "a");
             });
 
-            it("when expression always match", function() {
+            it("when expression always match", () => {
               const parser = peg.generate("start 'start' = 'a'*");
 
               expect(parser).to.parse("", []);
@@ -191,85 +189,85 @@ describe("generated parser behavior", function() {
         });
       });
 
-      describe("when the expression doesn't match", function() {
-        describe("without display name", function() {
-          describe("reports match failure and records an expectation", function() {
-            it("when expression may match", function() {
+      describe("when the expression doesn't match", () => {
+        describe("without display name", () => {
+          describe("reports match failure and records an expectation", () => {
+            it("when expression may match", () => {
               const parser = peg.generate("start = 'a'");
 
               expect(parser).to.failToParse("b", {
-                expected: [{ type: "literal", text: "a", ignoreCase: false }]
+                expected: [{ type: "literal", text: "a", ignoreCase: false }],
               });
             });
 
-            it("when expression never match", function() {
+            it("when expression never match", () => {
               const parser = peg.generate("start = []");
 
               expect(parser).to.failToParse("b", {
-                expected: [{ type: "class", parts: [], inverted: false, ignoreCase: false }]
+                expected: [{ type: "class", parts: [], inverted: false, ignoreCase: false }],
               });
             });
           });
         });
 
-        describe("with display name", function() {
-          it("reports match failure and records an expectation of type \"other\" when expression may match", function() {
+        describe("with display name", () => {
+          it("reports match failure and records an expectation of type \"other\" when expression may match", () => {
             const parser = peg.generate("start 'start' = 'a'");
 
             expect(parser).to.failToParse("b", {
-              expected: [{ type: "other", description: "start" }]
+              expected: [{ type: "other", description: "start" }],
             });
           });
 
-          it("reports match failure and doesn't records any expectations when expression never match", function() {
+          it("reports match failure and doesn't records any expectations when expression never match", () => {
             const parser = peg.generate("start 'start' = []");
 
             expect(parser).to.failToParse("b", {
-              expected: []
+              expected: [],
             });
           });
 
-          it("discards any expectations recorded when matching the expression", function() {
+          it("discards any expectations recorded when matching the expression", () => {
             const parser = peg.generate("start 'start' = 'a'");
 
             expect(parser).to.failToParse("b", {
-              expected: [{ type: "other", description: "start" }]
+              expected: [{ type: "other", description: "start" }],
             });
           });
         });
       });
     });
 
-    describe("literal", function() {
-      describe("matching", function() {
-        it("matches empty literals", function() {
+    describe("literal", () => {
+      describe("matching", () => {
+        it("matches empty literals", () => {
           const parser = peg.generate("start = ''", options);
 
           expect(parser).to.parse("");
         });
 
-        it("matches one-character literals", function() {
+        it("matches one-character literals", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.parse("a");
           expect(parser).to.failToParse("b");
         });
 
-        it("matches multi-character literals", function() {
+        it("matches multi-character literals", () => {
           const parser = peg.generate("start = 'abcd'", options);
 
           expect(parser).to.parse("abcd");
           expect(parser).to.failToParse("efgh");
         });
 
-        it("is case sensitive without the \"i\" flag", function() {
+        it("is case sensitive without the \"i\" flag", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.parse("a");
           expect(parser).to.failToParse("A");
         });
 
-        it("is case insensitive with the \"i\" flag", function() {
+        it("is case insensitive with the \"i\" flag", () => {
           const parser = peg.generate("start = 'a'i", options);
 
           expect(parser).to.parse("a");
@@ -277,40 +275,40 @@ describe("generated parser behavior", function() {
         });
       });
 
-      describe("when it matches", function() {
-        it("returns the matched text", function() {
+      describe("when it matches", () => {
+        it("returns the matched text", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.parse("a", "a");
         });
 
-        it("consumes the matched text", function() {
+        it("consumes the matched text", () => {
           const parser = peg.generate("start = 'a' .", options);
 
           expect(parser).to.parse("ab");
         });
       });
 
-      describe("when it doesn't match", function() {
-        it("reports match failure and records an expectation of type \"literal\"", function() {
+      describe("when it doesn't match", () => {
+        it("reports match failure and records an expectation of type \"literal\"", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("b", {
-            expected: [{ type: "literal", text: "a", ignoreCase: false }]
+            expected: [{ type: "literal", text: "a", ignoreCase: false }],
           });
         });
       });
     });
 
-    describe("character class", function() {
-      describe("matching", function() {
-        it("matches empty classes", function() {
+    describe("character class", () => {
+      describe("matching", () => {
+        it("matches empty classes", () => {
           const parser = peg.generate("start = []", options);
 
           expect(parser).to.failToParse("a");
         });
 
-        it("matches classes with a character list", function() {
+        it("matches classes with a character list", () => {
           const parser = peg.generate("start = [abc]", options);
 
           expect(parser).to.parse("a");
@@ -319,7 +317,7 @@ describe("generated parser behavior", function() {
           expect(parser).to.failToParse("d");
         });
 
-        it("matches classes with a character range", function() {
+        it("matches classes with a character range", () => {
           const parser = peg.generate("start = [a-c]", options);
 
           expect(parser).to.parse("a");
@@ -328,21 +326,21 @@ describe("generated parser behavior", function() {
           expect(parser).to.failToParse("d");
         });
 
-        it("matches inverted classes", function() {
+        it("matches inverted classes", () => {
           const parser = peg.generate("start = [^a]", options);
 
           expect(parser).to.failToParse("a");
           expect(parser).to.parse("b");
         });
 
-        it("is case sensitive without the \"i\" flag", function() {
+        it("is case sensitive without the \"i\" flag", () => {
           const parser = peg.generate("start = [a]", options);
 
           expect(parser).to.parse("a");
           expect(parser).to.failToParse("A");
         });
 
-        it("is case insensitive with the \"i\" flag", function() {
+        it("is case insensitive with the \"i\" flag", () => {
           const parser = peg.generate("start = [a]i", options);
 
           expect(parser).to.parse("a");
@@ -350,34 +348,34 @@ describe("generated parser behavior", function() {
         });
       });
 
-      describe("when it matches", function() {
-        it("returns the matched character", function() {
+      describe("when it matches", () => {
+        it("returns the matched character", () => {
           const parser = peg.generate("start = [a]", options);
 
           expect(parser).to.parse("a", "a");
         });
 
-        it("consumes the matched character", function() {
+        it("consumes the matched character", () => {
           const parser = peg.generate("start = [a] .", options);
 
           expect(parser).to.parse("ab");
         });
       });
 
-      describe("when it doesn't match", function() {
-        it("reports match failure and records an expectation of type \"class\"", function() {
+      describe("when it doesn't match", () => {
+        it("reports match failure and records an expectation of type \"class\"", () => {
           const parser = peg.generate("start = [a]", options);
 
           expect(parser).to.failToParse("b", {
-            expected: [{ type: "class", parts: ["a"], inverted: false, ignoreCase: false }]
+            expected: [{ type: "class", parts: ["a"], inverted: false, ignoreCase: false }],
           });
         });
       });
     });
 
-    describe("dot", function() {
-      describe("matching", function() {
-        it("matches any character", function() {
+    describe("dot", () => {
+      describe("matching", () => {
+        it("matches any character", () => {
           const parser = peg.generate("start = .", options);
 
           expect(parser).to.parse("a");
@@ -386,48 +384,48 @@ describe("generated parser behavior", function() {
         });
       });
 
-      describe("when it matches", function() {
-        it("returns the matched character", function() {
+      describe("when it matches", () => {
+        it("returns the matched character", () => {
           const parser = peg.generate("start = .", options);
 
           expect(parser).to.parse("a", "a");
         });
 
-        it("consumes the matched character", function() {
+        it("consumes the matched character", () => {
           const parser = peg.generate("start = . .", options);
 
           expect(parser).to.parse("ab");
         });
       });
 
-      describe("when it doesn't match", function() {
-        it("reports match failure and records an expectation of type \"any\"", function() {
+      describe("when it doesn't match", () => {
+        it("reports match failure and records an expectation of type \"any\"", () => {
           const parser = peg.generate("start = .", options);
 
           expect(parser).to.failToParse("", {
-            expected: [{ type: "any" }]
+            expected: [{ type: "any" }],
           });
         });
       });
     });
 
-    describe("rule reference", function() {
-      describe("when referenced rule's expression matches", function() {
-        it("returns its result", function() {
+    describe("rule reference", () => {
+      describe("when referenced rule's expression matches", () => {
+        it("returns its result", () => {
           const parser = peg.generate([
             "start = a",
-            "a = 'a'"
+            "a = 'a'",
           ].join("\n"), options);
 
           expect(parser).to.parse("a", "a");
         });
       });
 
-      describe("when referenced rule's expression doesn't match", function() {
-        it("reports match failure", function() {
+      describe("when referenced rule's expression doesn't match", () => {
+        it("reports match failure", () => {
           const parser = peg.generate([
             "start = a",
-            "a = 'a'"
+            "a = 'a'",
           ].join("\n"), options);
 
           expect(parser).to.failToParse("b");
@@ -435,9 +433,9 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("positive semantic predicate", function() {
-      describe("when the code returns a truthy value", function() {
-        it("returns |undefined|", function() {
+    describe("positive semantic predicate", () => {
+      describe("when the code returns a truthy value", () => {
+        it("returns |undefined|", () => {
           // The |""| is needed so that the parser doesn't return just
           // |undefined| which we can't compare against in |toParse| due to the
           // way optional parameters work.
@@ -447,17 +445,17 @@ describe("generated parser behavior", function() {
         });
       });
 
-      describe("when the code returns a falsey value", function() {
-        it("reports match failure", function() {
+      describe("when the code returns a falsey value", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = &{ return false; }", options);
 
           expect(parser).to.failToParse("");
         });
       });
 
-      describe("label variables", function() {
-        describe("in containing sequence", function() {
-          it("can access variables defined by preceding labeled elements", function() {
+      describe("label variables", () => {
+        describe("in containing sequence", () => {
+          it("can access variables defined by preceding labeled elements", () => {
             const parser = peg.generate(
               "start = a:'a' &{ return a === 'a'; }",
               options
@@ -466,7 +464,7 @@ describe("generated parser behavior", function() {
             expect(parser).to.parse("a");
           });
 
-          it("cannot access variable defined by labeled predicate element", function() {
+          it("cannot access variable defined by labeled predicate element", () => {
             const parser = peg.generate(
               "start = 'a' b:&{ return b === undefined; } 'c'",
               options
@@ -475,7 +473,7 @@ describe("generated parser behavior", function() {
             expect(parser).to.failToParse("ac");
           });
 
-          it("cannot access variables defined by following labeled elements", function() {
+          it("cannot access variables defined by following labeled elements", () => {
             const parser = peg.generate(
               "start = &{ return a === 'a'; } a:'a'",
               options
@@ -484,52 +482,52 @@ describe("generated parser behavior", function() {
             expect(parser).to.failToParse("a");
           });
 
-          it("cannot access variables defined by subexpressions", function() {
+          it("cannot access variables defined by subexpressions", () => {
             const testcases = [
               {
                 grammar: "start = (a:'a') &{ return a === 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = (a:'a')? &{ return a === 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = (a:'a')* &{ return a === 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = (a:'a')+ &{ return a === 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = $(a:'a') &{ return a === 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = &(a:'a') 'a' &{ return a === 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = !(a:'a') 'b' &{ return a === 'a'; }",
-                input: "b"
+                input: "b",
               },
               {
                 grammar: "start = b:(a:'a') &{ return a === 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = ('a' b:'b' 'c') &{ return b === 'b'; }",
-                input: "abc"
+                input: "abc",
               },
               {
                 grammar: "start = (a:'a' { return a; }) &{ return a === 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = ('a' / b:'b' / 'c') &{ return b === 'b'; }",
-                input: "b"
-              }
+                input: "b",
+              },
             ];
 
             testcases.forEach(testcase => {
@@ -539,8 +537,8 @@ describe("generated parser behavior", function() {
           });
         });
 
-        describe("in outer sequence", function() {
-          it("can access variables defined by preceding labeled elements", function() {
+        describe("in outer sequence", () => {
+          it("can access variables defined by preceding labeled elements", () => {
             const parser = peg.generate(
               "start = a:'a' ('b' &{ return a === 'a'; })",
               options
@@ -549,7 +547,7 @@ describe("generated parser behavior", function() {
             expect(parser).to.parse("ab");
           });
 
-          it("cannot access variable defined by labeled predicate element", function() {
+          it("cannot access variable defined by labeled predicate element", () => {
             const parser = peg.generate(
               "start = 'a' b:('b' &{ return b === undefined; }) 'c'",
               options
@@ -558,7 +556,7 @@ describe("generated parser behavior", function() {
             expect(parser).to.failToParse("abc");
           });
 
-          it("cannot access variables defined by following labeled elements", function() {
+          it("cannot access variables defined by following labeled elements", () => {
             const parser = peg.generate(
               "start = ('a' &{ return b === 'b'; }) b:'b'",
               options
@@ -569,37 +567,37 @@ describe("generated parser behavior", function() {
         });
       });
 
-      describe("initializer variables & functions", function() {
-        it("can access variables defined in the initializer", function() {
+      describe("initializer variables & functions", () => {
+        it("can access variables defined in the initializer", () => {
           const parser = peg.generate([
             "{ var v = 42 }",
-            "start = &{ return v === 42; }"
+            "start = &{ return v === 42; }",
           ].join("\n"), options);
 
           expect(parser).to.parse("");
         });
 
-        it("can access functions defined in the initializer", function() {
+        it("can access functions defined in the initializer", () => {
           const parser = peg.generate([
             "{ function f() { return 42; } }",
-            "start = &{ return f() === 42; }"
+            "start = &{ return f() === 42; }",
           ].join("\n"), options);
 
           expect(parser).to.parse("");
         });
       });
 
-      describe("available variables & functions", function() {
-        it("|options| contains options", function() {
+      describe("available variables & functions", () => {
+        it("|options| contains options", () => {
           const parser = peg.generate([
             "{ var result; }",
-            "start = &{ result = options; return true; } { return result; }"
+            "start = &{ result = options; return true; } { return result; }",
           ].join("\n"), options);
 
           expect(parser).to.parse("", { a: 42 }, { a: 42 });
         });
 
-        it("|location| returns current location info", function() {
+        it("|location| returns current location info", () => {
           const parser = peg.generate([
             "{ var result; }",
             "start = line (nl+ line)* { return result; }",
@@ -607,55 +605,55 @@ describe("generated parser behavior", function() {
             "thing = digit / mark",
             "digit = [0-9]",
             "mark = &{ result = location(); return true; } 'x'",
-            "nl = '\\r'? '\\n'"
+            "nl = '\\r'? '\\n'",
           ].join("\n"), options);
 
           expect(parser).to.parse("1\n2\n\n3\n\n\n4 5 x", {
             source: undefined,
             start: { offset: 13, line: 7, column: 5 },
-            end: { offset: 13, line: 7, column: 5 }
+            end: { offset: 13, line: 7, column: 5 },
           });
 
           // Newline representations
           expect(parser).to.parse("1\nx", {     // Unix
             source: undefined,
             start: { offset: 2, line: 2, column: 1 },
-            end: { offset: 2, line: 2, column: 1 }
+            end: { offset: 2, line: 2, column: 1 },
           });
           expect(parser).to.parse("1\r\nx", {   // Windows
             source: undefined,
             start: { offset: 3, line: 2, column: 1 },
-            end: { offset: 3, line: 2, column: 1 }
+            end: { offset: 3, line: 2, column: 1 },
           });
         });
 
-        it("|offset| returns current start offset", function() {
+        it("|offset| returns current start offset", () => {
           const parser = peg.generate([
             "start = [0-9]+ @mark",
-            "mark = 'xx' { return offset(); }"
+            "mark = 'xx' { return offset(); }",
           ].join("\n"), options);
 
           expect(parser).to.parse("0123456xx", 7);
         });
 
-        it("|range| returns current range", function() {
+        it("|range| returns current range", () => {
           const parser = peg.generate([
             "start = [0-9]+ @mark",
-            "mark = 'xx' { return range(); }"
+            "mark = 'xx' { return range(); }",
           ].join("\n"), options);
 
           expect(parser).to.parse("0123456xx", {
             source: undefined,
             start: 7,
-            end: 9
+            end: 9,
           });
         });
       });
     });
 
-    describe("negative semantic predicate", function() {
-      describe("when the code returns a falsey value", function() {
-        it("returns |undefined|", function() {
+    describe("negative semantic predicate", () => {
+      describe("when the code returns a falsey value", () => {
+        it("returns |undefined|", () => {
           // The |""| is needed so that the parser doesn't return just
           // |undefined| which we can't compare against in |toParse| due to the
           // way optional parameters work.
@@ -665,17 +663,17 @@ describe("generated parser behavior", function() {
         });
       });
 
-      describe("when the code returns a truthy value", function() {
-        it("reports match failure", function() {
+      describe("when the code returns a truthy value", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = !{ return true; }", options);
 
           expect(parser).to.failToParse("");
         });
       });
 
-      describe("label variables", function() {
-        describe("in containing sequence", function() {
-          it("can access variables defined by preceding labeled elements", function() {
+      describe("label variables", () => {
+        describe("in containing sequence", () => {
+          it("can access variables defined by preceding labeled elements", () => {
             const parser = peg.generate(
               "start = a:'a' !{ return a !== 'a'; }",
               options
@@ -684,7 +682,7 @@ describe("generated parser behavior", function() {
             expect(parser).to.parse("a");
           });
 
-          it("cannot access variable defined by labeled predicate element", function() {
+          it("cannot access variable defined by labeled predicate element", () => {
             const parser = peg.generate(
               "start = 'a' b:!{ return b !== undefined; } 'c'",
               options
@@ -693,7 +691,7 @@ describe("generated parser behavior", function() {
             expect(parser).to.failToParse("ac");
           });
 
-          it("cannot access variables defined by following labeled elements", function() {
+          it("cannot access variables defined by following labeled elements", () => {
             const parser = peg.generate(
               "start = !{ return a !== 'a'; } a:'a'",
               options
@@ -702,52 +700,52 @@ describe("generated parser behavior", function() {
             expect(parser).to.failToParse("a");
           });
 
-          it("cannot access variables defined by subexpressions", function() {
+          it("cannot access variables defined by subexpressions", () => {
             const testcases = [
               {
                 grammar: "start = (a:'a') !{ return a !== 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = (a:'a')? !{ return a !== 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = (a:'a')* !{ return a !== 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = (a:'a')+ !{ return a !== 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = $(a:'a') !{ return a !== 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = &(a:'a') 'a' !{ return a !== 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = !(a:'a') 'b' !{ return a !== 'a'; }",
-                input: "b"
+                input: "b",
               },
               {
                 grammar: "start = b:(a:'a') !{ return a !== 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = ('a' b:'b' 'c') !{ return b !== 'b'; }",
-                input: "abc"
+                input: "abc",
               },
               {
                 grammar: "start = (a:'a' { return a; }) !{ return a !== 'a'; }",
-                input: "a"
+                input: "a",
               },
               {
                 grammar: "start = ('a' / b:'b' / 'c') !{ return b !== 'b'; }",
-                input: "b"
-              }
+                input: "b",
+              },
             ];
 
             testcases.forEach(testcase => {
@@ -757,8 +755,8 @@ describe("generated parser behavior", function() {
           });
         });
 
-        describe("in outer sequence", function() {
-          it("can access variables defined by preceding labeled elements", function() {
+        describe("in outer sequence", () => {
+          it("can access variables defined by preceding labeled elements", () => {
             const parser = peg.generate(
               "start = a:'a' ('b' !{ return a !== 'a'; })",
               options
@@ -767,7 +765,7 @@ describe("generated parser behavior", function() {
             expect(parser).to.parse("ab");
           });
 
-          it("cannot access variable defined by labeled predicate element", function() {
+          it("cannot access variable defined by labeled predicate element", () => {
             const parser = peg.generate(
               "start = 'a' b:('b' !{ return b !== undefined; }) 'c'",
               options
@@ -776,7 +774,7 @@ describe("generated parser behavior", function() {
             expect(parser).to.failToParse("abc");
           });
 
-          it("cannot access variables defined by following labeled elements", function() {
+          it("cannot access variables defined by following labeled elements", () => {
             const parser = peg.generate(
               "start = ('a' !{ return b !== 'b'; }) b:'b'",
               options
@@ -787,37 +785,37 @@ describe("generated parser behavior", function() {
         });
       });
 
-      describe("initializer variables & functions", function() {
-        it("can access variables defined in the initializer", function() {
+      describe("initializer variables & functions", () => {
+        it("can access variables defined in the initializer", () => {
           const parser = peg.generate([
             "{ var v = 42 }",
-            "start = !{ return v !== 42; }"
+            "start = !{ return v !== 42; }",
           ].join("\n"), options);
 
           expect(parser).to.parse("");
         });
 
-        it("can access functions defined in the initializer", function() {
+        it("can access functions defined in the initializer", () => {
           const parser = peg.generate([
             "{ function f() { return 42; } }",
-            "start = !{ return f() !== 42; }"
+            "start = !{ return f() !== 42; }",
           ].join("\n"), options);
 
           expect(parser).to.parse("");
         });
       });
 
-      describe("available variables & functions", function() {
-        it("|options| contains options", function() {
+      describe("available variables & functions", () => {
+        it("|options| contains options", () => {
           const parser = peg.generate([
             "{ var result; }",
-            "start = !{ result = options; return false; } { return result; }"
+            "start = !{ result = options; return false; } { return result; }",
           ].join("\n"), options);
 
           expect(parser).to.parse("", { a: 42 }, { a: 42 });
         });
 
-        it("|location| returns current location info", function() {
+        it("|location| returns current location info", () => {
           const parser = peg.generate([
             "{ var result; }",
             "start = line (nl+ line)* { return result; }",
@@ -825,41 +823,41 @@ describe("generated parser behavior", function() {
             "thing = digit / mark",
             "digit = [0-9]",
             "mark = !{ result = location(); return false; } 'x'",
-            "nl = '\\r'? '\\n'"
+            "nl = '\\r'? '\\n'",
           ].join("\n"), options);
 
           expect(parser).to.parse("1\n2\n\n3\n\n\n4 5 x", {
             source: undefined,
             start: { offset: 13, line: 7, column: 5 },
-            end: { offset: 13, line: 7, column: 5 }
+            end: { offset: 13, line: 7, column: 5 },
           });
 
           // Newline representations
           expect(parser).to.parse("1\nx", {     // Unix
             source: undefined,
             start: { offset: 2, line: 2, column: 1 },
-            end: { offset: 2, line: 2, column: 1 }
+            end: { offset: 2, line: 2, column: 1 },
           });
           expect(parser).to.parse("1\r\nx", {   // Windows
             source: undefined,
             start: { offset: 3, line: 2, column: 1 },
-            end: { offset: 3, line: 2, column: 1 }
+            end: { offset: 3, line: 2, column: 1 },
           });
         });
       });
     });
 
-    describe("group", function() {
-      describe("when the expression matches", function() {
-        it("returns its match result", function() {
+    describe("group", () => {
+      describe("when the expression matches", () => {
+        it("returns its match result", () => {
           const parser = peg.generate("start = ('a')", options);
 
           expect(parser).to.parse("a", "a");
         });
       });
 
-      describe("when the expression doesn't match", function() {
-        it("reports match failure", function() {
+      describe("when the expression doesn't match", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = ('a')", options);
 
           expect(parser).to.failToParse("b");
@@ -867,17 +865,17 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("optional", function() {
-      describe("when the expression matches", function() {
-        it("returns its match result", function() {
+    describe("optional", () => {
+      describe("when the expression matches", () => {
+        it("returns its match result", () => {
           const parser = peg.generate("start = 'a'?", options);
 
           expect(parser).to.parse("a", "a");
         });
       });
 
-      describe("when the expression doesn't match", function() {
-        it("returns |null|", function() {
+      describe("when the expression doesn't match", () => {
+        it("returns |null|", () => {
           const parser = peg.generate("start = 'a'?", options);
 
           expect(parser).to.parse("", null);
@@ -885,9 +883,9 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("zero or more", function() {
-      describe("when the expression matches zero or more times", function() {
-        it("returns an array of its match results", function() {
+    describe("zero or more", () => {
+      describe("when the expression matches zero or more times", () => {
+        it("returns an array of its match results", () => {
           const parser = peg.generate("start = 'a'*", options);
 
           expect(parser).to.parse("",    []);
@@ -897,9 +895,9 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("one or more", function() {
-      describe("when the expression matches one or more times", function() {
-        it("returns an array of its match results", function() {
+    describe("one or more", () => {
+      describe("when the expression matches one or more times", () => {
+        it("returns an array of its match results", () => {
           const parser = peg.generate("start = 'a'+", options);
 
           expect(parser).to.parse("a",   ["a"]);
@@ -907,8 +905,8 @@ describe("generated parser behavior", function() {
         });
       });
 
-      describe("when the expression doesn't match", function() {
-        it("reports match failure", function() {
+      describe("when the expression doesn't match", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = 'a'+", options);
 
           expect(parser).to.failToParse("");
@@ -916,17 +914,17 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("text", function() {
-      describe("when the expression matches", function() {
-        it("returns the matched text", function() {
+    describe("text", () => {
+      describe("when the expression matches", () => {
+        it("returns the matched text", () => {
           const parser = peg.generate("start = $('a' 'b' 'c')", options);
 
           expect(parser).to.parse("abc", "abc");
         });
       });
 
-      describe("when the expression doesn't match", function() {
-        it("reports match failure", function() {
+      describe("when the expression doesn't match", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = $('a')", options);
 
           expect(parser).to.failToParse("b");
@@ -934,87 +932,87 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("positive simple predicate", function() {
-      describe("when the expression matches", function() {
-        it("returns |undefined|", function() {
+    describe("positive simple predicate", () => {
+      describe("when the expression matches", () => {
+        it("returns |undefined|", () => {
           const parser = peg.generate("start = &'a' 'a'", options);
 
           expect(parser).to.parse("a", [undefined, "a"]);
         });
 
-        it("resets parse position", function() {
+        it("resets parse position", () => {
           const parser = peg.generate("start = &'a' 'a'", options);
 
           expect(parser).to.parse("a");
         });
       });
 
-      describe("when the expression doesn't match", function() {
-        it("reports match failure", function() {
+      describe("when the expression doesn't match", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = &'a'", options);
 
           expect(parser).to.failToParse("b");
         });
 
-        it("discards any expectations recorded when matching the expression", function() {
+        it("discards any expectations recorded when matching the expression", () => {
           const parser = peg.generate("start = 'a' / &'b' / 'c'", options);
 
           expect(parser).to.failToParse("d", {
             expected: [
               { type: "literal", text: "a", ignoreCase: false },
-              { type: "literal", text: "c", ignoreCase: false }
-            ]
+              { type: "literal", text: "c", ignoreCase: false },
+            ],
           });
         });
       });
     });
 
-    describe("negative simple predicate", function() {
-      describe("when the expression matches", function() {
-        it("reports match failure", function() {
+    describe("negative simple predicate", () => {
+      describe("when the expression matches", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = !'a'", options);
 
           expect(parser).to.failToParse("a");
         });
       });
 
-      describe("when the expression doesn't match", function() {
-        it("returns |undefined|", function() {
+      describe("when the expression doesn't match", () => {
+        it("returns |undefined|", () => {
           const parser = peg.generate("start = !'a' 'b'", options);
 
           expect(parser).to.parse("b", [undefined, "b"]);
         });
 
-        it("resets parse position", function() {
+        it("resets parse position", () => {
           const parser = peg.generate("start = !'a' 'b'", options);
 
           expect(parser).to.parse("b");
         });
 
-        it("discards any expectations recorded when matching the expression", function() {
+        it("discards any expectations recorded when matching the expression", () => {
           const parser = peg.generate("start = 'a' / !'b' / 'c'", options);
 
           expect(parser).to.failToParse("b", {
             expected: [
               { type: "literal", text: "a", ignoreCase: false },
-              { type: "literal", text: "c", ignoreCase: false }
-            ]
+              { type: "literal", text: "c", ignoreCase: false },
+            ],
           });
         });
       });
     });
 
-    describe("label", function() {
-      describe("when the expression matches", function() {
-        it("returns its match result", function() {
+    describe("label", () => {
+      describe("when the expression matches", () => {
+        it("returns its match result", () => {
           const parser = peg.generate("start = a:'a'", options);
 
           expect(parser).to.parse("a", "a");
         });
       });
 
-      describe("when the expression doesn't match", function() {
-        it("reports match failure", function() {
+      describe("when the expression doesn't match", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = a:'a'", options);
 
           expect(parser).to.failToParse("b");
@@ -1022,15 +1020,15 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("sequence", function() {
-      describe("when all expressions match", function() {
-        it("returns an array of their match results", function() {
+    describe("sequence", () => {
+      describe("when all expressions match", () => {
+        it("returns an array of their match results", () => {
           const parser = peg.generate("start = 'a' 'b' 'c'", options);
 
           expect(parser).to.parse("abc", ["a", "b", "c"]);
         });
 
-        it("plucks a single value", function() {
+        it("plucks a single value", () => {
           let parser = peg.generate("start = @'a'", options);
           expect(parser).to.parse("a", "a");
 
@@ -1042,7 +1040,7 @@ describe("generated parser behavior", function() {
           expect(parser).to.parse("abc", "b");
 
           parser = peg.generate("start = 'a' ( @'b' 'c' )", options);
-          expect(parser).to.parse("abc", [ "a", "b" ]);
+          expect(parser).to.parse("abc", ["a", "b"]);
 
           parser = peg.generate("start = 'a' @( 'b' @'c' 'd' )", options);
           expect(parser).to.parse("abcd", "c");
@@ -1054,31 +1052,31 @@ describe("generated parser behavior", function() {
           expect(parser).to.parse("def", "f");
         });
 
-        it("plucks a multiple values", function() {
+        it("plucks a multiple values", () => {
           let parser = peg.generate("start = 'a' @'b' @'c'", options);
-          expect(parser).to.parse("abc", [ "b", "c" ]);
+          expect(parser).to.parse("abc", ["b", "c"]);
 
           parser = peg.generate("start = 'a' ( @'b' @'c' )", options);
-          expect(parser).to.parse("abc", [ "a", [ "b", "c" ] ]);
+          expect(parser).to.parse("abc", ["a", ["b", "c"]]);
 
           parser = peg.generate("start = 'a' @( 'b' @'c' @'d' )", options);
-          expect(parser).to.parse("abcd", [ "c", "d" ]);
+          expect(parser).to.parse("abcd", ["c", "d"]);
 
           parser = peg.generate("start = 'a' @( @'b' 'c' ) @'d' 'e'", options);
-          expect(parser).to.parse("abcde", [ "b", "d" ]);
+          expect(parser).to.parse("abcde", ["b", "d"]);
 
           parser = peg.generate("start = 'a' @'b' 'c' / @'d' 'e' @'f'", options);
-          expect(parser).to.parse("def", [ "d", "f" ]);
+          expect(parser).to.parse("def", ["d", "f"]);
         });
 
-        it("prevents \"@\" on a semantic predicate", function() {
+        it("prevents \"@\" on a semantic predicate", () => {
           expect(() => peg.generate("start1 = 'a' @&{ /* semantic_and */ } 'c'")).to.throw();
           expect(() => peg.generate("start2 = 'a' @!{ /* semantic_not */ } 'c'")).to.throw();
         });
       });
 
-      describe("when any expression doesn't match", function() {
-        it("reports match failure", function() {
+      describe("when any expression doesn't match", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = 'a' 'b' 'c'", options);
 
           expect(parser).to.failToParse("dbc");
@@ -1086,7 +1084,7 @@ describe("generated parser behavior", function() {
           expect(parser).to.failToParse("abd");
         });
 
-        it("resets parse position", function() {
+        it("resets parse position", () => {
           const parser = peg.generate("start = 'a' 'b' / 'a'", options);
 
           expect(parser).to.parse("a", "a");
@@ -1094,23 +1092,23 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("action", function() {
-      describe("when the expression matches", function() {
-        it("returns the value returned by the code", function() {
+    describe("action", () => {
+      describe("when the expression matches", () => {
+        it("returns the value returned by the code", () => {
           const parser = peg.generate("start = 'a' { return 42; }", options);
 
           expect(parser).to.parse("a", 42);
         });
 
-        describe("label variables", function() {
-          describe("in the expression", function() {
-            it("can access variable defined by labeled expression", function() {
+        describe("label variables", () => {
+          describe("in the expression", () => {
+            it("can access variable defined by labeled expression", () => {
               const parser = peg.generate("start = a:'a' { return a; }", options);
 
               expect(parser).to.parse("a", "a");
             });
 
-            it("can access variables defined by labeled sequence elements", function() {
+            it("can access variables defined by labeled sequence elements", () => {
               const parser = peg.generate(
                 "start = a:'a' b:'b' c:'c' { return [a, b, c]; }",
                 options
@@ -1119,52 +1117,52 @@ describe("generated parser behavior", function() {
               expect(parser).to.parse("abc", ["a", "b", "c"]);
             });
 
-            it("cannot access variables defined by subexpressions", function() {
+            it("cannot access variables defined by subexpressions", () => {
               const testcases = [
                 {
                   grammar: "start = (a:'a') { return a; }",
-                  input: "a"
+                  input: "a",
                 },
                 {
                   grammar: "start = (a:'a')? { return a; }",
-                  input: "a"
+                  input: "a",
                 },
                 {
                   grammar: "start = (a:'a')* { return a; }",
-                  input: "a"
+                  input: "a",
                 },
                 {
                   grammar: "start = (a:'a')+ { return a; }",
-                  input: "a"
+                  input: "a",
                 },
                 {
                   grammar: "start = $(a:'a') { return a; }",
-                  input: "a"
+                  input: "a",
                 },
                 {
                   grammar: "start = &(a:'a') 'a' { return a; }",
-                  input: "a"
+                  input: "a",
                 },
                 {
                   grammar: "start = !(a:'a') 'b' { return a; }",
-                  input: "b"
+                  input: "b",
                 },
                 {
                   grammar: "start = b:(a:'a') { return a; }",
-                  input: "a"
+                  input: "a",
                 },
                 {
                   grammar: "start = ('a' b:'b' 'c') { return b; }",
-                  input: "abc"
+                  input: "abc",
                 },
                 {
                   grammar: "start = (a:'a' { return a; }) { return a; }",
-                  input: "a"
+                  input: "a",
                 },
                 {
                   grammar: "start = ('a' / b:'b' / 'c') { return b; }",
-                  input: "b"
-                }
+                  input: "b",
+                },
               ];
 
               testcases.forEach(testcase => {
@@ -1174,8 +1172,8 @@ describe("generated parser behavior", function() {
             });
           });
 
-          describe("in outer sequence", function() {
-            it("can access variables defined by preceding labeled elements", function() {
+          describe("in outer sequence", () => {
+            it("can access variables defined by preceding labeled elements", () => {
               const parser = peg.generate(
                 "start = a:'a' ('b' { return a; })",
                 options
@@ -1184,7 +1182,7 @@ describe("generated parser behavior", function() {
               expect(parser).to.parse("ab", ["a", "a"]);
             });
 
-            it("cannot access variable defined by labeled action element", function() {
+            it("cannot access variable defined by labeled action element", () => {
               const parser = peg.generate(
                 "start = 'a' b:('b' { return b; }) c:'c'",
                 options
@@ -1193,7 +1191,7 @@ describe("generated parser behavior", function() {
               expect(parser).to.failToParse("abc");
             });
 
-            it("cannot access variables defined by following labeled elements", function() {
+            it("cannot access variables defined by following labeled elements", () => {
               const parser = peg.generate(
                 "start = ('a' { return b; }) b:'b'",
                 options
@@ -1204,28 +1202,28 @@ describe("generated parser behavior", function() {
           });
         });
 
-        describe("initializer variables & functions", function() {
-          it("can access variables defined in the initializer", function() {
+        describe("initializer variables & functions", () => {
+          it("can access variables defined in the initializer", () => {
             const parser = peg.generate([
               "{ var v = 42 }",
-              "start = 'a' { return v; }"
+              "start = 'a' { return v; }",
             ].join("\n"), options);
 
             expect(parser).to.parse("a", 42);
           });
 
-          it("can access functions defined in the initializer", function() {
+          it("can access functions defined in the initializer", () => {
             const parser = peg.generate([
               "{ function f() { return 42; } }",
-              "start = 'a' { return f(); }"
+              "start = 'a' { return f(); }",
             ].join("\n"), options);
 
             expect(parser).to.parse("a", 42);
           });
         });
 
-        describe("available variables & functions", function() {
-          it("|options| contains options", function() {
+        describe("available variables & functions", () => {
+          it("|options| contains options", () => {
             const parser = peg.generate(
               "start = 'a' { return options; }",
               options
@@ -1234,7 +1232,7 @@ describe("generated parser behavior", function() {
             expect(parser).to.parse("a", { a: 42 }, { a: 42 });
           });
 
-          it("|text| returns text matched by the expression", function() {
+          it("|text| returns text matched by the expression", () => {
             const parser = peg.generate(
               "start = 'a' { return text(); }",
               options
@@ -1243,7 +1241,7 @@ describe("generated parser behavior", function() {
             expect(parser).to.parse("a", "a");
           });
 
-          it("|location| returns location info of the expression", function() {
+          it("|location| returns location info of the expression", () => {
             const parser = peg.generate([
               "{ var result; }",
               "start = line (nl+ line)* { return result; }",
@@ -1251,30 +1249,30 @@ describe("generated parser behavior", function() {
               "thing = digit / mark",
               "digit = [0-9]",
               "mark = 'x' { result = location(); }",
-              "nl = '\\r'? '\\n'"
+              "nl = '\\r'? '\\n'",
             ].join("\n"), options);
 
             expect(parser).to.parse("1\n2\n\n3\n\n\n4 5 x", {
               source: undefined,
               start: { offset: 13, line: 7, column: 5 },
-              end: { offset: 14, line: 7, column: 6 }
+              end: { offset: 14, line: 7, column: 6 },
             });
 
             // Newline representations
             expect(parser).to.parse("1\nx", {     // Unix
               source: undefined,
               start: { offset: 2, line: 2, column: 1 },
-              end: { offset: 3, line: 2, column: 2 }
+              end: { offset: 3, line: 2, column: 2 },
             });
             expect(parser).to.parse("1\r\nx", {   // Windows
               source: undefined,
               start: { offset: 3, line: 2, column: 1 },
-              end: { offset: 4, line: 2, column: 2 }
+              end: { offset: 4, line: 2, column: 2 },
             });
           });
 
-          describe("|expected|", function() {
-            it("terminates parsing and throws an exception", function() {
+          describe("|expected|", () => {
+            it("terminates parsing and throws an exception", () => {
               const parser = peg.generate(
                 "start = 'a' { expected('a'); }",
                 options
@@ -1287,19 +1285,19 @@ describe("generated parser behavior", function() {
                 location: {
                   source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
-                  end: { offset: 1, line: 1, column: 2 }
-                }
+                  end: { offset: 1, line: 1, column: 2 },
+                },
               });
             });
 
-            it("allows to set custom location info", function() {
+            it("allows to set custom location info", () => {
               const parser = peg.generate([
                 "start = 'a' {",
                 "  expected('a', {",
                 "    start: { offset: 1, line: 1, column: 2 },",
                 "    end: { offset: 2, line: 1, column: 3 }",
                 "  });",
-                "}"
+                "}",
               ].join("\n"), options);
 
               expect(parser).to.failToParse("a", {
@@ -1308,14 +1306,14 @@ describe("generated parser behavior", function() {
                 found: "a",
                 location: {
                   start: { offset: 1, line: 1, column: 2 },
-                  end: { offset: 2, line: 1, column: 3 }
-                }
+                  end: { offset: 2, line: 1, column: 3 },
+                },
               });
             });
           });
 
-          describe("|error|", function() {
-            it("terminates parsing and throws an exception", function() {
+          describe("|error|", () => {
+            it("terminates parsing and throws an exception", () => {
               const parser = peg.generate(
                 "start = 'a' { error('a'); }",
                 options
@@ -1328,19 +1326,19 @@ describe("generated parser behavior", function() {
                 location: {
                   source: undefined,
                   start: { offset: 0, line: 1, column: 1 },
-                  end: { offset: 1, line: 1, column: 2 }
-                }
+                  end: { offset: 1, line: 1, column: 2 },
+                },
               });
             });
 
-            it("allows to set custom location info", function() {
+            it("allows to set custom location info", () => {
               const parser = peg.generate([
                 "start = 'a' {",
                 "  error('a', {",
                 "    start: { offset: 1, line: 1, column: 2 },",
                 "    end: { offset: 2, line: 1, column: 3 }",
                 "  });",
-                "}"
+                "}",
               ].join("\n"), options);
 
               expect(parser).to.failToParse("a", {
@@ -1349,22 +1347,22 @@ describe("generated parser behavior", function() {
                 found: null,
                 location: {
                   start: { offset: 1, line: 1, column: 2 },
-                  end: { offset: 2, line: 1, column: 3 }
-                }
+                  end: { offset: 2, line: 1, column: 3 },
+                },
               });
             });
           });
         });
       });
 
-      describe("when the expression doesn't match", function() {
-        it("reports match failure", function() {
+      describe("when the expression doesn't match", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = 'a' { return 42; }", options);
 
           expect(parser).to.failToParse("b");
         });
 
-        it("doesn't execute the code", function() {
+        it("doesn't execute the code", () => {
           const parser = peg.generate(
             "start = 'a' { throw 'Boom!'; } / 'b'",
             options
@@ -1375,9 +1373,9 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("choice", function() {
-      describe("when any expression matches", function() {
-        it("returns its match result", function() {
+    describe("choice", () => {
+      describe("when any expression matches", () => {
+        it("returns its match result", () => {
           const parser = peg.generate("start = 'a' / 'b' / 'c'", options);
 
           expect(parser).to.parse("a", "a");
@@ -1386,8 +1384,8 @@ describe("generated parser behavior", function() {
         });
       });
 
-      describe("when all expressions don't match", function() {
-        it("reports match failure", function() {
+      describe("when all expressions don't match", () => {
+        it("reports match failure", () => {
           const parser = peg.generate("start = 'a' / 'b' / 'c'", options);
 
           expect(parser).to.failToParse("d");
@@ -1395,170 +1393,170 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("error reporting", function() {
-      describe("behavior", function() {
-        it("reports only the rightmost error", function() {
+    describe("error reporting", () => {
+      describe("behavior", () => {
+        it("reports only the rightmost error", () => {
           const parser = peg.generate("start = 'a' 'b' / 'a' 'c' 'd'", options);
 
           expect(parser).to.failToParse("ace", {
-            expected: [{ type: "literal", text: "d", ignoreCase: false }]
+            expected: [{ type: "literal", text: "d", ignoreCase: false }],
           });
         });
       });
 
-      describe("expectations reporting", function() {
-        it("reports expectations correctly with no alternative", function() {
+      describe("expectations reporting", () => {
+        it("reports expectations correctly with no alternative", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("ab", {
-            expected: [{ type: "end" }]
+            expected: [{ type: "end" }],
           });
         });
 
-        it("reports expectations correctly with one alternative", function() {
+        it("reports expectations correctly with one alternative", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("b", {
-            expected: [{ type: "literal", text: "a", ignoreCase: false }]
+            expected: [{ type: "literal", text: "a", ignoreCase: false }],
           });
         });
 
-        it("reports expectations correctly with multiple alternatives", function() {
+        it("reports expectations correctly with multiple alternatives", () => {
           const parser = peg.generate("start = 'a' / 'b' / 'c'", options);
 
           expect(parser).to.failToParse("d", {
             expected: [
               { type: "literal", text: "a", ignoreCase: false },
               { type: "literal", text: "b", ignoreCase: false },
-              { type: "literal", text: "c", ignoreCase: false }
-            ]
+              { type: "literal", text: "c", ignoreCase: false },
+            ],
           });
         });
       });
 
-      describe("found string reporting", function() {
-        it("reports found string correctly at the end of input", function() {
+      describe("found string reporting", () => {
+        it("reports found string correctly at the end of input", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("", { found: null });
         });
 
-        it("reports found string correctly in the middle of input", function() {
+        it("reports found string correctly in the middle of input", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("b", { found: "b" });
         });
       });
 
-      describe("message building", function() {
-        it("builds message correctly with no alternative", function() {
+      describe("message building", () => {
+        it("builds message correctly with no alternative", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("ab", {
-            message: "Expected end of input but \"b\" found."
+            message: "Expected end of input but \"b\" found.",
           });
         });
 
-        it("builds message correctly with one alternative", function() {
+        it("builds message correctly with one alternative", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("b", {
-            message: "Expected \"a\" but \"b\" found."
+            message: "Expected \"a\" but \"b\" found.",
           });
         });
 
-        it("builds message correctly with multiple alternatives", function() {
+        it("builds message correctly with multiple alternatives", () => {
           const parser = peg.generate("start = 'a' / 'b' / 'c'", options);
 
           expect(parser).to.failToParse("d", {
-            message: "Expected \"a\", \"b\", or \"c\" but \"d\" found."
+            message: "Expected \"a\", \"b\", or \"c\" but \"d\" found.",
           });
         });
 
-        it("builds message correctly at the end of input", function() {
+        it("builds message correctly at the end of input", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("", {
-            message: "Expected \"a\" but end of input found."
+            message: "Expected \"a\" but end of input found.",
           });
         });
 
-        it("builds message correctly in the middle of input", function() {
+        it("builds message correctly in the middle of input", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("b", {
-            message: "Expected \"a\" but \"b\" found."
+            message: "Expected \"a\" but \"b\" found.",
           });
         });
 
-        it("removes duplicates from expectations", function() {
+        it("removes duplicates from expectations", () => {
           const parser = peg.generate("start = 'a' / 'a'", options);
 
           expect(parser).to.failToParse("b", {
-            message: "Expected \"a\" but \"b\" found."
+            message: "Expected \"a\" but \"b\" found.",
           });
         });
 
-        it("sorts expectations", function() {
+        it("sorts expectations", () => {
           const parser = peg.generate("start = 'c' / 'b' / 'a'", options);
 
           expect(parser).to.failToParse("d", {
-            message: "Expected \"a\", \"b\", or \"c\" but \"d\" found."
+            message: "Expected \"a\", \"b\", or \"c\" but \"d\" found.",
           });
         });
       });
 
-      describe("position reporting", function() {
-        it("reports position correctly at the end of input", function() {
+      describe("position reporting", () => {
+        it("reports position correctly at the end of input", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("", {
             location: {
               source: undefined,
               start: { offset: 0, line: 1, column: 1 },
-              end: { offset: 0, line: 1, column: 1 }
-            }
+              end: { offset: 0, line: 1, column: 1 },
+            },
           });
         });
 
-        it("reports position correctly in the middle of input", function() {
+        it("reports position correctly in the middle of input", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("b", {
             location: {
               source: undefined,
               start: { offset: 0, line: 1, column: 1 },
-              end: { offset: 1, line: 1, column: 2 }
-            }
+              end: { offset: 1, line: 1, column: 2 },
+            },
           });
         });
 
-        it("reports position correctly with trailing input", function() {
+        it("reports position correctly with trailing input", () => {
           const parser = peg.generate("start = 'a'", options);
 
           expect(parser).to.failToParse("aa", {
             location: {
               source: undefined,
               start: { offset: 1, line: 1, column: 2 },
-              end: { offset: 2, line: 1, column: 3 }
-            }
+              end: { offset: 2, line: 1, column: 3 },
+            },
           });
         });
 
-        it("reports position correctly in complex cases", function() {
+        it("reports position correctly in complex cases", () => {
           const parser = peg.generate([
             "start = line (nl+ line)*",
             "line = digit (' '+ digit)*",
             "digit = [0-9]",
-            "nl = '\\r'? '\\n'"
+            "nl = '\\r'? '\\n'",
           ].join("\n"), options);
 
           expect(parser).to.failToParse("1\n2\n\n3\n\n\n4 5 x", {
             location: {
               source: undefined,
               start: { offset: 13, line: 7, column: 5 },
-              end: { offset: 14, line: 7, column: 6 }
-            }
+              end: { offset: 14, line: 7, column: 6 },
+            },
           });
 
           // Newline representations
@@ -1566,33 +1564,33 @@ describe("generated parser behavior", function() {
             location: {
               source: undefined,
               start: { offset: 2, line: 2, column: 1 },
-              end: { offset: 3, line: 2, column: 2 }
-            }
+              end: { offset: 3, line: 2, column: 2 },
+            },
           });
           expect(parser).to.failToParse("1\r\nx", {   // Windows
             location: {
               source: undefined,
               start: { offset: 3, line: 2, column: 1 },
-              end: { offset: 4, line: 2, column: 2 }
-            }
+              end: { offset: 4, line: 2, column: 2 },
+            },
           });
         });
 
-        it("reports location source correctly", function() {
+        it("reports location source correctly", () => {
           const source = { source: "object" };
           const parser = peg.generate([
             "start = line (nl+ line)*",
             "line = digit (' '+ digit)*",
             "digit = [0-9]",
-            "nl = '\\r'? '\\n'"
+            "nl = '\\r'? '\\n'",
           ].join("\n"), options);
 
           expect(parser).to.failToParse("1\n2\n\n3\n\n\n4 5 x", {
             location: {
               source,
               start: { offset: 13, line: 7, column: 5 },
-              end: { offset: 14, line: 7, column: 6 }
-            }
+              end: { offset: 14, line: 7, column: 6 },
+            },
           }, { grammarSource: source });
         });
       });
@@ -1600,8 +1598,8 @@ describe("generated parser behavior", function() {
 
     // Following examples are from Wikipedia, see
     // http://en.wikipedia.org/w/index.php?title=Parsing_expression_grammar&oldid=335106938.
-    describe("complex examples", function() {
-      it("handles arithmetics example correctly", function() {
+    describe("complex examples", () => {
+      it("handles arithmetics example correctly", () => {
         // Value   ← [0-9]+ / '(' Expr ')'
         // Product ← Value (('*' / '/') Value)*
         // Sum     ← Product (('+' / '-') Product)*
@@ -1621,7 +1619,7 @@ describe("generated parser behavior", function() {
           "            }, head);",
           "          }",
           "Value = digits:[0-9]+     { return parseInt(digits.join(''), 10); }",
-          "      / '(' expr:Expr ')' { return expr; }"
+          "      / '(' expr:Expr ')' { return expr; }",
         ].join("\n"), options);
 
         // The "value" rule
@@ -1650,7 +1648,7 @@ describe("generated parser behavior", function() {
         expect(parser).to.parse("(1+2)*(3+4)", (1 + 2) * (3 + 4));
       });
 
-      it("handles non-context-free language correctly", function() {
+      it("handles non-context-free language correctly", () => {
         // The following parsing expression grammar describes the classic
         // non-context-free language { a^n b^n c^n : n >= 1 }:
         //
@@ -1660,7 +1658,7 @@ describe("generated parser behavior", function() {
         const parser = peg.generate([
           "S = &(A 'c') a:'a'+ B:B !('a' / 'b' / 'c') { return a.join('') + B; }",
           "A = a:'a' A:A? b:'b' { return [a, A, b].join(''); }",
-          "B = b:'b' B:B? c:'c' { return [b, B, c].join(''); }"
+          "B = b:'b' B:B? c:'c' { return [b, B, c].join(''); }",
         ].join("\n"), options);
 
         expect(parser).to.parse("abc",       "abc");
@@ -1673,7 +1671,7 @@ describe("generated parser behavior", function() {
         expect(parser).to.failToParse("aaabbbcccc");
       });
 
-      it("handles nested comments example correctly", function() {
+      it("handles nested comments example correctly", () => {
         // Begin ← "(*"
         // End ← "*)"
         // C ← Begin N* End
@@ -1685,7 +1683,7 @@ describe("generated parser behavior", function() {
           "  / !Begin !End z:Z { return z; }",
           "Z = .",
           "Begin = '(*'",
-          "End = '*)'"
+          "End = '*)'",
         ].join("\n"), options);
 
         expect(parser).to.parse("(**)",     "(**)");
@@ -1698,8 +1696,8 @@ describe("generated parser behavior", function() {
       });
     });
 
-    describe("run side-effects in non-matching", function() {
-      it("positive semantic predicate", function() {
+    describe("run side-effects in non-matching", () => {
+      it("positive semantic predicate", () => {
         let parser = peg.generate(`
         { let i = 0; }
         start = (neverMatched / .) { return i; };
@@ -1717,7 +1715,7 @@ describe("generated parser behavior", function() {
         expect(parser).to.parse("b", 1);
       });
 
-      it("negative semantic predicate", function() {
+      it("negative semantic predicate", () => {
         let parser = peg.generate(`
         { let i = 0; }
         start = (neverMatched / .) { return i; };
@@ -1735,7 +1733,7 @@ describe("generated parser behavior", function() {
         expect(parser).to.parse("b", 1);
       });
 
-      it("action", function() {
+      it("action", () => {
         let parser = peg.generate(`
         { let i = 0; }
         start = (neverMatched / .) { return i; };
@@ -1754,9 +1752,9 @@ describe("generated parser behavior", function() {
       });
     });
   });
-  describe("syntax errors", function() {
-    it("formats", function() {
-      expect(function() {
+  describe("syntax errors", () => {
+    it("formats", () => {
+      expect(() => {
         const source = { source: "stdin",  text: "===" };
         try {
           peg.generate(source.text, { grammarSource: source.source });
@@ -1771,7 +1769,7 @@ Error: Expected "{", code block, comment, end of line, identifier, or whitespace
         }
       }).to.throw(peg.parser.SyntaxError);
 
-      expect(function() {
+      expect(() => {
         try {
           peg.generate("===", { grammarSource: "stdin" });
         } catch (er) {

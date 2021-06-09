@@ -21,7 +21,7 @@ $("#run").click(() => {
     const MS_IN_S = 1000;
 
     resultsTable.append(
-        "<tr class='" + klass + "'>"
+      "<tr class='" + klass + "'>"
       +   "<td class='title'>"
       +     (url !== null ? "<a href='" + url + "'>" : "")
       +       title
@@ -62,7 +62,7 @@ $("#run").click(() => {
 
   const runCount = parseInt($("#run-count").val(), 10);
   const options = {
-    cache: $("#cache").is(":checked")
+    cache: $("#cache").is(":checked"),
   };
 
   if (isNaN(runCount) || runCount <= 0) {
@@ -77,7 +77,7 @@ $("#run").click(() => {
         type: "GET",
         url: file,
         dataType: "text",
-        async: false
+        async: false,
       }).responseText;
     },
 
@@ -128,7 +128,7 @@ $("#run").click(() => {
       $.scrollTo("max", { axis: "y", duration: 500 });
 
       $("#run-count, #cache, #run").removeAttr("disabled");
-    }
+    },
   });
 });
 

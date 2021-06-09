@@ -4,13 +4,13 @@ module.exports = {
   "collectCoverage": true,
   "coverageReporters": ["lcov"],
   "roots": [
-    "<rootDir>/test"
+    "<rootDir>/test",
   ],
   "testMatch": [
     "**/*.spec.js",
-    "**/*.test-d.ts"
+    "**/*.test-d.ts",
   ],
   "transform": {
     "^.+\\.ts$": "ts-jest",
-  }
+  },
 };
