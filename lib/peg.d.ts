@@ -845,6 +845,14 @@ export interface Plugin {
   use(config: Config, options: ParserBuildOptions): void;
 }
 
+/**
+ * Parser dependencies, is an object which maps variables used to access the
+ * dependencies in the parser to module IDs used to load them
+ */
+export interface Dependencies {
+  [variable: string]: string;
+}
+
 export interface BuildOptionsBase {
   /** Rules the parser will be allowed to start parsing from (default: the first rule in the grammar) */
   allowedStartRules?: string[];
@@ -887,9 +895,13 @@ export interface OutputFormatAmdCommonjsEs extends BuildOptionsBase {
 
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "amd" | "commonjs" | "es";
-
-  /** Parser dependencies, the value is an object which maps variables used to access the dependencies in the parser to module IDs used to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, `"es"`, or `"umd"` (default: `{}`) */
-  dependencies?: any;
+  /**
+   * Parser dependencies, the value is an object which maps variables used to
+   * access the dependencies in the parser to module IDs used to load them;
+   * valid only when `format` is set to `"amd"`, `"commonjs"`, `"es"`, or `"umd"`
+   * (default: `{}`)
+   */
+  dependencies?: Dependencies;
 }
 
 export interface OutputFormatUmd extends BuildOptionsBase {
@@ -898,12 +910,19 @@ export interface OutputFormatUmd extends BuildOptionsBase {
 
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "umd";
-
-  /** Parser dependencies, the value is an object which maps variables used to access the dependencies in the parser to module IDs used to load them; valid only when `format` is set to `"amd"`, `"commonjs"`, `"es"`, or `"umd"` (default: `{}`) */
-  dependencies?: any;
-
-  /** Name of a global variable into which the parser object is assigned to when no module loader is detected; valid only when `format` is set to `"globals"` or `"umd"` (default: `null`) */
-  exportVar?: any;
+  /**
+   * Parser dependencies, the value is an object which maps variables used to
+   * access the dependencies in the parser to module IDs used to load them;
+   * valid only when `format` is set to `"amd"`, `"commonjs"`, `"es"`, or `"umd"`
+   * (default: `{}`)
+   */
+  dependencies?: Dependencies;
+  /**
+   * Name of a global variable into which the parser object is assigned to when
+   * no module loader is detected; valid only when `format` is set to `"globals"`
+   * (and in that case it should be defined) or `"umd"` (default: `null`)
+   */
+  exportVar?: string;
 }
 
 export interface OutputFormatGlobals extends BuildOptionsBase {
@@ -912,9 +931,12 @@ export interface OutputFormatGlobals extends BuildOptionsBase {
 
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "globals";
-
-  /** Name of a global variable into which the parser object is assigned to when no module loader is detected; valid only when `format` is set to `"globals"` or `"umd"` (default: `null`) */
-  exportVar?: any;
+  /**
+   * Name of a global variable into which the parser object is assigned to when
+   * no module loader is detected; valid only when `format` is set to `"globals"`
+   * (and in that case it should be defined) or `"umd"` (default: `null`)
+   */
+  exportVar: string;
 }
 
 export interface OutputFormatBare extends BuildOptionsBase {

@@ -3,6 +3,15 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
+1.3.0
+-----
+
+Released: TBD
+
+### Bug fixes
+
+- [#164](https://github.com/peggyjs/peggy/pull/164): Fix some errors in the typescript definitions
+
 1.2.0
 -----
 
