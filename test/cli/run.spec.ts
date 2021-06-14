@@ -75,31 +75,31 @@ function exec(opts: Options = {}) {
 describe("Command Line Interface", () => {
   it("has help", async() => {
     const HELP = `\
-Usage: peggy [options] [--] [<input_file>]
+Usage: peggy [options] [input_file]
 
 Options:
-      --allowed-start-rules <rules>  comma-separated list of rules the generated
-                                     parser will be allowed to start parsing
-                                     from (default: the first rule in the
-                                     grammar)
-      --cache                        make generated parser cache results
-  -d, --dependency <dependency>      use specified dependency (can be specified
-                                     multiple times)
-  -e, --export-var <variable>        name of a global variable into which the
-                                     parser object is assigned to when no module
-                                     loader is detected
-      --extra-options <options>      additional options (in JSON format) to pass
-                                     to peg.generate
-      --extra-options-file <file>    file with additional options (in JSON
-                                     format) to pass to peg.generate
-      --format <format>              format of the generated parser: amd,
-                                     commonjs, globals, umd (default: commonjs)
-  -h, --help                         print help and exit
-  -o, --output <file>                output file
-      --plugin <plugin>              use a specified plugin (can be specified
-                                     multiple times)
-      --trace                        enable tracing in generated parser
-  -v, --version                      print version information and exit
+  -v, --version                  output the version number
+  --allowed-start-rules <rules>  comma-separated list of rules the generated
+                                 parser will be allowed to start parsing from
+                                 (default: the first rule in the grammar)
+  --cache                        make generated parser cache results
+  -d, --dependency <dependency>  use specified dependency (can be specified
+                                 multiple times)
+  -e, --export-var <variable>    name of a global variable into which the
+                                 parser object is assigned to when no module
+                                 loader is detected
+  --extra-options <options>      additional options (in JSON format as an
+                                 object) to pass to peg.generate
+  --extra-options-file <file>    file with additional options (in JSON format
+                                 as an object) to pass to peg.generate
+  --format <format>              format of the generated parser (choices:
+                                 "amd", "commonjs", "es", "globals", "umd",
+                                 default: "commonjs")
+  -o, --output <file>            output file
+  --plugin <plugin>              use a specified plugin (can be specified
+                                 multiple times)
+  --trace                        enable tracing in generated parser
+  -h, --help                     display help for command
 `;
 
     expect(await exec({
@@ -131,7 +131,7 @@ baz = "3"
     await expect(exec({
       args: ["--allowed-start-rules"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("Missing parameter of the --allowed-start-rules option");
+    })).rejects.toThrow("option '--allowed-start-rules <rules>' argument missing");
   });
 
   it("enables caching", async() => {
@@ -159,7 +159,7 @@ baz = "3"
     await expect(exec({
       args: ["--dependency"],
       stdin: "foo = '1' { return new c.Command(); }",
-    })).rejects.toThrow("Missing parameter of the -d/--dependency option.");
+    })).rejects.toThrow("option '-d, --dependency <dependency>' argument missing");
 
     await expect(exec({
       args: ["-d", "c:commander", "--format", "globals"],
@@ -176,7 +176,7 @@ baz = "3"
     await expect(exec({
       args: ["--export-var"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("Missing parameter of the -e/--export-var option.");
+    })).rejects.toThrow("option '-e, --export-var <variable>' argument missing");
 
     await expect(exec({
       args: ["--export-var", "football"],
@@ -193,7 +193,7 @@ baz = "3"
     await expect(exec({
       args: ["--extra-options"],
       stdin: 'foo = "1"',
-    })).rejects.toThrow("Missing parameter of the --extra-options option.");
+    })).rejects.toThrow("--extra-options <options>' argument missing");
 
     await expect(exec({
       args: ["--extra-options", "{"],
@@ -218,7 +218,7 @@ baz = "3"
     await expect(exec({
       args: ["--extra-options-file"],
       stdin: 'foo = "1"',
-    })).rejects.toThrow("Missing parameter of the --extra-options-file option.");
+    })).rejects.toThrow("--extra-options-file <file>' argument missing");
 
     await expect(exec({
       args: ["--extra-options-file", "____ERROR____FILE_DOES_NOT_EXIST"],
@@ -229,11 +229,11 @@ baz = "3"
   it("handles formats", async() => {
     await expect(exec({
       args: ["--format"],
-    })).rejects.toThrow("Missing parameter of the --format option.");
+    })).rejects.toThrow("option '--format <format>' argument missing");
 
     await expect(exec({
       args: ["--format", "BAD_FORMAT"],
-    })).rejects.toThrow("Module format must be one of");
+    })).rejects.toThrow("option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, commonjs, es, globals, umd.");
   });
 
   it("doesn't fail with optimize", async() => {
@@ -250,7 +250,7 @@ baz = "3"
     await expect(exec({
       args: ["-O"],
       stdin: 'foo = "1"',
-    })).rejects.toThrow("Missing parameter of the -O/--optimize option.");
+    })).rejects.toThrow("-O, --optimize <style>' argument missing");
   });
 
   it("outputs to a file", async() => {
@@ -271,7 +271,7 @@ baz = "3"
     await expect(exec({
       args: ["--output"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("Missing parameter of the -o/--output option.");
+    })).rejects.toThrow("-o, --output <file>' argument missing");
 
     await expect(exec({
       args: ["--output", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js"],
@@ -297,7 +297,7 @@ baz = "3"
     await expect(exec({
       args: ["--plugin"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("Missing parameter of the --plugin option.");
+    })).rejects.toThrow("--plugin <plugin>' argument missing");
 
     await expect(exec({
       args: ["--plugin", "ERROR BAD MODULE DOES NOT EXIST"],

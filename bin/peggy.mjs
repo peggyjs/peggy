@@ -1,52 +1,16 @@
+import { Command, Option } from "commander";
 import fs from "fs";
 import path from "path";
 import { default as peg } from "../lib/peg.js";
 
+const MODULE_FORMATS = ["amd", "commonjs", "es", "globals", "umd"];
+const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
+
 // Helpers
-
-function printVersion() {
-  console.log("Peggy " + peg.VERSION);
-}
-
-function printHelp() {
-  console.log("Usage: peggy [options] [--] [<input_file>]");
-  console.log("");
-  console.log("Options:");
-  console.log("      --allowed-start-rules <rules>  comma-separated list of rules the generated");
-  console.log("                                     parser will be allowed to start parsing");
-  console.log("                                     from (default: the first rule in the");
-  console.log("                                     grammar)");
-  console.log("      --cache                        make generated parser cache results");
-  console.log("  -d, --dependency <dependency>      use specified dependency (can be specified");
-  console.log("                                     multiple times)");
-  console.log("  -e, --export-var <variable>        name of a global variable into which the");
-  console.log("                                     parser object is assigned to when no module");
-  console.log("                                     loader is detected");
-  console.log("      --extra-options <options>      additional options (in JSON format) to pass");
-  console.log("                                     to peg.generate");
-  console.log("      --extra-options-file <file>    file with additional options (in JSON");
-  console.log("                                     format) to pass to peg.generate");
-  console.log("      --format <format>              format of the generated parser: amd,");
-  console.log("                                     commonjs, globals, umd (default: commonjs)");
-  console.log("  -h, --help                         print help and exit");
-  console.log("  -o, --output <file>                output file");
-  console.log("      --plugin <plugin>              use a specified plugin (can be specified");
-  console.log("                                     multiple times)");
-  console.log("      --trace                        enable tracing in generated parser");
-  console.log("  -v, --version                      print version information and exit");
-}
-
-function exitSuccess() {
-  process.exit(0);
-}
-
-function exitFailure() {
-  process.exit(1);
-}
 
 function abort(message) {
   console.error(message);
-  exitFailure();
+  process.exit(1);
 }
 
 function addExtraOptions(options, json) {
@@ -59,33 +23,176 @@ function addExtraOptions(options, json) {
 
     abort("Error parsing JSON: " + e.message);
   }
-  if (typeof extraOptions !== "object") {
+  if ((extraOptions === null)
+      || (typeof extraOptions !== "object")
+      || Array.isArray(extraOptions)) {
     abort("The JSON with extra options has to represent an object.");
   }
+  return Object.assign({}, options, extraOptions);
+}
 
-  Object.keys(extraOptions).forEach(key => {
-    options[key] = extraOptions[key];
+function readFile(name) {
+  let f = null;
+  try {
+    f = fs.readFileSync(name, "utf8");
+  } catch (e) {
+    abort(`Can't read from file "${name}".`);
+  }
+  return f;
+}
+
+// Command line processing
+
+const program = new Command();
+const options = program
+  .version(peg.VERSION, "-v, --version")
+  .arguments("[input_file]")
+  .addOption(
+    new Option(
+      "--allowed-start-rules <rules>",
+      "comma-separated list of rules the generated parser will be allowed to start parsing from"
+    )
+      .default([], "the first rule in the grammar")
+      .argParser((val, prev) => prev.concat(val.split(",").map(x => x.trim())))
+  )
+  .option(
+    "--cache",
+    "make generated parser cache results"
+  )
+  .option(
+    "-d, --dependency <dependency>",
+    "use specified dependency (can be specified multiple times)",
+    (val, prev) => (prev || []).concat([val])
+  )
+  .option(
+    "-e, --export-var <variable>",
+    "name of a global variable into which the parser object is assigned to when no module loader is detected"
+  )
+  .option(
+    "--extra-options <options>",
+    "additional options (in JSON format as an object) to pass to peg.generate",
+    (val, prev) => addExtraOptions(prev, val)
+  )
+  .option(
+    "--extra-options-file <file>",
+    "file with additional options (in JSON format as an object) to pass to peg.generate",
+    (val, prev) => addExtraOptions(prev, readFile(val))
+  )
+  .addOption(
+    new Option(
+      "--format <format>",
+      "format of the generated parser"
+    )
+      .choices(MODULE_FORMATS)
+      .default("commonjs")
+  )
+  .option("-o, --output <file>", "output file")
+  .option(
+    "--plugin <plugin>",
+    "use a specified plugin (can be specified multiple times)",
+    (val, prev) => (prev || []).concat([val])
+  )
+  .option("--trace", "enable tracing in generated parser")
+  .addOption(
+    // Not interesting yet.  If it becomes so, unhide the help.
+    new Option("--verbose", "enable verbose logging")
+      .hideHelp()
+      .default(false)
+  )
+  .addOption(
+    new Option("-O, --optimize <style>")
+      .hideHelp()
+      .default("speed")
+      .argParser(() => {
+        console.error("Option --optimize is deprecated from 1.2.0 and has no effect anymore.");
+        console.error("It will be deleted in 2.0.");
+        console.error("Parser will be generated in the former \"speed\" mode.");
+        return "speed";
+      })
+  )
+  .parse()
+  .opts();
+
+if (options.extraOptions) {
+  Object.assign(options, options.extraOptions);
+  delete options.extraOptions;
+}
+if (options.extraOptionsFile) {
+  Object.assign(options, options.extraOptionsFile);
+  delete options.extraOptionsFile;
+}
+
+const verbose = options.verbose;
+delete options.verbose;
+
+if (options.allowedStartRules.length === 0) {
+  // [] is an invalid input, as is null
+  // undefined doesn't work as a default in commander
+  delete options.allowedStartRules;
+}
+
+if (options.plugin) {
+  options.plugins = options.plugin.map(val => {
+    // If this is an absolute or relative path (not a module name)
+    const id = (path.isAbsolute(val) || /^\.\.?[/\\]/.test(val))
+      ? path.resolve(val)
+      : val;
+    let mod = null;
+    try {
+      mod = require(id);
+    } catch (e) {
+      if (e.code !== "MODULE_NOT_FOUND") { throw e; }
+      abort("Can't load module \"" + id + "\".");
+    }
+    return mod;
   });
+  delete options.plugin;
 }
 
-// Extracted into a function just to silence JSHint complaining about creating
-// functions in a loop.
-function trim(s) {
-  return s.trim();
+if (options.dependency) {
+  if (MODULE_FORMATS_WITH_DEPS.indexOf(options.format) === -1) {
+    abort(`Can't use the -d/--dependency option with the "${options.format}" module format.`);
+  }
+
+  const deps = {};
+  for (const dep of options.dependency) {
+    const [name, val] = dep.split(":");
+    deps[name] = val ? val : name;
+  }
+  options.dependencies = deps;
+  delete options.dependency;
 }
 
-// Arguments
-
-const args = process.argv.slice(2); // Trim "node" and the script path.
-
-function isOption(arg) {
-  return (/^-.+/).test(arg);
+if (options.exportVar !== undefined) {
+  if ((options.format !== "globals") && (options.format !== "umd")) {
+    abort(`Can't use the -e/--export-var option with the "${options.format}" module format.`);
+  }
 }
 
-function nextArg() {
-  args.shift();
-}
+let inputFile = null;
+switch (program.args.length) {
+  case 0:
+    inputFile = "-";
+    break;
 
+  case 1:
+    inputFile = program.args[0];
+    break;
+
+  default:
+    abort("Too many arguments.");
+}
+let outputFile = options.output;
+if (!outputFile) {
+  outputFile = (inputFile === "-")
+    ? "-"
+    : inputFile.substr(0, inputFile.length - path.extname(inputFile).length) + ".js";
+}
+options.output = "source";
+
+if (verbose) {
+  console.error("OPTIONS:", options);
+}
 // Files
 
 function readStream(inputStream, callback) {
@@ -96,194 +203,7 @@ function readStream(inputStream, callback) {
 
 // Main
 
-let inputFile = null;
-let outputFile = null;
-
-const options = {
-  // Path to the grammar file
-  grammarSource: null,
-  cache: false,
-  dependencies: {},
-  exportVar: null,
-  format: "commonjs",
-  output: "source",
-  plugins: [],
-  trace: false,
-};
-
-const MODULE_FORMATS = ["amd", "commonjs", "es", "globals", "umd"];
-const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
-
-outer:
-while (args.length > 0 && isOption(args[0])) {
-  let json, id, mod;
-
-  switch (args[0]) {
-    case "--allowed-start-rules":
-      nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the --allowed-start-rules option.");
-      }
-      options.allowedStartRules = args[0]
-        .split(",")
-        .map(trim);
-      break;
-
-    case "--cache":
-      options.cache = true;
-      break;
-
-    case "-d":
-    case "--dependency":
-      nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the -d/--dependency option.");
-      }
-      if (args[0].indexOf(":") !== -1) {
-        const parts = args[0].split(":");
-        options.dependencies[parts[0]] = parts[1];
-      } else {
-        options.dependencies[args[0]] = args[0];
-      }
-      break;
-
-    case "-e":
-    case "--export-var":
-      nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the -e/--export-var option.");
-      }
-      options.exportVar = args[0];
-      break;
-
-    case "--extra-options":
-      nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the --extra-options option.");
-      }
-      addExtraOptions(options, args[0]);
-      break;
-
-    case "--extra-options-file":
-      nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the --extra-options-file option.");
-      }
-      try {
-        json = fs.readFileSync(args[0]);
-      } catch (e) {
-        abort("Can't read from file \"" + args[0] + "\".");
-      }
-      addExtraOptions(options, json);
-      break;
-
-    case "--format":
-      nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the --format option.");
-      }
-      if (MODULE_FORMATS.indexOf(args[0]) === -1) {
-        abort("Module format must be one of " + MODULE_FORMATS.map(format => `"${format}"`).join(", ") + ".");
-      }
-      options.format = args[0];
-      break;
-
-    case "-h":
-    case "--help":
-      printHelp();
-      exitSuccess();
-      break;
-
-    case "-O":
-    case "--optimize":
-      nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the -O/--optimize option.");
-      }
-      console.error("Option --optimize is deprecated from 1.2.0 and has no effect anymore.");
-      console.error("It will be deleted in 2.0.");
-      console.error("Parser will be generated in the former \"speed\" mode.");
-      break;
-
-    case "-o":
-    case "--output":
-      nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the -o/--output option.");
-      }
-      outputFile = args[0];
-      break;
-
-    case "--plugin":
-      nextArg();
-      if (args.length === 0) {
-        abort("Missing parameter of the --plugin option.");
-      }
-      id = /^(\.\/|\.\.\/)/.test(args[0]) ? path.resolve(args[0]) : args[0];
-      try {
-        mod = require(id);
-      } catch (e) {
-        if (e.code !== "MODULE_NOT_FOUND") { throw e; }
-
-        abort("Can't load module \"" + id + "\".");
-      }
-      options.plugins.push(mod);
-      break;
-
-    case "--trace":
-      options.trace = true;
-      break;
-
-    case "-v":
-    case "--version":
-      printVersion();
-      exitSuccess();
-      break;
-
-    case "--":
-      nextArg();
-      break outer;
-
-    default:
-      abort("Unknown option: " + args[0] + ".");
-  }
-  nextArg();
-}
-
-if (Object.keys(options.dependencies).length > 0) {
-  if (MODULE_FORMATS_WITH_DEPS.indexOf(options.format) === -1) {
-    abort("Can't use the -d/--dependency option with the \"" + options.format + "\" module format.");
-  }
-}
-
-if (options.exportVar !== null) {
-  if (options.format !== "globals" && options.format !== "umd") {
-    abort("Can't use the -e/--export-var option with the \"" + options.format + "\" module format.");
-  }
-}
-
 let inputStream, outputStream;
-
-switch (args.length) {
-  case 0:
-    inputFile = "-";
-    break;
-
-  case 1:
-    inputFile = args[0];
-    break;
-
-  default:
-    abort("Too many arguments.");
-}
-
-if (outputFile === null) {
-  if (inputFile === "-") {
-    outputFile = "-";
-  } else {
-    outputFile = inputFile.substr(0, inputFile.length - path.extname(inputFile).length) + ".js";
-  }
-}
 
 if (inputFile === "-") {
   process.stdin.resume();
@@ -309,7 +229,11 @@ readStream(inputStream, input => {
         text: input,
       }]));
     } else {
-      abort(e.message);
+      if (verbose) {
+        abort(e);
+      } else {
+        abort(e.message);
+      }
     }
   }
 
