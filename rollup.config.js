@@ -29,6 +29,37 @@ const umd_config = {
   ],
 };
 
+const cli_config = {
+  onwarn(message) {
+    if (message.code === "EVAL") { return; }
+    console.error(message);
+  },
+
+  input: "bin/peggy.mjs",
+  output: {
+    file   : "bin/peggy.js",
+    format : "cjs",
+    preferConst: true,
+    exports: "auto",
+    banner: "#!/usr/bin/env node",
+  },
+
+  plugins : [
+    nodeResolve({
+      mainFields     : ["module", "main"],
+      browser        : false,
+      extensions     : [".mjs", ".js", ".json"],
+      preferBuiltins : true,
+    }),
+    commonjs(),
+  ],
+  external: ["../lib/peg.js"],
+};
+
+if (process.env.PEGGY_CLI_DEBUG) {
+  cli_config.output.sourcemap = true;
+}
+
 const browser_test_config = {
   onwarn(message) {
     if (message.code === "EVAL") { return; }
@@ -73,4 +104,10 @@ const browser_benchmark_config = {
   ],
 };
 
-export default [umd_config, browser_test_config, browser_benchmark_config];
+const all = process.env.PEGGY_CLI_DEBUG
+  ? [cli_config]
+  : [
+      umd_config, cli_config, browser_test_config, browser_benchmark_config,
+    ];
+
+export default all;

@@ -5,7 +5,8 @@ module.exports = {
   extends: "@peggyjs",
   ignorePatterns: [
     "docs/",
-    "lib/parser.js",
+    "bin/peggy.js", // Generated
+    "lib/parser.js", // Generated
     "test/vendor/",
     "benchmark/vendor/",
     "browser/",
@@ -15,7 +16,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ["rollup.config.js"],
+      files: ["rollup.config.js", "*.mjs"],
       parserOptions: { sourceType: "module" },
     },
   ],
