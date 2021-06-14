@@ -96,8 +96,14 @@ Options:
                                  "amd", "commonjs", "es", "globals", "umd",
                                  default: "commonjs")
   -o, --output <file>            output file
-  --plugin <plugin>              use a specified plugin (can be specified
+  --plugin <module>              use a specified plugin (can be specified
                                  multiple times)
+  -t, --test <text>              Test the parser with the given text,
+                                 outputting the result of running the parser
+                                 instead of the parser itself
+  -T, --test-file <filename>     Test the parser with the contents of the given
+                                 file, outputting the result of running the
+                                 parser instead of the parser itself
   --trace                        enable tracing in generated parser
   -h, --help                     display help for command
 `;
@@ -297,7 +303,7 @@ baz = "3"
     await expect(exec({
       args: ["--plugin"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("--plugin <plugin>' argument missing");
+    })).rejects.toThrow("--plugin <module>' argument missing");
 
     await expect(exec({
       args: ["--plugin", "ERROR BAD MODULE DOES NOT EXIST"],
@@ -320,5 +326,42 @@ baz = "3"
     await expect(exec({
       args: ["--", "--trace", "--format"],
     })).rejects.toThrow("Too many arguments.");
+  });
+
+  it("handles input tests", async() => {
+    await expect(exec({
+      args: ["-t", "boo"],
+      stdin: "foo = 'boo'",
+    })).resolves.toMatch("'boo'");
+
+    const grammarFile = path.join(__dirname, "..", "..", "examples", "json.pegjs");
+    const testFile = path.join(__dirname, "..", "..", "package.json");
+
+    await expect(exec({
+      args: ["-T", testFile, grammarFile],
+    })).resolves.toMatch("name: 'peggy'"); // Output is JS, not JSON
+
+    await expect(exec({
+      args: ["-T", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js", grammarFile],
+    })).rejects.toThrow("Can't read from file \"__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js\".");
+
+    await expect(exec({
+      args: ["-t", "boo", "-T", "foo"],
+    })).rejects.toThrow("The -t/--test and -T/--test-file options are mutually exclusive.");
+
+    await expect(exec({
+      args: ["-t", "2"],
+      stdin: "foo='1'",
+    })).rejects.toThrow('Expected "1" but "2" found');
+
+    await expect(exec({
+      args: ["-t", "1"],
+      stdin: "foo='1' { throw new Error('bar') }",
+    })).rejects.toThrow("Error: bar");
+
+    await expect(exec({
+      args: ["-t", "1", "--verbose"],
+      stdin: "foo='1' { throw new Error('bar') }",
+    })).rejects.toThrow("Error: bar");
   });
 });

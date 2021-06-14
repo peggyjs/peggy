@@ -99,23 +99,34 @@ override this using the `--format` option.
 
 You can tweak the generated parser with several options:
 
-- `--allowed-start-rules` — comma-separated list of rules the parser will be
-  allowed to start parsing from (default: the first rule in the grammar)
+- `--allowed-start-rules <rules>` — comma-separated list of rules the parser
+  will be allowed to start parsing from (default: only the first rule in the
+  grammar)
 - `--cache` — makes the parser cache results, avoiding exponential parsing
   time in pathological cases but making the parser slower
-- `--dependency` — makes the parser require a specified dependency (can be
-  specified multiple times)
-- `--export-var` — name of a global variable into which the parser object is
-  assigned to when no module loader is detected
-- `--extra-options` — additional options (in JSON format) to pass to
-  `peg.generate`
-- `--extra-options-file` — file with additional options (in JSON format) to
-  pass to `peg.generate`
-- `--format` — format of the generated parser: `amd`, `es`, `commonjs`, `globals`,
-  `umd` (default: `commonjs`)
-- `--plugin` — makes Peggy use a specified plugin (can be specified multiple
-  times)
+- `-d`, `--dependency <[name:]module>` — makes the parser require a specified
+  dependency (can be specified multiple times).  A variable name for the
+  import/require/etc. may be given, followed by a colon.  If no name is given,
+  the module name will also be used for the variable name.
+- `-e`, `--export-var <variable>` — name of a global variable into which the
+  parser object is assigned to when no module loader is detected
+- `--extra-options <options>` — additional options (in JSON format, as an
+  object) to pass to `peg.generate`
+- `--extra-options-file <file>` — file with additional options (in JSON
+  format, as an object) to pass to `peg.generate`
+- `--format <format>` — format of the generated parser: `amd`, `es`, `commonjs`,
+  `globals`, `umd` (default: `commonjs`)
+- `-o`, `--output <file>` - file to send output to.  Defaults to input file
+  name with extension changed to `.js`, or stdout if no input file is given.
+- `--plugin <module>` — makes Peggy use a specified plugin (can be specified
+  multiple times)
+- `-t`, `--test <text>` - Test the parser with the given text, outputting the
+  result of running the parser against this input
+- `-T`, `--test-file <filename>` - Test the parser with the contents of the
+  given file, outputting the result of running the parser against this input
 - `--trace` — makes the parser trace its progress
+- `-v`, `--version` - output the version number
+- `-h`, `--help` - display help for command
 
 ### JavaScript API
 
