@@ -6,12 +6,30 @@ import util from "util";
 
 const MODULE_FORMATS = ["amd", "commonjs", "es", "globals", "umd"];
 const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
+const DEFAULT_FORMAT = "COMMON_JS";
+let verbose = false;
 
 // Helpers
 
 function abort(message) {
   console.error(message);
   process.exit(1);
+}
+
+function abortError(msg, error) {
+  console.error(msg);
+  if (typeof error.format === "function") {
+    abort(error.format([{
+      source: testGrammarSource,
+      text: testText,
+    }]));
+  } else {
+    if (verbose) {
+      abort(error);
+    } else {
+      abort(`Error: ${error.message}`);
+    }
+  }
 }
 
 function addExtraOptions(options, json) {
@@ -22,7 +40,7 @@ function addExtraOptions(options, json) {
   } catch (e) {
     if (!(e instanceof SyntaxError)) { throw e; }
 
-    abort("Error parsing JSON: " + e.message);
+    abortError("Error parsing JSON:", e);
   }
   if ((extraOptions === null)
       || (typeof extraOptions !== "object")
@@ -32,12 +50,20 @@ function addExtraOptions(options, json) {
   return Object.assign({}, options, extraOptions);
 }
 
+// Files
+
+function readStream(inputStream, callback) {
+  let input = "";
+  inputStream.on("data", data => { input += data; });
+  inputStream.on("end", () => { callback(input); });
+}
+
 function readFile(name) {
   let f = null;
   try {
     f = fs.readFileSync(name, "utf8");
   } catch (e) {
-    abort(`Can't read from file "${name}".`);
+    abortError(`Can't read from file "${name}".`, e);
   }
   return f;
 }
@@ -45,7 +71,7 @@ function readFile(name) {
 // Command line processing
 
 const program = new Command();
-const options = program
+let options = program
   .version(peg.VERSION, "-v, --version")
   .arguments("[input_file]")
   .addOption(
@@ -75,9 +101,15 @@ const options = program
     (val, prev) => addExtraOptions(prev, val)
   )
   .option(
-    "--extra-options-file <file>",
-    "file with additional options (in JSON format as an object) to pass to peg.generate",
-    (val, prev) => addExtraOptions(prev, readFile(val))
+    "-c, --extra-options-file <file>",
+    "file with additional options (in JSON or commonjs module format as an object) to pass to peg.generate",
+    (val, prev) => {
+      if (/\.c?js$/.test(val)) {
+        return Object.assign({}, prev, require(path.resolve(val)));
+      } else {
+        return addExtraOptions(prev, readFile(val));
+      }
+    }
   )
   .addOption(
     new Option(
@@ -85,7 +117,7 @@ const options = program
       "format of the generated parser"
     )
       .choices(MODULE_FORMATS)
-      .default("commonjs")
+      .default(DEFAULT_FORMAT, '"commonjs"')
   )
   .option("-o, --output <file>", "output file")
   .option(
@@ -111,7 +143,6 @@ const options = program
   .addOption(
     new Option("-O, --optimize <style>")
       .hideHelp()
-      .default("speed")
       .argParser(() => {
         console.error("Option --optimize is deprecated from 1.2.0 and has no effect anymore.");
         console.error("It will be deleted in 2.0.");
@@ -126,22 +157,36 @@ if (options.extraOptions) {
   Object.assign(options, options.extraOptions);
   delete options.extraOptions;
 }
-if (options.extraOptionsFile) {
-  Object.assign(options, options.extraOptionsFile);
-  delete options.extraOptionsFile;
-}
 
-const verbose = options.verbose;
-delete options.verbose;
-
+// Ensure defaults do not clobber config file
 if (options.allowedStartRules.length === 0) {
   // [] is an invalid input, as is null
   // undefined doesn't work as a default in commander
   delete options.allowedStartRules;
 }
 
+if (options.extraOptionsFile) {
+  // Ensure defaults do not clobber config file
+  const fmt = options.format;
+  delete options.format;
+
+  // Command line overwrites config file
+  options = Object.assign({}, options.extraOptionsFile, options);
+  delete options.extraOptionsFile;
+
+  if (fmt !== DEFAULT_FORMAT) {
+    options.format = fmt;
+  }
+}
+if (!options.format || (options.format === DEFAULT_FORMAT)) {
+  options.format = "commonjs";
+}
+
+verbose = Boolean(options.verbose);
+delete options.verbose;
+
 if (options.plugin) {
-  options.plugins = options.plugin.map(val => {
+  options.plugins = (options.plugins || []).concat(options.plugin.map(val => {
     // If this is an absolute or relative path (not a module name)
     const id = (path.isAbsolute(val) || /^\.\.?[/\\]/.test(val))
       ? path.resolve(val)
@@ -151,10 +196,10 @@ if (options.plugin) {
       mod = require(id);
     } catch (e) {
       if (e.code !== "MODULE_NOT_FOUND") { throw e; }
-      abort("Can't load module \"" + id + "\".");
+      abortError(`Can't load module "${id}".`, e);
     }
     return mod;
-  });
+  }));
   delete options.plugin;
 }
 
@@ -178,19 +223,23 @@ if (options.exportVar !== undefined) {
   }
 }
 
-let inputFile = null;
+let inputFile = options.input;
 switch (program.args.length) {
   case 0:
-    inputFile = "-";
+    inputFile = inputFile ? inputFile : "-";
     break;
 
   case 1:
+    if (inputFile) {
+      abort("Do not specify input both on command line and in config file.");
+    }
     inputFile = program.args[0];
     break;
 
   default:
     abort("Too many arguments.");
 }
+
 let outputFile = options.output;
 if (!outputFile) {
   outputFile = ((inputFile === "-") || options.test || options.testFile)
@@ -217,14 +266,13 @@ if (options.testFile) {
 }
 
 if (verbose) {
-  console.error("OPTIONS:", options);
-}
-// Files
-
-function readStream(inputStream, callback) {
-  let input = "";
-  inputStream.on("data", data => { input += data; });
-  inputStream.on("end", () => { callback(input); });
+  console.error("OPTIONS:", util.inspect(options, {
+    depth: Infinity,
+    colors: process.stdout.isTTY,
+  }));
+  console.error("INPUT:", inputFile);
+  console.error("OUTPUT:", outputFile);
+  console.error("TEST TEXT:", testText);
 }
 
 // Main
@@ -249,18 +297,7 @@ readStream(inputStream, input => {
   try {
     source = peg.generate(input, options);
   } catch (e) {
-    if (typeof e.format === "function") {
-      abort(e.format([{
-        source: options.grammarSource,
-        text: input,
-      }]));
-    } else {
-      if (verbose) {
-        abort(e);
-      } else {
-        abort(`Error: ${e.message}`);
-      }
-    }
+    abortError("Error parsing grammar:", e);
   }
 
   if (testText) {
@@ -269,18 +306,7 @@ readStream(inputStream, input => {
         grammarSource: testGrammarSource,
       });
     } catch (e) {
-      if (typeof e.format === "function") {
-        abort(e.format([{
-          source: testGrammarSource,
-          text: testText,
-        }]));
-      } else {
-        if (verbose) {
-          abort(e);
-        } else {
-          abort(`Error: ${e.message}`);
-        }
-      }
+      abortError("Error parsing test:", e);
     }
     source = util.inspect(source, {
       depth: Infinity,

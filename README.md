@@ -112,8 +112,8 @@ You can tweak the generated parser with several options:
   parser object is assigned to when no module loader is detected
 - `--extra-options <options>` — additional options (in JSON format, as an
   object) to pass to `peg.generate`
-- `--extra-options-file <file>` — file with additional options (in JSON
-  format, as an object) to pass to `peg.generate`
+- `-c`, `--extra-options-file <file>` — file with additional options (in JSON
+  or commonjs module format, as an object) to pass to `peg.generate`
 - `--format <format>` — format of the generated parser: `amd`, `es`, `commonjs`,
   `globals`, `umd` (default: `commonjs`)
 - `-o`, `--output <file>` - file to send output to.  Defaults to input file
@@ -127,6 +127,28 @@ You can tweak the generated parser with several options:
 - `--trace` — makes the parser trace its progress
 - `-v`, `--version` - output the version number
 - `-h`, `--help` - display help for command
+
+If you specify options using `-c <file>` or `--extra-options-file <file>`, you
+will need to ensure you are using the correct types.  In particular, you may
+specify "plugin" as a string, or "plugins" as an array of objects that have a
+`use` method.  Always use the long (two-dash) form of the option.  Options
+that contain dashes should be specified in camel case. You may also specify an
+"input" field instead of using the command line.
+
+For example:
+
+```js
+// config.js or config.cjs
+module.exports = {
+  allowedStartRules = ["foo", "bar"],
+  format: "umd",
+  exportVar: "foo",
+  input: "fooGrammar.peggy",
+  plugins: [require("./plugin.js")],
+  testFile: "myTestInput.foo",
+  trace: true
+};
+```
 
 ### JavaScript API
 

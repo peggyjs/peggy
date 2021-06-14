@@ -78,34 +78,35 @@ describe("Command Line Interface", () => {
 Usage: peggy [options] [input_file]
 
 Options:
-  -v, --version                  output the version number
-  --allowed-start-rules <rules>  comma-separated list of rules the generated
-                                 parser will be allowed to start parsing from
-                                 (default: the first rule in the grammar)
-  --cache                        make generated parser cache results
-  -d, --dependency <dependency>  use specified dependency (can be specified
-                                 multiple times)
-  -e, --export-var <variable>    name of a global variable into which the
-                                 parser object is assigned to when no module
-                                 loader is detected
-  --extra-options <options>      additional options (in JSON format as an
-                                 object) to pass to peg.generate
-  --extra-options-file <file>    file with additional options (in JSON format
-                                 as an object) to pass to peg.generate
-  --format <format>              format of the generated parser (choices:
-                                 "amd", "commonjs", "es", "globals", "umd",
-                                 default: "commonjs")
-  -o, --output <file>            output file
-  --plugin <module>              use a specified plugin (can be specified
-                                 multiple times)
-  -t, --test <text>              Test the parser with the given text,
-                                 outputting the result of running the parser
-                                 instead of the parser itself
-  -T, --test-file <filename>     Test the parser with the contents of the given
-                                 file, outputting the result of running the
-                                 parser instead of the parser itself
-  --trace                        enable tracing in generated parser
-  -h, --help                     display help for command
+  -v, --version                    output the version number
+  --allowed-start-rules <rules>    comma-separated list of rules the generated
+                                   parser will be allowed to start parsing from
+                                   (default: the first rule in the grammar)
+  --cache                          make generated parser cache results
+  -d, --dependency <dependency>    use specified dependency (can be specified
+                                   multiple times)
+  -e, --export-var <variable>      name of a global variable into which the
+                                   parser object is assigned to when no module
+                                   loader is detected
+  --extra-options <options>        additional options (in JSON format as an
+                                   object) to pass to peg.generate
+  -c, --extra-options-file <file>  file with additional options (in JSON or
+                                   commonjs module format as an object) to pass
+                                   to peg.generate
+  --format <format>                format of the generated parser (choices:
+                                   "amd", "commonjs", "es", "globals", "umd",
+                                   default: "commonjs")
+  -o, --output <file>              output file
+  --plugin <module>                use a specified plugin (can be specified
+                                   multiple times)
+  -t, --test <text>                Test the parser with the given text,
+                                   outputting the result of running the parser
+                                   instead of the parser itself
+  -T, --test-file <filename>       Test the parser with the contents of the
+                                   given file, outputting the result of running
+                                   the parser instead of the parser itself
+  --trace                          enable tracing in generated parser
+  -h, --help                       display help for command
 `;
 
     expect(await exec({
@@ -214,12 +215,32 @@ baz = "3"
 
   it("handles extra options in a file", async() => {
     const optFile = path.join(__dirname, "fixtures", "options.json");
-    await expect(exec({
+    const optFileJS = path.join(__dirname, "fixtures", "options.js");
+
+    const res = await exec({
       args: ["--extra-options-file", optFile],
       stdin: "foo = '1'",
-    })).resolves.toMatch(
+    });
+    expect(res).toMatch(
       /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/
     );
+    expect(res).toMatch("(function(root, factory) {");
+
+    // Intentional overwrite
+    await expect(exec({
+      args: ["-c", optFile, "--format", "amd"],
+      stdin: "foo = '1'",
+    })).resolves.toMatch(/^define\(/m);
+
+    await expect(exec({
+      args: ["-c", optFileJS],
+      stdin: "foo = zazzy:'1'",
+    })).rejects.toThrow("Error: Label can't be a reserved word \"zazzy\"");
+
+    await expect(exec({
+      args: ["-c", optFile, "____ERROR____FILE_DOES_NOT_EXIST"],
+      stdin: "foo = '1'",
+    })).rejects.toThrow("Do not specify input both on command line and in config file.");
 
     await expect(exec({
       args: ["--extra-options-file"],
@@ -342,8 +363,8 @@ baz = "3"
     })).resolves.toMatch("name: 'peggy'"); // Output is JS, not JSON
 
     await expect(exec({
-      args: ["-T", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js", grammarFile],
-    })).rejects.toThrow("Can't read from file \"__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js\".");
+      args: ["-T", "____ERROR____FILE_DOES_NOT_EXIST.js", grammarFile],
+    })).rejects.toThrow("Can't read from file \"____ERROR____FILE_DOES_NOT_EXIST.js\".");
 
     await expect(exec({
       args: ["-t", "boo", "-T", "foo"],
