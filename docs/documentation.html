@@ -136,40 +136,61 @@ override this using the <code>--format</code> option.</p>
 <p>You can tweak the generated parser with several options:</p>
 
 <dl>
-  <dt><code>--allowed-start-rules</code></dt>
+  <dt><code>--allowed-start-rules &lt;rules&gt;</code></dt>
   <dd>Comma-separated list of rules the parser will be allowed to start parsing
-  from (default: the first rule in the grammar).</dd>
+  from (default: only the first rule in the grammar).</dd>
 
   <dt><code>--cache</code></dt>
   <dd>Makes the parser cache results, avoiding exponential parsing time in
   pathological cases but making the parser slower.</dd>
 
-  <dt><code>--dependency</code></dt>
-  <dd>Makes the parser require a specified dependency (can be specified multiple
-  times).</dd>
+  <dt><code>-d</code>, </code><code>--dependency &lt;[name:]module&gt;</code></dt>
+  <dd>Makes the parser require a specified dependency (can be specified
+  multiple times).  A variable name for the import/require/etc. may be given,
+  followed by a colon.  If no name is given, the module name will also be used
+  for the variable name.</dd>
 
-  <dt><code>--export-var</code></dt>
+  <dt><code>-e</code>, </code><code>--export-var &lt;variable&gt;</code></dt>
   <dd>Name of a global variable into which the parser object is assigned to when
   no module loader is detected.</dd>
 
-  <dt><code>--extra-options</code></dt>
-  <dd>Additional options (in JSON format) to pass to
+  <dt><code>--extra-options &lt;options&gt;</code></dt>
+  <dd>Additional options (in JSON format, as an object) to pass to
   <code>peg.generate</code>.</dd>
 
-  <dt><code>--extra-options-file</code></dt>
-  <dd>File with additional options (in JSON format) to pass to
+  <dt><code>--extra-options-file &lt;file&gt;</code></dt>
+  <dd>File with additional options (in JSON format, as an object) to pass to
   <code>peg.generate</code>.</dd>
 
-  <dt><code>--format</code></dt>
+  <dt><code>--format &lt;format&gt;</code></dt>
   <dd>Format of the generated parser: <code>amd</code>, <code>commonjs</code>,
   <code>globals</code>, <code>umd</code>, <code>es</code> (default: <code>commonjs</code>).</dd>
+
+  <dt><code>-o</code>, <code>--output &lt;file&gt;</file></code></dt>
+  <dd>File to send output to.  Defaults to input file name with
+    extension changed to <code>.js</code>, or stdout if no input file is given.</dd>
 
   <dt><code>--plugin</code></dt>
   <dd>Makes Peggy use a specified plugin (can be specified multiple
   times).</dd>
 
+  <dt><code>-t</code>, <code>--test &lt;text&gt;</code></dt>
+  <dd>Test the parser with the given text, outputting the result of running
+  the parser against this input</dd>
+
+  <dt><code>-T</code>, <code>--test-file &lt;text&gt;</code></dt>
+  <dd>Test the parser with the contents of the given file, outputting the
+  result of running the parser against this input</dd>
+
   <dt><code>--trace</code></dt>
   <dd>Makes the parser trace its progress.</dd>
+
+  <dt><code>-v</code>, <code>--version</code></dt>
+  <dd>Output the version number</dd>
+
+  <dt><code>-h</code>, <code>--help</code></dt>
+  <dd>Display help for the command</dd>
+
 </dl>
 
 <h3 id="generating-a-parser-javascript-api">JavaScript API</h3>

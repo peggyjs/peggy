@@ -6,6 +6,7 @@ const require$$1 = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const peg = require('../lib/peg.js');
+const util = require('util');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -14,6 +15,7 @@ const require$$1__default = /*#__PURE__*/_interopDefaultLegacy(require$$1);
 const path__default = /*#__PURE__*/_interopDefaultLegacy(path);
 const fs__default = /*#__PURE__*/_interopDefaultLegacy(fs);
 const peg__default = /*#__PURE__*/_interopDefaultLegacy(peg);
+const util__default = /*#__PURE__*/_interopDefaultLegacy(util);
 
 var commander = {exports: {}};
 
@@ -2318,9 +2320,17 @@ const options = program
   )
   .option("-o, --output <file>", "output file")
   .option(
-    "--plugin <plugin>",
+    "--plugin <module>",
     "use a specified plugin (can be specified multiple times)",
     (val, prev) => (prev || []).concat([val])
+  )
+  .option(
+    "-t, --test <text>",
+    "Test the parser with the given text, outputting the result of running the parser instead of the parser itself"
+  )
+  .option(
+    "-T, --test-file <filename>",
+    "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself"
   )
   .option("--trace", "enable tracing in generated parser")
   .addOption(
@@ -2414,11 +2424,28 @@ switch (program.args.length) {
 }
 let outputFile = options.output;
 if (!outputFile) {
-  outputFile = (inputFile === "-")
-    ? "-"
+  outputFile = ((inputFile === "-") || options.test || options.testFile)
+    ? outputFile = "-"
     : inputFile.substr(0, inputFile.length - path__default['default'].extname(inputFile).length) + ".js";
 }
-options.output = "source";
+
+if (options.test && options.testFile) {
+  abort("The -t/--test and -T/--test-file options are mutually exclusive.");
+}
+
+options.output = (options.test || options.testFile) ? "parser" : "source";
+let testText = null;
+let testGrammarSource = null;
+if (options.test) {
+  testText = options.test;
+  testGrammarSource = "command line";
+  delete options.test;
+}
+if (options.testFile) {
+  testText = readFile(options.testFile);
+  testGrammarSource = options.testFile;
+  delete options.testFile;
+}
 
 if (verbose) {
   console.error("OPTIONS:", options);
@@ -2462,9 +2489,34 @@ readStream(inputStream, input => {
       if (verbose) {
         abort(e);
       } else {
-        abort(e.message);
+        abort(`Error: ${e.message}`);
       }
     }
+  }
+
+  if (testText) {
+    try {
+      source = source.parse(testText, {
+        grammarSource: testGrammarSource,
+      });
+    } catch (e) {
+      if (typeof e.format === "function") {
+        abort(e.format([{
+          source: testGrammarSource,
+          text: testText,
+        }]));
+      } else {
+        if (verbose) {
+          abort(e);
+        } else {
+          abort(`Error: ${e.message}`);
+        }
+      }
+    }
+    source = util__default['default'].inspect(source, {
+      depth: Infinity,
+      colors: (outputFile === "-") && process.stdout.isTTY,
+    }) + "\n";
   }
 
   // Don't create output until processing succeeds
