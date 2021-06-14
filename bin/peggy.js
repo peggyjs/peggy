@@ -1,14 +1,20 @@
 #!/usr/bin/env node
 'use strict';
 
-const fs = require("fs");
-const path = require("path");
-const peg = require("../lib/peg");
+const fs = require('fs');
+const path = require('path');
+const peg = require('../lib/peg.js');
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+const fs__default = /*#__PURE__*/_interopDefaultLegacy(fs);
+const path__default = /*#__PURE__*/_interopDefaultLegacy(path);
+const peg__default = /*#__PURE__*/_interopDefaultLegacy(peg);
 
 // Helpers
 
 function printVersion() {
-  console.log("Peggy " + peg.VERSION);
+  console.log("Peggy " + peg__default['default'].VERSION);
 }
 
 function printHelp() {
@@ -117,6 +123,7 @@ const options = {
 const MODULE_FORMATS = ["amd", "commonjs", "es", "globals", "umd"];
 const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
 
+outer:
 while (args.length > 0 && isOption(args[0])) {
   let json, id, mod;
 
@@ -124,7 +131,7 @@ while (args.length > 0 && isOption(args[0])) {
     case "--allowed-start-rules":
       nextArg();
       if (args.length === 0) {
-        abort("Missing parameter of the -e/--allowed-start-rules option.");
+        abort("Missing parameter of the --allowed-start-rules option.");
       }
       options.allowedStartRules = args[0]
         .split(",")
@@ -172,7 +179,7 @@ while (args.length > 0 && isOption(args[0])) {
         abort("Missing parameter of the --extra-options-file option.");
       }
       try {
-        json = fs.readFileSync(args[0]);
+        json = fs__default['default'].readFileSync(args[0]);
       } catch (e) {
         abort("Can't read from file \"" + args[0] + "\".");
       }
@@ -199,6 +206,9 @@ while (args.length > 0 && isOption(args[0])) {
     case "-O":
     case "--optimize":
       nextArg();
+      if (args.length === 0) {
+        abort("Missing parameter of the -O/--optimize option.");
+      }
       console.error("Option --optimize is deprecated from 1.2.0 and has no effect anymore.");
       console.error("It will be deleted in 2.0.");
       console.error("Parser will be generated in the former \"speed\" mode.");
@@ -218,7 +228,7 @@ while (args.length > 0 && isOption(args[0])) {
       if (args.length === 0) {
         abort("Missing parameter of the --plugin option.");
       }
-      id = /^(\.\/|\.\.\/)/.test(args[0]) ? path.resolve(args[0]) : args[0];
+      id = /^(\.\/|\.\.\/)/.test(args[0]) ? path__default['default'].resolve(args[0]) : args[0];
       try {
         mod = require(id);
       } catch (e) {
@@ -241,7 +251,7 @@ while (args.length > 0 && isOption(args[0])) {
 
     case "--":
       nextArg();
-      break;
+      break outer;
 
     default:
       abort("Unknown option: " + args[0] + ".");
@@ -280,7 +290,7 @@ if (outputFile === null) {
   if (inputFile === "-") {
     outputFile = "-";
   } else {
-    outputFile = inputFile.substr(0, inputFile.length - path.extname(inputFile).length) + ".js";
+    outputFile = inputFile.substr(0, inputFile.length - path__default['default'].extname(inputFile).length) + ".js";
   }
 }
 
@@ -293,23 +303,14 @@ if (inputFile === "-") {
   options.grammarSource = "stdin";
 } else {
   options.grammarSource = inputFile;
-  inputStream = fs.createReadStream(inputFile);
-}
-
-if (outputFile === "-") {
-  outputStream = process.stdout;
-} else {
-  outputStream = fs.createWriteStream(outputFile);
-  outputStream.on("error", () => {
-    abort("Can't write to file \"" + outputFile + "\".");
-  });
+  inputStream = fs__default['default'].createReadStream(inputFile);
 }
 
 readStream(inputStream, input => {
   let source;
 
   try {
-    source = peg.generate(input, options);
+    source = peg__default['default'].generate(input, options);
   } catch (e) {
     if (typeof e.format === "function") {
       abort(e.format([{
@@ -321,8 +322,19 @@ readStream(inputStream, input => {
     }
   }
 
+  // Don't create output until processing succeeds
+  if (outputFile === "-") {
+    outputStream = process.stdout;
+  } else {
+    outputStream = fs__default['default'].createWriteStream(outputFile);
+    outputStream.on("error", () => {
+      abort("Can't write to file \"" + outputFile + "\".");
+    });
+  }
+
   outputStream.write(source);
   if (outputStream !== process.stdout) {
     outputStream.end();
   }
 });
+//# sourceMappingURL=peggy.js.map

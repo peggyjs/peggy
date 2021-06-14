@@ -5,3 +5,5 @@ examples/*.js
 node_modules/
 pnpm-lock.yaml
 yarn.lock
+.nyc_output
+*.map

@@ -1,6 +1,6 @@
-const fs = require("fs");
-const path = require("path");
-const peg = require("../lib/peg");
+import fs from "fs";
+import path from "path";
+import { default as peg } from "../lib/peg.js";
 
 // Helpers
 
@@ -114,6 +114,7 @@ const options = {
 const MODULE_FORMATS = ["amd", "commonjs", "es", "globals", "umd"];
 const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
 
+outer:
 while (args.length > 0 && isOption(args[0])) {
   let json, id, mod;
 
@@ -121,7 +122,7 @@ while (args.length > 0 && isOption(args[0])) {
     case "--allowed-start-rules":
       nextArg();
       if (args.length === 0) {
-        abort("Missing parameter of the -e/--allowed-start-rules option.");
+        abort("Missing parameter of the --allowed-start-rules option.");
       }
       options.allowedStartRules = args[0]
         .split(",")
@@ -196,6 +197,9 @@ while (args.length > 0 && isOption(args[0])) {
     case "-O":
     case "--optimize":
       nextArg();
+      if (args.length === 0) {
+        abort("Missing parameter of the -O/--optimize option.");
+      }
       console.error("Option --optimize is deprecated from 1.2.0 and has no effect anymore.");
       console.error("It will be deleted in 2.0.");
       console.error("Parser will be generated in the former \"speed\" mode.");
@@ -238,7 +242,7 @@ while (args.length > 0 && isOption(args[0])) {
 
     case "--":
       nextArg();
-      break;
+      break outer;
 
     default:
       abort("Unknown option: " + args[0] + ".");
@@ -293,15 +297,6 @@ if (inputFile === "-") {
   inputStream = fs.createReadStream(inputFile);
 }
 
-if (outputFile === "-") {
-  outputStream = process.stdout;
-} else {
-  outputStream = fs.createWriteStream(outputFile);
-  outputStream.on("error", () => {
-    abort("Can't write to file \"" + outputFile + "\".");
-  });
-}
-
 readStream(inputStream, input => {
   let source;
 
@@ -316,6 +311,16 @@ readStream(inputStream, input => {
     } else {
       abort(e.message);
     }
+  }
+
+  // Don't create output until processing succeeds
+  if (outputFile === "-") {
+    outputStream = process.stdout;
+  } else {
+    outputStream = fs.createWriteStream(outputFile);
+    outputStream.on("error", () => {
+      abort("Can't write to file \"" + outputFile + "\".");
+    });
   }
 
   outputStream.write(source);
