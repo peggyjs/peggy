@@ -193,6 +193,27 @@ override this using the <code>--format</code> option.</p>
 
 </dl>
 
+<p>
+If you specify options using `-c <file>` or `--extra-options-file <file>`, you
+will need to ensure you are using the correct types.  In particular, you may
+specify "plugin" as a string, or "plugins" as an array of objects that have a
+`use` method.  Always use the long (two-dash) form of the option.  Options
+that contain dashes should be specified in camel case. You may also specify an
+"input" field instead of using the command line.  For example:
+</p>
+
+<pre><code class="language-javascript">// config.js or config.cjs
+module.exports = {
+  allowedStartRules = ["foo", "bar"],
+  format: "umd",
+  exportVar: "foo",
+  input: "fooGrammar.peggy",
+  plugins: [require("./plugin.js")],
+  testFile: "myTestInput.foo",
+  trace: true
+};
+</code></pre>
+
 <h3 id="generating-a-parser-javascript-api">JavaScript API</h3>
 
 <p>In Node.js, require the Peggy parser generator module:</p>
