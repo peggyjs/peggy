@@ -12,8 +12,19 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x, 16.x]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            node-version: 10.x
+          - os: ubuntu-latest
+            node-version: 12.x
+          - os: ubuntu-latest
+            node-version: 14.x
+          - os: ubuntu-latest
+            node-version: 16.x
+          - os: windows-latest
+            node-version: 16.x
+          - os: macos-latest
+            node-version: 16.x
 
     runs-on: ${{ matrix.os }}
 
