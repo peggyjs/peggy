@@ -19,7 +19,7 @@
   "bin": "bin/peggy",
   "scripts": {
     "clean": "rimraf -f build && rimraf -f browser && mkdir browser",
-    "parser": "node bin/peggy -o lib/parser.js --format commonjs src/parser.pegjs",
+    "parser": "node bin/peggy -o lib/parser.js --format commonjs src/parser.peggy",
     "set_version": "node ./tools/set_version",
     "lint": "eslint . --ext .js --ext .ts bin/peggy",
     "ts": "tsc --build tsconfig.json",

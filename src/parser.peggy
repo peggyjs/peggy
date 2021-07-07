@@ -56,6 +56,7 @@ Grammar
       };
     }
 
+
 TopLevelInitializer
   = "{" code:CodeBlock "}" EOS {
       return {
