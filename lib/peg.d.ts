@@ -890,14 +890,25 @@ export interface BuildOptionsBase {
 }
 
 export interface ParserBuildOptions extends BuildOptionsBase {
-  /** If set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
+  /**
+   * If set to `"parser"`, the method will return generated parser object;
+   * if set to `"source"`, it will return parser source code as a string
+   * (default: `"parser"`)
+   */
   output?: "parser";
 }
 
-export interface OutputFormatAmdCommonjsEs extends BuildOptionsBase {
-  /** If set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
+/** Base options for all source-generating formats. */
+interface SourceOptionsBase extends BuildOptionsBase {
+  /**
+   * If set to `"parser"`, the method will return generated parser object;
+   * if set to `"source"`, it will return parser source code as a string
+   * (default: `"parser"`)
+   */
   output: "source";
+}
 
+export interface OutputFormatAmdCommonjsEs extends SourceOptionsBase {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "amd" | "commonjs" | "es";
   /**
@@ -909,10 +920,7 @@ export interface OutputFormatAmdCommonjsEs extends BuildOptionsBase {
   dependencies?: Dependencies;
 }
 
-export interface OutputFormatUmd extends BuildOptionsBase {
-  /** If set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
-  output: "source";
-
+export interface OutputFormatUmd extends SourceOptionsBase {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "umd";
   /**
@@ -930,10 +938,7 @@ export interface OutputFormatUmd extends BuildOptionsBase {
   exportVar?: string;
 }
 
-export interface OutputFormatGlobals extends BuildOptionsBase {
-  /** If set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
-  output: "source";
-
+export interface OutputFormatGlobals extends SourceOptionsBase {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "globals";
   /**
@@ -944,10 +949,7 @@ export interface OutputFormatGlobals extends BuildOptionsBase {
   exportVar: string;
 }
 
-export interface OutputFormatBare extends BuildOptionsBase {
-  /** If set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
-  output: "source";
-
+export interface OutputFormatBare extends SourceOptionsBase {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format?: "bare";
 }
