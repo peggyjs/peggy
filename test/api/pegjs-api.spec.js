@@ -227,7 +227,7 @@ describe("Peggy API", () => {
         RULE_2 'named' = &{${AND_BLOCK}} @'b';
       `;
 
-      function check(chunk, source, name) {
+      function check(chunk, source, name, generatedChunk = chunk) {
         const node = peg.generate(SOURCE, {
           grammarSource: source,
           output: "source",
@@ -236,7 +236,7 @@ describe("Peggy API", () => {
         const { code, map } = node.toStringWithSourceMap();
 
         const original  = findLocationOf(SOURCE, chunk);
-        const generated = findLocationOf(code, chunk);
+        const generated = findLocationOf(code, generatedChunk);
 
         return SourceMapConsumer.fromSourceMap(map).then(consumer => {
           expect(consumer.originalPositionFor(generated))
@@ -257,6 +257,9 @@ describe("Peggy API", () => {
           it("action block", () => check(ACTION_BLOCK, source, null));
           it("semantic and predicate", () => check(AND_BLOCK, source, null));
           it("semantic not predicate", () => check(NOT_BLOCK, source, null));
+
+          it("rule name", () => check("RULE_1", source, "RULE_1", "peg$parseRULE_1() {"));
+          it("labelled rule name", () => check("RULE_2 'named'", source, "RULE_2", "peg$parseRULE_2() {"));
         });
       }
     });
