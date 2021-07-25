@@ -726,7 +726,7 @@ export namespace compiler {
   function compile(
     ast: ast.Grammar,
     stages: Stages,
-    options: SourceBuildOptions & { sourceMap?: false }
+    options: SourceBuildOptions<"source">
   ): string;
 
   /**
@@ -747,13 +747,13 @@ export namespace compiler {
   function compile(
     ast: ast.Grammar,
     stages: Stages,
-    options: SourceBuildOptions & { sourceMap: true }
+    options: SourceBuildOptions<"source-and-map">
   ): SourceNode;
 
   function compile(
     ast: ast.Grammar,
     stages: Stages,
-    options: SourceBuildOptions & { sourceMap: boolean }
+    options: SourceBuildOptions<SourceOutputs>
   ): string | SourceNode;
 }
 
@@ -919,23 +919,32 @@ export interface BuildOptionsBase {
 export interface ParserBuildOptions extends BuildOptionsBase {
   /**
    * If set to `"parser"`, the method will return generated parser object;
-   * if set to `"source"`, it will return parser source code as a string
+   * if set to `"source"`, it will return parser source code as a string;
+   * if set to `"source-and-map"`, it will return a `SourceNode` object
+   * which can give a parser source code as a string and a source map;
    * (default: `"parser"`)
    */
   output?: "parser";
 }
 
+/** Possible kinds of source output generators. */
+export type SourceOutputs = "source" | "source-and-map";
+
 /** Base options for all source-generating formats. */
-interface SourceOptionsBase extends BuildOptionsBase {
+interface SourceOptionsBase<Output extends SourceOutputs>
+  extends BuildOptionsBase {
   /**
    * If set to `"parser"`, the method will return generated parser object;
-   * if set to `"source"`, it will return parser source code as a string
+   * if set to `"source"`, it will return parser source code as a string;
+   * if set to `"source-and-map"`, it will return a `SourceNode` object
+   * which can give a parser source code as a string and a source map;
    * (default: `"parser"`)
    */
-  output: "source";
+  output: Output;
 }
 
-export interface OutputFormatAmdCommonjsEs extends SourceOptionsBase {
+export interface OutputFormatAmdCommonjsEs<Output extends SourceOutputs = "source">
+  extends SourceOptionsBase<Output> {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "amd" | "commonjs" | "es";
   /**
@@ -947,7 +956,8 @@ export interface OutputFormatAmdCommonjsEs extends SourceOptionsBase {
   dependencies?: Dependencies;
 }
 
-export interface OutputFormatUmd extends SourceOptionsBase {
+export interface OutputFormatUmd<Output extends SourceOutputs = "source">
+  extends SourceOptionsBase<Output> {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "umd";
   /**
@@ -965,7 +975,8 @@ export interface OutputFormatUmd extends SourceOptionsBase {
   exportVar?: string;
 }
 
-export interface OutputFormatGlobals extends SourceOptionsBase {
+export interface OutputFormatGlobals<Output extends SourceOutputs = "source">
+  extends SourceOptionsBase<Output> {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "globals";
   /**
@@ -976,17 +987,18 @@ export interface OutputFormatGlobals extends SourceOptionsBase {
   exportVar: string;
 }
 
-export interface OutputFormatBare extends SourceOptionsBase {
+export interface OutputFormatBare<Output extends SourceOutputs = "source">
+  extends SourceOptionsBase<Output> {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format?: "bare";
 }
 
 /** Options for generating source code of the parser. */
-export type SourceBuildOptions
-  = OutputFormatUmd
-  | OutputFormatBare
-  | OutputFormatGlobals
-  | OutputFormatAmdCommonjsEs;
+export type SourceBuildOptions<Output extends SourceOutputs = "source">
+  = OutputFormatUmd<Output>
+  | OutputFormatBare<Output>
+  | OutputFormatGlobals<Output>
+  | OutputFormatAmdCommonjsEs<Output>;
 
 /**
  * Returns a generated parser object.
@@ -1016,7 +1028,7 @@ export function generate(grammar: string, options?: ParserBuildOptions): Parser;
  */
 export function generate(
   grammar: string,
-  options: SourceBuildOptions & { sourceMap?: false }
+  options: SourceBuildOptions<"source">
 ): string;
 
 /**
@@ -1054,12 +1066,12 @@ export function generate(
  */
 export function generate(
   grammar: string,
-  options: SourceBuildOptions & { sourceMap: true }
+  options: SourceBuildOptions<"source-and-map">
 ): SourceNode;
 
 export function generate(
   grammar: string,
-  options: SourceBuildOptions & { sourceMap: boolean }
+  options: SourceBuildOptions<SourceOutputs>
 ): string | SourceNode;
 
 // Export all exported stuff under a global variable PEG in non-module environments

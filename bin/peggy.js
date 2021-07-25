@@ -2847,7 +2847,6 @@ const PARSER_DEFAULTS = {
   format: "commonjs",
   plugin: [],
   plugins: [], // Might be set in extraOptions
-  sourceMap: false,
   trace: false,
 };
 
@@ -2981,7 +2980,7 @@ if (progOptions.test && progOptions.testFile) {
 
 // If CLI parameter was defined, enable source map generation
 if (progOptions.sourceMap !== undefined) {
-  options.sourceMap = true;
+  options.output = "source-and-map";
 }
 // If source map name is not specified, calculate it
 if (progOptions.sourceMap === true) {
@@ -3057,7 +3056,7 @@ readStream(inputStream, input => {
     });
   }
 
-  if (options.sourceMap) {
+  if (progOptions.sourceMap) {
     if (!outputStream) {
       // outputStream is null if `--test/--test-file` is specified, but `--output` is not
       abort("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");

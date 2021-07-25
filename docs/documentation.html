@@ -337,26 +337,20 @@ supported:</p>
   <code>location()</code> API function (default: <code>undefined</code>).</dd>
 
   <dt><code>output</code></dt>
-  <dd>If set to <code>"parser"</code>, the method will return generated parser
+  <dd><p>If set to <code>"parser"</code>, the method will return generated parser
   object; if set to <code>"source"</code>, it will return parser source code as
-  a string (default: <code>"parser"</code>).</dd>
+  a string (default: <code>"parser"</code>).
+  If set to <code>"source-and-map"</code>, it will return a <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a> object; you can
+  get source code by calling <code>toString()</code> method or source code and mapping by
+  calling <code>toStringWithSourceMap()</code> method, see the <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a> documentation
+  (default: <code>"parser"</code>)</p>
+  <blockquote>
+  <p><strong>Note</strong>: because of bug <a href="https://github.com/mozilla/source-map/issues/444">source-map/444</a> you should also set <code>grammarSource</code> to
+  a not-empty string if you set this value to <code>"source-and-map"</code></p>
+  </blockquote></dd>
 
   <dt><code>plugins</code></dt>
   <dd>Plugins to use. See the <a href="#plugins-api">Plugins API</a> section.</dd>
-
-  <dt><code>sourceMap</code></dt>
-  <dd><p>If set to <code>true</code>, the method will return a
-  <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a>
-  object instead of the string; you can get source code by calling <code>toString()</code>
-  method or source code and mapping by calling <code>toStringWithSourceMap()</code> method,
-  see the <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a>
-  documentation; valid only when <code>output</code> is set to <code>&quot;source&quot;</code>
-  (default: <code>false</code>)</p>
-  <blockquote>
-  <p><strong>Note</strong>: because of bug <a href="https://github.com/mozilla/source-map/issues/444">source-map/444</a> you should also set <code>grammarSource</code> to
-  a not-empty string if you set this value to <code>true</code></p>
-  </blockquote>
-  </dd>
 
   <dt><code>trace</code></dt>
   <dd>Makes the parser trace its progress (default: <code>false</code>).</dd>

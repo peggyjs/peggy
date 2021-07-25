@@ -255,17 +255,15 @@ object to `peg.generate`. The following options are supported:
   `options.grammarSource` is redefined in the grammar. It is useful to attach
   the file information to the errors, for example
 - `output` — if set to `"parser"`, the method will return generated parser
-  object; if set to `"source"`, it will return parser source code as a string
+  object; if set to `"source"`, it will return parser source code as a string.
+  If set to `"source-and-map"`, it will return a [`SourceNode`] object; you can
+  get source code by calling `toString()` method or source code and mapping by
+  calling `toStringWithSourceMap()` method, see the [`SourceNode`] documentation
   (default: `"parser"`)
-- `plugins` — plugins to use. See the [Plugins API](#plugins-api) section
-- `sourceMap` — if set to `true`, the method will return a [`SourceNode`] object
-  instead of the string; you can get source code by calling `toString()` method
-  or source code and mapping by calling `toStringWithSourceMap()` method, see
-  the [`SourceNode`] documentation; valid only when `output` is set to `"source"`
-  (default: `false`)
 
   > **Note**: because of bug [source-map/444] you should also set `grammarSource` to
-  > a not-empty string if you set this value to `true`
+  > a not-empty string if you set this value to `"source-and-map"`
+- `plugins` — plugins to use. See the [Plugins API](#plugins-api) section
 - `trace` — makes the parser trace its progress (default: `false`)
 
 [`SourceNode`]: https://github.com/mozilla/source-map#sourcenode

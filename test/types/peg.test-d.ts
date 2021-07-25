@@ -63,14 +63,11 @@ describe("peg.d.ts", () => {
     const p1 = peggy.generate(src, { output: "source" });
     expectType<string>(p1);
 
-    const p2 = peggy.generate(src, { output: "source", sourceMap: false });
-    expectType<string>(p2);
+    const p2 = peggy.generate(src, { output: "source-and-map" });
+    expectType<SourceNode>(p2);
 
-    const p3 = peggy.generate(src, { output: "source", sourceMap: true });
-    expectType<SourceNode>(p3);
-
-    const p4 = peggy.generate(src, { output: "source", sourceMap: true as boolean });
-    expectType<string | SourceNode>(p4);
+    const p3 = peggy.generate(src, { output: true as boolean ? "source-and-map" : "source" });
+    expectType<string | SourceNode>(p3);
   });
 
   it("compiles with source map", () => {
@@ -87,23 +84,16 @@ describe("peg.d.ts", () => {
     const p2 = peggy.compiler.compile(
       ast,
       peggy.compiler.passes,
-      { output: "source", sourceMap: false }
+      { output: "source-and-map" }
     );
-    expectType<string>(p2);
+    expectType<SourceNode>(p2);
 
     const p3 = peggy.compiler.compile(
       ast,
       peggy.compiler.passes,
-      { output: "source", sourceMap: true }
+      { output: true as boolean ? "source-and-map" : "source" }
     );
-    expectType<SourceNode>(p3);
-
-    const p4 = peggy.compiler.compile(
-      ast,
-      peggy.compiler.passes,
-      { output: "source", sourceMap: true as boolean }
-    );
-    expectType<string | SourceNode>(p4);
+    expectType<string | SourceNode>(p3);
   });
 
   it("creates an AST", () => {

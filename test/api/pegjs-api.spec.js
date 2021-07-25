@@ -230,8 +230,7 @@ describe("Peggy API", () => {
       function check(chunk, source, name, generatedChunk = chunk) {
         const node = peg.generate(SOURCE, {
           grammarSource: source,
-          output: "source",
-          sourceMap: true,
+          output: "source-and-map",
         });
         const { code, map } = node.toStringWithSourceMap();
 
