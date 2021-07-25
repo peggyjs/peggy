@@ -174,6 +174,9 @@ override this using the <code>--format</code> option.</p>
   <dd>Makes Peggy use a specified plugin (can be specified multiple
   times).</dd>
 
+  <dt><code>--source-map &lt;file&gt;</code></dt>
+  <dd>Generate a source map file with an optionally specified name</dd>
+
   <dt><code>-t</code>, <code>--test &lt;text&gt;</code></dt>
   <dd>Test the parser with the given text, outputting the result of running
   the parser against this input.
@@ -214,6 +217,54 @@ module.exports = {
   testFile: "myTestInput.foo",
   trace: true
 };
+</code></pre>
+
+<p>
+You can test generated parser immediately if you specify the <code>-t/--test</code> or <code>-T/--test-file</code>
+option. This option conflicts with the option <code>-m/--source-map</code> unless <code>-o/--output</code> is
+also specified.
+</p>
+
+<p>The CLI will exit with the code:</p>
+
+<ul>
+  <li><code>0</code> if all was success</li>
+  <li><code>1</code> if you supply incorrect or conflicting parameters</li>
+  <li><code>2</code> if all parameters is correct, you specify the <code>-t/--test</code> or <code>-T/--test-file</code> option
+  and specified input does not parsed with the specified grammar</li>
+</ul>
+
+<p>Examples:</p>
+
+<pre><code class="language-console"># - write test results to stdout (42)
+# - exit with the code 0
+echo "foo = '1' { return 42 }" | peggy --test 1
+
+# - write a parser error to stdout (Expected "1" but "2" found)
+# - exit with the code 2
+echo "foo = '1' { return 42 }" | peggy --test 2
+
+# - write an error to stdout (Generation of the source map is useless if you don't
+#   store a generated parser code, perhaps you forgot to add an `-o/--output` option?)
+# - exit with the code 1
+echo "foo = '1' { return 42 }" | peggy --source-map --test 1
+
+# - write an error to stdout (Generation of the source map is useless if you don't
+#   store a generated parser code, perhaps you forgot to add an `-o/--output` option?)
+# - exit with the code 1
+echo "foo = '1' { return 42 }" | peggy --source-map --test 2
+
+# - write an output to `parser.js`,
+# - write a source map to `parser.js.map`
+# - write test results to stdout (42)
+# - exit with the code 0
+echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 1
+
+# - write an output to `parser.js`,
+# - write a source map to `parser.js.map`
+# - write a parser error to stdout (Expected "1" but "2" found)
+# - exit with the code 2
+echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 </code></pre>
 
 <h3 id="generating-a-parser-javascript-api">JavaScript API</h3>

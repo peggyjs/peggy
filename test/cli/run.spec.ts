@@ -1,6 +1,7 @@
 // This is typescript so that it only runs in node contexts, not on the web
 
 import * as peggy from "../../lib/peg.js";
+import { SourceMapConsumer } from "source-map";
 import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
@@ -89,6 +90,47 @@ function exec(opts: Options = {}) {
   });
 }
 
+/**
+ * Helper for testing source-map support.
+ *
+ * @param sourceMap Path to the file with source map. That file shouldn't exist
+ *        before calling this function
+ * @param args CLI arguments
+ * @param error If specified, CLI should ends with an error that contains that text,
+ *        and error code was 2, otherwise CLI should ends with success. In any case
+ *        source map should be generated and contain a valid source map
+ */
+async function checkSourceMap(
+  sourceMap: string,
+  args: string[],
+  error?: string,
+) {
+  expect(() => {
+    // Make sure the file isn't there before we start
+    fs.statSync(sourceMap);
+  }).toThrow();
+
+  const result = expect(exec({
+    args,
+    stdin: "foo = '1' { return 42; }",
+  }));
+
+  if (error) {
+    await result.rejects.toThrow(error);
+    await result.rejects.toThrow(expect.objectContaining({ code: 2 }));
+  } else {
+    await result.resolves.toBeDefined();
+  }
+
+  expect(fs.statSync(sourceMap)).toBeInstanceOf(fs.Stats);
+
+  await expect(new SourceMapConsumer(
+    fs.readFileSync(sourceMap, { encoding: "utf8" })
+  )).resolves.toBeInstanceOf(SourceMapConsumer);
+
+  fs.unlinkSync(sourceMap);
+}
+
 describe("Command Line Interface", () => {
   it("has help", async() => {
     const HELP = `\
@@ -121,6 +163,13 @@ Options:
                                    without this option)
   --plugin <module>                Comma-separated list of plugins. (can be
                                    specified multiple times)
+  -m, --source-map [mapfile]       Generate a source map. If name is not
+                                   specified, the source map will be named
+                                   "<input_file>.map" if input is a file and
+                                   "source.map" if input is a standard input.
+                                   This option conflicts with the \`-t/--test\`
+                                   and \`-T/--test-file\` options unless
+                                   \`-o/--output\` is also specified
   -t, --test <text>                Test the parser with the given text,
                                    outputting the result of running the parser
                                    instead of the parser itself. If the input
@@ -428,6 +477,140 @@ Options:
       args: ["--trace"],
       stdin: "foo = '1'",
     })).resolves.toMatch("DefaultTracer: peg$DefaultTracer");
+  });
+
+  describe("handles source map", () => {
+    describe("with default name without --output", () => {
+      const sourceMap = path.resolve(__dirname, "source.map");
+
+      it("generates a source map", async() => {
+        await checkSourceMap(sourceMap, ["--source-map"]);
+        await checkSourceMap(sourceMap, ["-m"]);
+      });
+
+      it("emits an error if used with --test/--test-file", async() => {
+        expect(() => {
+          // Make sure the file isn't there before we start
+          fs.statSync(sourceMap);
+        }).toThrow();
+
+        await expect(exec({
+          args: ["-t", "1", "--source-map"],
+          stdin: "foo = '1' { return 42; }",
+        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        expect(() => {
+          // Make sure the file isn't there
+          fs.statSync(sourceMap);
+        }).toThrow();
+
+        await expect(exec({
+          args: ["-t", "1", "-m"],
+          stdin: "foo = '1' { return 42; }",
+        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        expect(() => {
+          // Make sure the file isn't there
+          fs.statSync(sourceMap);
+        }).toThrow();
+      });
+    });
+
+    describe("with default name with --output", () => {
+      const FILENAME = "output-with-default-map.js";
+      const testOutput = path.resolve(__dirname, FILENAME);
+      const sourceMap = path.resolve(__dirname, `${FILENAME}.map`);
+
+      it("generates a source map", async() => {
+        expect(() => {
+          // Make sure the file isn't there before we start
+          fs.statSync(testOutput);
+        }).toThrow();
+
+        await checkSourceMap(sourceMap, ["--output", testOutput, "--source-map"]);
+        expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
+        fs.unlinkSync(testOutput);
+
+        await checkSourceMap(sourceMap, ["--output", testOutput, "-m"]);
+        expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
+        fs.unlinkSync(testOutput);
+      });
+
+      it("worked together with --test/--test-file", async() => {
+        expect(() => {
+          // Make sure the file isn't there before we start
+          fs.statSync(testOutput);
+        }).toThrow();
+
+        await checkSourceMap(sourceMap, ["-o", testOutput, "-t", "1", "--source-map"]);
+        expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
+        fs.unlinkSync(testOutput);
+
+        await checkSourceMap(sourceMap, ["-o", testOutput, "-t", "1", "-m"]);
+        expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
+        fs.unlinkSync(testOutput);
+
+        await checkSourceMap(
+          sourceMap,
+          ["-o", testOutput, "-t", "2", "--source-map"],
+          'Error: Expected "1" but "2" found'
+        );
+        expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
+        fs.unlinkSync(testOutput);
+
+        await checkSourceMap(
+          sourceMap,
+          ["-o", testOutput, "-t", "2", "-m"],
+          'Error: Expected "1" but "2" found'
+        );
+        expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
+        fs.unlinkSync(testOutput);
+      });
+    });
+
+    describe("with specified name", () => {
+      const sourceMap = path.resolve(__dirname, "specified-name.map");
+
+      it("generates a source map", async() => {
+        expect(() => {
+          // Make sure the file isn't there before we start
+          fs.statSync(sourceMap);
+        }).toThrow();
+
+        const result = expect(exec({
+          args: ["--source-map", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js.map"],
+          stdin: "foo = '1' { return 42; }",
+        }));
+        await result.rejects.toThrow("Can't write to file \"__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js.map\"");
+        await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+
+        await checkSourceMap(sourceMap, ["--source-map", sourceMap]);
+        await checkSourceMap(sourceMap, ["-m", sourceMap]);
+      });
+
+      it("emits an error if used with --test/--test-file", async() => {
+        expect(() => {
+          // Make sure the file isn't there before we start
+          fs.statSync(sourceMap);
+        }).toThrow();
+
+        await expect(exec({
+          args: ["-t", "1", "--source-map", sourceMap],
+          stdin: "foo = '1' { return 42; }",
+        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        expect(() => {
+          // Make sure the file isn't there
+          fs.statSync(sourceMap);
+        }).toThrow();
+
+        await expect(exec({
+          args: ["-t", "1", "-m", sourceMap],
+          stdin: "foo = '1' { return 42; }",
+        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        expect(() => {
+          // Make sure the file isn't there
+          fs.statSync(sourceMap);
+        }).toThrow();
+      });
+    });
   });
 
   it("uses dash-dash", async() => {
