@@ -102,7 +102,7 @@ let options = program
   )
   .option(
     "-c, --extra-options-file <file>",
-    "file with additional options (in JSON or commonjs module format as an object) to pass to peg.generate",
+    "file with additional options (in JSON as an object or commonjs module format) to pass to peg.generate",
     (val, prev) => {
       if (/\.c?js$/.test(val)) {
         return Object.assign({}, prev, require(path.resolve(val)));
@@ -243,7 +243,7 @@ switch (program.args.length) {
 let outputFile = options.output;
 if (!outputFile) {
   outputFile = ((inputFile === "-") || options.test || options.testFile)
-    ? outputFile = "-"
+    ? "-"
     : inputFile.substr(0, inputFile.length - path.extname(inputFile).length) + ".js";
 }
 
@@ -254,13 +254,14 @@ if (options.test && options.testFile) {
 options.output = (options.test || options.testFile) ? "parser" : "source";
 let testText = null;
 let testGrammarSource = null;
+let testFile = null;
 if (options.test) {
   testText = options.test;
   testGrammarSource = "command line";
   delete options.test;
 }
 if (options.testFile) {
-  testText = readFile(options.testFile);
+  testFile = options.testFile;
   testGrammarSource = options.testFile;
   delete options.testFile;
 }
@@ -269,10 +270,11 @@ if (verbose) {
   console.error("OPTIONS:", util.inspect(options, {
     depth: Infinity,
     colors: process.stdout.isTTY,
+    maxArrayLength: Infinity,
+    maxStringLength: Infinity,
   }));
   console.error("INPUT:", inputFile);
   console.error("OUTPUT:", outputFile);
-  console.error("TEST TEXT:", testText);
 }
 
 // Main
@@ -300,7 +302,13 @@ readStream(inputStream, input => {
     abortError("Error parsing grammar:", e);
   }
 
+  if (testFile) {
+    testText = readFile(testFile);
+  }
   if (testText) {
+    if (verbose) {
+      console.error("TEST TEXT:", testText);
+    }
     try {
       source = source.parse(testText, {
         grammarSource: testGrammarSource,
@@ -311,6 +319,8 @@ readStream(inputStream, input => {
     source = util.inspect(source, {
       depth: Infinity,
       colors: (outputFile === "-") && process.stdout.isTTY,
+      maxArrayLength: Infinity,
+      maxStringLength: Infinity,
     }) + "\n";
   }
 
@@ -320,7 +330,7 @@ readStream(inputStream, input => {
   } else {
     outputStream = fs.createWriteStream(outputFile);
     outputStream.on("error", () => {
-      abort("Can't write to file \"" + outputFile + "\".");
+      abort(`Can't write to file "${outputFile}".`);
     });
   }
 
@@ -328,4 +338,5 @@ readStream(inputStream, input => {
   if (outputStream !== process.stdout) {
     outputStream.end();
   }
+
 });

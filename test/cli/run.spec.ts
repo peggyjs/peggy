@@ -42,12 +42,22 @@ function exec(opts: Options = {}) {
     ...opts,
   };
   return new Promise((resolve, reject) => {
-    const bin = path.join(__dirname, "..", "..", "bin", "peggy.js");
+    let bin = path.join(__dirname, "..", "..", "bin", "peggy.js");
     const env = {
       ...process.env,
       ...opts.env,
     };
-    const c = spawn(bin, opts.args, {
+
+    // On Windows, use "node" to launch, rather than relying on shebang. In
+    // real-world usage, `npm install` will also write a .cmd file so "node"
+    // isn't required.
+    const args = opts.args ? opts.args : [];
+    if (process.platform === "win32") {
+      args.unshift(bin);
+      [bin] = process.argv;
+    }
+
+    const c = spawn(bin, args, {
       stdio: "pipe",
       env,
     });
@@ -90,9 +100,9 @@ Options:
                                    loader is detected
   --extra-options <options>        additional options (in JSON format as an
                                    object) to pass to peg.generate
-  -c, --extra-options-file <file>  file with additional options (in JSON or
-                                   commonjs module format as an object) to pass
-                                   to peg.generate
+  -c, --extra-options-file <file>  file with additional options (in JSON as an
+                                   object or commonjs module format) to pass to
+                                   peg.generate
   --format <format>                format of the generated parser (choices:
                                    "amd", "commonjs", "es", "globals", "umd",
                                    default: "commonjs")
@@ -342,7 +352,7 @@ baz = "3"
   it("uses dash-dash", async() => {
     await expect(exec({
       args: ["--", "--trace"],
-    })).rejects.toThrow("no such file or directory, open '--trace'");
+    })).rejects.toThrow(/no such file or directory, open '[^']*--trace'/);
 
     await expect(exec({
       args: ["--", "--trace", "--format"],

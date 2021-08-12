@@ -10,7 +10,7 @@ Released: TBD
 
 ### Minor Changes
 
-- New CLI [@hildjj]()
+- New CLI [@hildjj](https://github.com/peggyjs/peggy/pull/167)
   - Backward compatible with the previous
   - New -t/--test and -T/--testfile flags to directly test the generated grammar
 
