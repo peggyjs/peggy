@@ -338,5 +338,4 @@ readStream(inputStream, input => {
   if (outputStream !== process.stdout) {
     outputStream.end();
   }
-
 });

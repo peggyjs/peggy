@@ -7,8 +7,8 @@
 
 const require$$0 = require('events');
 const require$$1 = require('child_process');
-const path = require('path');
-const fs = require('fs');
+const path$1 = require('path');
+const fs$1 = require('fs');
 const peg = require('../lib/peg.js');
 const util = require('util');
 
@@ -16,27 +16,229 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 const require$$0__default = /*#__PURE__*/_interopDefaultLegacy(require$$0);
 const require$$1__default = /*#__PURE__*/_interopDefaultLegacy(require$$1);
-const path__default = /*#__PURE__*/_interopDefaultLegacy(path);
-const fs__default = /*#__PURE__*/_interopDefaultLegacy(fs);
+const path__default = /*#__PURE__*/_interopDefaultLegacy(path$1);
+const fs__default = /*#__PURE__*/_interopDefaultLegacy(fs$1);
 const peg__default = /*#__PURE__*/_interopDefaultLegacy(peg);
 const util__default = /*#__PURE__*/_interopDefaultLegacy(util);
 
 var commander = {exports: {}};
 
+var argument = {};
+
+var error = {};
+
+// @ts-check
+
 /**
- * Module dependencies.
+ * CommanderError class
+ * @class
+ */
+class CommanderError$1 extends Error {
+  /**
+   * Constructs the CommanderError class
+   * @param {number} exitCode suggested exit code which could be used with process.exit
+   * @param {string} code an id string representing the error
+   * @param {string} message human-readable description of the error
+   * @constructor
+   */
+  constructor(exitCode, code, message) {
+    super(message);
+    // properly capture stack trace in Node.js
+    Error.captureStackTrace(this, this.constructor);
+    this.name = this.constructor.name;
+    this.code = code;
+    this.exitCode = exitCode;
+    this.nestedError = undefined;
+  }
+}
+
+/**
+ * InvalidArgumentError class
+ * @class
+ */
+class InvalidArgumentError$2 extends CommanderError$1 {
+  /**
+   * Constructs the InvalidArgumentError class
+   * @param {string} [message] explanation of why argument is invalid
+   * @constructor
+   */
+  constructor(message) {
+    super(1, 'commander.invalidArgument', message);
+    // properly capture stack trace in Node.js
+    Error.captureStackTrace(this, this.constructor);
+    this.name = this.constructor.name;
+  }
+}
+
+error.CommanderError = CommanderError$1;
+error.InvalidArgumentError = InvalidArgumentError$2;
+
+const { InvalidArgumentError: InvalidArgumentError$1 } = error;
+
+// @ts-check
+
+class Argument$1 {
+  /**
+   * Initialize a new command argument with the given name and description.
+   * The default is that the argument is required, and you can explicitly
+   * indicate this with <> around the name. Put [] around the name for an optional argument.
+   *
+   * @param {string} name
+   * @param {string} [description]
+   */
+
+  constructor(name, description) {
+    this.description = description || '';
+    this.variadic = false;
+    this.parseArg = undefined;
+    this.defaultValue = undefined;
+    this.defaultValueDescription = undefined;
+    this.argChoices = undefined;
+
+    switch (name[0]) {
+      case '<': // e.g. <required>
+        this.required = true;
+        this._name = name.slice(1, -1);
+        break;
+      case '[': // e.g. [optional]
+        this.required = false;
+        this._name = name.slice(1, -1);
+        break;
+      default:
+        this.required = true;
+        this._name = name;
+        break;
+    }
+
+    if (this._name.length > 3 && this._name.slice(-3) === '...') {
+      this.variadic = true;
+      this._name = this._name.slice(0, -3);
+    }
+  }
+
+  /**
+   * Return argument name.
+   *
+   * @return {string}
+   */
+
+  name() {
+    return this._name;
+  };
+
+  /**
+   * @api private
+   */
+
+  _concatValue(value, previous) {
+    if (previous === this.defaultValue || !Array.isArray(previous)) {
+      return [value];
+    }
+
+    return previous.concat(value);
+  }
+
+  /**
+   * Set the default value, and optionally supply the description to be displayed in the help.
+   *
+   * @param {any} value
+   * @param {string} [description]
+   * @return {Argument}
+   */
+
+  default(value, description) {
+    this.defaultValue = value;
+    this.defaultValueDescription = description;
+    return this;
+  };
+
+  /**
+   * Set the custom handler for processing CLI command arguments into argument values.
+   *
+   * @param {Function} [fn]
+   * @return {Argument}
+   */
+
+  argParser(fn) {
+    this.parseArg = fn;
+    return this;
+  };
+
+  /**
+   * Only allow option value to be one of choices.
+   *
+   * @param {string[]} values
+   * @return {Argument}
+   */
+
+  choices(values) {
+    this.argChoices = values;
+    this.parseArg = (arg, previous) => {
+      if (!values.includes(arg)) {
+        throw new InvalidArgumentError$1(`Allowed choices are ${values.join(', ')}.`);
+      }
+      if (this.variadic) {
+        return this._concatValue(arg, previous);
+      }
+      return arg;
+    };
+    return this;
+  };
+
+  /**
+   * Make option-argument required.
+   */
+  argRequired() {
+    this.required = true;
+    return this;
+  }
+
+  /**
+   * Make option-argument optional.
+   */
+  argOptional() {
+    this.required = false;
+    return this;
+  }
+}
+
+/**
+ * Takes an argument and returns its human readable equivalent for help usage.
+ *
+ * @param {Argument} arg
+ * @return {string}
+ * @api private
  */
 
-(function (module, exports) {
-const EventEmitter = require$$0__default['default'].EventEmitter;
-const childProcess = require$$1__default['default'];
-const path = path__default['default'];
-const fs = fs__default['default'];
+function humanReadableArgName$2(arg) {
+  const nameOutput = arg.name() + (arg.variadic === true ? '...' : '');
+
+  return arg.required
+    ? '<' + nameOutput + '>'
+    : '[' + nameOutput + ']';
+}
+
+argument.Argument = Argument$1;
+argument.humanReadableArgName = humanReadableArgName$2;
+
+var command = {};
+
+var help = {};
+
+const { humanReadableArgName: humanReadableArgName$1 } = argument;
+
+/**
+ * TypeScript import types for JSDoc, used by Visual Studio Code IntelliSense and `npm run typescript-checkJS`
+ * https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#import-types
+ * @typedef { import("./argument.js").Argument } Argument
+ * @typedef { import("./command.js").Command } Command
+ * @typedef { import("./option.js").Option } Option
+ */
 
 // @ts-check
 
 // Although this is a class, methods are static in style to allow override using subclass or just functions.
-class Help {
+class Help$1 {
   constructor() {
     this.helpWidth = undefined;
     this.sortSubcommands = false;
@@ -54,15 +256,16 @@ class Help {
     const visibleCommands = cmd.commands.filter(cmd => !cmd._hidden);
     if (cmd._hasImplicitHelpCommand()) {
       // Create a command matching the implicit help command.
-      const args = cmd._helpCommandnameAndArgs.split(/ +/);
-      const helpCommand = cmd.createCommand(args.shift())
+      const [, helpName, helpArgs] = cmd._helpCommandnameAndArgs.match(/([^ ]+) *(.*)/);
+      const helpCommand = cmd.createCommand(helpName)
         .helpOption(false);
       helpCommand.description(cmd._helpCommandDescription);
-      helpCommand._parseExpectedArgs(args);
+      if (helpArgs) helpCommand.arguments(helpArgs);
       visibleCommands.push(helpCommand);
     }
     if (this.sortSubcommands) {
       visibleCommands.sort((a, b) => {
+        // @ts-ignore: overloaded return type
         return a.name().localeCompare(b.name());
       });
     }
@@ -105,19 +308,24 @@ class Help {
   }
 
   /**
-   * Get an array of the arguments which have descriptions.
+   * Get an array of the arguments if any have a description.
    *
    * @param {Command} cmd
-   * @returns {{ term: string, description:string }[]}
+   * @returns {Argument[]}
    */
 
   visibleArguments(cmd) {
-    if (cmd._argsDescription && cmd._args.length) {
-      return cmd._args.map((argument) => {
-        return { term: argument.name, description: cmd._argsDescription[argument.name] || '' };
-      }, 0);
+    // Side effect! Apply the legacy descriptions before the arguments are displayed.
+    if (cmd._argsDescription) {
+      cmd._args.forEach(argument => {
+        argument.description = argument.description || cmd._argsDescription[argument.name()] || '';
+      });
     }
-    return [];
+
+    // If there are any arguments with a description then return all the arguments.
+    if (cmd._args.find(argument => argument.description)) {
+      return cmd._args;
+    }    return [];
   }
 
   /**
@@ -129,7 +337,7 @@ class Help {
 
   subcommandTerm(cmd) {
     // Legacy. Ignores custom usage string, and nested commands.
-    const args = cmd._args.map(arg => humanReadableArgName(arg)).join(' ');
+    const args = cmd._args.map(arg => humanReadableArgName$1(arg)).join(' ');
     return cmd._name +
       (cmd._aliases[0] ? '|' + cmd._aliases[0] : '') +
       (cmd.options.length ? ' [options]' : '') + // simplistic check for non-help option
@@ -145,6 +353,17 @@ class Help {
 
   optionTerm(option) {
     return option.flags;
+  }
+
+  /**
+   * Get the argument term to show in the list of arguments.
+   *
+   * @param {Argument} argument
+   * @returns {string}
+   */
+
+  argumentTerm(argument) {
+    return argument.name();
   }
 
   /**
@@ -185,7 +404,7 @@ class Help {
 
   longestArgumentTermLength(cmd, helper) {
     return helper.visibleArguments(cmd).reduce((max, argument) => {
-      return Math.max(max, argument.term.length);
+      return Math.max(max, helper.argumentTerm(argument).length);
     }, 0);
   };
 
@@ -260,6 +479,33 @@ class Help {
   };
 
   /**
+   * Get the argument description to show in the list of arguments.
+   *
+   * @param {Argument} argument
+   * @return {string}
+   */
+
+  argumentDescription(argument) {
+    const extraInfo = [];
+    if (argument.argChoices) {
+      extraInfo.push(
+        // use stringify to match the display of the default value
+        `choices: ${argument.argChoices.map((choice) => JSON.stringify(choice)).join(', ')}`);
+    }
+    if (argument.defaultValue !== undefined) {
+      extraInfo.push(`default: ${argument.defaultValueDescription || JSON.stringify(argument.defaultValue)}`);
+    }
+    if (extraInfo.length > 0) {
+      const extraDescripton = `(${extraInfo.join(', ')})`;
+      if (argument.description) {
+        return `${argument.description} ${extraDescripton}`;
+      }
+      return extraDescripton;
+    }
+    return argument.description;
+  }
+
+  /**
    * Generate the built-in help text.
    *
    * @param {Command} cmd
@@ -293,7 +539,7 @@ class Help {
 
     // Arguments
     const argumentList = helper.visibleArguments(cmd).map((argument) => {
-      return formatItem(argument.term, argument.description);
+      return formatItem(helper.argumentTerm(argument), helper.argumentDescription(argument));
     });
     if (argumentList.length > 0) {
       output = output.concat(['Arguments:', formatList(argumentList), '']);
@@ -369,7 +615,15 @@ class Help {
   }
 }
 
-class Option {
+help.Help = Help$1;
+
+var option = {};
+
+const { InvalidArgumentError } = error;
+
+// @ts-check
+
+class Option$1 {
   /**
    * Initialize a new `Option` with the given `flags` and `description`.
    *
@@ -386,7 +640,7 @@ class Option {
     // variadic test ignores <value,...> et al which might be used to describe custom splitting of single argument
     this.variadic = /\w\.\.\.[>\]]$/.test(flags); // The option can take multiple values.
     this.mandatory = false; // The option must have a value after parsing, which usually means it must be specified on command line.
-    const optionFlags = _parseOptionFlags(flags);
+    const optionFlags = splitOptionFlags$1(flags);
     this.short = optionFlags.shortFlag;
     this.long = optionFlags.longFlag;
     this.negate = false;
@@ -473,7 +727,7 @@ class Option {
     this.argChoices = values;
     this.parseArg = (arg, previous) => {
       if (!values.includes(arg)) {
-        throw new InvalidOptionArgumentError(`Allowed choices are ${values.join(', ')}.`);
+        throw new InvalidArgumentError(`Allowed choices are ${values.join(', ')}.`);
       }
       if (this.variadic) {
         return this._concatValue(arg, previous);
@@ -522,45 +776,55 @@ class Option {
 }
 
 /**
- * CommanderError class
- * @class
+ * Convert string from kebab-case to camelCase.
+ *
+ * @param {string} str
+ * @return {string}
+ * @api private
  */
-class CommanderError extends Error {
-  /**
-   * Constructs the CommanderError class
-   * @param {number} exitCode suggested exit code which could be used with process.exit
-   * @param {string} code an id string representing the error
-   * @param {string} message human-readable description of the error
-   * @constructor
-   */
-  constructor(exitCode, code, message) {
-    super(message);
-    // properly capture stack trace in Node.js
-    Error.captureStackTrace(this, this.constructor);
-    this.name = this.constructor.name;
-    this.code = code;
-    this.exitCode = exitCode;
-    this.nestedError = undefined;
-  }
+
+function camelcase(str) {
+  return str.split('-').reduce((str, word) => {
+    return str + word[0].toUpperCase() + word.slice(1);
+  });
 }
 
 /**
- * InvalidOptionArgumentError class
- * @class
+ * Split the short and long flag out of something like '-m,--mixed <value>'
+ *
+ * @api private
  */
-class InvalidOptionArgumentError extends CommanderError {
-  /**
-   * Constructs the InvalidOptionArgumentError class
-   * @param {string} [message] explanation of why argument is invalid
-   * @constructor
-   */
-  constructor(message) {
-    super(1, 'commander.invalidOptionArgument', message);
-    // properly capture stack trace in Node.js
-    Error.captureStackTrace(this, this.constructor);
-    this.name = this.constructor.name;
+
+function splitOptionFlags$1(flags) {
+  let shortFlag;
+  let longFlag;
+  // Use original very loose parsing to maintain backwards compatibility for now,
+  // which allowed for example unintended `-sw, --short-word` [sic].
+  const flagParts = flags.split(/[ |,]+/);
+  if (flagParts.length > 1 && !/^[[<]/.test(flagParts[1])) shortFlag = flagParts.shift();
+  longFlag = flagParts.shift();
+  // Add support for lone short flag without significantly changing parsing!
+  if (!shortFlag && /^-[^-]$/.test(longFlag)) {
+    shortFlag = longFlag;
+    longFlag = undefined;
   }
+  return { shortFlag, longFlag };
 }
+
+option.Option = Option$1;
+option.splitOptionFlags = splitOptionFlags$1;
+
+const EventEmitter = require$$0__default['default'].EventEmitter;
+const childProcess = require$$1__default['default'];
+const path = path__default['default'];
+const fs = fs__default['default'];
+
+const { Argument, humanReadableArgName } = argument;
+const { CommanderError } = error;
+const { Help } = help;
+const { Option, splitOptionFlags } = option;
+
+// @ts-check
 
 class Command extends EventEmitter {
   /**
@@ -571,18 +835,23 @@ class Command extends EventEmitter {
 
   constructor(name) {
     super();
+    /** @type {Command[]} */
     this.commands = [];
+    /** @type {Option[]} */
     this.options = [];
     this.parent = null;
     this._allowUnknownOption = false;
     this._allowExcessArguments = true;
+    /** @type {Argument[]} */
     this._args = [];
-    this.rawArgs = null;
+    /** @type {string[]} */
+    this.args = []; // cli args with options removed
+    this.rawArgs = [];
+    this.processedArgs = []; // like .args but after custom processing and collecting variadic
     this._scriptPath = null;
     this._name = name || '';
     this._optionValues = {};
     this._storeOptionsAsProperties = false;
-    this._actionResults = [];
     this._actionHandler = null;
     this._executableHandler = false;
     this._executableFile = null; // custom name for executable
@@ -591,9 +860,12 @@ class Command extends EventEmitter {
     this._aliases = [];
     this._combineFlagAndOptionalValue = true;
     this._description = '';
-    this._argsDescription = undefined;
+    this._argsDescription = undefined; // legacy
     this._enablePositionalOptions = false;
     this._passThroughOptions = false;
+    this._lifeCycleHooks = {}; // a hash of arrays
+    /** @type {boolean | string} */
+    this._showHelpAfterError = false;
 
     // see .configureOutput() for docs
     this._outputConfiguration = {
@@ -618,24 +890,52 @@ class Command extends EventEmitter {
   }
 
   /**
+   * Copy settings that are useful to have in common across root command and subcommands.
+   *
+   * (Used internally when adding a command using `.command()` so subcommands inherit parent settings.)
+   *
+   * @param {Command} sourceCommand
+   * @return {Command} returns `this` for executable command
+   */
+  copyInheritedSettings(sourceCommand) {
+    this._outputConfiguration = sourceCommand._outputConfiguration;
+    this._hasHelpOption = sourceCommand._hasHelpOption;
+    this._helpFlags = sourceCommand._helpFlags;
+    this._helpDescription = sourceCommand._helpDescription;
+    this._helpShortFlag = sourceCommand._helpShortFlag;
+    this._helpLongFlag = sourceCommand._helpLongFlag;
+    this._helpCommandName = sourceCommand._helpCommandName;
+    this._helpCommandnameAndArgs = sourceCommand._helpCommandnameAndArgs;
+    this._helpCommandDescription = sourceCommand._helpCommandDescription;
+    this._helpConfiguration = sourceCommand._helpConfiguration;
+    this._exitCallback = sourceCommand._exitCallback;
+    this._storeOptionsAsProperties = sourceCommand._storeOptionsAsProperties;
+    this._combineFlagAndOptionalValue = sourceCommand._combineFlagAndOptionalValue;
+    this._allowExcessArguments = sourceCommand._allowExcessArguments;
+    this._enablePositionalOptions = sourceCommand._enablePositionalOptions;
+    this._showHelpAfterError = sourceCommand._showHelpAfterError;
+
+    return this;
+  }
+
+  /**
    * Define a command.
    *
    * There are two styles of command: pay attention to where to put the description.
    *
-   * Examples:
+   * @example
+   * // Command implemented using action handler (description is supplied separately to `.command`)
+   * program
+   *   .command('clone <source> [destination]')
+   *   .description('clone a repository into a newly created directory')
+   *   .action((source, destination) => {
+   *     console.log('clone command called');
+   *   });
    *
-   *      // Command implemented using action handler (description is supplied separately to `.command`)
-   *      program
-   *        .command('clone <source> [destination]')
-   *        .description('clone a repository into a newly created directory')
-   *        .action((source, destination) => {
-   *          console.log('clone command called');
-   *        });
-   *
-   *      // Command implemented using separate executable file (description is second parameter to `.command`)
-   *      program
-   *        .command('start <service>', 'start named service')
-   *        .command('stop [service]', 'stop named service, or all if no name supplied');
+   * // Command implemented using separate executable file (description is second parameter to `.command`)
+   * program
+   *   .command('start <service>', 'start named service')
+   *   .command('stop [service]', 'stop named service, or all if no name supplied');
    *
    * @param {string} nameAndArgs - command name and arguments, args are `<required>` or `[optional]` and last may also be `variadic...`
    * @param {Object|string} [actionOptsOrExecDesc] - configuration options (for action), or description (for executable)
@@ -651,37 +951,20 @@ class Command extends EventEmitter {
       desc = null;
     }
     opts = opts || {};
-    const args = nameAndArgs.split(/ +/);
-    const cmd = this.createCommand(args.shift());
+    const [, name, args] = nameAndArgs.match(/([^ ]+) *(.*)/);
 
+    const cmd = this.createCommand(name);
     if (desc) {
       cmd.description(desc);
       cmd._executableHandler = true;
     }
     if (opts.isDefault) this._defaultCommandName = cmd._name;
-
-    cmd._outputConfiguration = this._outputConfiguration;
-
     cmd._hidden = !!(opts.noHelp || opts.hidden); // noHelp is deprecated old name for hidden
-    cmd._hasHelpOption = this._hasHelpOption;
-    cmd._helpFlags = this._helpFlags;
-    cmd._helpDescription = this._helpDescription;
-    cmd._helpShortFlag = this._helpShortFlag;
-    cmd._helpLongFlag = this._helpLongFlag;
-    cmd._helpCommandName = this._helpCommandName;
-    cmd._helpCommandnameAndArgs = this._helpCommandnameAndArgs;
-    cmd._helpCommandDescription = this._helpCommandDescription;
-    cmd._helpConfiguration = this._helpConfiguration;
-    cmd._exitCallback = this._exitCallback;
-    cmd._storeOptionsAsProperties = this._storeOptionsAsProperties;
-    cmd._combineFlagAndOptionalValue = this._combineFlagAndOptionalValue;
-    cmd._allowExcessArguments = this._allowExcessArguments;
-    cmd._enablePositionalOptions = this._enablePositionalOptions;
-
     cmd._executableFile = opts.executableFile || null; // Custom name for executable file, set missing to null to match constructor
+    if (args) cmd.arguments(args);
     this.commands.push(cmd);
-    cmd._parseExpectedArgs(args);
     cmd.parent = this;
+    cmd.copyInheritedSettings(this);
 
     if (desc) return this;
     return cmd;
@@ -733,14 +1016,14 @@ class Command extends EventEmitter {
    *
    * The configuration properties are all functions:
    *
-   *    // functions to change where being written, stdout and stderr
-   *    writeOut(str)
-   *    writeErr(str)
-   *    // matching functions to specify width for wrapping help
-   *    getOutHelpWidth()
-   *    getErrHelpWidth()
-   *    // functions based on what is being written out
-   *    outputError(str, write) // used for displaying errors, and not used for displaying help
+   *     // functions to change where being written, stdout and stderr
+   *     writeOut(str)
+   *     writeErr(str)
+   *     // matching functions to specify width for wrapping help
+   *     getOutHelpWidth()
+   *     getErrHelpWidth()
+   *     // functions based on what is being written out
+   *     outputError(str, write) // used for displaying errors, and not used for displaying help
    *
    * @param {Object} [configuration] - configuration options
    * @return {Command|Object} `this` command for chaining, or stored configuration
@@ -750,6 +1033,18 @@ class Command extends EventEmitter {
     if (configuration === undefined) return this._outputConfiguration;
 
     Object.assign(this._outputConfiguration, configuration);
+    return this;
+  }
+
+  /**
+   * Display the help or a custom message after an error occurs.
+   *
+   * @param {boolean|string} [displayHelp]
+   * @return {Command} `this` command for chaining
+   */
+  showHelpAfterError(displayHelp = true) {
+    if (typeof displayHelp !== 'string') displayHelp = !!displayHelp;
+    this._showHelpAfterError = displayHelp;
     return this;
   }
 
@@ -788,12 +1083,83 @@ class Command extends EventEmitter {
   };
 
   /**
-   * Define argument syntax for the command.
+   * Factory routine to create a new unattached argument.
+   *
+   * See .argument() for creating an attached argument, which uses this routine to
+   * create the argument. You can override createArgument to return a custom argument.
+   *
+   * @param {string} name
+   * @param {string} [description]
+   * @return {Argument} new argument
    */
 
-  arguments(desc) {
-    return this._parseExpectedArgs(desc.split(/ +/));
+  createArgument(name, description) {
+    return new Argument(name, description);
   };
+
+  /**
+   * Define argument syntax for command.
+   *
+   * The default is that the argument is required, and you can explicitly
+   * indicate this with <> around the name. Put [] around the name for an optional argument.
+   *
+   * @example
+   * program.argument('<input-file>');
+   * program.argument('[output-file]');
+   *
+   * @param {string} name
+   * @param {string} [description]
+   * @param {Function|*} [fn] - custom argument processing function
+   * @param {*} [defaultValue]
+   * @return {Command} `this` command for chaining
+   */
+  argument(name, description, fn, defaultValue) {
+    const argument = this.createArgument(name, description);
+    if (typeof fn === 'function') {
+      argument.default(defaultValue).argParser(fn);
+    } else {
+      argument.default(fn);
+    }
+    this.addArgument(argument);
+    return this;
+  }
+
+  /**
+   * Define argument syntax for command, adding multiple at once (without descriptions).
+   *
+   * See also .argument().
+   *
+   * @example
+   * program.arguments('<cmd> [env]');
+   *
+   * @param {string} names
+   * @return {Command} `this` command for chaining
+   */
+
+  arguments(names) {
+    names.split(/ +/).forEach((detail) => {
+      this.argument(detail);
+    });
+    return this;
+  };
+
+  /**
+   * Define argument syntax for command, adding a prepared argument.
+   *
+   * @param {Argument} argument
+   * @return {Command} `this` command for chaining
+   */
+  addArgument(argument) {
+    const previousArgument = this._args.slice(-1)[0];
+    if (previousArgument && previousArgument.variadic) {
+      throw new Error(`only the last argument can be variadic '${previousArgument.name()}'`);
+    }
+    if (argument.required && argument.defaultValue !== undefined && argument.parseArg === undefined) {
+      throw new Error(`a default value for a required argument is never used: '${argument.name()}'`);
+    }
+    this._args.push(argument);
+    return this;
+  }
 
   /**
    * Override default decision whether to add implicit help command.
@@ -832,49 +1198,26 @@ class Command extends EventEmitter {
   };
 
   /**
-   * Parse expected `args`.
+   * Add hook for life cycle event.
    *
-   * For example `["[type]"]` becomes `[{ required: false, name: 'type' }]`.
-   *
-   * @param {Array} args
+   * @param {string} event
+   * @param {Function} listener
    * @return {Command} `this` command for chaining
-   * @api private
    */
 
-  _parseExpectedArgs(args) {
-    if (!args.length) return;
-    args.forEach((arg) => {
-      const argDetails = {
-        required: false,
-        name: '',
-        variadic: false
-      };
-
-      switch (arg[0]) {
-        case '<':
-          argDetails.required = true;
-          argDetails.name = arg.slice(1, -1);
-          break;
-        case '[':
-          argDetails.name = arg.slice(1, -1);
-          break;
-      }
-
-      if (argDetails.name.length > 3 && argDetails.name.slice(-3) === '...') {
-        argDetails.variadic = true;
-        argDetails.name = argDetails.name.slice(0, -3);
-      }
-      if (argDetails.name) {
-        this._args.push(argDetails);
-      }
-    });
-    this._args.forEach((arg, i) => {
-      if (arg.variadic && i < this._args.length - 1) {
-        throw new Error(`only the last argument can be variadic '${arg.name}'`);
-      }
-    });
+  hook(event, listener) {
+    const allowedValues = ['preAction', 'postAction'];
+    if (!allowedValues.includes(event)) {
+      throw new Error(`Unexpected value for event passed to hook : '${event}'.
+Expecting one of '${allowedValues.join("', '")}'`);
+    }
+    if (this._lifeCycleHooks[event]) {
+      this._lifeCycleHooks[event].push(listener);
+    } else {
+      this._lifeCycleHooks[event] = [listener];
+    }
     return this;
-  };
+  }
 
   /**
    * Register callback to use as replacement for calling process.exit.
@@ -917,14 +1260,13 @@ class Command extends EventEmitter {
   /**
    * Register callback `fn` for the command.
    *
-   * Examples:
-   *
-   *      program
-   *        .command('help')
-   *        .description('display verbose help')
-   *        .action(function() {
-   *           // output help here
-   *        });
+   * @example
+   * program
+   *   .command('help')
+   *   .description('display verbose help')
+   *   .action(function() {
+   *      // output help here
+   *   });
    *
    * @param {Function} fn
    * @return {Command} `this` command for chaining
@@ -942,13 +1284,7 @@ class Command extends EventEmitter {
       }
       actionArgs.push(this);
 
-      const actionResult = fn.apply(this, actionArgs);
-      // Remember result in case it is async. Assume parseAsync getting called on root.
-      let rootCommand = this;
-      while (rootCommand.parent) {
-        rootCommand = rootCommand.parent;
-      }
-      rootCommand._actionResults.push(actionResult);
+      return fn.apply(this, actionArgs);
     };
     this._actionHandler = listener;
     return this;
@@ -986,11 +1322,11 @@ class Command extends EventEmitter {
       // when --no-foo we make sure default is true, unless a --foo option is already defined
       if (option.negate) {
         const positiveLongFlag = option.long.replace(/^--no-/, '--');
-        defaultValue = this._findOption(positiveLongFlag) ? this._getOptionValue(name) : true;
+        defaultValue = this._findOption(positiveLongFlag) ? this.getOptionValue(name) : true;
       }
       // preassign only if we have a default
       if (defaultValue !== undefined) {
-        this._setOptionValue(name, defaultValue);
+        this.setOptionValue(name, defaultValue);
       }
     }
 
@@ -1000,14 +1336,14 @@ class Command extends EventEmitter {
     // when it's passed assign the value
     // and conditionally invoke the callback
     this.on('option:' + oname, (val) => {
-      const oldValue = this._getOptionValue(name);
+      const oldValue = this.getOptionValue(name);
 
       // custom processing
       if (val !== null && option.parseArg) {
         try {
           val = option.parseArg(val, oldValue === undefined ? defaultValue : oldValue);
         } catch (err) {
-          if (err.code === 'commander.invalidOptionArgument') {
+          if (err.code === 'commander.invalidArgument') {
             const message = `error: option '${option.flags}' argument '${val}' is invalid. ${err.message}`;
             this._displayError(err.exitCode, err.code, message);
           }
@@ -1021,15 +1357,15 @@ class Command extends EventEmitter {
       if (typeof oldValue === 'boolean' || typeof oldValue === 'undefined') {
         // if no value, negate false, and we have a default, then use it!
         if (val == null) {
-          this._setOptionValue(name, option.negate
+          this.setOptionValue(name, option.negate
             ? false
             : defaultValue || true);
         } else {
-          this._setOptionValue(name, val);
+          this.setOptionValue(name, val);
         }
       } else if (val !== null) {
         // reassign
-        this._setOptionValue(name, option.negate ? false : val);
+        this.setOptionValue(name, option.negate ? false : val);
       }
     });
 
@@ -1069,41 +1405,40 @@ class Command extends EventEmitter {
    * separated by comma, a pipe or space. The following are all valid
    * all will output this way when `--help` is used.
    *
-   *    "-p, --pepper"
-   *    "-p|--pepper"
-   *    "-p --pepper"
+   *     "-p, --pepper"
+   *     "-p|--pepper"
+   *     "-p --pepper"
    *
-   * Examples:
+   * @example
+   * // simple boolean defaulting to undefined
+   * program.option('-p, --pepper', 'add pepper');
    *
-   *     // simple boolean defaulting to undefined
-   *     program.option('-p, --pepper', 'add pepper');
+   * program.pepper
+   * // => undefined
    *
-   *     program.pepper
-   *     // => undefined
+   * --pepper
+   * program.pepper
+   * // => true
    *
-   *     --pepper
-   *     program.pepper
-   *     // => true
+   * // simple boolean defaulting to true (unless non-negated option is also defined)
+   * program.option('-C, --no-cheese', 'remove cheese');
    *
-   *     // simple boolean defaulting to true (unless non-negated option is also defined)
-   *     program.option('-C, --no-cheese', 'remove cheese');
+   * program.cheese
+   * // => true
    *
-   *     program.cheese
-   *     // => true
+   * --no-cheese
+   * program.cheese
+   * // => false
    *
-   *     --no-cheese
-   *     program.cheese
-   *     // => false
+   * // required argument
+   * program.option('-C, --chdir <path>', 'change the working directory');
    *
-   *     // required argument
-   *     program.option('-C, --chdir <path>', 'change the working directory');
+   * --chdir /tmp
+   * program.chdir
+   * // => "/tmp"
    *
-   *     --chdir /tmp
-   *     program.chdir
-   *     // => "/tmp"
-   *
-   *     // optional argument
-   *     program.option('-c, --cheese [type]', 'add cheese [marble]');
+   * // optional argument
+   * program.option('-c, --cheese [type]', 'add cheese [marble]');
    *
    * @param {string} flags
    * @param {string} [description]
@@ -1136,11 +1471,10 @@ class Command extends EventEmitter {
   /**
    * Alter parsing of short flags with optional values.
    *
-   * Examples:
-   *
-   *    // for `.option('-f,--flag [value]'):
-   *    .combineFlagAndOptionalValue(true)  // `-f80` is treated like `--flag=80`, this is the default behaviour
-   *    .combineFlagAndOptionalValue(false) // `-fb` is treated like `-f -b`
+   * @example
+   * // for `.option('-f,--flag [value]'):
+   * program.combineFlagAndOptionalValue(true);  // `-f80` is treated like `--flag=80`, this is the default behaviour
+   * program.combineFlagAndOptionalValue(false) // `-fb` is treated like `-f -b`
    *
    * @param {Boolean} [combine=true] - if `true` or omitted, an optional value can be specified directly after the flag.
    */
@@ -1217,30 +1551,13 @@ class Command extends EventEmitter {
   };
 
   /**
-   * Store option value
-   *
-   * @param {string} key
-   * @param {Object} value
-   * @api private
-   */
-
-  _setOptionValue(key, value) {
-    if (this._storeOptionsAsProperties) {
-      this[key] = value;
-    } else {
-      this._optionValues[key] = value;
-    }
-  };
-
-  /**
-   * Retrieve option value
+   * Retrieve option value.
    *
    * @param {string} key
    * @return {Object} value
-   * @api private
    */
 
-  _getOptionValue(key) {
+  getOptionValue(key) {
     if (this._storeOptionsAsProperties) {
       return this[key];
     }
@@ -1248,24 +1565,30 @@ class Command extends EventEmitter {
   };
 
   /**
-   * Parse `argv`, setting options and invoking commands when defined.
+   * Store option value.
    *
-   * The default expectation is that the arguments are from node and have the application as argv[0]
-   * and the script being run in argv[1], with user parameters after that.
-   *
-   * Examples:
-   *
-   *      program.parse(process.argv);
-   *      program.parse(); // implicitly use process.argv and auto-detect node vs electron conventions
-   *      program.parse(my-args, { from: 'user' }); // just user supplied arguments, nothing special about argv[0]
-   *
-   * @param {string[]} [argv] - optional, defaults to process.argv
-   * @param {Object} [parseOptions] - optionally specify style of options with from: node/user/electron
-   * @param {string} [parseOptions.from] - where the args are from: 'node', 'user', 'electron'
+   * @param {string} key
+   * @param {Object} value
    * @return {Command} `this` command for chaining
    */
 
-  parse(argv, parseOptions) {
+  setOptionValue(key, value) {
+    if (this._storeOptionsAsProperties) {
+      this[key] = value;
+    } else {
+      this._optionValues[key] = value;
+    }
+    return this;
+  };
+
+  /**
+   * Get user arguments implied or explicit arguments.
+   * Side-effects: set _scriptPath if args included application, and use that to set implicit command name.
+   *
+   * @api private
+   */
+
+  _prepareUserArgs(argv, parseOptions) {
     if (argv !== undefined && !Array.isArray(argv)) {
       throw new Error('first parameter to parse must be array or undefined');
     }
@@ -1311,7 +1634,28 @@ class Command extends EventEmitter {
     // Guess name, used in usage in help.
     this._name = this._name || (this._scriptPath && path.basename(this._scriptPath, path.extname(this._scriptPath)));
 
-    // Let's go!
+    return userArgs;
+  }
+
+  /**
+   * Parse `argv`, setting options and invoking commands when defined.
+   *
+   * The default expectation is that the arguments are from node and have the application as argv[0]
+   * and the script being run in argv[1], with user parameters after that.
+   *
+   * @example
+   * program.parse(process.argv);
+   * program.parse(); // implicitly use process.argv and auto-detect node vs electron conventions
+   * program.parse(my-args, { from: 'user' }); // just user supplied arguments, nothing special about argv[0]
+   *
+   * @param {string[]} [argv] - optional, defaults to process.argv
+   * @param {Object} [parseOptions] - optionally specify style of options with from: node/user/electron
+   * @param {string} [parseOptions.from] - where the args are from: 'node', 'user', 'electron'
+   * @return {Command} `this` command for chaining
+   */
+
+  parse(argv, parseOptions) {
+    const userArgs = this._prepareUserArgs(argv, parseOptions);
     this._parseCommand([], userArgs);
 
     return this;
@@ -1325,11 +1669,10 @@ class Command extends EventEmitter {
    * The default expectation is that the arguments are from node and have the application as argv[0]
    * and the script being run in argv[1], with user parameters after that.
    *
-   * Examples:
-   *
-   *      program.parseAsync(process.argv);
-   *      program.parseAsync(); // implicitly use process.argv and auto-detect node vs electron conventions
-   *      program.parseAsync(my-args, { from: 'user' }); // just user supplied arguments, nothing special about argv[0]
+   * @example
+   * await program.parseAsync(process.argv);
+   * await program.parseAsync(); // implicitly use process.argv and auto-detect node vs electron conventions
+   * await program.parseAsync(my-args, { from: 'user' }); // just user supplied arguments, nothing special about argv[0]
    *
    * @param {string[]} [argv]
    * @param {Object} [parseOptions]
@@ -1337,9 +1680,11 @@ class Command extends EventEmitter {
    * @return {Promise}
    */
 
-  parseAsync(argv, parseOptions) {
-    this.parse(argv, parseOptions);
-    return Promise.all(this._actionResults).then(() => this);
+  async parseAsync(argv, parseOptions) {
+    const userArgs = this._prepareUserArgs(argv, parseOptions);
+    await this._parseCommand([], userArgs);
+
+    return this;
   };
 
   /**
@@ -1456,6 +1801,7 @@ class Command extends EventEmitter {
   /**
    * @api private
    */
+
   _dispatchSubcommand(commandName, operands, unknown) {
     const subCommand = this._findCommand(commandName);
     if (!subCommand) this.help({ error: true });
@@ -1463,12 +1809,136 @@ class Command extends EventEmitter {
     if (subCommand._executableHandler) {
       this._executeSubCommand(subCommand, operands.concat(unknown));
     } else {
-      subCommand._parseCommand(operands, unknown);
+      return subCommand._parseCommand(operands, unknown);
     }
   };
 
   /**
+   * Check this.args against expected this._args.
+   *
+   * @api private
+   */
+
+  _checkNumberOfArguments() {
+    // too few
+    this._args.forEach((arg, i) => {
+      if (arg.required && this.args[i] == null) {
+        this.missingArgument(arg.name());
+      }
+    });
+    // too many
+    if (this._args.length > 0 && this._args[this._args.length - 1].variadic) {
+      return;
+    }
+    if (this.args.length > this._args.length) {
+      this._excessArguments(this.args);
+    }
+  };
+
+  /**
+   * Process this.args using this._args and save as this.processedArgs!
+   *
+   * @api private
+   */
+
+  _processArguments() {
+    const myParseArg = (argument, value, previous) => {
+      // Extra processing for nice error message on parsing failure.
+      let parsedValue = value;
+      if (value !== null && argument.parseArg) {
+        try {
+          parsedValue = argument.parseArg(value, previous);
+        } catch (err) {
+          if (err.code === 'commander.invalidArgument') {
+            const message = `error: command-argument value '${value}' is invalid for argument '${argument.name()}'. ${err.message}`;
+            this._displayError(err.exitCode, err.code, message);
+          }
+          throw err;
+        }
+      }
+      return parsedValue;
+    };
+
+    this._checkNumberOfArguments();
+
+    const processedArgs = [];
+    this._args.forEach((declaredArg, index) => {
+      let value = declaredArg.defaultValue;
+      if (declaredArg.variadic) {
+        // Collect together remaining arguments for passing together as an array.
+        if (index < this.args.length) {
+          value = this.args.slice(index);
+          if (declaredArg.parseArg) {
+            value = value.reduce((processed, v) => {
+              return myParseArg(declaredArg, v, processed);
+            }, declaredArg.defaultValue);
+          }
+        } else if (value === undefined) {
+          value = [];
+        }
+      } else if (index < this.args.length) {
+        value = this.args[index];
+        if (declaredArg.parseArg) {
+          value = myParseArg(declaredArg, value, declaredArg.defaultValue);
+        }
+      }
+      processedArgs[index] = value;
+    });
+    this.processedArgs = processedArgs;
+  }
+
+  /**
+   * Once we have a promise we chain, but call synchronously until then.
+   *
+   * @param {Promise|undefined} promise
+   * @param {Function} fn
+   * @return {Promise|undefined}
+   */
+
+  _chainOrCall(promise, fn) {
+    // thenable
+    if (promise && promise.then && typeof promise.then === 'function') {
+      // already have a promise, chain callback
+      return promise.then(() => fn());
+    }
+    // callback might return a promise
+    return fn();
+  }
+
+  /**
+   *
+   * @param {Promise|undefined} promise
+   * @param {string} event
+   * @return {Promise|undefined}
+   * @api private
+   */
+
+  _chainOrCallHooks(promise, event) {
+    let result = promise;
+    const hooks = [];
+    getCommandAndParents(this)
+      .reverse()
+      .filter(cmd => cmd._lifeCycleHooks[event] !== undefined)
+      .forEach(hookedCommand => {
+        hookedCommand._lifeCycleHooks[event].forEach((callback) => {
+          hooks.push({ hookedCommand, callback });
+        });
+      });
+    if (event === 'postAction') {
+      hooks.reverse();
+    }
+
+    hooks.forEach((hookDetail) => {
+      result = this._chainOrCall(result, () => {
+        return hookDetail.callback(hookDetail.hookedCommand, this);
+      });
+    });
+    return result;
+  }
+
+  /**
    * Process arguments in context of this command.
+   * Returns action result, in case it is a promise.
    *
    * @api private
    */
@@ -1480,72 +1950,69 @@ class Command extends EventEmitter {
     this.args = operands.concat(unknown);
 
     if (operands && this._findCommand(operands[0])) {
-      this._dispatchSubcommand(operands[0], operands.slice(1), unknown);
-    } else if (this._hasImplicitHelpCommand() && operands[0] === this._helpCommandName) {
+      return this._dispatchSubcommand(operands[0], operands.slice(1), unknown);
+    }
+    if (this._hasImplicitHelpCommand() && operands[0] === this._helpCommandName) {
       if (operands.length === 1) {
         this.help();
-      } else {
-        this._dispatchSubcommand(operands[1], [], [this._helpLongFlag]);
       }
-    } else if (this._defaultCommandName) {
+      return this._dispatchSubcommand(operands[1], [], [this._helpLongFlag]);
+    }
+    if (this._defaultCommandName) {
       outputHelpIfRequested(this, unknown); // Run the help for default command from parent rather than passing to default command
-      this._dispatchSubcommand(this._defaultCommandName, operands, unknown);
-    } else {
-      if (this.commands.length && this.args.length === 0 && !this._actionHandler && !this._defaultCommandName) {
-        // probably missing subcommand and no handler, user needs help
-        this.help({ error: true });
+      return this._dispatchSubcommand(this._defaultCommandName, operands, unknown);
+    }
+    if (this.commands.length && this.args.length === 0 && !this._actionHandler && !this._defaultCommandName) {
+      // probably missing subcommand and no handler, user needs help (and exit)
+      this.help({ error: true });
+    }
+
+    outputHelpIfRequested(this, parsed.unknown);
+    this._checkForMissingMandatoryOptions();
+
+    // We do not always call this check to avoid masking a "better" error, like unknown command.
+    const checkForUnknownOptions = () => {
+      if (parsed.unknown.length > 0) {
+        this.unknownOption(parsed.unknown[0]);
       }
+    };
 
-      outputHelpIfRequested(this, parsed.unknown);
-      this._checkForMissingMandatoryOptions();
+    const commandEvent = `command:${this.name()}`;
+    if (this._actionHandler) {
+      checkForUnknownOptions();
+      this._processArguments();
 
-      // We do not always call this check to avoid masking a "better" error, like unknown command.
-      const checkForUnknownOptions = () => {
-        if (parsed.unknown.length > 0) {
-          this.unknownOption(parsed.unknown[0]);
-        }
-      };
-
-      const commandEvent = `command:${this.name()}`;
-      if (this._actionHandler) {
-        checkForUnknownOptions();
-        // Check expected arguments and collect variadic together.
-        const args = this.args.slice();
-        this._args.forEach((arg, i) => {
-          if (arg.required && args[i] == null) {
-            this.missingArgument(arg.name);
-          } else if (arg.variadic) {
-            args[i] = args.splice(i);
-            args.length = Math.min(i + 1, args.length);
-          }
-        });
-        if (args.length > this._args.length) {
-          this._excessArguments(args);
-        }
-
-        this._actionHandler(args);
-        if (this.parent) this.parent.emit(commandEvent, operands, unknown); // legacy
-      } else if (this.parent && this.parent.listenerCount(commandEvent)) {
-        checkForUnknownOptions();
-        this.parent.emit(commandEvent, operands, unknown); // legacy
-      } else if (operands.length) {
-        if (this._findCommand('*')) { // legacy default command
-          this._dispatchSubcommand('*', operands, unknown);
-        } else if (this.listenerCount('command:*')) {
-          // skip option check, emit event for possible misspelling suggestion
-          this.emit('command:*', operands, unknown);
-        } else if (this.commands.length) {
-          this.unknownCommand();
-        } else {
-          checkForUnknownOptions();
-        }
+      let actionResult;
+      actionResult = this._chainOrCallHooks(actionResult, 'preAction');
+      actionResult = this._chainOrCall(actionResult, () => this._actionHandler(this.processedArgs));
+      if (this.parent) this.parent.emit(commandEvent, operands, unknown); // legacy
+      actionResult = this._chainOrCallHooks(actionResult, 'postAction');
+      return actionResult;
+    }
+    if (this.parent && this.parent.listenerCount(commandEvent)) {
+      checkForUnknownOptions();
+      this._processArguments();
+      this.parent.emit(commandEvent, operands, unknown); // legacy
+    } else if (operands.length) {
+      if (this._findCommand('*')) { // legacy default command
+        return this._dispatchSubcommand('*', operands, unknown);
+      }
+      if (this.listenerCount('command:*')) {
+        // skip option check, emit event for possible misspelling suggestion
+        this.emit('command:*', operands, unknown);
       } else if (this.commands.length) {
-        // This command has subcommands and nothing hooked up at this level, so display help.
-        this.help({ error: true });
+        this.unknownCommand();
       } else {
         checkForUnknownOptions();
-        // fall through for caller to handle after calling .parse()
+        this._processArguments();
       }
+    } else if (this.commands.length) {
+      // This command has subcommands and nothing hooked up at this level, so display help (and exit).
+      this.help({ error: true });
+    } else {
+      checkForUnknownOptions();
+      this._processArguments();
+      // fall through for caller to handle after calling .parse()
     }
   };
 
@@ -1582,7 +2049,7 @@ class Command extends EventEmitter {
     // Walk up hierarchy so can call in subcommand after checking for displaying help.
     for (let cmd = this; cmd; cmd = cmd.parent) {
       cmd.options.forEach((anOption) => {
-        if (anOption.mandatory && (cmd._getOptionValue(anOption.attributeName()) === undefined)) {
+        if (anOption.mandatory && (cmd.getOptionValue(anOption.attributeName()) === undefined)) {
           cmd.missingMandatoryOptionValue(anOption);
         }
       });
@@ -1595,11 +2062,11 @@ class Command extends EventEmitter {
    *
    * Examples:
    *
-   *    argv => operands, unknown
-   *    --known kkk op => [op], []
-   *    op --known kkk => [op], []
-   *    sub --unknown uuu op => [sub], [--unknown uuu op]
-   *    sub -- --unknown uuu op => [sub --unknown uuu op], []
+   *     argv => operands, unknown
+   *     --known kkk op => [op], []
+   *     op --known kkk => [op], []
+   *     sub --unknown uuu op => [sub], [--unknown uuu op]
+   *     sub -- --unknown uuu op => [sub --unknown uuu op], []
    *
    * @param {String[]} argv
    * @return {{operands: String[], unknown: String[]}}
@@ -1749,6 +2216,12 @@ class Command extends EventEmitter {
    */
   _displayError(exitCode, code, message) {
     this._outputConfiguration.outputError(`${message}\n`, this._outputConfiguration.writeErr);
+    if (typeof this._showHelpAfterError === 'string') {
+      this._outputConfiguration.writeErr(`${this._showHelpAfterError}\n`);
+    } else if (this._showHelpAfterError) {
+      this._outputConfiguration.writeErr('\n');
+      this.outputHelp({ error: true });
+    }
     this._exit(exitCode, code, message);
   }
 
@@ -1825,13 +2298,7 @@ class Command extends EventEmitter {
    */
 
   unknownCommand() {
-    const partCommands = [this.name()];
-    for (let parentCmd = this.parent; parentCmd; parentCmd = parentCmd.parent) {
-      partCommands.unshift(parentCmd.name());
-    }
-    const fullCommand = partCommands.join(' ');
-    const message = `error: unknown command '${this.args[0]}'.` +
-      (this._hasHelpOption ? ` See '${fullCommand} ${this._helpLongFlag}'.` : '');
+    const message = `error: unknown command '${this.args[0]}'`;
     this._displayError(1, 'commander.unknownCommand', message);
   };
 
@@ -1874,7 +2341,9 @@ class Command extends EventEmitter {
   description(str, argsDescription) {
     if (str === undefined && argsDescription === undefined) return this._description;
     this._description = str;
-    this._argsDescription = argsDescription;
+    if (argsDescription) {
+      this._argsDescription = argsDescription;
+    }
     return this;
   };
 
@@ -1890,6 +2359,7 @@ class Command extends EventEmitter {
   alias(alias) {
     if (alias === undefined) return this._aliases[0]; // just return first, for backwards compatibility
 
+    /** @type {Command} */
     let command = this;
     if (this.commands.length !== 0 && this.commands[this.commands.length - 1]._executableHandler) {
       // assume adding alias for last added executable subcommand, rather than this
@@ -2006,14 +2476,7 @@ class Command extends EventEmitter {
     }
     const context = this._getHelpContext(contextOptions);
 
-    const groupListeners = [];
-    let command = this;
-    while (command) {
-      groupListeners.push(command); // ordered from current command to root
-      command = command.parent;
-    }
-
-    groupListeners.slice().reverse().forEach(command => command.emit('beforeAllHelp', context));
+    getCommandAndParents(this).reverse().forEach(command => command.emit('beforeAllHelp', context));
     this.emit('beforeHelp', context);
 
     let helpInformation = this.helpInformation(context);
@@ -2027,7 +2490,7 @@ class Command extends EventEmitter {
 
     this.emit(this._helpLongFlag); // deprecated
     this.emit('afterHelp', context);
-    groupListeners.forEach(command => command.emit('afterAllHelp', context));
+    getCommandAndParents(this).forEach(command => command.emit('afterAllHelp', context));
   };
 
   /**
@@ -2048,7 +2511,7 @@ class Command extends EventEmitter {
     this._helpFlags = flags || this._helpFlags;
     this._helpDescription = description || this._helpDescription;
 
-    const helpFlags = _parseOptionFlags(this._helpFlags);
+    const helpFlags = splitOptionFlags(this._helpFlags);
     this._helpShortFlag = helpFlags.shortFlag;
     this._helpLongFlag = helpFlags.longFlag;
 
@@ -2106,37 +2569,6 @@ Expecting one of '${allowedValues.join("', '")}'`);
   }
 }
 /**
- * Expose the root command.
- */
-
-exports = module.exports = new Command();
-exports.program = exports; // More explicit access to global command.
-
-/**
- * Expose classes
- */
-
-exports.Command = Command;
-exports.Option = Option;
-exports.CommanderError = CommanderError;
-exports.InvalidOptionArgumentError = InvalidOptionArgumentError;
-exports.Help = Help;
-
-/**
- * Camel-case the given `flag`
- *
- * @param {string} flag
- * @return {string}
- * @api private
- */
-
-function camelcase(flag) {
-  return flag.split('-').reduce((str, word) => {
-    return str + word[0].toUpperCase() + word.slice(1);
-  });
-}
-
-/**
  * Output help information if help flags specified
  *
  * @param {Command} cmd - command to output help for
@@ -2151,44 +2583,6 @@ function outputHelpIfRequested(cmd, args) {
     // (Do not have all displayed text available so only passing placeholder.)
     cmd._exit(0, 'commander.helpDisplayed', '(outputHelp)');
   }
-}
-
-/**
- * Takes an argument and returns its human readable equivalent for help usage.
- *
- * @param {Object} arg
- * @return {string}
- * @api private
- */
-
-function humanReadableArgName(arg) {
-  const nameOutput = arg.name + (arg.variadic === true ? '...' : '');
-
-  return arg.required
-    ? '<' + nameOutput + '>'
-    : '[' + nameOutput + ']';
-}
-
-/**
- * Parse the short and long flag out of something like '-m,--mixed <value>'
- *
- * @api private
- */
-
-function _parseOptionFlags(flags) {
-  let shortFlag;
-  let longFlag;
-  // Use original very loose parsing to maintain backwards compatibility for now,
-  // which allowed for example unintended `-sw, --short-word` [sic].
-  const flagParts = flags.split(/[ |,]+/);
-  if (flagParts.length > 1 && !/^[[<]/.test(flagParts[1])) shortFlag = flagParts.shift();
-  longFlag = flagParts.shift();
-  // Add support for lone short flag without significantly changing parsing!
-  if (!shortFlag && /^-[^-]$/.test(longFlag)) {
-    shortFlag = longFlag;
-    longFlag = undefined;
-  }
-  return { shortFlag, longFlag };
 }
 
 /**
@@ -2237,6 +2631,51 @@ function incrementNodeInspectorPort(args) {
     return arg;
   });
 }
+
+/**
+ * @param {Command} startCommand
+ * @returns {Command[]}
+ * @api private
+ */
+
+function getCommandAndParents(startCommand) {
+  const result = [];
+  for (let command = startCommand; command; command = command.parent) {
+    result.push(command);
+  }
+  return result;
+}
+
+command.Command = Command;
+
+(function (module, exports) {
+const { Argument } = argument;
+const { Command } = command;
+const { CommanderError, InvalidArgumentError } = error;
+const { Help } = help;
+const { Option } = option;
+
+// @ts-check
+
+/**
+ * Expose the root command.
+ */
+
+exports = module.exports = new Command();
+exports.program = exports; // More explicit access to global command.
+// Implicit export of createArgument, createCommand, and createOption.
+
+/**
+ * Expose classes
+ */
+
+exports.Argument = Argument;
+exports.Command = Command;
+exports.CommanderError = CommanderError;
+exports.Help = Help;
+exports.InvalidArgumentError = InvalidArgumentError;
+exports.InvalidOptionArgumentError = InvalidArgumentError; // Deprecated
+exports.Option = Option;
 }(commander, commander.exports));
 
 const MODULE_FORMATS = ["amd", "commonjs", "es", "globals", "umd"];
@@ -2573,5 +3012,4 @@ readStream(inputStream, input => {
   if (outputStream !== process.stdout) {
     outputStream.end();
   }
-
 });
