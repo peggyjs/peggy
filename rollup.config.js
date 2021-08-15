@@ -36,6 +36,11 @@ const umd_config = {
  * @type {import('rollup').RollupOptions}
  */
 const cli_config = {
+  onwarn(message) {
+    if (message.code === "EVAL") { return; }
+    console.error(message);
+  },
+
   input: "bin/peggy.mjs",
   output: {
     file   : "bin/peggy.js",

@@ -1,12 +1,11 @@
 import { Command, Option } from "commander";
 import fs from "fs";
 import path from "path";
-import { default as peg } from "../lib/peg.js";
+import { default as peggy } from "../lib/peg.js";
 import util from "util";
 
-const MODULE_FORMATS = ["amd", "commonjs", "es", "globals", "umd"];
+const MODULE_FORMATS = ["amd", "bare", "commonjs", "es", "globals", "umd"];
 const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
-const DEFAULT_FORMAT = "COMMON_JS";
 let verbose = false;
 
 // Helpers
@@ -32,14 +31,12 @@ function abortError(msg, error) {
   }
 }
 
-function addExtraOptions(options, json) {
+function addExtraOptions(json, options) {
   let extraOptions;
 
   try {
     extraOptions = JSON.parse(json);
   } catch (e) {
-    if (!(e instanceof SyntaxError)) { throw e; }
-
     abortError("Error parsing JSON:", e);
   }
   if ((extraOptions === null)
@@ -48,6 +45,10 @@ function addExtraOptions(options, json) {
     abort("The JSON with extra options has to represent an object.");
   }
   return Object.assign({}, options, extraOptions);
+}
+
+function commaArg(val, prev) {
+  return (prev || []).concat(val.split(",").map(x => x.trim()));
 }
 
 // Files
@@ -71,59 +72,59 @@ function readFile(name) {
 // Command line processing
 
 const program = new Command();
-let options = program
-  .version(peg.VERSION, "-v, --version")
+const cliOptions = program
+  .version(peggy.VERSION, "-v, --version")
   .arguments("[input_file]")
   .addOption(
     new Option(
       "--allowed-start-rules <rules>",
-      "comma-separated list of rules the generated parser will be allowed to start parsing from"
+      "Comma-separated list of rules the generated parser will be allowed to start parsing from.  (Can be specified multiple times)"
     )
-      .default([], "the first rule in the grammar")
-      .argParser((val, prev) => prev.concat(val.split(",").map(x => x.trim())))
+      .default(null, "the first rule in the grammar")
+      .argParser(commaArg)
   )
   .option(
     "--cache",
-    "make generated parser cache results"
+    "Make generated parser cache results"
   )
   .option(
     "-d, --dependency <dependency>",
-    "use specified dependency (can be specified multiple times)",
-    (val, prev) => (prev || []).concat([val])
+    "Comma-separated list of dependencies, either as a module name, or as `variable:module`. (Can be specified multiple times)",
+    commaArg
   )
   .option(
     "-e, --export-var <variable>",
-    "name of a global variable into which the parser object is assigned to when no module loader is detected"
+    "Name of a global variable into which the parser object is assigned to when no module loader is detected."
   )
   .option(
     "--extra-options <options>",
-    "additional options (in JSON format as an object) to pass to peg.generate",
-    (val, prev) => addExtraOptions(prev, val)
+    "Additional options (in JSON format as an object) to pass to peggy.generate",
+    addExtraOptions
   )
   .option(
     "-c, --extra-options-file <file>",
-    "file with additional options (in JSON as an object or commonjs module format) to pass to peg.generate",
+    "File with additional options (in JSON as an object or commonjs module format) to pass to peggy.generate",
     (val, prev) => {
       if (/\.c?js$/.test(val)) {
         return Object.assign({}, prev, require(path.resolve(val)));
       } else {
-        return addExtraOptions(prev, readFile(val));
+        return addExtraOptions(readFile(val), prev);
       }
     }
   )
   .addOption(
     new Option(
       "--format <format>",
-      "format of the generated parser"
+      "Format of the generated parser"
     )
       .choices(MODULE_FORMATS)
-      .default(DEFAULT_FORMAT, '"commonjs"')
+      .default(null, '"commonjs"')
   )
-  .option("-o, --output <file>", "output file")
+  .option("-o, --output <file>", "Output file for generated parser. Use '-' for stdout (the default, unless a test is specified, in which case no parser is output without this option)")
   .option(
     "--plugin <module>",
-    "use a specified plugin (can be specified multiple times)",
-    (val, prev) => (prev || []).concat([val])
+    "Comma-separated list of plugins. (can be specified multiple times)",
+    commaArg
   )
   .option(
     "-t, --test <text>",
@@ -133,10 +134,10 @@ let options = program
     "-T, --test-file <filename>",
     "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself"
   )
-  .option("--trace", "enable tracing in generated parser")
+  .option("--trace", "Enable tracing in generated parser")
   .addOption(
     // Not interesting yet.  If it becomes so, unhide the help.
-    new Option("--verbose", "enable verbose logging")
+    new Option("--verbose", "Enable verbose logging")
       .hideHelp()
       .default(false)
   )
@@ -153,40 +154,73 @@ let options = program
   .parse()
   .opts();
 
-if (options.extraOptions) {
-  Object.assign(options, options.extraOptions);
-  delete options.extraOptions;
+const PARSER_DEFAULTS = {
+  allowedStartRules: [],
+  cache: false,
+  dependency: [],
+  dependencies: {}, // Parsed form; might be set in extraOptions
+  exportVar: undefined,
+  format: "commonjs",
+  plugin: [],
+  plugins: [], // Might be set in extraOptions
+  trace: false,
+};
+
+const PROG_DEFAULTS = {
+  input: undefined,
+  output: undefined,
+  test: undefined,
+  testFile: undefined,
+  verbose: false,
+};
+
+const options = Object.assign({}, PARSER_DEFAULTS);
+const progOptions = Object.assign({}, PROG_DEFAULTS);
+
+function combineOpts(...source) {
+  for (const s of source) {
+    if (!s) {
+      continue;
+    }
+    // Partition into progOptions and parser options.
+    for (const [k, val] of Object.entries(s)) {
+      const opts = (k in PROG_DEFAULTS) ? progOptions : options;
+
+      // Arrays and objects are additive
+      if ((k !== "extraOptions") && (k !== "extraOptionsFile")
+          && (val !== null) && (val !== undefined)) {
+        if (Array.isArray(opts[k])) {
+          opts[k] = opts[k].concat(val);
+        } else if (typeof opts[k] === "object") {
+          // Such as dependencies
+          Object.assign(opts[k], val);
+        } else {
+          opts[k] = val;
+        }
+      }
+    }
+  }
 }
 
-// Ensure defaults do not clobber config file
+combineOpts(
+  cliOptions.extraOptionsFile,
+  cliOptions.extraOptions,
+  cliOptions
+);
+options.output = "source";
+
 if (options.allowedStartRules.length === 0) {
   // [] is an invalid input, as is null
   // undefined doesn't work as a default in commander
   delete options.allowedStartRules;
 }
 
-if (options.extraOptionsFile) {
-  // Ensure defaults do not clobber config file
-  const fmt = options.format;
-  delete options.format;
-
-  // Command line overwrites config file
-  options = Object.assign({}, options.extraOptionsFile, options);
-  delete options.extraOptionsFile;
-
-  if (fmt !== DEFAULT_FORMAT) {
-    options.format = fmt;
-  }
-}
-if (!options.format || (options.format === DEFAULT_FORMAT)) {
-  options.format = "commonjs";
-}
-
-verbose = Boolean(options.verbose);
-delete options.verbose;
-
-if (options.plugin) {
-  options.plugins = (options.plugins || []).concat(options.plugin.map(val => {
+// Combine plugin/plugins
+if ((options.plugin.length > 0) || (options.plugins.length > 0)) {
+  options.plugins = (options.plugins.concat(options.plugin)).map(val => {
+    if (typeof val !== "string") {
+      return val;
+    }
     // If this is an absolute or relative path (not a module name)
     const id = (path.isAbsolute(val) || /^\.\.?[/\\]/.test(val))
       ? path.resolve(val)
@@ -199,22 +233,21 @@ if (options.plugin) {
       abortError(`Can't load module "${id}".`, e);
     }
     return mod;
-  }));
-  delete options.plugin;
+  });
 }
+delete options.plugin;
 
-if (options.dependency) {
-  if (MODULE_FORMATS_WITH_DEPS.indexOf(options.format) === -1) {
-    abort(`Can't use the -d/--dependency option with the "${options.format}" module format.`);
-  }
-
-  const deps = {};
+// Combine dependency/dependencies
+if (options.dependency.length > 0) {
   for (const dep of options.dependency) {
     const [name, val] = dep.split(":");
-    deps[name] = val ? val : name;
+    options.dependencies[name] = val ? val : name;
   }
-  options.dependencies = deps;
-  delete options.dependency;
+}
+delete options.dependency;
+if ((Object.keys(options.dependencies).length > 0)
+    && (MODULE_FORMATS_WITH_DEPS.indexOf(options.format) === -1)) {
+  abort(`Can't use the -d/--dependency option with the "${options.format}" module format.`);
 }
 
 if (options.exportVar !== undefined) {
@@ -223,7 +256,11 @@ if (options.exportVar !== undefined) {
   }
 }
 
-let inputFile = options.input;
+verbose = progOptions.verbose;
+let inputFile = progOptions.input;
+if (verbose) {
+  console.error("NON-OPTION ARGS:", program.args);
+}
 switch (program.args.length) {
   case 0:
     inputFile = inputFile ? inputFile : "-";
@@ -240,46 +277,53 @@ switch (program.args.length) {
     abort("Too many arguments.");
 }
 
-let outputFile = options.output;
+let outputFile = progOptions.output;
 if (!outputFile) {
-  outputFile = ((inputFile === "-") || options.test || options.testFile)
-    ? "-"
-    : inputFile.substr(0, inputFile.length - path.extname(inputFile).length) + ".js";
+  if ((inputFile !== "-")
+    && !progOptions.test
+    && !progOptions.testFile) {
+    outputFile = inputFile.substr(0, inputFile.length - path.extname(inputFile).length) + ".js";
+  } else {
+    outputFile = "-";
+  }
 }
 
-if (options.test && options.testFile) {
+if (progOptions.test && progOptions.testFile) {
   abort("The -t/--test and -T/--test-file options are mutually exclusive.");
 }
 
-options.output = (options.test || options.testFile) ? "parser" : "source";
 let testText = null;
 let testGrammarSource = null;
 let testFile = null;
-if (options.test) {
-  testText = options.test;
+if (progOptions.test) {
+  testText = progOptions.test;
   testGrammarSource = "command line";
-  delete options.test;
 }
-if (options.testFile) {
-  testFile = options.testFile;
-  testGrammarSource = options.testFile;
-  delete options.testFile;
+if (progOptions.testFile) {
+  testFile = progOptions.testFile;
+  testGrammarSource = progOptions.testFile;
 }
 
 if (verbose) {
-  console.error("OPTIONS:", util.inspect(options, {
+  console.error("PARSER OPTIONS:", util.inspect(options, {
     depth: Infinity,
     colors: process.stdout.isTTY,
     maxArrayLength: Infinity,
     maxStringLength: Infinity,
   }));
-  console.error("INPUT:", inputFile);
-  console.error("OUTPUT:", outputFile);
+  console.error("PROGRAM OPTIONS:", util.inspect(progOptions, {
+    depth: Infinity,
+    colors: process.stdout.isTTY,
+    maxArrayLength: Infinity,
+    maxStringLength: Infinity,
+  }));
+  console.error(`INPUT: "${inputFile}"`);
+  console.error(`OUTPUT: "${outputFile}"`);
 }
 
 // Main
 
-let inputStream, outputStream;
+let inputStream;
 
 if (inputFile === "-") {
   process.stdin.resume();
@@ -297,9 +341,30 @@ readStream(inputStream, input => {
   let source;
 
   try {
-    source = peg.generate(input, options);
+    source = peggy.generate(input, options);
   } catch (e) {
     abortError("Error parsing grammar:", e);
+  }
+
+  // If there is a valid outputFile, write the parser to it.  Otherwise,
+  // if no test and no outputFile, write to stdout.
+  let outputStream = null;
+  if (outputFile === "-") {
+    if (!testFile && !testText) {
+      outputStream = process.stdout;
+    }
+  } else {
+    outputStream = fs.createWriteStream(outputFile);
+    outputStream.on("error", () => {
+      abort(`Can't write to file "${outputFile}".`);
+    });
+  }
+
+  if (outputStream) {
+    outputStream.write(source);
+    if (outputStream !== process.stdout) {
+      outputStream.end();
+    }
   }
 
   if (testFile) {
@@ -310,32 +375,18 @@ readStream(inputStream, input => {
       console.error("TEST TEXT:", testText);
     }
     try {
-      source = source.parse(testText, {
+      const exec = eval(source);
+      const results = exec.parse(testText, {
         grammarSource: testGrammarSource,
       });
+      console.log(util.inspect(results, {
+        depth: Infinity,
+        colors: process.stdout.isTTY,
+        maxArrayLength: Infinity,
+        maxStringLength: Infinity,
+      }));
     } catch (e) {
       abortError("Error parsing test:", e);
     }
-    source = util.inspect(source, {
-      depth: Infinity,
-      colors: (outputFile === "-") && process.stdout.isTTY,
-      maxArrayLength: Infinity,
-      maxStringLength: Infinity,
-    }) + "\n";
-  }
-
-  // Don't create output until processing succeeds
-  if (outputFile === "-") {
-    outputStream = process.stdout;
-  } else {
-    outputStream = fs.createWriteStream(outputFile);
-    outputStream.on("error", () => {
-      abort(`Can't write to file "${outputFile}".`);
-    });
-  }
-
-  outputStream.write(source);
-  if (outputStream !== process.stdout) {
-    outputStream.end();
   }
 });

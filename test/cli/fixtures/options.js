@@ -5,4 +5,8 @@ module.exports = {
   cli_test: {
     words: ["zazzy"],
   },
+  dependencies: {
+    j: "jest",
+    commander: "commander",
+  },
 };

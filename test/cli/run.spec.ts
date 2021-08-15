@@ -89,33 +89,38 @@ Usage: peggy [options] [input_file]
 
 Options:
   -v, --version                    output the version number
-  --allowed-start-rules <rules>    comma-separated list of rules the generated
-                                   parser will be allowed to start parsing from
+  --allowed-start-rules <rules>    Comma-separated list of rules the generated
+                                   parser will be allowed to start parsing
+                                   from.  (Can be specified multiple times)
                                    (default: the first rule in the grammar)
-  --cache                          make generated parser cache results
-  -d, --dependency <dependency>    use specified dependency (can be specified
-                                   multiple times)
-  -e, --export-var <variable>      name of a global variable into which the
+  --cache                          Make generated parser cache results
+  -d, --dependency <dependency>    Comma-separated list of dependencies, either
+                                   as a module name, or as \`variable:module\`.
+                                   (Can be specified multiple times)
+  -e, --export-var <variable>      Name of a global variable into which the
                                    parser object is assigned to when no module
-                                   loader is detected
-  --extra-options <options>        additional options (in JSON format as an
-                                   object) to pass to peg.generate
-  -c, --extra-options-file <file>  file with additional options (in JSON as an
+                                   loader is detected.
+  --extra-options <options>        Additional options (in JSON format as an
+                                   object) to pass to peggy.generate
+  -c, --extra-options-file <file>  File with additional options (in JSON as an
                                    object or commonjs module format) to pass to
-                                   peg.generate
-  --format <format>                format of the generated parser (choices:
-                                   "amd", "commonjs", "es", "globals", "umd",
-                                   default: "commonjs")
-  -o, --output <file>              output file
-  --plugin <module>                use a specified plugin (can be specified
-                                   multiple times)
+                                   peggy.generate
+  --format <format>                Format of the generated parser (choices:
+                                   "amd", "bare", "commonjs", "es", "globals",
+                                   "umd", default: "commonjs")
+  -o, --output <file>              Output file for generated parser. Use '-'
+                                   for stdout (the default, unless a test is
+                                   specified, in which case no parser is output
+                                   without this option)
+  --plugin <module>                Comma-separated list of plugins. (can be
+                                   specified multiple times)
   -t, --test <text>                Test the parser with the given text,
                                    outputting the result of running the parser
                                    instead of the parser itself
   -T, --test-file <filename>       Test the parser with the contents of the
                                    given file, outputting the result of running
                                    the parser instead of the parser itself
-  --trace                          enable tracing in generated parser
+  --trace                          Enable tracing in generated parser
   -h, --help                       display help for command
 `;
 
@@ -172,6 +177,11 @@ baz = "3"
       args: ["-d", "c:commander", "-d", "jest"],
       stdin: "foo = '1' { return new c.Command(); }",
     })).resolves.toMatch(/c = require\("commander"\)/);
+
+    await expect(exec({
+      args: ["-d", "c:commander,jest"],
+      stdin: "foo = '1' { return new c.Command(); }",
+    })).resolves.toMatch(/jest = require\("jest"\)/);
 
     await expect(exec({
       args: ["--dependency"],
@@ -270,7 +280,7 @@ baz = "3"
 
     await expect(exec({
       args: ["--format", "BAD_FORMAT"],
-    })).rejects.toThrow("option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, commonjs, es, globals, umd.");
+    })).rejects.toThrow("option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, bare, commonjs, es, globals, umd.");
   });
 
   it("doesn't fail with optimize", async() => {
@@ -323,6 +333,29 @@ baz = "3"
       path.resolve(__dirname, "./fixtures/plugin.js")
     );
 
+    const bad = "./" + path.relative(
+      process.cwd(),
+      path.resolve(__dirname, "./fixtures/bad.js")
+    );
+
+    await expect(exec({
+      args: [
+        "--plugin", plugin,
+        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
+        "-t", "1",
+      ],
+      stdin: "var = bar:'1'",
+    })).resolves.toMatch("'1'");
+
+    await expect(exec({
+      args: [
+        "--plugin", `${plugin},${plugin}`,
+        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
+        "-t", "1",
+      ],
+      stdin: "var = bar:'1'",
+    })).resolves.toMatch("'1'");
+
     await expect(exec({
       args: [
         "--plugin", plugin,
@@ -340,6 +373,11 @@ baz = "3"
       args: ["--plugin", "ERROR BAD MODULE DOES NOT EXIST"],
       stdin: "foo = '1'",
     })).rejects.toThrow("Can't load module \"ERROR BAD MODULE DOES NOT EXIST\"");
+
+    await expect(exec({
+      args: ["--plugin", bad],
+      stdin: "foo = '1'",
+    })).rejects.toThrow("SyntaxError");
   });
 
   it("handlers trace", async() => {

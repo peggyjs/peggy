@@ -8,6 +8,7 @@ module.exports = {
     "bin/peggy.js", // Generated
     "lib/parser.js", // Generated
     "test/vendor/",
+    "test/cli/fixtures/bad.js", // Intentionally-invalid
     "benchmark/vendor/",
     "browser/",
     "node_modules/",
