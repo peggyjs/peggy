@@ -124,10 +124,10 @@ Options:
   -h, --help                       display help for command
 `;
 
-    expect(await exec({
+    await expect(await exec({
       args: ["-h"],
     })).toBe(HELP);
-    expect(await exec({
+    await expect(await exec({
       args: ["--help"],
     })).toBe(HELP);
   });
