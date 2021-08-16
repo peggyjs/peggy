@@ -8,6 +8,7 @@ module.exports = {
   ],
   "testMatch": [
     "**/*.spec.js",
+    "**/*.spec.ts",
     "**/*.test-d.ts",
   ],
   "transform": {

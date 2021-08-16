@@ -18,3 +18,7 @@ tools
 tsconfig.json
 yarn.lock
 jest.config.js
+.nyc_output
+*.map
+bin/*.mjs
+.gitattributes

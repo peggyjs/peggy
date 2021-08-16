@@ -3,6 +3,17 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
+1.3.0
+-----
+
+Released: TBD
+
+### Minor Changes
+
+- New CLI [@hildjj](https://github.com/peggyjs/peggy/pull/167)
+  - Backward compatible with the previous
+  - New -t/--test and -T/--testfile flags to directly test the generated grammar
+
 1.2.0
 -----
 
