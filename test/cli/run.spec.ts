@@ -12,6 +12,12 @@ type Options = {
   stdin?: string | Buffer;
 };
 
+const foobarbaz = `\
+foo = '1'
+bar = '2'
+baz = '3'
+`;
+
 /** Execution failed */
 class ExecError extends Error {
   /** Result error code, always non-zero */
@@ -141,11 +147,7 @@ Options:
   it("handles start rules", async() => {
     await expect(exec({
       args: ["--allowed-start-rules", "foo,bar,baz"],
-      stdin: `\
-foo = "1"
-bar = "2"
-baz = "3"
-`,
+      stdin: foobarbaz,
     })).resolves.toMatch(
       /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/
     );
@@ -239,7 +241,7 @@ baz = "3"
 
     const res = await exec({
       args: ["--extra-options-file", optFile],
-      stdin: "foo = '1'",
+      stdin: foobarbaz,
     });
     expect(res).toMatch(
       /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/
@@ -249,7 +251,7 @@ baz = "3"
     // Intentional overwrite
     await expect(exec({
       args: ["-c", optFile, "--format", "amd"],
-      stdin: "foo = '1'",
+      stdin: foobarbaz,
     })).resolves.toMatch(/^define\(/m);
 
     await expect(exec({

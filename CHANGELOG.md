@@ -13,6 +13,7 @@ Released: TBD
 - New CLI [@hildjj](https://github.com/peggyjs/peggy/pull/167)
   - Backward compatible with the previous
   - New -t/--test and -T/--testfile flags to directly test the generated grammar
+- Check allowedStartRules for validity [@hildjj](https://github.com/peggyjs/peggy/pull/175)
 
 1.2.0
 -----
