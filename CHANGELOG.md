@@ -15,6 +15,10 @@ Released: TBD
   - New -t/--test and -T/--testfile flags to directly test the generated grammar
 - Check allowedStartRules for validity [@hildjj](https://github.com/peggyjs/peggy/pull/175)
 
+### Bug fixes
+
+- [#164](https://github.com/peggyjs/peggy/pull/164): Fix some errors in the typescript definitions
+
 1.2.0
 -----
 
