@@ -18,6 +18,7 @@ Released: TBD
 ### Bug fixes
 
 - [#164](https://github.com/peggyjs/peggy/pull/164): Fix some errors in the typescript definitions
+- [#169](https://github.com/peggyjs/peggy/issues/169): Expose string escape functions
 
 1.2.0
 -----
