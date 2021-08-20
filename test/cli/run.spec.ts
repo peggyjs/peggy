@@ -64,6 +64,7 @@ function exec(opts: Options = {}) {
     }
 
     const c = spawn(bin, args, {
+      cwd: __dirname,
       stdio: "pipe",
       env,
     });
@@ -330,15 +331,8 @@ Options:
 
   it("handles plugins", async() => {
     // Plugin, starting with "./"
-    const plugin = "./" + path.relative(
-      process.cwd(),
-      path.resolve(__dirname, "./fixtures/plugin.js")
-    );
-
-    const bad = "./" + path.relative(
-      process.cwd(),
-      path.resolve(__dirname, "./fixtures/bad.js")
-    );
+    const plugin = "./fixtures/plugin.js";
+    const bad = "./fixtures/bad.js";
 
     await expect(exec({
       args: [
