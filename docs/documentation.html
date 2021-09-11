@@ -721,7 +721,7 @@ available to them.</p>
 <p>One of the most frequent questions about Peggy grammars is how to parse a
 delimited list of items.  The cleanest current approach is:</p>
 
-<pre><code class="language-peggy">list = head:word tail:(_ "," _ @word)* { return [head, ...tail); }
+<pre><code class="language-peggy">list = head:word tail:(_ "," _ @word)* { return [head, ...tail]; }
 word = $[a-z]i+
 _ = [ \t]*</code></pre>
 
