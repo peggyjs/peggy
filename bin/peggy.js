@@ -2689,20 +2689,25 @@ function abort(message) {
   process.exit(1);
 }
 
-function abortError(msg, error) {
+function showError(msg, error) {
   console.error(msg);
   if (typeof error.format === "function") {
-    abort(error.format([{
+    console.error(error.format([{
       source: testGrammarSource,
       text: testText,
     }]));
   } else {
     if (verbose) {
-      abort(error);
+      console.error(error);
     } else {
-      abort(`Error: ${error.message}`);
+      console.error(`Error: ${error.message}`);
     }
   }
+}
+
+function abortError(msg, error) {
+  showError(msg, error);
+  process.exit(1);
 }
 
 function addExtraOptions(json, options) {
@@ -2802,11 +2807,11 @@ const cliOptions = program
   )
   .option(
     "-t, --test <text>",
-    "Test the parser with the given text, outputting the result of running the parser instead of the parser itself"
+    "Test the parser with the given text, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
   )
   .option(
     "-T, --test-file <filename>",
-    "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself"
+    "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
   )
   .option("--trace", "Enable tracing in generated parser")
   .addOption(
@@ -3060,7 +3065,10 @@ readStream(inputStream, input => {
         maxStringLength: Infinity,
       }));
     } catch (e) {
-      abortError("Error parsing test:", e);
+      showError("Error parsing test:", e);
+      // We want to wait until source code/source map will be written
+      process.exitCode = 2;
     }
   }
 });
+//# sourceMappingURL=peggy.js.map

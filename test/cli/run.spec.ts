@@ -123,10 +123,14 @@ Options:
                                    specified multiple times)
   -t, --test <text>                Test the parser with the given text,
                                    outputting the result of running the parser
-                                   instead of the parser itself
+                                   instead of the parser itself. If the input
+                                   to be tested is not parsed, the CLI will
+                                   exit with code 2
   -T, --test-file <filename>       Test the parser with the contents of the
                                    given file, outputting the result of running
-                                   the parser instead of the parser itself
+                                   the parser instead of the parser itself. If
+                                   the input to be tested is not parsed, the
+                                   CLI will exit with code 2
   --trace                          Enable tracing in generated parser
   -h, --help                       display help for command
 `;
@@ -140,9 +144,11 @@ Options:
   });
 
   it("rejects invalid options", async() => {
-    await expect(exec({
+    const result = expect(exec({
       args: ["--invalid-option"],
-    })).rejects.toThrow(ExecError);
+    }));
+    await result.rejects.toThrow(ExecError);
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("handles start rules", async() => {
@@ -153,10 +159,12 @@ Options:
       /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/
     );
 
-    await expect(exec({
+    const result = expect(exec({
       args: ["--allowed-start-rules"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("option '--allowed-start-rules <rules>' argument missing");
+    }));
+    await result.rejects.toThrow("option '--allowed-start-rules <rules>' argument missing");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("enables caching", async() => {
@@ -186,15 +194,19 @@ Options:
       stdin: "foo = '1' { return new c.Command(); }",
     })).resolves.toMatch(/jest = require\("jest"\)/);
 
-    await expect(exec({
+    let result = expect(exec({
       args: ["--dependency"],
       stdin: "foo = '1' { return new c.Command(); }",
-    })).rejects.toThrow("option '-d, --dependency <dependency>' argument missing");
+    }));
+    await result.rejects.toThrow("option '-d, --dependency <dependency>' argument missing");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["-d", "c:commander", "--format", "globals"],
       stdin: "foo = '1' { return new c.Command(); }",
-    })).rejects.toThrow("Can't use the -d/--dependency option with the \"globals\" module format.");
+    }));
+    await result.rejects.toThrow("Can't use the -d/--dependency option with the \"globals\" module format.");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("handles exportVar", async() => {
@@ -203,15 +215,19 @@ Options:
       stdin: "foo = '1'",
     })).resolves.toMatch(/^\s*root\.football = /m);
 
-    await expect(exec({
+    let result = expect(exec({
       args: ["--export-var"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("option '-e, --export-var <variable>' argument missing");
+    }));
+    await result.rejects.toThrow("option '-e, --export-var <variable>' argument missing");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--export-var", "football"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("Can't use the -e/--export-var option with the \"commonjs\" module format.");
+    }));
+    await result.rejects.toThrow("Can't use the -e/--export-var option with the \"commonjs\" module format.");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("handles extra options", async() => {
@@ -220,20 +236,26 @@ Options:
       stdin: 'foo = "1"',
     })).resolves.toMatch(/^define\(/m);
 
-    await expect(exec({
+    let result = expect(exec({
       args: ["--extra-options"],
       stdin: 'foo = "1"',
-    })).rejects.toThrow("--extra-options <options>' argument missing");
+    }));
+    await result.rejects.toThrow("--extra-options <options>' argument missing");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--extra-options", "{"],
       stdin: 'foo = "1"',
-    })).rejects.toThrow("Error parsing JSON:");
+    }));
+    await result.rejects.toThrow("Error parsing JSON:");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--extra-options", "1"],
       stdin: 'foo = "1"',
-    })).rejects.toThrow("The JSON with extra options has to represent an object.");
+    }));
+    await result.rejects.toThrow("The JSON with extra options has to represent an object.");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("handles extra options in a file", async() => {
@@ -255,35 +277,47 @@ Options:
       stdin: foobarbaz,
     })).resolves.toMatch(/^define\(/m);
 
-    await expect(exec({
+    let result = expect(exec({
       args: ["-c", optFileJS],
       stdin: "foo = zazzy:'1'",
-    })).rejects.toThrow("Error: Label can't be a reserved word \"zazzy\"");
+    }));
+    await result.rejects.toThrow("Error: Label can't be a reserved word \"zazzy\"");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["-c", optFile, "____ERROR____FILE_DOES_NOT_EXIST"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("Do not specify input both on command line and in config file.");
+    }));
+    await result.rejects.toThrow("Do not specify input both on command line and in config file.");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--extra-options-file"],
       stdin: 'foo = "1"',
-    })).rejects.toThrow("--extra-options-file <file>' argument missing");
+    }));
+    await result.rejects.toThrow("--extra-options-file <file>' argument missing");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--extra-options-file", "____ERROR____FILE_DOES_NOT_EXIST"],
       stdin: 'foo = "1"',
-    })).rejects.toThrow("Can't read from file");
+    }));
+    await result.rejects.toThrow("Can't read from file");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("handles formats", async() => {
-    await expect(exec({
+    let result = expect(exec({
       args: ["--format"],
-    })).rejects.toThrow("option '--format <format>' argument missing");
+    }));
+    await result.rejects.toThrow("option '--format <format>' argument missing");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--format", "BAD_FORMAT"],
-    })).rejects.toThrow("option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, bare, commonjs, es, globals, umd.");
+    }));
+    await result.rejects.toThrow("option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, bare, commonjs, es, globals, umd.");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("doesn't fail with optimize", async() => {
@@ -297,10 +331,12 @@ Options:
       stdin: 'foo = "1"',
     })).resolves.toMatch(/deprecated/);
 
-    await expect(exec({
+    const result = expect(exec({
       args: ["-O"],
       stdin: 'foo = "1"',
-    })).rejects.toThrow("-O, --optimize <style>' argument missing");
+    }));
+    await result.rejects.toThrow("-O, --optimize <style>' argument missing");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("outputs to a file", async() => {
@@ -318,15 +354,19 @@ Options:
     expect(fs.statSync(test_output)).toBeInstanceOf(fs.Stats);
     fs.unlinkSync(test_output);
 
-    await expect(exec({
+    let result = expect(exec({
       args: ["--output"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("-o, --output <file>' argument missing");
+    }));
+    await result.rejects.toThrow("-o, --output <file>' argument missing");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--output", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("Can't write to file \"__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js\"");
+    }));
+    await result.rejects.toThrow("Can't write to file \"__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js\"");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("handles plugins", async() => {
@@ -352,28 +392,35 @@ Options:
       stdin: "var = bar:'1'",
     })).resolves.toMatch("'1'");
 
-    await expect(exec({
+    let result = expect(exec({
       args: [
         "--plugin", plugin,
         "--extra-options", '{"cli_test": {"words": ["foo"]}}',
       ],
       stdin: "var = foo:'1'",
-    })).rejects.toThrow("Label can't be a reserved word \"foo\"");
+    }));
+    await result.rejects.toThrow("Label can't be a reserved word \"foo\"");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--plugin"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("--plugin <module>' argument missing");
+    }));
+    await result.rejects.toThrow("--plugin <module>' argument missing");
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--plugin", "ERROR BAD MODULE DOES NOT EXIST"],
       stdin: "foo = '1'",
-    })).rejects.toThrow("Can't load module \"ERROR BAD MODULE DOES NOT EXIST\"");
+    }));
+    await result.rejects.toThrow("Can't load module \"ERROR BAD MODULE DOES NOT EXIST\"");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--plugin", bad],
       stdin: "foo = '1'",
-    })).rejects.toThrow("SyntaxError");
+    }));
+    await result.rejects.toThrow("SyntaxError");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("handlers trace", async() => {
@@ -384,13 +431,19 @@ Options:
   });
 
   it("uses dash-dash", async() => {
-    await expect(exec({
+    let result = expect(exec({
       args: ["--", "--trace"],
-    })).rejects.toThrow(/no such file or directory, open '[^']*--trace'/);
+    }));
+    await result.rejects.toThrow(
+      /no such file or directory, open '[^']*--trace'/
+    );
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["--", "--trace", "--format"],
-    })).rejects.toThrow("Too many arguments.");
+    }));
+    await result.rejects.toThrow("Too many arguments.");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
   it("handles input tests", async() => {
@@ -406,27 +459,37 @@ Options:
       args: ["-T", testFile, grammarFile],
     })).resolves.toMatch("name: 'peggy'"); // Output is JS, not JSON
 
-    await expect(exec({
+    let result = expect(exec({
       args: ["-T", "____ERROR____FILE_DOES_NOT_EXIST.js", grammarFile],
-    })).rejects.toThrow("Can't read from file \"____ERROR____FILE_DOES_NOT_EXIST.js\".");
+    }));
+    await result.rejects.toThrow("Can't read from file \"____ERROR____FILE_DOES_NOT_EXIST.js\".");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["-t", "boo", "-T", "foo"],
-    })).rejects.toThrow("The -t/--test and -T/--test-file options are mutually exclusive.");
+    }));
+    await result.rejects.toThrow("The -t/--test and -T/--test-file options are mutually exclusive.");
+    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["-t", "2"],
       stdin: "foo='1'",
-    })).rejects.toThrow('Expected "1" but "2" found');
+    }));
+    await result.rejects.toThrow('Expected "1" but "2" found');
+    await result.rejects.toThrow(expect.objectContaining({ code: 2 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["-t", "1"],
       stdin: "foo='1' { throw new Error('bar') }",
-    })).rejects.toThrow("Error: bar");
+    }));
+    await result.rejects.toThrow("Error: bar");
+    await result.rejects.toThrow(expect.objectContaining({ code: 2 }));
 
-    await expect(exec({
+    result = expect(exec({
       args: ["-t", "1", "--verbose"],
       stdin: "foo='1' { throw new Error('bar') }",
-    })).rejects.toThrow("Error: bar");
+    }));
+    await result.rejects.toThrow("Error: bar");
+    await result.rejects.toThrow(expect.objectContaining({ code: 2 }));
   });
 });

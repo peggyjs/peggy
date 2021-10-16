@@ -121,13 +121,15 @@ You can tweak the generated parser with several options:
   name with extension changed to `.js`, or stdout if no input file is given.
 - `--plugin <module>` — makes Peggy use a specified plugin (can be specified
   multiple times)
-- `-t`, `--test <text>` - Test the parser with the given text, outputting the
-  result of running the parser against this input
-- `-T`, `--test-file <filename>` - Test the parser with the contents of the
-  given file, outputting the result of running the parser against this input
+- `-t`, `--test <text>` — Test the parser with the given text, outputting the
+  result of running the parser against this input.
+  If the input to be tested is not parsed, the CLI will exit with code 2
+- `-T`, `--test-file <filename>` — Test the parser with the contents of the
+  given file, outputting the result of running the parser against this input.
+  If the input to be tested is not parsed, the CLI will exit with code 2
 - `--trace` — makes the parser trace its progress
-- `-v`, `--version` - output the version number
-- `-h`, `--help` - display help for command
+- `-v`, `--version` — output the version number
+- `-h`, `--help` — display help for command
 
 If you specify options using `-c <file>` or `--extra-options-file <file>`, you
 will need to ensure you are using the correct types.  In particular, you may

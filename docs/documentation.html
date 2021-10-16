@@ -176,11 +176,13 @@ override this using the <code>--format</code> option.</p>
 
   <dt><code>-t</code>, <code>--test &lt;text&gt;</code></dt>
   <dd>Test the parser with the given text, outputting the result of running
-  the parser against this input</dd>
+  the parser against this input.
+  If the input to be tested is not parsed, the CLI will exit with code 2</dd>
 
   <dt><code>-T</code>, <code>--test-file &lt;text&gt;</code></dt>
   <dd>Test the parser with the contents of the given file, outputting the
-  result of running the parser against this input</dd>
+  result of running the parser against this input.
+  If the input to be tested is not parsed, the CLI will exit with code 2</dd>
 
   <dt><code>--trace</code></dt>
   <dd>Makes the parser trace its progress.</dd>
