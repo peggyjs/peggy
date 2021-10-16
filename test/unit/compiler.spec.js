@@ -21,7 +21,7 @@ describe("Peggy compiler", () => {
     })).to.throw('Unknown start rule "bar"');
   });
 
-  it("checks ouput type", () => {
+  it("checks output type", () => {
     const ast = parser.parse("foo='1'");
     expect(compiler.compile(ast, compiler.passes, {
       output: "source",
