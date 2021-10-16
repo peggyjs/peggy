@@ -184,12 +184,12 @@ Options:
   -h, --help                       display help for command
 `;
 
-    await expect(await exec({
+    await expect(exec({
       args: ["-h"],
-    })).toBe(HELP);
-    await expect(await exec({
+    })).resolves.toBe(HELP);
+    await expect(exec({
       args: ["--help"],
-    })).toBe(HELP);
+    })).resolves.toBe(HELP);
   });
 
   it("rejects invalid options", async() => {
