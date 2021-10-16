@@ -2,7 +2,7 @@
 
 module.exports = {
   "collectCoverage": true,
-  "coverageReporters": ["lcov"],
+  "coverageReporters": ["lcov", "text"],
   "roots": [
     "<rootDir>/test",
   ],
