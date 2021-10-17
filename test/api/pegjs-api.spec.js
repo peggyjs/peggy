@@ -6,6 +6,18 @@ const sinon = require("sinon");
 const pkg = require("../../package.json");
 const { SourceMapConsumer } = require("source-map");
 
+beforeEach(() => {
+  // In the browser, initialize SourceMapConsumer's wasm bits.
+  // This is *async*, so make sure to return the promise to make
+  // Mocha (which is what we use in the browser) pause until we're ready.
+  if (typeof window !== "undefined") {
+    return SourceMapConsumer.initialize({
+      "lib/mappings.wasm": "https://raw.githubusercontent.com/mozilla/source-map/0.7.3/lib/mappings.wasm",
+    });
+  }
+  return null;
+});
+
 const expect = chai.expect;
 
 describe("Peggy API", () => {

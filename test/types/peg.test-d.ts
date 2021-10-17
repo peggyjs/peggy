@@ -1,6 +1,6 @@
 import * as peggy from "../..";
 import tsd, { expectType } from "tsd";
-import { SourceNode } from "source-map";
+import { SourceNode } from "source-map-generator";
 import formatter from "tsd/dist/lib/formatter";
 import { join } from "path";
 import { readFileSync } from "fs";

@@ -359,7 +359,7 @@ if (inputFile === "-") {
 }
 
 readStream(inputStream, input => {
-  /** @type {string | import("source-map").SourceNode } */
+  /** @type {string | import("source-map-generator").SourceNode } */
   let source;
 
   try {
@@ -390,7 +390,7 @@ readStream(inputStream, input => {
 
     const mapDir = path.dirname(progOptions.sourceMap);
 
-    /** @type {import("source-map").SourceNode} */
+    /** @type {import("source-map-generator").SourceNode} */
     const source2 = source;
     const source3 = source2.toStringWithSourceMap({
       file: outputFile === "-" ? null : path.relative(mapDir, outputFile),
