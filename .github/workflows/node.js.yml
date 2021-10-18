@@ -26,6 +26,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Check coding standards
+        if: matrix.node-version == '16.x' && matrix.os == 'ubuntu-latest'
         run: npm run lint
       - name: Static analysis - check types
         run: npm run ts
