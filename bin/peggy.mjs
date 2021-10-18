@@ -15,20 +15,25 @@ function abort(message) {
   process.exit(1);
 }
 
-function abortError(msg, error) {
+function showError(msg, error) {
   console.error(msg);
   if (typeof error.format === "function") {
-    abort(error.format([{
+    console.error(error.format([{
       source: testGrammarSource,
       text: testText,
     }]));
   } else {
     if (verbose) {
-      abort(error);
+      console.error(error);
     } else {
-      abort(`Error: ${error.message}`);
+      console.error(`Error: ${error.message}`);
     }
   }
+}
+
+function abortError(msg, error) {
+  showError(msg, error);
+  process.exit(1);
 }
 
 function addExtraOptions(json, options) {
@@ -127,12 +132,16 @@ const cliOptions = program
     commaArg
   )
   .option(
+    "-m, --source-map [mapfile]",
+    "Generate a source map. If name is not specified, the source map will be named \"<input_file>.map\" if input is a file and \"source.map\" if input is a standard input. This option conflicts with the `-t/--test` and `-T/--test-file` options unless `-o/--output` is also specified"
+  )
+  .option(
     "-t, --test <text>",
-    "Test the parser with the given text, outputting the result of running the parser instead of the parser itself"
+    "Test the parser with the given text, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
   )
   .option(
     "-T, --test-file <filename>",
-    "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself"
+    "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
   )
   .option("--trace", "Enable tracing in generated parser")
   .addOption(
@@ -154,6 +163,7 @@ const cliOptions = program
   .parse()
   .opts();
 
+// Default values for peggy
 const PARSER_DEFAULTS = {
   allowedStartRules: [],
   cache: false,
@@ -166,9 +176,11 @@ const PARSER_DEFAULTS = {
   trace: false,
 };
 
+// Default values for CLI arguments
 const PROG_DEFAULTS = {
   input: undefined,
   output: undefined,
+  sourceMap: undefined,
   test: undefined,
   testFile: undefined,
   verbose: false,
@@ -292,6 +304,15 @@ if (progOptions.test && progOptions.testFile) {
   abort("The -t/--test and -T/--test-file options are mutually exclusive.");
 }
 
+// If CLI parameter was defined, enable source map generation
+if (progOptions.sourceMap !== undefined) {
+  options.output = "source-and-map";
+}
+// If source map name is not specified, calculate it
+if (progOptions.sourceMap === true) {
+  progOptions.sourceMap = outputFile === "-" ? "source.map" : outputFile + ".map";
+}
+
 let testText = null;
 let testGrammarSource = null;
 let testFile = null;
@@ -338,6 +359,7 @@ if (inputFile === "-") {
 }
 
 readStream(inputStream, input => {
+  /** @type {string | import("source-map-generator").SourceNode } */
   let source;
 
   try {
@@ -358,6 +380,38 @@ readStream(inputStream, input => {
     outputStream.on("error", () => {
       abort(`Can't write to file "${outputFile}".`);
     });
+  }
+
+  if (progOptions.sourceMap) {
+    if (!outputStream) {
+      // outputStream is null if `--test/--test-file` is specified, but `--output` is not
+      abort("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+    }
+
+    const mapDir = path.dirname(progOptions.sourceMap);
+
+    /** @type {import("source-map-generator").SourceNode} */
+    const source2 = source;
+    const source3 = source2.toStringWithSourceMap({
+      file: outputFile === "-" ? null : path.relative(mapDir, outputFile),
+    });
+
+    // According to specifications, paths in the "sources" array should be
+    // relative to the map file. Compiler cannot generate right paths, because
+    // it is unaware of the source map location
+    const json = source3.map.toJSON();
+    json.sources = json.sources.map(src => {
+      return src === null ? null : path.relative(mapDir, src);
+    });
+
+    const sourceMapStream = fs.createWriteStream(progOptions.sourceMap);
+    sourceMapStream.on("error", () => {
+      abort(`Can't write to file "${progOptions.sourceMap}".`);
+    });
+    sourceMapStream.write(JSON.stringify(json));
+    sourceMapStream.end();
+
+    source = source3.code;
   }
 
   if (outputStream) {
@@ -386,7 +440,9 @@ readStream(inputStream, input => {
         maxStringLength: Infinity,
       }));
     } catch (e) {
-      abortError("Error parsing test:", e);
+      showError("Error parsing test:", e);
+      // We want to wait until source code/source map will be written
+      process.exitCode = 2;
     }
   }
 });

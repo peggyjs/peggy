@@ -4,6 +4,19 @@ const chai = require("chai");
 const peg = require("../../lib/peg");
 const sinon = require("sinon");
 const pkg = require("../../package.json");
+const { SourceMapConsumer } = require("source-map");
+
+beforeEach(() => {
+  // In the browser, initialize SourceMapConsumer's wasm bits.
+  // This is *async*, so make sure to return the promise to make
+  // Mocha (which is what we use in the browser) pause until we're ready.
+  if (typeof window !== "undefined") {
+    return SourceMapConsumer.initialize({
+      "lib/mappings.wasm": "https://raw.githubusercontent.com/mozilla/source-map/0.7.3/lib/mappings.wasm",
+    });
+  }
+  return null;
+});
 
 const expect = chai.expect;
 
@@ -194,6 +207,72 @@ describe("Peggy API", () => {
 
     it("accepts custom options", () => {
       peg.generate("start = 'a'", { grammarSource: 42 });
+    });
+
+    describe("generates source map", () => {
+      function findLocationOf(input, chunk) {
+        const offset = input.indexOf(chunk);
+        let line = 1;
+        let column = 0;
+
+        for (let i = 0; i < offset; ++i) {
+          if (input.charCodeAt(i) === 10) {
+            ++line;
+            column = 0;
+          } else {
+            ++column;
+          }
+        }
+
+        return { line, column };
+      }
+
+      const GLOBAL_INITIALIZER = "GLOBAL\nINITIALIZER";
+      const PER_PARSE_INITIALIZER = "PER-PARSE\nINITIALIZER";
+      const NOT_BLOCK = "NOT\nBLOCK";
+      const AND_BLOCK = "AND\nBLOCK";
+      const ACTION_BLOCK = "ACTION\nBLOCK";
+      const SOURCE = `
+        {{${GLOBAL_INITIALIZER}}}
+        {${PER_PARSE_INITIALIZER}}
+        RULE_1 = !{${NOT_BLOCK}} 'a' rule:RULE_2 {${ACTION_BLOCK}};
+        RULE_2 'named' = &{${AND_BLOCK}} @'b';
+      `;
+
+      function check(chunk, source, name, generatedChunk = chunk) {
+        const node = peg.generate(SOURCE, {
+          grammarSource: source,
+          output: "source-and-map",
+        });
+        const { code, map } = node.toStringWithSourceMap();
+
+        const original  = findLocationOf(SOURCE, chunk);
+        const generated = findLocationOf(code, generatedChunk);
+
+        return SourceMapConsumer.fromSourceMap(map).then(consumer => {
+          expect(consumer.originalPositionFor(generated))
+            .to.be.deep.equal(Object.assign(original, { source, name }));
+        });
+      }
+
+      for (const source of [
+        // Because of https://github.com/mozilla/source-map/issues/444 this variants not working
+        // undefined,
+        // null,
+        // "",
+        "-",
+      ]) {
+        describe(`with source = ${chai.util.inspect(source)}`, () => {
+          it("global initializer", () => check(GLOBAL_INITIALIZER, source, "$top_level_initializer"));
+          it("per-parse initializer", () => check(PER_PARSE_INITIALIZER, source, "$initializer"));
+          it("action block", () => check(ACTION_BLOCK, source, null));
+          it("semantic and predicate", () => check(AND_BLOCK, source, null));
+          it("semantic not predicate", () => check(NOT_BLOCK, source, null));
+
+          it("rule name", () => check("RULE_1", source, "RULE_1", "peg$parseRULE_1() {"));
+          it("labelled rule name", () => check("RULE_2 'named'", source, "RULE_2", "peg$parseRULE_2() {"));
+        });
+      }
     });
   });
 });

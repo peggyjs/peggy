@@ -1,5 +1,7 @@
 // Based on PEG.js Type Definitions by: vvakame <https://github.com/vvakame>, Tobias Kahlert <https://github.com/SrTobi>, C.J. Bell <https://github.com/siegebell>
 
+import { SourceNode } from "source-map-generator";
+
 /** Interfaces that describe the abstract syntax tree used by Peggy. */
 declare namespace ast {
   /**
@@ -50,8 +52,11 @@ declare namespace ast {
     /** List of all rules in that grammar. */
     rules: Rule[];
 
-    /** Added by the `generateJs` pass and contains the JS code. */
-    code?: string;
+    /**
+     * Added by the `generateJs` pass and contains the JS code and the source
+     * map for it.
+     */
+    code?: SourceNode;
   }
 
   /**
@@ -721,8 +726,35 @@ export namespace compiler {
   function compile(
     ast: ast.Grammar,
     stages: Stages,
-    options: SourceBuildOptions
+    options: SourceBuildOptions<"source">
   ): string;
+
+  /**
+   * Generates a parser source and source map from a specified grammar AST.
+   *
+   * Note that not all errors are detected during the generation and some may
+   * protrude to the generated parser and cause its malfunction.
+   *
+   * @param ast Abstract syntax tree of the grammar from a parser
+   * @param stages List of compilation stages
+   * @param options Compilation options
+   *
+   * @return An object used to obtain a parser source code and source map
+   *
+   * @throws {GrammarError} If the AST contains a semantic error, for example,
+   *         duplicated labels
+   */
+  function compile(
+    ast: ast.Grammar,
+    stages: Stages,
+    options: SourceBuildOptions<"source-and-map">
+  ): SourceNode;
+
+  function compile(
+    ast: ast.Grammar,
+    stages: Stages,
+    options: SourceBuildOptions<SourceOutputs>
+  ): string | SourceNode;
 }
 
 /** Provides information pointing to a location within a source. */
@@ -885,14 +917,34 @@ export interface BuildOptionsBase {
 }
 
 export interface ParserBuildOptions extends BuildOptionsBase {
-  /** If set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
+  /**
+   * If set to `"parser"`, the method will return generated parser object;
+   * if set to `"source"`, it will return parser source code as a string;
+   * if set to `"source-and-map"`, it will return a `SourceNode` object
+   * which can give a parser source code as a string and a source map;
+   * (default: `"parser"`)
+   */
   output?: "parser";
 }
 
-export interface OutputFormatAmdCommonjsEs extends BuildOptionsBase {
-  /** If set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
-  output: "source";
+/** Possible kinds of source output generators. */
+export type SourceOutputs = "source" | "source-and-map";
 
+/** Base options for all source-generating formats. */
+interface SourceOptionsBase<Output extends SourceOutputs>
+  extends BuildOptionsBase {
+  /**
+   * If set to `"parser"`, the method will return generated parser object;
+   * if set to `"source"`, it will return parser source code as a string;
+   * if set to `"source-and-map"`, it will return a `SourceNode` object
+   * which can give a parser source code as a string and a source map;
+   * (default: `"parser"`)
+   */
+  output: Output;
+}
+
+export interface OutputFormatAmdCommonjsEs<Output extends SourceOutputs = "source">
+  extends SourceOptionsBase<Output> {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "amd" | "commonjs" | "es";
   /**
@@ -904,10 +956,8 @@ export interface OutputFormatAmdCommonjsEs extends BuildOptionsBase {
   dependencies?: Dependencies;
 }
 
-export interface OutputFormatUmd extends BuildOptionsBase {
-  /** If set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
-  output: "source";
-
+export interface OutputFormatUmd<Output extends SourceOutputs = "source">
+  extends SourceOptionsBase<Output> {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "umd";
   /**
@@ -925,10 +975,8 @@ export interface OutputFormatUmd extends BuildOptionsBase {
   exportVar?: string;
 }
 
-export interface OutputFormatGlobals extends BuildOptionsBase {
-  /** If set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
-  output: "source";
-
+export interface OutputFormatGlobals<Output extends SourceOutputs = "source">
+  extends SourceOptionsBase<Output> {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "globals";
   /**
@@ -939,20 +987,18 @@ export interface OutputFormatGlobals extends BuildOptionsBase {
   exportVar: string;
 }
 
-export interface OutputFormatBare extends BuildOptionsBase {
-  /** If set to `"parser"`, the method will return generated parser object; if set to `"source"`, it will return parser source code as a string (default: `"parser"`) */
-  output: "source";
-
+export interface OutputFormatBare<Output extends SourceOutputs = "source">
+  extends SourceOptionsBase<Output> {
   /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format?: "bare";
 }
 
 /** Options for generating source code of the parser. */
-export type SourceBuildOptions
-  = OutputFormatUmd
-  | OutputFormatBare
-  | OutputFormatGlobals
-  | OutputFormatAmdCommonjsEs;
+export type SourceBuildOptions<Output extends SourceOutputs = "source">
+  = OutputFormatUmd<Output>
+  | OutputFormatBare<Output>
+  | OutputFormatGlobals<Output>
+  | OutputFormatAmdCommonjsEs<Output>;
 
 /**
  * Returns a generated parser object.
@@ -980,7 +1026,53 @@ export function generate(grammar: string, options?: ParserBuildOptions): Parser;
  * @throws {GrammarError} If the grammar contains a semantic error, for example,
  *         duplicated labels
  */
-export function generate(grammar: string, options: SourceBuildOptions): string;
+export function generate(
+  grammar: string,
+  options: SourceBuildOptions<"source">
+): string;
+
+/**
+ * Returns the generated source code and its source map as a `SourceNode`
+ * object. You can get the generated code and the source map by using a
+ * `SourceNode` API. Generated code will be in the specified module format.
+ *
+ * Note, that `SourceNode.source`s of the generated source map will depend
+ * on the `options.grammarSource` value. Therefore, value `options.grammarSource`
+ * will propagate to the `sources` array of the source map. That array MUST
+ * contains absolute paths or paths, relative to the source map location.
+ *
+ * Because at that level we don't known location of the source map, you probably
+ * will need to fix locations:
+ *
+ * ```ts
+ * const mapDir = path.dirname(generatedParserJsMap);
+ * const source = peggy.generate(...).toStringWithSourceMap({
+ *   file: path.relative(mapDir, generatedParserJs),
+ * });
+ * const json = source.map.toJSON();
+ * json.sources = json.sources.map(src => {
+ *   return src === null ? null : path.relative(mapDir, src);
+ * });
+ * ```
+ *
+ * @param grammar String in the format described by the meta-grammar in the
+ *        `parser.pegjs` file
+ * @param options Options that allow you to customize returned parser object
+ *
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
+ *         an unclosed brace
+ * @throws {GrammarError} If the grammar contains a semantic error, for example,
+ *         duplicated labels
+ */
+export function generate(
+  grammar: string,
+  options: SourceBuildOptions<"source-and-map">
+): SourceNode;
+
+export function generate(
+  grammar: string,
+  options: SourceBuildOptions<SourceOutputs>
+): string | SourceNode;
 
 // Export all exported stuff under a global variable PEG in non-module environments
 export as namespace PEG;

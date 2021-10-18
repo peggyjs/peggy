@@ -1,6 +1,7 @@
 "use strict";
 
 const chai = require("chai");
+const { SourceNode } = require("source-map");
 const peg = require("../../lib/peg");
 
 const expect = chai.expect;
@@ -75,6 +76,10 @@ describe("plugin API", () => {
             "start = .* {",
             "  return {",
             "    type: 'grammar',",
+            "    initializer: {",
+            "      type: 'initializer',",
+            "      code: ['/* included for cover ast2SourceNode in the generate-js pass */'],",
+            "    },",
             "    rules: [",
             "      {",
             "        type: 'rule',",
@@ -98,7 +103,9 @@ describe("plugin API", () => {
       const plugin = {
         use(config) {
           function pass(ast) {
-            ast.code = "({ parse: function() { return 42; } })";
+            ast.code = new SourceNode(
+              1, 0, "plugin", "({ parse: function() { return 42; } })"
+            );
           }
 
           config.passes.generate = [pass];

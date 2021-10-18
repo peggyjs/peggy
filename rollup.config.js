@@ -88,6 +88,9 @@ const browser_test_config = {
     name   : "browser",
     globals: {
       chai: "chai",
+      fs: "ignore_fs",
+      path: "ignore_path",
+      url: "ignore_url",
     },
   },
   external: ["chai"],

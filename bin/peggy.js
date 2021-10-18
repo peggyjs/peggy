@@ -460,21 +460,24 @@ class Help$1 {
    */
 
   optionDescription(option) {
-    if (option.negate) {
-      return option.description;
-    }
     const extraInfo = [];
-    if (option.argChoices) {
+    // Some of these do not make sense for negated boolean and suppress for backwards compatibility.
+
+    if (option.argChoices && !option.negate) {
       extraInfo.push(
         // use stringify to match the display of the default value
         `choices: ${option.argChoices.map((choice) => JSON.stringify(choice)).join(', ')}`);
     }
-    if (option.defaultValue !== undefined) {
+    if (option.defaultValue !== undefined && !option.negate) {
       extraInfo.push(`default: ${option.defaultValueDescription || JSON.stringify(option.defaultValue)}`);
+    }
+    if (option.envVar !== undefined) {
+      extraInfo.push(`env: ${option.envVar}`);
     }
     if (extraInfo.length > 0) {
       return `${option.description} (${extraInfo.join(', ')})`;
     }
+
     return option.description;
   };
 
@@ -649,6 +652,7 @@ class Option$1 {
     }
     this.defaultValue = undefined;
     this.defaultValueDescription = undefined;
+    this.envVar = undefined;
     this.parseArg = undefined;
     this.hidden = false;
     this.argChoices = undefined;
@@ -665,6 +669,19 @@ class Option$1 {
   default(value, description) {
     this.defaultValue = value;
     this.defaultValueDescription = description;
+    return this;
+  };
+
+  /**
+   * Set environment variable to check for option value.
+   * Priority order of option values is default < env < cli
+   *
+   * @param {string} name
+   * @return {Option}
+   */
+
+  env(name) {
+    this.envVar = name;
     return this;
   };
 
@@ -814,15 +831,119 @@ function splitOptionFlags$1(flags) {
 option.Option = Option$1;
 option.splitOptionFlags = splitOptionFlags$1;
 
-const EventEmitter = require$$0__default['default'].EventEmitter;
-const childProcess = require$$1__default['default'];
-const path = path__default['default'];
-const fs = fs__default['default'];
+var suggestSimilar$2 = {};
+
+const maxDistance = 3;
+
+function editDistance(a, b) {
+  // https://en.wikipedia.org/wiki/Damerau–Levenshtein_distance
+  // Calculating optimal string alignment distance, no substring is edited more than once.
+  // (Simple implementation.)
+
+  // Quick early exit, return worst case.
+  if (Math.abs(a.length - b.length) > maxDistance) return Math.max(a.length, b.length);
+
+  // distance between prefix substrings of a and b
+  const d = [];
+
+  // pure deletions turn a into empty string
+  for (let i = 0; i <= a.length; i++) {
+    d[i] = [i];
+  }
+  // pure insertions turn empty string into b
+  for (let j = 0; j <= b.length; j++) {
+    d[0][j] = j;
+  }
+
+  // fill matrix
+  for (let j = 1; j <= b.length; j++) {
+    for (let i = 1; i <= a.length; i++) {
+      let cost = 1;
+      if (a[i - 1] === b[j - 1]) {
+        cost = 0;
+      } else {
+        cost = 1;
+      }
+      d[i][j] = Math.min(
+        d[i - 1][j] + 1, // deletion
+        d[i][j - 1] + 1, // insertion
+        d[i - 1][j - 1] + cost // substitution
+      );
+      // transposition
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+  }
+
+  return d[a.length][b.length];
+}
+
+/**
+ * Find close matches, restricted to same number of edits.
+ *
+ * @param {string} word
+ * @param {string[]} candidates
+ * @returns {string}
+ */
+
+function suggestSimilar$1(word, candidates) {
+  if (!candidates || candidates.length === 0) return '';
+  // remove possible duplicates
+  candidates = Array.from(new Set(candidates));
+
+  const searchingOptions = word.startsWith('--');
+  if (searchingOptions) {
+    word = word.slice(2);
+    candidates = candidates.map(candidate => candidate.slice(2));
+  }
+
+  let similar = [];
+  let bestDistance = maxDistance;
+  const minSimilarity = 0.4;
+  candidates.forEach((candidate) => {
+    if (candidate.length <= 1) return; // no one character guesses
+
+    const distance = editDistance(word, candidate);
+    const length = Math.max(word.length, candidate.length);
+    const similarity = (length - distance) / length;
+    if (similarity > minSimilarity) {
+      if (distance < bestDistance) {
+        // better edit distance, throw away previous worse matches
+        bestDistance = distance;
+        similar = [candidate];
+      } else if (distance === bestDistance) {
+        similar.push(candidate);
+      }
+    }
+  });
+
+  similar.sort((a, b) => a.localeCompare(b));
+  if (searchingOptions) {
+    similar = similar.map(candidate => `--${candidate}`);
+  }
+
+  if (similar.length > 1) {
+    return `\n(Did you mean one of ${similar.join(', ')}?)`;
+  }
+  if (similar.length === 1) {
+    return `\n(Did you mean ${similar[0]}?)`;
+  }
+  return '';
+}
+
+suggestSimilar$2.suggestSimilar = suggestSimilar$1;
+
+const EventEmitter = require$$0__default["default"].EventEmitter;
+const childProcess = require$$1__default["default"];
+const path = path__default["default"];
+const fs = fs__default["default"];
 
 const { Argument, humanReadableArgName } = argument;
 const { CommanderError } = error;
 const { Help } = help;
 const { Option, splitOptionFlags } = option;
+const { suggestSimilar } = suggestSimilar$2;
 
 // @ts-check
 
@@ -851,6 +972,7 @@ class Command extends EventEmitter {
     this._scriptPath = null;
     this._name = name || '';
     this._optionValues = {};
+    this._optionValueSources = {}; // default < env < cli
     this._storeOptionsAsProperties = false;
     this._actionHandler = null;
     this._executableHandler = false;
@@ -866,6 +988,7 @@ class Command extends EventEmitter {
     this._lifeCycleHooks = {}; // a hash of arrays
     /** @type {boolean | string} */
     this._showHelpAfterError = false;
+    this._showSuggestionAfterError = false;
 
     // see .configureOutput() for docs
     this._outputConfiguration = {
@@ -914,6 +1037,7 @@ class Command extends EventEmitter {
     this._allowExcessArguments = sourceCommand._allowExcessArguments;
     this._enablePositionalOptions = sourceCommand._enablePositionalOptions;
     this._showHelpAfterError = sourceCommand._showHelpAfterError;
+    this._showSuggestionAfterError = sourceCommand._showSuggestionAfterError;
 
     return this;
   }
@@ -1045,6 +1169,17 @@ class Command extends EventEmitter {
   showHelpAfterError(displayHelp = true) {
     if (typeof displayHelp !== 'string') displayHelp = !!displayHelp;
     this._showHelpAfterError = displayHelp;
+    return this;
+  }
+
+  /**
+   * Display suggestion of similar commands for unknown commands, or options for unknown options.
+   *
+   * @param {boolean} [displaySuggestion]
+   * @return {Command} `this` command for chaining
+   */
+  showSuggestionAfterError(displaySuggestion = true) {
+    this._showSuggestionAfterError = !!displaySuggestion;
     return this;
   }
 
@@ -1326,16 +1461,16 @@ Expecting one of '${allowedValues.join("', '")}'`);
       }
       // preassign only if we have a default
       if (defaultValue !== undefined) {
-        this.setOptionValue(name, defaultValue);
+        this._setOptionValueWithSource(name, defaultValue, 'default');
       }
     }
 
     // register the option
     this.options.push(option);
 
-    // when it's passed assign the value
-    // and conditionally invoke the callback
-    this.on('option:' + oname, (val) => {
+    // handler for cli and env supplied values
+    const handleOptionValue = (val, invalidValueMessage, valueSource) => {
+      // Note: using closure to access lots of lexical scoped variables.
       const oldValue = this.getOptionValue(name);
 
       // custom processing
@@ -1344,7 +1479,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
           val = option.parseArg(val, oldValue === undefined ? defaultValue : oldValue);
         } catch (err) {
           if (err.code === 'commander.invalidArgument') {
-            const message = `error: option '${option.flags}' argument '${val}' is invalid. ${err.message}`;
+            const message = `${invalidValueMessage} ${err.message}`;
             this._displayError(err.exitCode, err.code, message);
           }
           throw err;
@@ -1357,17 +1492,27 @@ Expecting one of '${allowedValues.join("', '")}'`);
       if (typeof oldValue === 'boolean' || typeof oldValue === 'undefined') {
         // if no value, negate false, and we have a default, then use it!
         if (val == null) {
-          this.setOptionValue(name, option.negate
-            ? false
-            : defaultValue || true);
+          this._setOptionValueWithSource(name, option.negate ? false : defaultValue || true, valueSource);
         } else {
-          this.setOptionValue(name, val);
+          this._setOptionValueWithSource(name, val, valueSource);
         }
       } else if (val !== null) {
         // reassign
-        this.setOptionValue(name, option.negate ? false : val);
+        this._setOptionValueWithSource(name, option.negate ? false : val, valueSource);
       }
+    };
+
+    this.on('option:' + oname, (val) => {
+      const invalidValueMessage = `error: option '${option.flags}' argument '${val}' is invalid.`;
+      handleOptionValue(val, invalidValueMessage, 'cli');
     });
+
+    if (option.envVar) {
+      this.on('optionEnv:' + oname, (val) => {
+        const invalidValueMessage = `error: option '${option.flags}' value '${val}' from env '${option.envVar}' is invalid.`;
+        handleOptionValue(val, invalidValueMessage, 'env');
+      });
+    }
 
     return this;
   }
@@ -1580,6 +1725,14 @@ Expecting one of '${allowedValues.join("', '")}'`);
     }
     return this;
   };
+
+  /**
+   * @api private
+   */
+  _setOptionValueWithSource(key, value, source) {
+    this.setOptionValue(key, value);
+    this._optionValueSources[key] = source;
+  }
 
   /**
    * Get user arguments implied or explicit arguments.
@@ -1945,6 +2098,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
 
   _parseCommand(operands, unknown) {
     const parsed = this.parseOptions(unknown);
+    this._parseOptionsEnv(); // after cli, so parseArg not called on both cli and env
     operands = operands.concat(parsed.operands);
     unknown = parsed.unknown;
     this.args = operands.concat(unknown);
@@ -2007,6 +2161,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
         this._processArguments();
       }
     } else if (this.commands.length) {
+      checkForUnknownOptions();
       // This command has subcommands and nothing hooked up at this level, so display help (and exit).
       this.help({ error: true });
     } else {
@@ -2226,6 +2381,30 @@ Expecting one of '${allowedValues.join("', '")}'`);
   }
 
   /**
+   * Apply any option related environment variables, if option does
+   * not have a value from cli or client code.
+   *
+   * @api private
+   */
+  _parseOptionsEnv() {
+    this.options.forEach((option) => {
+      if (option.envVar && option.envVar in process.env) {
+        const optionKey = option.attributeName();
+        // env is second lowest priority source, above default
+        if (this.getOptionValue(optionKey) === undefined || this._optionValueSources[optionKey] === 'default') {
+          if (option.required || option.optional) { // option can take a value
+            // keep very simple, optional always takes value
+            this.emit(`optionEnv:${option.name()}`, process.env[option.envVar]);
+          } else { // boolean
+            // keep very simple, only care that envVar defined and not the value
+            this.emit(`optionEnv:${option.name()}`);
+          }
+        }
+      }
+    });
+  }
+
+  /**
    * Argument `name` is missing.
    *
    * @param {string} name
@@ -2270,7 +2449,23 @@ Expecting one of '${allowedValues.join("', '")}'`);
 
   unknownOption(flag) {
     if (this._allowUnknownOption) return;
-    const message = `error: unknown option '${flag}'`;
+    let suggestion = '';
+
+    if (flag.startsWith('--') && this._showSuggestionAfterError) {
+      // Looping to pick up the global options too
+      let candidateFlags = [];
+      let command = this;
+      do {
+        const moreFlags = command.createHelp().visibleOptions(command)
+          .filter(option => option.long)
+          .map(option => option.long);
+        candidateFlags = candidateFlags.concat(moreFlags);
+        command = command.parent;
+      } while (command && !command._enablePositionalOptions);
+      suggestion = suggestSimilar(flag, candidateFlags);
+    }
+
+    const message = `error: unknown option '${flag}'${suggestion}`;
     this._displayError(1, 'commander.unknownOption', message);
   };
 
@@ -2298,7 +2493,20 @@ Expecting one of '${allowedValues.join("', '")}'`);
    */
 
   unknownCommand() {
-    const message = `error: unknown command '${this.args[0]}'`;
+    const unknownName = this.args[0];
+    let suggestion = '';
+
+    if (this._showSuggestionAfterError) {
+      const candidateNames = [];
+      this.createHelp().visibleCommands(this).forEach((command) => {
+        candidateNames.push(command.name());
+        // just visible alias
+        if (command.alias()) candidateNames.push(command.alias());
+      });
+      suggestion = suggestSimilar(unknownName, candidateNames);
+    }
+
+    const message = `error: unknown command '${unknownName}'${suggestion}`;
     this._displayError(1, 'commander.unknownCommand', message);
   };
 
@@ -2689,20 +2897,25 @@ function abort(message) {
   process.exit(1);
 }
 
-function abortError(msg, error) {
+function showError(msg, error) {
   console.error(msg);
   if (typeof error.format === "function") {
-    abort(error.format([{
+    console.error(error.format([{
       source: testGrammarSource,
       text: testText,
     }]));
   } else {
     if (verbose) {
-      abort(error);
+      console.error(error);
     } else {
-      abort(`Error: ${error.message}`);
+      console.error(`Error: ${error.message}`);
     }
   }
+}
+
+function abortError(msg, error) {
+  showError(msg, error);
+  process.exit(1);
 }
 
 function addExtraOptions(json, options) {
@@ -2736,7 +2949,7 @@ function readStream(inputStream, callback) {
 function readFile(name) {
   let f = null;
   try {
-    f = fs__default['default'].readFileSync(name, "utf8");
+    f = fs__default["default"].readFileSync(name, "utf8");
   } catch (e) {
     abortError(`Can't read from file "${name}".`, e);
   }
@@ -2747,7 +2960,7 @@ function readFile(name) {
 
 const program = new commander.exports.Command();
 const cliOptions = program
-  .version(peggy__default['default'].VERSION, "-v, --version")
+  .version(peggy__default["default"].VERSION, "-v, --version")
   .arguments("[input_file]")
   .addOption(
     new commander.exports.Option(
@@ -2780,7 +2993,7 @@ const cliOptions = program
     "File with additional options (in JSON as an object or commonjs module format) to pass to peggy.generate",
     (val, prev) => {
       if (/\.c?js$/.test(val)) {
-        return Object.assign({}, prev, require(path__default['default'].resolve(val)));
+        return Object.assign({}, prev, require(path__default["default"].resolve(val)));
       } else {
         return addExtraOptions(readFile(val), prev);
       }
@@ -2801,12 +3014,16 @@ const cliOptions = program
     commaArg
   )
   .option(
+    "-m, --source-map [mapfile]",
+    "Generate a source map. If name is not specified, the source map will be named \"<input_file>.map\" if input is a file and \"source.map\" if input is a standard input. This option conflicts with the `-t/--test` and `-T/--test-file` options unless `-o/--output` is also specified"
+  )
+  .option(
     "-t, --test <text>",
-    "Test the parser with the given text, outputting the result of running the parser instead of the parser itself"
+    "Test the parser with the given text, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
   )
   .option(
     "-T, --test-file <filename>",
-    "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself"
+    "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
   )
   .option("--trace", "Enable tracing in generated parser")
   .addOption(
@@ -2828,6 +3045,7 @@ const cliOptions = program
   .parse()
   .opts();
 
+// Default values for peggy
 const PARSER_DEFAULTS = {
   allowedStartRules: [],
   cache: false,
@@ -2840,9 +3058,11 @@ const PARSER_DEFAULTS = {
   trace: false,
 };
 
+// Default values for CLI arguments
 const PROG_DEFAULTS = {
   input: undefined,
   output: undefined,
+  sourceMap: undefined,
   test: undefined,
   testFile: undefined,
   verbose: false,
@@ -2896,8 +3116,8 @@ if ((options.plugin.length > 0) || (options.plugins.length > 0)) {
       return val;
     }
     // If this is an absolute or relative path (not a module name)
-    const id = (path__default['default'].isAbsolute(val) || /^\.\.?[/\\]/.test(val))
-      ? path__default['default'].resolve(val)
+    const id = (path__default["default"].isAbsolute(val) || /^\.\.?[/\\]/.test(val))
+      ? path__default["default"].resolve(val)
       : val;
     let mod = null;
     try {
@@ -2956,7 +3176,7 @@ if (!outputFile) {
   if ((inputFile !== "-")
     && !progOptions.test
     && !progOptions.testFile) {
-    outputFile = inputFile.substr(0, inputFile.length - path__default['default'].extname(inputFile).length) + ".js";
+    outputFile = inputFile.substr(0, inputFile.length - path__default["default"].extname(inputFile).length) + ".js";
   } else {
     outputFile = "-";
   }
@@ -2964,6 +3184,15 @@ if (!outputFile) {
 
 if (progOptions.test && progOptions.testFile) {
   abort("The -t/--test and -T/--test-file options are mutually exclusive.");
+}
+
+// If CLI parameter was defined, enable source map generation
+if (progOptions.sourceMap !== undefined) {
+  options.output = "source-and-map";
+}
+// If source map name is not specified, calculate it
+if (progOptions.sourceMap === true) {
+  progOptions.sourceMap = outputFile === "-" ? "source.map" : outputFile + ".map";
 }
 
 let testText = null;
@@ -2979,13 +3208,13 @@ if (progOptions.testFile) {
 }
 
 if (verbose) {
-  console.error("PARSER OPTIONS:", util__default['default'].inspect(options, {
+  console.error("PARSER OPTIONS:", util__default["default"].inspect(options, {
     depth: Infinity,
     colors: process.stdout.isTTY,
     maxArrayLength: Infinity,
     maxStringLength: Infinity,
   }));
-  console.error("PROGRAM OPTIONS:", util__default['default'].inspect(progOptions, {
+  console.error("PROGRAM OPTIONS:", util__default["default"].inspect(progOptions, {
     depth: Infinity,
     colors: process.stdout.isTTY,
     maxArrayLength: Infinity,
@@ -3008,14 +3237,15 @@ if (inputFile === "-") {
   options.grammarSource = "stdin";
 } else {
   options.grammarSource = inputFile;
-  inputStream = fs__default['default'].createReadStream(inputFile);
+  inputStream = fs__default["default"].createReadStream(inputFile);
 }
 
 readStream(inputStream, input => {
+  /** @type {string | import("source-map-generator").SourceNode } */
   let source;
 
   try {
-    source = peggy__default['default'].generate(input, options);
+    source = peggy__default["default"].generate(input, options);
   } catch (e) {
     abortError("Error parsing grammar:", e);
   }
@@ -3028,10 +3258,42 @@ readStream(inputStream, input => {
       outputStream = process.stdout;
     }
   } else {
-    outputStream = fs__default['default'].createWriteStream(outputFile);
+    outputStream = fs__default["default"].createWriteStream(outputFile);
     outputStream.on("error", () => {
       abort(`Can't write to file "${outputFile}".`);
     });
+  }
+
+  if (progOptions.sourceMap) {
+    if (!outputStream) {
+      // outputStream is null if `--test/--test-file` is specified, but `--output` is not
+      abort("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+    }
+
+    const mapDir = path__default["default"].dirname(progOptions.sourceMap);
+
+    /** @type {import("source-map-generator").SourceNode} */
+    const source2 = source;
+    const source3 = source2.toStringWithSourceMap({
+      file: outputFile === "-" ? null : path__default["default"].relative(mapDir, outputFile),
+    });
+
+    // According to specifications, paths in the "sources" array should be
+    // relative to the map file. Compiler cannot generate right paths, because
+    // it is unaware of the source map location
+    const json = source3.map.toJSON();
+    json.sources = json.sources.map(src => {
+      return src === null ? null : path__default["default"].relative(mapDir, src);
+    });
+
+    const sourceMapStream = fs__default["default"].createWriteStream(progOptions.sourceMap);
+    sourceMapStream.on("error", () => {
+      abort(`Can't write to file "${progOptions.sourceMap}".`);
+    });
+    sourceMapStream.write(JSON.stringify(json));
+    sourceMapStream.end();
+
+    source = source3.code;
   }
 
   if (outputStream) {
@@ -3053,14 +3315,16 @@ readStream(inputStream, input => {
       const results = exec.parse(testText, {
         grammarSource: testGrammarSource,
       });
-      console.log(util__default['default'].inspect(results, {
+      console.log(util__default["default"].inspect(results, {
         depth: Infinity,
         colors: process.stdout.isTTY,
         maxArrayLength: Infinity,
         maxStringLength: Infinity,
       }));
     } catch (e) {
-      abortError("Error parsing test:", e);
+      showError("Error parsing test:", e);
+      // We want to wait until source code/source map will be written
+      process.exitCode = 2;
     }
   }
 });
