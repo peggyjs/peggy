@@ -20,6 +20,13 @@ describe("generated parser API", () => {
       expect(() => { parser.parse("b"); }).to.throw();
     });
 
+    // Regression: https://github.com/peggyjs/peggy/pull/197
+    it("correctly describe character class in syntax error", () => {
+      const parser = peg.generate("start = [123-5]");
+
+      expect(() => { parser.parse("0"); }).to.throw("[123-5]");
+    });
+
     describe("start rule", () => {
       const parser = peg.generate([
         "a = 'x' { return 'a'; }",
