@@ -19,6 +19,8 @@ Released: TBD
 
 - [#164](https://github.com/peggyjs/peggy/pull/164): Fix some errors in the typescript definitions
 - [#169](https://github.com/peggyjs/peggy/issues/169): Expose string escape functions
+- [#197](https://github.com/peggyjs/peggy/pull/197): Fix a regression of redundant commas in the
+  character classes in the error messages, introduced in fad4ab74d1de67ef1902cd22d479c81ccab73224
 
 1.2.0
 -----
