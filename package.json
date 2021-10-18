@@ -43,7 +43,8 @@
     "setup": "npm run clean && npm run set_version",
     "make": "npm run parser && npm run ts && npm run rollup && npm run terser",
     "audit": "npm run test && npm run benchmark",
-    "tidy": "rimraf -f build"
+    "tidy": "rimraf -f build",
+    "start": "browser-sync start -c .bs-config.js"
   },
   "devDependencies": {
     "@peggyjs/eslint-config": "^1.0.0",
@@ -54,8 +55,9 @@
     "@rollup/plugin-typescript": "^8.3.0",
     "@types/jest": "^27.0.2",
     "@types/node": "^16.11.1",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.1.0",
+    "browser-sync": "^2.27.5",
     "chai": "^4.3.4",
     "commander": "^8.2.0",
     "eslint": "^8.0.1",
