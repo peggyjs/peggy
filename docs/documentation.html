@@ -7,10 +7,10 @@
     <meta name="keywords" content="parser generator, PEG, JavaScript, PEG.js">
     <meta name="description" content="Peggy is a parser generator for JavaScript based on the parsing expression grammar formalism.">
     <title>Documentation &raquo; Peggy &ndash; Parser Generator for JavaScript</title>
-    <link rel="stylesheet" href="/css/common.css">
-    <link rel="stylesheet" href="/css/layout-default.css">
-    <link rel="stylesheet" href="/css/content.css">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/layout-default.css">
+    <link rel="stylesheet" href="css/content.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <!--[if IE]>
     <script>
         var html5elements = ["aside", "footer", "header", "nav"];
@@ -25,15 +25,15 @@
 <body>
     <div id='main'>
         <header id="header">
-            <h1><a href="/">Peggy</a></h1>
+            <h1><a href="index.html">Peggy</a></h1>
             <h2>Parser Generator for JavaScript</h2>
         </header>
 
         <nav id="menu">
-            <a  href="/">Home</a>
-            <a  href="/online.html">Online Version</a>
-            <a  class="current" href="/documentation.html">Documentation</a>
-            <a  href="/development">Development</a>
+            <a  href="index.html">Home</a>
+            <a  href="online.html">Online Version</a>
+            <a  class="current" href="documentation.html">Documentation</a>
+            <a  href="development/index.html">Development</a>
         </nav>
 
         <div id="content">
@@ -144,13 +144,13 @@ override this using the <code>--format</code> option.</p>
   <dd>Makes the parser cache results, avoiding exponential parsing time in
   pathological cases but making the parser slower.</dd>
 
-  <dt><code>-d</code>, </code><code>--dependency &lt;[name:]module&gt;</code></dt>
+  <dt><code>-d</code>, <code>--dependency &lt;[name:]module&gt;</code></dt>
   <dd>Makes the parser require a specified dependency (can be specified
   multiple times).  A variable name for the import/require/etc. may be given,
   followed by a colon.  If no name is given, the module name will also be used
   for the variable name.</dd>
 
-  <dt><code>-e</code>, </code><code>--export-var &lt;variable&gt;</code></dt>
+  <dt><code>-e</code>, <code>--export-var &lt;variable&gt;</code></dt>
   <dd>Name of a global variable into which the parser object is assigned to when
   no module loader is detected.</dd>
 
@@ -166,7 +166,7 @@ override this using the <code>--format</code> option.</p>
   <dd>Format of the generated parser: <code>amd</code>, <code>commonjs</code>,
   <code>globals</code>, <code>umd</code>, <code>es</code> (default: <code>commonjs</code>).</dd>
 
-  <dt><code>-o</code>, <code>--output &lt;file&gt;</file></code></dt>
+  <dt><code>-o</code>, <code>--output &lt;file&gt;</code></dt>
   <dd>File to send output to.  Defaults to input file name with
     extension changed to <code>.js</code>, or stdout if no input file is given.</dd>
 
@@ -199,7 +199,7 @@ override this using the <code>--format</code> option.</p>
 </dl>
 
 <p>
-If you specify options using `-c <file>` or `--extra-options-file <file>`, you
+If you specify options using `-c &lt;file&gt;` or `--extra-options-file &lt;file&gt;`, you
 will need to ensure you are using the correct types.  In particular, you may
 specify "plugin" as a string, or "plugins" as an array of objects that have a
 `use` method.  Always use the long (two-dash) form of the option.  Options
