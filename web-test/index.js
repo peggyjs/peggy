@@ -24,16 +24,18 @@ async function main() {
       const txt = message.text();
       switch (txt) {
         case "PASS":
+          console.log("Tests: PASS");
           done.resolve();
           break;
         case "FAIL":
+          console.log("Tests: FAIL");
           done.reject();
           break;
         default: {
           const type = message
             .type()
             .toUpperCase();
-          console.log(`${type}: ${txt}`);
+          console.error(`${type}: ${txt}`);
         }
       }
     })
@@ -43,6 +45,11 @@ async function main() {
     ));
   await page.goto(TOP, { waitUntil: "load" });
   await donePromise;
+  await page.goto(new URL("benchmark.html", TOP), { waitUntil: "load" });
+  await page.click("#run");
+  const el = await page.waitForSelector(".total .parse-speed .value");
+  const val = await el.evaluate(e => e.innerText);
+  console.log(`Benchmark total: ${val.trim()}`);
   await browser.close();
 }
 
