@@ -1,0 +1,19 @@
+{
+  "name": "peggy-web-test",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Test peggy for the web in the browser",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "keywords": [],
+  "author": "Joe Hildebrand <joe-github@cursive.net>",
+  "license": "MIT",
+  "devDependencies": {
+    "puppeteer": "^10.4.0"
+  },
+  "engines": {
+    "node": ">=10"
+  }
+}
