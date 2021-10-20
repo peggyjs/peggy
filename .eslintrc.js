@@ -7,6 +7,7 @@ module.exports = {
     "docs/",
     "bin/peggy.js", // Generated
     "lib/parser.js", // Generated
+    "examples/*.js", // Testing examples
     "test/vendor/",
     "test/cli/fixtures/bad.js", // Intentionally-invalid
     "benchmark/vendor/",
