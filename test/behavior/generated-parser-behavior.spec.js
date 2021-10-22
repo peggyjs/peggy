@@ -1754,31 +1754,27 @@ describe("generated parser behavior", () => {
   });
   describe("syntax errors", () => {
     it("formats", () => {
-      expect(() => {
-        const source = { source: "stdin",  text: "===" };
-        try {
-          peg.generate(source.text, { grammarSource: source.source });
-        } catch (er) {
-          expect(er.format([source])).to.equal(`\
+      const source = { source: "stdin",  text: "===" };
+      try {
+        peg.generate(source.text, { grammarSource: source.source });
+      } catch (er) {
+        expect(er).to.be.an.instanceof(peg.parser.SyntaxError);
+        expect(er.format([source])).to.equal(`\
 Error: Expected "{", code block, comment, end of line, identifier, or whitespace but "=" found.
  --> stdin:1:1
   |
 1 | ===
   | ^`);
-          throw er;
-        }
-      }).to.throw(peg.parser.SyntaxError);
+      }
 
-      expect(() => {
-        try {
-          peg.generate("===", { grammarSource: "stdin" });
-        } catch (er) {
-          expect(er.format([])).to.equal(`\
+      try {
+        peg.generate("===", { grammarSource: "stdin" });
+      } catch (er) {
+        expect(er).to.be.an.instanceof(peg.parser.SyntaxError);
+        expect(er.format([])).to.equal(`\
 Error: Expected "{", code block, comment, end of line, identifier, or whitespace but "=" found.
  at stdin:1:1`);
-          throw er;
-        }
-      }).to.throw(peg.parser.SyntaxError);
+      }
     });
   });
 });
