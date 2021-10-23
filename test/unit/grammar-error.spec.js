@@ -42,18 +42,21 @@ GrammarError: message
 
   it("formats", () => {
     location.source = "foo.peggy";
+    /** @type {import("../../lib/peg").SourceText} */
     const source = {
       source: "foo.peggy",
       text: "some error\nthat",
     };
-    let e = new GrammarError("message", location, [{
+    /** @type {import("../../lib/peg").DiagnosticNote} */
+    const diagnostics = [{
       message: "Subinfo",
       location: {
         source: "foo.peggy",
         start: { offset: 5, line: 1, column: 6 },
         end: { offset: 11, line: 2, column: 1 },
       },
-    }]);
+    }];
+    let e = new GrammarError("message", location, diagnostics);
     expect(e.format([source])).to.equal(`\
 Error: message
  --> foo.peggy:1:1
@@ -70,14 +73,7 @@ Error: message
  at foo.peggy:1:1
  at foo.peggy:1:6: Subinfo`);
 
-    e = new GrammarError("message", null, [{
-      message: "Subinfo",
-      location: {
-        source: "foo.peggy",
-        start: { offset: 5, line: 1, column: 6 },
-        end: { offset: 11, line: 2, column: 1 },
-      },
-    }]);
+    e = new GrammarError("message", null, diagnostics);
     expect(e.format([source])).to.equal(`\
 Error: message
 note: Subinfo
