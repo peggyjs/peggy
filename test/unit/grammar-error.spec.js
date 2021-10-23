@@ -40,8 +40,7 @@ GrammarError: message
  from foo.peggy:1:1: Subinfo`);
   });
 
-  it("formats", () => {
-    location.source = "foo.peggy";
+  describe("formats", () => {
     /** @type {import("../../lib/peg").SourceText} */
     const source = {
       source: "foo.peggy",
@@ -56,8 +55,13 @@ GrammarError: message
         end: { offset: 11, line: 2, column: 1 },
       },
     }];
-    let e = new GrammarError("message", location, diagnostics);
-    expect(e.format([source])).to.equal(`\
+
+    describe("with main location", () => {
+      location.source = "foo.peggy";
+      const e = new GrammarError("message", location, diagnostics);
+
+      it("with source", () => {
+        expect(e.format([source])).to.equal(`\
 Error: message
  --> foo.peggy:1:1
   |
@@ -68,18 +72,34 @@ note: Subinfo
   |
 1 | some error
   |      ^^^^^`);
-    expect(e.format([])).to.equal(`\
+      });
+
+      it("without source", () => {
+        expect(e.format([])).to.equal(`\
 Error: message
  at foo.peggy:1:1
  at foo.peggy:1:6: Subinfo`);
+      });
+    });
 
-    e = new GrammarError("message", null, diagnostics);
-    expect(e.format([source])).to.equal(`\
+    describe("without main location", () => {
+      const e = new GrammarError("message", null, diagnostics);
+
+      it("with source", () => {
+        expect(e.format([source])).to.equal(`\
 Error: message
 note: Subinfo
  --> foo.peggy:1:6
   |
 1 | some error
   |      ^^^^^`);
+      });
+
+      it("without source", () => {
+        expect(e.format([])).to.equal(`\
+Error: message
+ at foo.peggy:1:6: Subinfo`);
+      });
+    });
   });
 });
