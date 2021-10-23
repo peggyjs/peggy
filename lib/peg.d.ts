@@ -228,8 +228,16 @@ declare namespace ast {
     value: string;
   }
 
+  interface FunctionBoundary extends Boundary<"function"> {
+    /** The code from the grammar. */
+    value: string;
+    /** Span that covers all code between `{` and `}`. */
+    codeLocation: LocationRange;
+  }
+
   type RepeatedBoundary
     = ConstantBoundary
+    | FunctionBoundary
     | VariableBoundary;
 
   /** Expression repeated from `min` to `max` times. */
