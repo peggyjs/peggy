@@ -234,6 +234,14 @@ Boundaries
 Boundary
   = value:Integer { return { type: "constant", value, location: location() }; }
   / value:IdentifierName { return { type: "variable", value: value[0], location: location() }; }
+  / value:CodeBlock {
+    return {
+      type: "function",
+      value: value[0],
+      codeLocation: value[1],
+      location: location(),
+    };
+  }
 
 PrimaryExpression
   = LiteralMatcher
