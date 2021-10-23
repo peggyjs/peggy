@@ -175,6 +175,29 @@ describe("compiler pass |inferenceMatchResult|", () => {
           expect(pass).to.changeAST("start = []|exact|", { rules: [{ match: 0 }] });
         });
       });
+
+      describe("with function boundaries", () => {
+        it("for |  ..{}| correctly", () => {
+          expect(pass).to.changeAST("start =  .|   ..{}|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = ''|   ..{}|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = []|   ..{}|", { rules: [{ match: 0 }] });
+        });
+        it("for |{}..  | correctly", () => {
+          expect(pass).to.changeAST("start =  .|{}..   |", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = ''|{}..   |", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = []|{}..   |", { rules: [{ match: 0 }] });
+        });
+        it("for |{}..{}| correctly", () => {
+          expect(pass).to.changeAST("start =  .|{}..{}|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = ''|{}..{}|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = []|{}..{}|", { rules: [{ match: 0 }] });
+        });
+        it("for |  {}  | correctly", () => {
+          expect(pass).to.changeAST("start =  .|{}|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = ''|{}|", { rules: [{ match: 0 }] });
+          expect(pass).to.changeAST("start = []|{}|", { rules: [{ match: 0 }] });
+        });
+      });
     });
   });
 

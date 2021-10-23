@@ -87,6 +87,21 @@ describe("compiler pass |reportInfiniteRepetition|", () => {
         expect(pass).to.not.reportError("start = ('')|len1..len2|");
         expect(pass).to.not.reportError("start = ('')|len|");
       });
+
+      it("with function boundaries", () => {
+        expect(pass).to.reportError("start = ('')|{}..|", {
+          message:  "Possible infinite loop when parsing (unbounded range repetition used with an expression that may not consume any input)",
+          location: {
+            source: undefined,
+            start: { offset:  8, line: 1, column:  9 },
+            end:   { offset: 18, line: 1, column: 19 },
+          },
+        });
+
+        expect(pass).to.not.reportError("start = ('')|..{}|");
+        expect(pass).to.not.reportError("start = ('')|{}..{}|");
+        expect(pass).to.not.reportError("start = ('')|{}|");
+      });
     });
   });
 

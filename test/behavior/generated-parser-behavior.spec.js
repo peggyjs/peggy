@@ -1379,6 +1379,106 @@ describe("generated parser behavior", () => {
             }
           });
         });
+
+        describe("with function boundaries", () => {
+          it("|{min}..     | matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }..|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.parse("aaa", ["a", "a", "a"]);
+          });
+
+          it("|     ..{max}| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|..{ return 2; }|", options);
+
+            expect(parser).to.parse("",    []);
+            expect(parser).to.parse("a",   ["a"]);
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.failToParse("aaa");
+          });
+
+          it("|{min}..{max}| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }..{ return 3; }|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.parse("aaa", ["a", "a", "a"]);
+            expect(parser).to.failToParse("aaaa");
+          });
+
+          it("|{val}..{val}| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }..{ return 2; }|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.failToParse("aaa");
+          });
+
+          it("|  {exact}   | matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.failToParse("aaa");
+          });
+
+          describe("function called only once", () => {
+            it("in |{min}..     |", () => {
+              const parser = peg.generate(`
+                { let min = 0; }
+                start = 'a'|{ ++min; return 2; }..| { return min; }
+              `, options);
+
+              // Always one check - after the loop
+              expect(parser).to.parse("aa", 1);
+              expect(parser).to.parse("aaa", 1);
+            });
+
+            it("in |     ..{max}|", () => {
+              const parser = peg.generate(`
+                { let max = 0; }
+                start = 'a'|..{ ++max; return 3; }| { return max; }
+              `, options);
+
+              expect(parser).to.parse("aa", 1);
+              expect(parser).to.parse("aaa", 1);
+            });
+
+            it("in |{min}..{max}|", () => {
+              const parser = peg.generate(`
+                {
+                  let min = 0;
+                  let max = 0;
+                }
+                start = 'a'|
+                  { ++min; return 0; }
+                  ..
+                  { ++max; return 3; }
+                | { return [min, max]; }
+              `, options);
+
+              expect(parser).to.parse("",    [1, 1]);
+              expect(parser).to.parse("a",   [1, 1]);
+              expect(parser).to.parse("aa",  [1, 1]);
+              expect(parser).to.parse("aaa", [1, 1]);
+            });
+
+            it("in |  {exact}   |", () => {
+              const parser = peg.generate(`
+                { let count = 0; }
+                start = 'a'|{ ++count; return options.exact; }| { return count; }
+              `, options);
+
+              expect(parser).to.parse("", 1, { exact: 0 });
+              expect(parser).to.parse("aa", 1, { exact: 2 });
+            });
+          });
+        });
       });
     });
 
