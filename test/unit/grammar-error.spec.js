@@ -145,9 +145,7 @@ note: Warning Subinfo
  --> foo.peggy:1:6
   |
 1 | some error
-  |      ^^^^^
-
-info: Info message`);
+  |      ^^^^^`);
         });
 
         it("without source", () => {
@@ -158,9 +156,7 @@ error: message
 
 warning: Warning message
  at foo.peggy:1:6
- at foo.peggy:1:6: Warning Subinfo
-
-info: Info message`);
+ at foo.peggy:1:6: Warning Subinfo`);
         });
       });
 
@@ -193,9 +189,7 @@ note: Warning Subinfo
  --> foo.peggy:1:6
   |
 1 | some error
-  |      ^^^^^
-
-info: Info message`);
+  |      ^^^^^`);
         });
 
         it("without source", () => {
@@ -204,9 +198,7 @@ error: message
  at foo.peggy:1:6: Subinfo
 
 warning: Warning message
- at foo.peggy:1:6: Warning Subinfo
-
-info: Info message`);
+ at foo.peggy:1:6: Warning Subinfo`);
         });
       });
     });

@@ -23,7 +23,7 @@
     "clean": "rimraf build browser bin/*.map && mkdir browser",
     "parser": "node bin/peggy.js -o lib/parser.js --format commonjs src/parser.pegjs",
     "set_version": "node ./tools/set_version",
-    "lint": "eslint . --ext .js --ext .ts",
+    "lint": "eslint . --ext js,ts,mjs",
     "ts": "tsc --build tsconfig.json",
     "test": "jest",
     "benchmark": "node ./benchmark/run_bench.js",

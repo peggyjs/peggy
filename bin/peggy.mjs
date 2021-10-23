@@ -15,13 +15,10 @@ function abort(message) {
   process.exit(1);
 }
 
-function showError(msg, error) {
+function showError(msg, error, sources) {
   console.error(msg);
   if (typeof error.format === "function") {
-    console.error(error.format([{
-      source: testGrammarSource,
-      text: testText,
-    }]));
+    console.error(error.format(sources));
   } else {
     if (verbose) {
       console.error(error);
@@ -186,6 +183,7 @@ const PROG_DEFAULTS = {
   verbose: false,
 };
 
+/** @type BuildOptionsBase */
 const options = Object.assign({}, PARSER_DEFAULTS);
 const progOptions = Object.assign({}, PROG_DEFAULTS);
 
@@ -340,7 +338,9 @@ if (verbose) {
   }));
   console.error(`INPUT: "${inputFile}"`);
   console.error(`OUTPUT: "${outputFile}"`);
+  options.info = (pass, msg) => console.error(`INFO(${pass}): ${msg}`);
 }
+options.warning = (pass, msg) => console.error(`WARN(${pass}): ${msg}`);
 
 // Main
 
@@ -365,7 +365,11 @@ readStream(inputStream, input => {
   try {
     source = peggy.generate(input, options);
   } catch (e) {
-    abortError("Error parsing grammar:", e);
+    showError("Error parsing grammar:", e, [{
+      source: options.grammarSource,
+      text: input,
+    }]);
+    process.exit(1);
   }
 
   // If there is a valid outputFile, write the parser to it.  Otherwise,
@@ -384,7 +388,7 @@ readStream(inputStream, input => {
 
   if (progOptions.sourceMap) {
     if (!outputStream) {
-      // outputStream is null if `--test/--test-file` is specified, but `--output` is not
+      // Null if `--test/--test-file` is specified, but `--output` is not
       abort("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
     }
 
@@ -400,9 +404,9 @@ readStream(inputStream, input => {
     // relative to the map file. Compiler cannot generate right paths, because
     // it is unaware of the source map location
     const json = source3.map.toJSON();
-    json.sources = json.sources.map(src => {
-      return src === null ? null : path.relative(mapDir, src);
-    });
+    json.sources = json.sources.map(src => (src === null)
+      ? null
+      : path.relative(mapDir, src));
 
     const sourceMapStream = fs.createWriteStream(progOptions.sourceMap);
     sourceMapStream.on("error", () => {
@@ -440,7 +444,10 @@ readStream(inputStream, input => {
         maxStringLength: Infinity,
       }));
     } catch (e) {
-      showError("Error parsing test:", e);
+      showError("Error parsing test:", e, [{
+        source: testGrammarSource,
+        text: testText,
+      }]);
       // We want to wait until source code/source map will be written
       process.exitCode = 2;
     }
