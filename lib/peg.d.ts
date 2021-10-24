@@ -271,6 +271,22 @@ export interface DiagnosticNote {
   location: LocationRange;
 }
 
+/** Possible compilation stage name. */
+type Stage = keyof Stages;
+/** Severity level of problems that can be registered in compilation session. */
+type Severity = "error" | "warning" | "info";
+
+type Problem = [
+  /** Problem severity. */
+  Severity,
+  /** Diagnostic message. */
+  string,
+  /** Location where message is generated, if applicable. */
+  LocationRange?,
+  /** List of additional messages with their locations, if applicable. */
+  DiagnosticNote[]?,
+];
+
 /** Thrown if the grammar contains a semantic error. */
 export class GrammarError extends Error {
   /** Location of the error in the source. */
@@ -278,6 +294,15 @@ export class GrammarError extends Error {
 
   /** Additional messages with context information. */
   diagnostics: DiagnosticNote[];
+
+  /** Compilation stage during which error was generated. */
+  stage: Stage | null;
+
+  /**
+   * List of diagnostics containing all errors, warnings and information
+   * messages generated during compilation stage `stage`.
+   */
+  problems: Problem[];
 
   constructor(
     message: string,
@@ -810,8 +835,15 @@ export type ParserTracerEvent =
  * @param ast Reference to the parsed grammar. Pass can change it
  * @param options Options that was supplied to the `PEG.generate()` call.
  *        All passes shared the same options object
+ * @param session An object that stores information about current compilation
+ *        session and allows passes to report errors, warnings, and information
+ *        messages. All passes shares the same session object
  */
-export type Pass = (ast: ast.Grammar, options: ParserBuildOptions) => void;
+export type Pass = (
+  ast: ast.Grammar,
+  options: ParserBuildOptions,
+  session: Session
+) => void;
 
 /**
  * List of possible compilation stages. Each stage consist of the one or
@@ -878,6 +910,118 @@ export interface Plugin {
 }
 
 /**
+ * Compiler session, that allow a pass to register an error, warning or
+ * an informational message.
+ *
+ * A new session is created for the each `PEG.generate()` call.
+ * All passes, involved in the compilation, shares the one session object.
+ *
+ * Passes should use that object to reporting errors instead of throwing
+ * exceptions, because reporting via this object allows report multiply
+ * errors from different passes. Throwing `GrammarError` are also allowed
+ * for backward compatibility.
+ *
+ * Errors will be reported after completion of each compilation stage where
+ * each of them can have multiply passes. Plugins can register as many
+ * stages as they want, but it is recommended to register pass in the
+ * one of default stages, if possible:
+ * - `check`
+ * - `transform`
+ * - `generate`
+ */
+export interface Session {
+  /**
+   * Reports an error. Pass shouldn't assume that after reporting error it
+   * will be interrupted by throwing exception or in the other way. Therefore,
+   * if after reporting error further execution of the pass is impossible, it
+   * should use control flow statements, such as `break`, `continue`, `return`
+   * to stop their execution.
+   *
+   * @param message Main message, which should describe error objectives
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  error(
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+  /**
+   * Reports a warning. Warning is a diagnostic, that doesn't prevent further
+   * execution of a pass, but possible points to the some mistake, that should
+   * be fixed.
+   *
+   * @param message Main message, which should describe warning objectives
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  warning(
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+  /**
+   * Reports an informational message. such messages can report some important
+   * details of pass execution that could be useful for the user, for example,
+   * performed transformations over the AST.
+   *
+   * @param message Main message, which gives information about an event
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  info(
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+}
+
+export interface DiagnosticCallback {
+  /**
+   * Called when compiler reports an error.
+   *
+   * @param stage Stage in which this diagnostic was originated
+   * @param message Main message, which should describe error objectives
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  error?(
+    stage: Stage,
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+  /**
+   * Called when compiler reports a warning.
+   *
+   * @param stage Stage in which this diagnostic was originated
+   * @param message Main message, which should describe warning objectives
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  warning?(
+    stage: Stage,
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+  /**
+   * Called when compiler reports an informational message.
+   *
+   * @param stage Stage in which this diagnostic was originated
+   * @param message Main message, which gives information about an event
+   * @param location If defined, this is location described in the `message`
+   * @param notes Additional messages with context information
+   */
+  info?(
+    stage: Stage,
+    message: string,
+    location?: LocationRange,
+    notes?: DiagnosticNote[]
+  ): void;
+}
+
+/**
  * Parser dependencies, is an object which maps variables used to access the
  * dependencies in the parser to module IDs used to load them
  */
@@ -914,6 +1058,13 @@ export interface BuildOptionsBase {
 
   /** Makes the parser trace its progress (default: `false`) */
   trace?: boolean;
+
+  /** Called when a semantic error during build was detected. */
+  error?: DiagnosticCallback;
+  /** Called when a warning during build was registered. */
+  warning?: DiagnosticCallback;
+  /** Called when an informational message during build was registered. */
+  info?: DiagnosticCallback;
 }
 
 export interface ParserBuildOptions extends BuildOptionsBase {
