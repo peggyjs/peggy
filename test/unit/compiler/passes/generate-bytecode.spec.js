@@ -151,7 +151,7 @@ describe("compiler pass |generateBytecode|", () => {
           5,                           // PUSH_CURR_POS
           18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
           15, 6, 0,                    // IF_NOT_ERROR
-          24, 1,                       //   * LOAD_SAVED_POS
+          24, 1,                       //   * LOAD_SAVED_POS <1>
           26, 0, 1, 0,                 //     CALL <0>
           9,                            // NIP
         ]));
@@ -184,7 +184,7 @@ describe("compiler pass |generateBytecode|", () => {
           5,                           // PUSH_CURR_POS
           18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
           15, 7, 0,                    // IF_NOT_ERROR
-          24, 1,                       //   * LOAD_SAVED_POS
+          24, 1,                       //   * LOAD_SAVED_POS <1>
           26, 0, 1, 1, 0,              //     CALL <0>
           9,                            // NIP
         ]));
@@ -221,7 +221,7 @@ describe("compiler pass |generateBytecode|", () => {
           15, 24, 4,                   //     IF_NOT_ERROR
           18, 2, 2, 2, 22, 2, 23, 2,   //       * <elements[2]>
           15, 9, 4,                    //         IF_NOT_ERROR
-          24, 3,                       //           * LOAD_SAVED_POS
+          24, 3,                       //           * LOAD_SAVED_POS <3>
           26, 0, 4, 3, 2, 1, 0,        //             CALL <0>
           8, 3,                        //           * POP_N <3>
           7,                           //             POP_CURR_POS
