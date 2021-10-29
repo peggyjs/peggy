@@ -143,9 +143,13 @@ Options:
                                    from.  (Can be specified multiple times)
                                    (default: the first rule in the grammar)
   --cache                          Make generated parser cache results
+                                   (default: false)
   -d, --dependency <dependency>    Comma-separated list of dependencies, either
                                    as a module name, or as \`variable:module\`.
                                    (Can be specified multiple times)
+  -D, --dependencies <json>        Dependencies, in JSON object format with
+                                   variable:module pairs. (Can be specified
+                                   multiple times).
   -e, --export-var <variable>      Name of a global variable into which the
                                    parser object is assigned to when no module
                                    loader is detected.
@@ -180,7 +184,8 @@ Options:
                                    the parser instead of the parser itself. If
                                    the input to be tested is not parsed, the
                                    CLI will exit with code 2
-  --trace                          Enable tracing in generated parser
+  --trace                          Enable tracing in generated parser (default:
+                                   false)
   -h, --help                       display help for command
 `;
 
@@ -414,7 +419,7 @@ Options:
       args: ["--output", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js"],
       stdin: "foo = '1'",
     }));
-    await result.rejects.toThrow("Can't write to file \"__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js\"");
+    await result.rejects.toThrow("ENOENT: no such file or directory");
     await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
   });
 
@@ -461,7 +466,7 @@ Options:
       args: ["--plugin", "ERROR BAD MODULE DOES NOT EXIST"],
       stdin: "foo = '1'",
     }));
-    await result.rejects.toThrow("Can't load module \"ERROR BAD MODULE DOES NOT EXIST\"");
+    await result.rejects.toThrow("Requiring \"ERROR BAD MODULE DOES NOT EXIST\"");
     await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
     result = expect(exec({
@@ -497,7 +502,7 @@ Options:
         await expect(exec({
           args: ["-t", "1", "--source-map"],
           stdin: "foo = '1' { return 42; }",
-        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        })).rejects.toThrow("Generation of the source map is not useful if you don't output a parser file, perhaps you forgot to add an `-o/--output` option?");
         expect(() => {
           // Make sure the file isn't there
           fs.statSync(sourceMap);
@@ -506,7 +511,7 @@ Options:
         await expect(exec({
           args: ["-t", "1", "-m"],
           stdin: "foo = '1' { return 42; }",
-        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        })).rejects.toThrow("Generation of the source map is not useful if you don't output a parser file, perhaps you forgot to add an `-o/--output` option?");
         expect(() => {
           // Make sure the file isn't there
           fs.statSync(sourceMap);
@@ -579,7 +584,7 @@ Options:
           args: ["--source-map", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js.map"],
           stdin: "foo = '1' { return 42; }",
         }));
-        await result.rejects.toThrow("Can't write to file \"__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js.map\"");
+        await result.rejects.toThrow("no such file or directory");
         await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
 
         await checkSourceMap(sourceMap, ["--source-map", sourceMap]);
@@ -595,7 +600,7 @@ Options:
         await expect(exec({
           args: ["-t", "1", "--source-map", sourceMap],
           stdin: "foo = '1' { return 42; }",
-        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        })).rejects.toThrow("Generation of the source map is not useful if you don't output a parser file, perhaps you forgot to add an `-o/--output` option?");
         expect(() => {
           // Make sure the file isn't there
           fs.statSync(sourceMap);
@@ -604,7 +609,7 @@ Options:
         await expect(exec({
           args: ["-t", "1", "-m", sourceMap],
           stdin: "foo = '1' { return 42; }",
-        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        })).rejects.toThrow("Generation of the source map is not useful if you don't output a parser file, perhaps you forgot to add an `-o/--output` option?");
         expect(() => {
           // Make sure the file isn't there
           fs.statSync(sourceMap);
@@ -645,8 +650,8 @@ Options:
     let result = expect(exec({
       args: ["-T", "____ERROR____FILE_DOES_NOT_EXIST.js", grammarFile],
     }));
-    await result.rejects.toThrow("Can't read from file \"____ERROR____FILE_DOES_NOT_EXIST.js\".");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+    await result.rejects.toThrow("Can't read from file");
+    await result.rejects.toThrow(expect.objectContaining({ code: 2 }));
 
     result = expect(exec({
       args: ["-t", "boo", "-T", "foo"],
