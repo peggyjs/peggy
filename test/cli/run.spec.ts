@@ -21,10 +21,11 @@ interface ErrorWritableOptions extends TransformOptions {
 
 interface CodeObject {
   code: number | string;
+  exitCode: number;
 }
 
 /** Capture stdin/stdout. */
-class Buf extends Transform {
+class MockStream extends Transform {
   private errorsToThrow: Error[];
 
   public name?: string;
@@ -50,8 +51,11 @@ class Buf extends Transform {
     }
   }
 
-  static create(src?: string | Buffer, opts: ErrorWritableOptions = {}): Buf {
-    const b = new Buf(opts);
+  static create(
+    src?: string | Buffer,
+    opts: ErrorWritableOptions = {}
+  ): MockStream {
+    const b = new MockStream(opts);
     b.end(src);
     return b;
   }
@@ -88,9 +92,9 @@ type Options = {
   args?: string[];
   encoding?: BufferEncoding;
   env?: Record<string, string>;
-  stdin?: string | Buffer | Buf;
-  stdout?: Buf;
-  stderr?: Buf;
+  stdin?: string | Buffer | MockStream;
+  stdout?: MockStream;
+  stderr?: MockStream;
   error?: any;
   errorCode?: string | number;
   exitCode?: number;
@@ -110,10 +114,10 @@ async function exec(opts: Options = {}) {
     ...opts,
   };
 
-  const stdin = (opts.stdin instanceof Buf)
+  const stdin = (opts.stdin instanceof MockStream)
     ? opts.stdin
-    : Buf.create(opts.stdin, { name: "stdin" });
-  const out = opts.stdout || new Buf({
+    : MockStream.create(opts.stdin, { name: "stdin" });
+  const out = opts.stdout || new MockStream({
     name: "stdout",
     encoding: opts.encoding,
   });
@@ -152,16 +156,26 @@ async function exec(opts: Options = {}) {
       try {
         await p;
       } catch (realErr) {
-        console.log("EXPECTED CODE:", (realErr as CodeObject).code);
+        console.log("RECEIVED ERROR CODE:", (realErr as CodeObject).code);
       }
       throw e;
     }
   }
   if (opts.exitCode) {
     waited = true;
-    await expect(p).rejects.toThrow(
-      expect.objectContaining({ exitCode: opts.exitCode })
-    );
+    try {
+      await expect(p).rejects.toThrow(
+        expect.objectContaining({ exitCode: opts.exitCode })
+      );
+    } catch (e) {
+      // It's hard to figure these out sometimes.  Give ourselves a little help.
+      try {
+        await p;
+      } catch (realErr) {
+        console.log("RECEIVED EXIT CODE:", (realErr as CodeObject).exitCode);
+      }
+      throw e;
+    }
   }
 
   if (!waited) {
@@ -333,12 +347,14 @@ Options:
       args: ["-h"],
       error: CommanderError,
       errorCode: "commander.helpDisplayed",
+      exitCode: 0, // This is the commander default
       expected: HELP,
     });
     await exec({
       args: ["--help"],
       error: CommanderError,
       errorCode: "commander.helpDisplayed",
+      exitCode: 0, // This is the commander default
       expected: HELP,
     });
     await expect(forkExec({
@@ -351,6 +367,7 @@ Options:
       args: ["--invalid-option"],
       error: CommanderError,
       errorCode: "commander.unknownOption",
+      exitCode: 1,
     });
   });
 
@@ -375,6 +392,7 @@ Options:
       args: ["--allowed-start-rules"],
       stdin: "foo = '1'",
       errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
       error: "option '--allowed-start-rules <rules>' argument missing",
     });
   });
@@ -391,11 +409,13 @@ Options:
     await exec({
       args: ["--version"],
       errorCode: "commander.version",
+      exitCode: 0, // This is the commander default
       error: peggy.VERSION,
     });
     await exec({
       args: ["-v"],
       errorCode: "commander.version",
+      exitCode: 0, // This is the commander default
       error: peggy.VERSION,
     });
   });
@@ -417,6 +437,7 @@ Options:
       args: ["--dependency"],
       stdin: "foo = '1' { return new c.Command(); }",
       errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
       error: "option '-d, --dependency <dependency>' argument missing",
     });
 
@@ -424,6 +445,7 @@ Options:
       args: ["-d", "c:commander", "--format", "globals"],
       stdin: "foo = '1' { return new c.Command(); }",
       errorCode: "peggy.invalidArgument",
+      exitCode: 1,
       error: "Can't use the -d/--dependency option with the \"globals\" module format.",
     });
 
@@ -452,6 +474,7 @@ Options:
       args: ["-D", "{{{"],
       stdin: "foo = '1' { return new c.Command(); }",
       errorCode: "commander.invalidArgument",
+      exitCode: 1,
       error: "Error parsing JSON",
     });
   });
@@ -467,6 +490,7 @@ Options:
       args: ["--export-var"],
       stdin: "foo = '1'",
       errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
       error: "option '-e, --export-var <variable>' argument missing",
     });
 
@@ -474,6 +498,7 @@ Options:
       args: ["--export-var", "football"],
       stdin: "foo = '1'",
       errorCode: "peggy.invalidArgument",
+      exitCode: 1,
       error: "Can't use the -e/--export-var option with the \"commonjs\" module format.",
     });
   });
@@ -489,6 +514,7 @@ Options:
       args: ["--extra-options"],
       stdin: 'foo = "1"',
       errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
       error: "--extra-options <options>' argument missing",
     });
 
@@ -496,6 +522,7 @@ Options:
       args: ["--extra-options", "{"],
       stdin: 'foo = "1"',
       errorCode: "commander.invalidArgument",
+      exitCode: 1,
       error: "Error parsing JSON:",
     });
 
@@ -503,6 +530,7 @@ Options:
       args: ["--extra-options", "1"],
       stdin: 'foo = "1"',
       errorCode: "commander.invalidArgument",
+      exitCode: 1,
       error: "The JSON with extra options has to represent an object.",
     });
   });
@@ -545,6 +573,7 @@ Options:
       args: ["--extra-options-file"],
       stdin: 'foo = "1"',
       errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
       error: "--extra-options-file <file>' argument missing",
     });
 
@@ -552,6 +581,7 @@ Options:
       args: ["--extra-options-file", "____ERROR____FILE_DOES_NOT_EXIST"],
       stdin: 'foo = "1"',
       errorCode: "commander.invalidArgument",
+      exitCode: 1,
       error: "Can't read from file",
     });
   });
@@ -560,12 +590,14 @@ Options:
     await exec({
       args: ["--format"],
       errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
       error: "option '--format <format>' argument missing",
     });
 
     await exec({
       args: ["--format", "BAD_FORMAT"],
       errorCode: "commander.invalidArgument",
+      exitCode: 1,
       error: "option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, bare, commonjs, es, globals, umd.",
     });
   });
@@ -587,6 +619,7 @@ Options:
       args: ["-O"],
       stdin: 'foo = "1"',
       errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
       error: "-O, --optimize <style>' argument missing",
     });
   });
@@ -611,6 +644,7 @@ Options:
       args: ["--output"],
       stdin: "foo = '1'",
       errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
       error: "-o, --output <file>' argument missing",
     });
 
@@ -663,6 +697,7 @@ Options:
       args: ["--plugin"],
       stdin: "foo = '1'",
       errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
       error: "--plugin <module>' argument missing",
     });
 
@@ -670,12 +705,15 @@ Options:
       args: ["--plugin", "ERROR BAD MODULE DOES NOT EXIST"],
       stdin: "foo = '1'",
       errorCode: "peggy.invalidArgument",
-      error: 'Requiring "ERROR BAD MODULE DOES NOT EXIST"',
+      exitCode: 1,
+      error: 'requiring "ERROR BAD MODULE DOES NOT EXIST"',
     });
 
     await exec({
       args: ["--plugin", bad],
       stdin: "foo = '1'",
+      errorCode: "peggy.invalidArgument",
+      exitCode: 1,
       error: "Unexpected token",
     });
 
@@ -843,6 +881,7 @@ Options:
     await exec({
       args: ["--", "--trace", "--format"],
       errorCode: "commander.excessArguments",
+      exitCode: 1,
       error: "too many arguments.",
     });
   });
@@ -872,6 +911,7 @@ Options:
     await exec({
       args: ["-t", "boo", "-T", "foo"],
       errorCode: "peggy.invalidArgument",
+      exitCode: 1,
       error: "The -t/--test and -T/--test-file options are mutually exclusive.",
     });
 
@@ -901,8 +941,8 @@ Options:
   });
 
   it("handles stdout errors", async() => {
-    const stderr = new Buf({ name: "stderr", encoding: "utf8" });
-    const stdout = new Buf({
+    const stderr = new MockStream({ name: "stderr", encoding: "utf8" });
+    const stdout = new MockStream({
       name: "stdout",
       errorsToThrow: [new Error("Bad write")],
       encoding: "utf8",

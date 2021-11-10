@@ -2939,6 +2939,7 @@ function readStream(inputStream) {
     inputStream.on("data", data => { input.push(data); });
     inputStream.on("end", () => resolve(Buffer.concat(input).toString()));
     inputStream.on("error", er => {
+      // Stack isn't filled in on this error for some reason.
       Error.captureStackTrace(er);
       reject(er);
     });
@@ -2973,26 +2974,27 @@ class PeggyCLI extends commander.exports.Command {
     super("peggy");
 
     /** @type {Stdio} */
-    this.std = Object.assign({
+    this.std = {
       in: process.stdin,
       out: process.stdout,
       err: process.stderr,
-    }, stdio);
+      ...stdio,
+    };
 
-    /** @type object */
+    /** @type {peggy.BuildOptionsBase} */
     this.argv = {};
     this.colors = this.std.err.isTTY;
-    /** @type string? */
+    /** @type {string?} */
     this.inputFile = null;
-    /** @type string? */
+    /** @type {string?} */
     this.outputFile = null;
-    /** @type object */
+    /** @type {object} */
     this.progOptions = {};
-    /** @type string? */
+    /** @type {string?} */
     this.testFile = null;
-    /** @type string? */
+    /** @type {string?} */
     this.testGrammarSource = null;
-    /** @type string? */
+    /** @type {string?} */
     this.testText = null;
 
     this
@@ -3121,8 +3123,11 @@ class PeggyCLI extends commander.exports.Command {
             try {
               mod = require(id);
             } catch (e) {
-              if (e.code !== "MODULE_NOT_FOUND") { throw e; }
-              this.error(`Requiring "${id}": ${e.message}`);
+              if (e.code !== "MODULE_NOT_FOUND") {
+                this.error(`requiring:\n${e.stack}`);
+              } else {
+                this.error(`requiring "${id}": ${e.message}`);
+              }
             }
             return mod;
           });
@@ -3244,14 +3249,14 @@ class PeggyCLI extends commander.exports.Command {
     this._displayError(opts.exitCode, opts.code, `Error ${message}`);
   }
 
-  print(strm, ...args) {
-    strm.write(util__default["default"].formatWithOptions({
+  print(stream, ...args) {
+    stream.write(util__default["default"].formatWithOptions({
       colors: this.colors,
       depth: Infinity,
       maxArrayLength: Infinity,
       maxStringLength: Infinity,
     }, ...args));
-    strm.write("\n");
+    stream.write("\n");
   }
 
   verbose(...args) {
@@ -3311,6 +3316,7 @@ class PeggyCLI extends commander.exports.Command {
     return new Promise((resolve, reject) => {
       const outputStream = fs__default["default"].createWriteStream(this.outputFile);
       outputStream.on("error", er => {
+        // Stack isn't filled in on this error for some reason.
         Error.captureStackTrace(er);
         reject(er);
       });
@@ -3353,6 +3359,7 @@ class PeggyCLI extends commander.exports.Command {
         "utf8",
         err => {
           if (err) {
+            // Stack isn't filled in on this error for some reason.
             Error.captureStackTrace(err);
             reject(err);
           } else {
