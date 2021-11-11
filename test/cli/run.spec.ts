@@ -1,17 +1,12 @@
 // This is typescript so that it only runs in node contexts, not on the web
 
 import * as peggy from "../../lib/peg.js";
+import { CommanderError, PeggyCLI } from "../../bin/peggy.js";
+import { Transform, TransformCallback, TransformOptions } from "stream";
 import { SourceMapConsumer } from "source-map";
 import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
-
-type Options = {
-  args?: string[];
-  encoding?: BufferEncoding;
-  env?: Record<string, string>;
-  stdin?: string | Buffer;
-};
 
 const foobarbaz = `\
 foo = '1'
@@ -19,18 +14,70 @@ bar = '2'
 baz = '3'
 `;
 
+interface ErrorWritableOptions extends TransformOptions {
+  name?: string;
+  errorsToThrow?: Error[];
+}
+
+interface CodeObject {
+  code: number | string;
+  exitCode: number;
+}
+
+/** Capture stdin/stdout. */
+class MockStream extends Transform {
+  private errorsToThrow: Error[];
+
+  public name?: string;
+
+  constructor(opts: ErrorWritableOptions = {}) {
+    const { name, errorsToThrow, ...others } = opts;
+    super(others);
+    this.name = name;
+    this.errorsToThrow = errorsToThrow || [];
+  }
+
+  _transform(
+    chunk: any,
+    encoding: BufferEncoding,
+    callback: TransformCallback
+  ): void {
+    const er = this.errorsToThrow.shift();
+    if (er) {
+      callback(er);
+    } else {
+      this.push(chunk, encoding);
+      callback();
+    }
+  }
+
+  static create(
+    src?: string | Buffer,
+    opts: ErrorWritableOptions = {}
+  ): MockStream {
+    const b = new MockStream(opts);
+    b.end(src);
+    return b;
+  }
+}
+
 /** Execution failed */
 class ExecError extends Error {
   /** Result error code, always non-zero */
   code: number;
 
-  /** Stdout as a Buffer */
-  buf: Buffer;
-
   /** Stdout as a string, decoded with opts.encoding */
   str: string;
 
-  constructor(message: string, code: number, buf: Buffer, str: string) {
+  /** Stdout as a Buffer */
+  buf?: Buffer;
+
+  constructor(
+    message: string,
+    code: number,
+    str: string,
+    buf?: Buffer
+  ) {
     super(`${message}: error code "${code}"
 ${str}`);
     this.name = "ExecError";
@@ -41,7 +88,115 @@ ${str}`);
   }
 }
 
-function exec(opts: Options = {}) {
+type Options = {
+  args?: string[];
+  encoding?: BufferEncoding;
+  env?: Record<string, string>;
+  stdin?: string | Buffer | MockStream;
+  stdout?: MockStream;
+  stderr?: MockStream;
+  error?: any;
+  errorCode?: string | number;
+  exitCode?: number;
+  expected?: any;
+};
+
+/**
+ * "Execute" the CLI by calling it as the wrapper would, but substituting
+ * our own stdin, stdout, stderr.
+ */
+async function exec(opts: Options = {}) {
+  opts = {
+    args: [],
+    encoding: "utf8",
+    env: {},
+    exitCode: 0,
+    ...opts,
+  };
+
+  const stdin = (opts.stdin instanceof MockStream)
+    ? opts.stdin
+    : MockStream.create(opts.stdin, { name: "stdin" });
+  const out = opts.stdout || new MockStream({
+    name: "stdout",
+    encoding: opts.encoding,
+  });
+  const err = opts.stderr || out;
+  let outputString = null;
+  const p = new Promise<number>((resolve, reject) => {
+    const cli = new PeggyCLI({ in: stdin, out, err })
+      .exitOverride()
+      .configureOutput({
+        writeOut: (c: string) => out.write(c),
+        writeErr: (c: string) => err.write(c),
+      })
+      .configureHelp({ helpWidth: 80 })
+      .parse([
+        process.execPath,
+        "peggy",
+        ...(opts.args || []),
+      ]);
+
+    cli.main().then(resolve, reject);
+  });
+
+  let waited = false;
+  if (opts.error !== undefined) {
+    waited = true;
+    await expect(p).rejects.toThrow(opts.error);
+  }
+  if (opts.errorCode !== undefined) {
+    waited = true;
+    try {
+      await expect(p).rejects.toThrow(
+        expect.objectContaining({ code: opts.errorCode })
+      );
+    } catch (e) {
+      // It's hard to figure these out sometimes.  Give ourselves a little help.
+      try {
+        await p;
+      } catch (realErr) {
+        console.log("RECEIVED ERROR CODE:", (realErr as CodeObject).code);
+      }
+      throw e;
+    }
+  }
+  if (opts.exitCode) {
+    waited = true;
+    try {
+      await expect(p).rejects.toThrow(
+        expect.objectContaining({ exitCode: opts.exitCode })
+      );
+    } catch (e) {
+      // It's hard to figure these out sometimes.  Give ourselves a little help.
+      try {
+        await p;
+      } catch (realErr) {
+        console.log("RECEIVED EXIT CODE:", (realErr as CodeObject).exitCode);
+      }
+      throw e;
+    }
+  }
+
+  if (!waited) {
+    // Make sure to include opts.error or opts.errorCode if you're expecting
+    // an exception.
+    const exitCode = await p;
+    expect(exitCode).toBe(0);
+  }
+
+  if (outputString === null) {
+    outputString = out.read();
+  }
+  if (opts.expected instanceof RegExp) {
+    expect(outputString).toMatch(opts.expected);
+  } else if (typeof opts.expected === "string") {
+    expect(outputString).toBe(opts.expected);
+  }
+  return outputString;
+}
+
+function forkExec(opts: Options = {}) {
   opts = {
     args: [],
     encoding: "utf8",
@@ -77,7 +232,7 @@ function exec(opts: Options = {}) {
       const buf = Buffer.concat(bufs);
       const str = buf.toString(opts.encoding);
       if (code) {
-        const err = new ExecError(`process fail, "${bin}"`, code, buf, str);
+        const err = new ExecError(`process fail, "${bin}"`, code, str, buf);
         reject(err);
       } else {
         resolve(str);
@@ -110,17 +265,12 @@ async function checkSourceMap(
     fs.statSync(sourceMap);
   }).toThrow();
 
-  const result = expect(exec({
+  await exec({
     args,
     stdin: "foo = '1' { return 42; }",
-  }));
-
-  if (error) {
-    await result.rejects.toThrow(error);
-    await result.rejects.toThrow(expect.objectContaining({ code: 2 }));
-  } else {
-    await result.resolves.toBeDefined();
-  }
+    exitCode: error ? 2 : undefined,
+    error,
+  });
 
   expect(fs.statSync(sourceMap)).toBeInstanceOf(fs.Stats);
 
@@ -136,6 +286,10 @@ describe("Command Line Interface", () => {
     const HELP = `\
 Usage: peggy [options] [input_file]
 
+Arguments:
+  input_file                       Grammar file to read.  Use "-" to read
+                                   stdin. (default: "-")
+
 Options:
   -v, --version                    output the version number
   --allowed-start-rules <rules>    Comma-separated list of rules the generated
@@ -143,9 +297,13 @@ Options:
                                    from.  (Can be specified multiple times)
                                    (default: the first rule in the grammar)
   --cache                          Make generated parser cache results
+                                   (default: false)
   -d, --dependency <dependency>    Comma-separated list of dependencies, either
                                    as a module name, or as \`variable:module\`.
                                    (Can be specified multiple times)
+  -D, --dependencies <json>        Dependencies, in JSON object format with
+                                   variable:module pairs. (Can be specified
+                                   multiple times).
   -e, --export-var <variable>      Name of a global variable into which the
                                    parser object is assigned to when no module
                                    loader is detected.
@@ -180,131 +338,201 @@ Options:
                                    the parser instead of the parser itself. If
                                    the input to be tested is not parsed, the
                                    CLI will exit with code 2
-  --trace                          Enable tracing in generated parser
+  --trace                          Enable tracing in generated parser (default:
+                                   false)
   -h, --help                       display help for command
 `;
 
-    await expect(exec({
+    await exec({
       args: ["-h"],
-    })).resolves.toBe(HELP);
-    await expect(exec({
+      error: CommanderError,
+      errorCode: "commander.helpDisplayed",
+      exitCode: 0, // This is the commander default
+      expected: HELP,
+    });
+    await exec({
+      args: ["--help"],
+      error: CommanderError,
+      errorCode: "commander.helpDisplayed",
+      exitCode: 0, // This is the commander default
+      expected: HELP,
+    });
+    await expect(forkExec({
       args: ["--help"],
     })).resolves.toBe(HELP);
   });
 
   it("rejects invalid options", async() => {
-    const result = expect(exec({
+    await exec({
       args: ["--invalid-option"],
-    }));
-    await result.rejects.toThrow(ExecError);
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      error: CommanderError,
+      errorCode: "commander.unknownOption",
+      exitCode: 1,
+    });
   });
 
   it("handles start rules", async() => {
-    await expect(exec({
+    await exec({
       args: ["--allowed-start-rules", "foo,bar,baz"],
       stdin: foobarbaz,
-    })).resolves.toMatch(
-      /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/
-    );
+      expected: /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/,
+    });
 
-    const result = expect(exec({
+    await exec({
+      args: [
+        "--allowed-start-rules", "foo",
+        "--allowed-start-rules", "bar",
+        "--extra-options", '{"allowedStartRules": ["baz"]}',
+      ],
+      stdin: foobarbaz,
+      expected: /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/,
+    });
+
+    await exec({
       args: ["--allowed-start-rules"],
       stdin: "foo = '1'",
-    }));
-    await result.rejects.toThrow("option '--allowed-start-rules <rules>' argument missing");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
+      error: "option '--allowed-start-rules <rules>' argument missing",
+    });
   });
 
   it("enables caching", async() => {
-    await expect(exec({
+    await exec({
       args: ["--cache"],
       stdin: "foo = '1'",
-    })).resolves.toMatch(/^\s*var peg\$resultsCache/m);
+      expected: /^\s*var peg\$resultsCache/m,
+    });
   });
 
   it("prints version", async() => {
-    await expect(exec({
+    await exec({
       args: ["--version"],
-    })).resolves.toMatch(peggy.VERSION);
-    await expect(exec({
+      errorCode: "commander.version",
+      exitCode: 0, // This is the commander default
+      error: peggy.VERSION,
+    });
+    await exec({
       args: ["-v"],
-    })).resolves.toMatch(peggy.VERSION);
+      errorCode: "commander.version",
+      exitCode: 0, // This is the commander default
+      error: peggy.VERSION,
+    });
   });
 
   it("handles dependencies", async() => {
-    await expect(exec({
+    await exec({
       args: ["-d", "c:commander", "-d", "jest"],
       stdin: "foo = '1' { return new c.Command(); }",
-    })).resolves.toMatch(/c = require\("commander"\)/);
+      expected: /c = require\("commander"\)/,
+    });
 
-    await expect(exec({
+    await exec({
       args: ["-d", "c:commander,jest"],
       stdin: "foo = '1' { return new c.Command(); }",
-    })).resolves.toMatch(/jest = require\("jest"\)/);
+      expected: /jest = require\("jest"\)/,
+    });
 
-    let result = expect(exec({
+    await exec({
       args: ["--dependency"],
       stdin: "foo = '1' { return new c.Command(); }",
-    }));
-    await result.rejects.toThrow("option '-d, --dependency <dependency>' argument missing");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
+      error: "option '-d, --dependency <dependency>' argument missing",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["-d", "c:commander", "--format", "globals"],
       stdin: "foo = '1' { return new c.Command(); }",
-    }));
-    await result.rejects.toThrow("Can't use the -d/--dependency option with the \"globals\" module format.");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.invalidArgument",
+      exitCode: 1,
+      error: "Can't use the -d/--dependency or -D/--dependencies options with the \"globals\" module format.",
+    });
+
+    await exec({
+      args: ["-D", '{"c": "commander", "jest": "jest"}'],
+      stdin: "foo = '1' { return new c.Command(); }",
+      expected: /c = require\("commander"\)/,
+    });
+
+    await exec({
+      args: ["-D", '{"c": "commander"}', "-d", "c:jest"],
+      stdin: "foo = '1' { return c.run(); }",
+      expected: /c = require\("jest"\)/,
+    });
+
+    await exec({
+      args: [
+        "-D", '{"c": "commander"}',
+        "--extra-options", '{"dependencies": {"c": "jest"}}',
+      ],
+      stdin: "foo = '1' { return c.run(); }",
+      expected: /c = require\("jest"\)/,
+    });
+
+    await exec({
+      args: ["-D", "{{{"],
+      stdin: "foo = '1' { return new c.Command(); }",
+      errorCode: "commander.invalidArgument",
+      exitCode: 1,
+      error: "Error parsing JSON",
+    });
   });
 
   it("handles exportVar", async() => {
-    await expect(exec({
+    await exec({
       args: ["--format", "globals", "-e", "football"],
       stdin: "foo = '1'",
-    })).resolves.toMatch(/^\s*root\.football = /m);
+      expected: /^\s*root\.football = /m,
+    });
 
-    let result = expect(exec({
+    await exec({
       args: ["--export-var"],
       stdin: "foo = '1'",
-    }));
-    await result.rejects.toThrow("option '-e, --export-var <variable>' argument missing");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
+      error: "option '-e, --export-var <variable>' argument missing",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--export-var", "football"],
       stdin: "foo = '1'",
-    }));
-    await result.rejects.toThrow("Can't use the -e/--export-var option with the \"commonjs\" module format.");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.invalidArgument",
+      exitCode: 1,
+      error: "Can't use the -e/--export-var option with the \"commonjs\" module format.",
+    });
   });
 
   it("handles extra options", async() => {
-    await expect(exec({
+    await exec({
       args: ["--extra-options", '{"format": "amd"}'],
       stdin: 'foo = "1"',
-    })).resolves.toMatch(/^define\(/m);
+      expected: /^define\(/m,
+    });
 
-    let result = expect(exec({
+    await exec({
       args: ["--extra-options"],
       stdin: 'foo = "1"',
-    }));
-    await result.rejects.toThrow("--extra-options <options>' argument missing");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
+      error: "--extra-options <options>' argument missing",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--extra-options", "{"],
       stdin: 'foo = "1"',
-    }));
-    await result.rejects.toThrow("Error parsing JSON:");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.invalidArgument",
+      exitCode: 1,
+      error: "Error parsing JSON:",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--extra-options", "1"],
       stdin: 'foo = "1"',
-    }));
-    await result.rejects.toThrow("The JSON with extra options has to represent an object.");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.invalidArgument",
+      exitCode: 1,
+      error: "The JSON with extra options has to represent an object.",
+    });
   });
 
   it("handles extra options in a file", async() => {
@@ -314,78 +542,86 @@ Options:
     const res = await exec({
       args: ["--extra-options-file", optFile],
       stdin: foobarbaz,
+      expected: /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/,
     });
-    expect(res).toMatch(
-      /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/
-    );
     expect(res).toMatch("(function(root, factory) {");
 
     // Intentional overwrite
-    await expect(exec({
+    await exec({
       args: ["-c", optFile, "--format", "amd"],
       stdin: foobarbaz,
-    })).resolves.toMatch(/^define\(/m);
+      expected: /^define\(/m,
+    });
 
-    let result = expect(exec({
+    await exec({
       args: ["-c", optFileJS],
       stdin: "foo = zazzy:'1'",
-    }));
-    await result.rejects.toThrow("Error: Label can't be a reserved word \"zazzy\"");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.cli",
+      exitCode: 1,
+      error: 'Error: Label can\'t be a reserved word "zazzy"',
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["-c", optFile, "____ERROR____FILE_DOES_NOT_EXIST"],
       stdin: "foo = '1'",
-    }));
-    await result.rejects.toThrow("Do not specify input both on command line and in config file.");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.cli",
+      exitCode: 1,
+      error: "Error reading input stream",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--extra-options-file"],
       stdin: 'foo = "1"',
-    }));
-    await result.rejects.toThrow("--extra-options-file <file>' argument missing");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
+      error: "--extra-options-file <file>' argument missing",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--extra-options-file", "____ERROR____FILE_DOES_NOT_EXIST"],
       stdin: 'foo = "1"',
-    }));
-    await result.rejects.toThrow("Can't read from file");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.invalidArgument",
+      exitCode: 1,
+      error: "Can't read from file",
+    });
   });
 
   it("handles formats", async() => {
-    let result = expect(exec({
+    await exec({
       args: ["--format"],
-    }));
-    await result.rejects.toThrow("option '--format <format>' argument missing");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
+      error: "option '--format <format>' argument missing",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--format", "BAD_FORMAT"],
-    }));
-    await result.rejects.toThrow("option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, bare, commonjs, es, globals, umd.");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.invalidArgument",
+      exitCode: 1,
+      error: "option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, bare, commonjs, es, globals, umd.",
+    });
   });
 
   it("doesn't fail with optimize", async() => {
-    await expect(exec({
+    await exec({
       args: ["--optimize", "anything"],
       stdin: 'foo = "1"',
-    })).resolves.toMatch(/deprecated/);
+      expected: /deprecated/,
+    });
 
-    await expect(exec({
+    await exec({
       args: ["-O", "anything"],
       stdin: 'foo = "1"',
-    })).resolves.toMatch(/deprecated/);
+      expected: /deprecated/,
+    });
 
-    const result = expect(exec({
+    await exec({
       args: ["-O"],
       stdin: 'foo = "1"',
-    }));
-    await result.rejects.toThrow("-O, --optimize <style>' argument missing");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
+      error: "-O, --optimize <style>' argument missing",
+    });
   });
 
   it("outputs to a file", async() => {
@@ -396,80 +632,100 @@ Options:
       fs.statSync(test_output);
     }).toThrow();
 
-    await expect(exec({
+    await exec({
       args: ["-o", test_output],
       stdin: "foo = '1'",
-    })).resolves.toBe("");
+      expected: null,
+    });
     expect(fs.statSync(test_output)).toBeInstanceOf(fs.Stats);
     fs.unlinkSync(test_output);
 
-    let result = expect(exec({
+    await exec({
       args: ["--output"],
       stdin: "foo = '1'",
-    }));
-    await result.rejects.toThrow("-o, --output <file>' argument missing");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
+      error: "-o, --output <file>' argument missing",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--output", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js"],
       stdin: "foo = '1'",
-    }));
-    await result.rejects.toThrow("Can't write to file \"__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js\"");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.cli",
+      exitCode: 1,
+      error: "ENOENT: no such file or directory",
+    });
   });
 
   it("handles plugins", async() => {
     // Plugin, starting with "./"
-    const plugin = "./fixtures/plugin.js";
-    const bad = "./fixtures/bad.js";
+    const plugin = path.join(__dirname, "fixtures", "plugin.js");
+    const bad = path.join(__dirname, "fixtures", "bad.js");
 
-    await expect(exec({
+    await exec({
       args: [
         "--plugin", plugin,
         "--extra-options", '{"cli_test": {"words": ["foo"]}}',
         "-t", "1",
       ],
       stdin: "var = bar:'1'",
-    })).resolves.toMatch("'1'");
+      expected: "'1'\n",
+    });
 
-    await expect(exec({
+    await exec({
       args: [
         "--plugin", `${plugin},${plugin}`,
         "--extra-options", '{"cli_test": {"words": ["foo"]}}',
         "-t", "1",
       ],
       stdin: "var = bar:'1'",
-    })).resolves.toMatch("'1'");
+      expected: "'1'\n",
+    });
 
-    let result = expect(exec({
+    await exec({
       args: [
         "--plugin", plugin,
         "--extra-options", '{"cli_test": {"words": ["foo"]}}',
       ],
       stdin: "var = foo:'1'",
-    }));
-    await result.rejects.toThrow("Label can't be a reserved word \"foo\"");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.cli",
+      exitCode: 1,
+      error: "Label can't be a reserved word \"foo\"",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--plugin"],
       stdin: "foo = '1'",
-    }));
-    await result.rejects.toThrow("--plugin <module>' argument missing");
+      errorCode: "commander.optionMissingArgument",
+      exitCode: 1,
+      error: "--plugin <module>' argument missing",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--plugin", "ERROR BAD MODULE DOES NOT EXIST"],
       stdin: "foo = '1'",
-    }));
-    await result.rejects.toThrow("Can't load module \"ERROR BAD MODULE DOES NOT EXIST\"");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.invalidArgument",
+      exitCode: 1,
+      error: 'requiring "ERROR BAD MODULE DOES NOT EXIST"',
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--plugin", bad],
       stdin: "foo = '1'",
-    }));
-    await result.rejects.toThrow("SyntaxError");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.invalidArgument",
+      exitCode: 1,
+      error: "Unexpected token",
+    });
+
+    // Warnings
+    await exec({
+      args: [
+        "--plugin", plugin,
+        "--extra-options", '{"cli_test": { "warning": true }}',
+      ],
+      stdin: "foo = '1'",
+      expected: /WARN\(check\): I WARN YOU/,
+    });
   });
 
   it("handlers trace", async() => {
@@ -481,9 +737,9 @@ Options:
 
   describe("handles source map", () => {
     describe("with default name without --output", () => {
-      const sourceMap = path.resolve(__dirname, "source.map");
+      const sourceMap = path.resolve(__dirname, "..", "..", "source.map");
 
-      it("generates a source map", async() => {
+      it("generates a source map 1", async() => {
         await checkSourceMap(sourceMap, ["--source-map"]);
         await checkSourceMap(sourceMap, ["-m"]);
       });
@@ -497,7 +753,7 @@ Options:
         await expect(exec({
           args: ["-t", "1", "--source-map"],
           stdin: "foo = '1' { return 42; }",
-        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        })).rejects.toThrow("Generation of the source map is not useful if you don't output a parser file, perhaps you forgot to add an `-o/--output` option?");
         expect(() => {
           // Make sure the file isn't there
           fs.statSync(sourceMap);
@@ -506,7 +762,7 @@ Options:
         await expect(exec({
           args: ["-t", "1", "-m"],
           stdin: "foo = '1' { return 42; }",
-        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        })).rejects.toThrow("Generation of the source map is not useful if you don't output a parser file, perhaps you forgot to add an `-o/--output` option?");
         expect(() => {
           // Make sure the file isn't there
           fs.statSync(sourceMap);
@@ -519,7 +775,7 @@ Options:
       const testOutput = path.resolve(__dirname, FILENAME);
       const sourceMap = path.resolve(__dirname, `${FILENAME}.map`);
 
-      it("generates a source map", async() => {
+      it("generates a source map 2", async() => {
         expect(() => {
           // Make sure the file isn't there before we start
           fs.statSync(testOutput);
@@ -569,18 +825,19 @@ Options:
     describe("with specified name", () => {
       const sourceMap = path.resolve(__dirname, "specified-name.map");
 
-      it("generates a source map", async() => {
+      it("generates a source map 3", async() => {
         expect(() => {
           // Make sure the file isn't there before we start
           fs.statSync(sourceMap);
         }).toThrow();
 
-        const result = expect(exec({
+        await exec({
           args: ["--source-map", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js.map"],
           stdin: "foo = '1' { return 42; }",
-        }));
-        await result.rejects.toThrow("Can't write to file \"__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js.map\"");
-        await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+          exitCode: 1,
+          errorCode: "peggy.cli",
+          error: "no such file or directory",
+        });
 
         await checkSourceMap(sourceMap, ["--source-map", sourceMap]);
         await checkSourceMap(sourceMap, ["-m", sourceMap]);
@@ -595,7 +852,7 @@ Options:
         await expect(exec({
           args: ["-t", "1", "--source-map", sourceMap],
           stdin: "foo = '1' { return 42; }",
-        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        })).rejects.toThrow("Generation of the source map is not useful if you don't output a parser file, perhaps you forgot to add an `-o/--output` option?");
         expect(() => {
           // Make sure the file isn't there
           fs.statSync(sourceMap);
@@ -604,7 +861,7 @@ Options:
         await expect(exec({
           args: ["-t", "1", "-m", sourceMap],
           stdin: "foo = '1' { return 42; }",
-        })).rejects.toThrow("Generation of the source map is useless if you don't store a generated parser code, perhaps you forgot to add an `-o/--output` option?");
+        })).rejects.toThrow("Generation of the source map is not useful if you don't output a parser file, perhaps you forgot to add an `-o/--output` option?");
         expect(() => {
           // Make sure the file isn't there
           fs.statSync(sourceMap);
@@ -614,65 +871,93 @@ Options:
   });
 
   it("uses dash-dash", async() => {
-    let result = expect(exec({
+    await exec({
       args: ["--", "--trace"],
-    }));
-    await result.rejects.toThrow(
-      /no such file or directory, open '[^']*--trace'/
-    );
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.cli",
+      exitCode: 1,
+      error: /no such file or directory, open '[^']*--trace'/,
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["--", "--trace", "--format"],
-    }));
-    await result.rejects.toThrow("Too many arguments.");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "commander.excessArguments",
+      exitCode: 1,
+      error: "too many arguments.",
+    });
   });
 
   it("handles input tests", async() => {
-    await expect(exec({
+    await exec({
       args: ["-t", "boo"],
       stdin: "foo = 'boo'",
-    })).resolves.toMatch("'boo'");
+      expected: "'boo'\n",
+    });
 
     const grammarFile = path.join(__dirname, "..", "..", "examples", "json.pegjs");
     const testFile = path.join(__dirname, "..", "..", "package.json");
 
-    await expect(exec({
+    await exec({
       args: ["-T", testFile, grammarFile],
-    })).resolves.toMatch("name: 'peggy'"); // Output is JS, not JSON
+      expected: /name: 'peggy',$/m, // Output is JS, not JSON
+    });
 
-    let result = expect(exec({
+    await exec({
       args: ["-T", "____ERROR____FILE_DOES_NOT_EXIST.js", grammarFile],
-    }));
-    await result.rejects.toThrow("Can't read from file \"____ERROR____FILE_DOES_NOT_EXIST.js\".");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.cli",
+      exitCode: 2,
+      error: "Error running test",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["-t", "boo", "-T", "foo"],
-    }));
-    await result.rejects.toThrow("The -t/--test and -T/--test-file options are mutually exclusive.");
-    await result.rejects.toThrow(expect.objectContaining({ code: 1 }));
+      errorCode: "peggy.invalidArgument",
+      exitCode: 1,
+      error: "The -t/--test and -T/--test-file options are mutually exclusive.",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["-t", "2"],
       stdin: "foo='1'",
-    }));
-    await result.rejects.toThrow('Expected "1" but "2" found');
-    await result.rejects.toThrow(expect.objectContaining({ code: 2 }));
+      errorCode: "peggy.cli",
+      exitCode: 2,
+      error: 'Expected "1" but "2" found',
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["-t", "1"],
       stdin: "foo='1' { throw new Error('bar') }",
-    }));
-    await result.rejects.toThrow("Error: bar");
-    await result.rejects.toThrow(expect.objectContaining({ code: 2 }));
+      errorCode: "peggy.cli",
+      exitCode: 2,
+      error: "Error running test",
+    });
 
-    result = expect(exec({
+    await exec({
       args: ["-t", "1", "--verbose"],
       stdin: "foo='1' { throw new Error('bar') }",
-    }));
-    await result.rejects.toThrow("Error: bar");
-    await result.rejects.toThrow(expect.objectContaining({ code: 2 }));
+      errorCode: "peggy.cli",
+      exitCode: 2,
+      error: "Error running test",
+    });
+  });
+
+  it("handles stdout errors", async() => {
+    const stderr = new MockStream({ name: "stderr", encoding: "utf8" });
+    const stdout = new MockStream({
+      name: "stdout",
+      errorsToThrow: [new Error("Bad write")],
+      encoding: "utf8",
+    });
+    stdout.on("error", () => {
+      // No-op, to prevent uncaught error.
+    });
+
+    await exec({
+      stdin: "foo='1'",
+      stdout,
+      stderr,
+      exitCode: 1,
+      errorCode: "peggy.cli",
+      error: "Bad write",
+    });
   });
 });

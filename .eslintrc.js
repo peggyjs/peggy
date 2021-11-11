@@ -19,7 +19,19 @@ module.exports = {
   overrides: [
     {
       files: ["rollup.config.js", "*.mjs"],
-      parserOptions: { sourceType: "module" },
+      parserOptions: {
+        sourceType: "module",
+        ecmaVersion: 2018,
+      },
+      rules: {
+        "comma-dangle": ["error", {
+          arrays: "always-multiline",
+          objects: "always-multiline",
+          imports: "always-multiline",
+          exports: "always-multiline",
+          functions: "never",
+        }],
+      },
     },
   ],
 };
