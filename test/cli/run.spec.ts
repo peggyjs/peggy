@@ -446,7 +446,7 @@ Options:
       stdin: "foo = '1' { return new c.Command(); }",
       errorCode: "peggy.invalidArgument",
       exitCode: 1,
-      error: "Can't use the -d/--dependency option with the \"globals\" module format.",
+      error: "Can't use the -d/--dependency or -D/--dependencies options with the \"globals\" module format.",
     });
 
     await exec({

@@ -2938,11 +2938,7 @@ function readStream(inputStream) {
     const input = [];
     inputStream.on("data", data => { input.push(data); });
     inputStream.on("end", () => resolve(Buffer.concat(input).toString()));
-    inputStream.on("error", er => {
-      // Stack isn't filled in on this error for some reason.
-      Error.captureStackTrace(er);
-      reject(er);
-    });
+    inputStream.on("error", reject);
   });
 }
 
@@ -3148,7 +3144,7 @@ class PeggyCLI extends commander.exports.Command {
 
         if ((Object.keys(this.argv.dependencies).length > 0)
             && (MODULE_FORMATS_WITH_DEPS.indexOf(this.argv.format) === -1)) {
-          this.error(`Can't use the -d/--dependency option with the "${this.argv.format}" module format.`);
+          this.error(`Can't use the -d/--dependency or -D/--dependencies options with the "${this.argv.format}" module format.`);
         }
 
         if ((this.argv.exportVar !== undefined)
@@ -3315,11 +3311,7 @@ class PeggyCLI extends commander.exports.Command {
     }
     return new Promise((resolve, reject) => {
       const outputStream = fs__default["default"].createWriteStream(this.outputFile);
-      outputStream.on("error", er => {
-        // Stack isn't filled in on this error for some reason.
-        Error.captureStackTrace(er);
-        reject(er);
-      });
+      outputStream.on("error", reject);
       outputStream.on("open", () => resolve(outputStream));
     });
   }
@@ -3359,8 +3351,6 @@ class PeggyCLI extends commander.exports.Command {
         "utf8",
         err => {
           if (err) {
-            // Stack isn't filled in on this error for some reason.
-            Error.captureStackTrace(err);
             reject(err);
           } else {
             resolve(sourceMap.code);
