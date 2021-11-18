@@ -938,6 +938,14 @@ Options:
       exitCode: 2,
       error: "Error running test",
     });
+
+    await exec({
+      args: ["-t", ""],
+      stdin: "foo='1'",
+      errorCode: "peggy.cli",
+      exitCode: 2,
+      error: "end of input",
+    });
   });
 
   it("handles stdout errors", async() => {

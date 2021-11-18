@@ -285,10 +285,10 @@ export class PeggyCLI extends Command {
           }
         }
 
-        if (this.progOptions.test && this.progOptions.testFile) {
-          this.error("The -t/--test and -T/--test-file options are mutually exclusive.");
-        }
-        if (this.progOptions.test) {
+        if (typeof this.progOptions.test === "string") {
+          if (this.progOptions.testFile) {
+            this.error("The -t/--test and -T/--test-file options are mutually exclusive.");
+          }
           this.testText = this.progOptions.test;
           this.testGrammarSource = "command line";
         }
@@ -404,7 +404,7 @@ export class PeggyCLI extends Command {
 
     if (this.outputFile === "-") {
       return Promise.resolve(
-        (!this.testFile && !this.testText) ? this.std.out : null
+        (!this.testFile && (typeof this.testText !== "string")) ? this.std.out : null
       );
     }
     return new Promise((resolve, reject) => {
