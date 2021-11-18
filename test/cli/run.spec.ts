@@ -950,7 +950,7 @@ Error: Expected "1" but end of input found.
  --> command line:1:1
   |
 1 |${" "}
-  |`,
+  | ^`,
     });
   });
 
