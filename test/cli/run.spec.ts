@@ -944,7 +944,13 @@ Options:
       stdin: "foo='1'",
       errorCode: "peggy.cli",
       exitCode: 2,
-      error: "end of input",
+      error: `\
+Error running test
+Error: Expected "1" but end of input found.
+ --> command line:1:1
+  |
+1 |${" "}
+  |`,
     });
   });
 

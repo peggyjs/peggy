@@ -545,6 +545,9 @@ export class PeggyCLI extends Command {
         sources: [{
           source: this.argv.grammarSource,
           text: input,
+        }, {
+          source: this.testGrammarSource,
+          text: this.testText,
         }],
       });
     }
