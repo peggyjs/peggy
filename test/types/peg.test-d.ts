@@ -31,6 +31,19 @@ describe("peg.d.ts", () => {
     expect(res).toStrictEqual(["buzz", 11, "fizz"]);
   });
 
+  it("types SyntaxError correctly", () => {
+    const parser = peggy.generate(src);
+
+    expectType<peggy.parser.SyntaxErrorConstructor>(parser.SyntaxError);
+    expectType<peggy.parser.SyntaxError>(new parser.SyntaxError("", null, null, {
+      source: null,
+      start: { line: 0, column: 0, offset: 0 },
+      end: { line: 0, column: 0, offset: 0 },
+    }));
+
+    expectType<string>(parser.SyntaxError.buildMessage([], ""));
+  });
+
   it("takes a valid tracer", () => {
     const parser = peggy.generate(src, { trace: true });
     expectType<peggy.Parser>(parser);
