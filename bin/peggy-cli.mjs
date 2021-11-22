@@ -1,8 +1,10 @@
 import { Command, CommanderError, InvalidArgumentError, Option } from "commander";
+import { Module } from "module";
 import fs from "fs";
 import path from "path";
 import { default as peggy } from "../lib/peg.js";
 import util from "util";
+import vm from "vm";
 
 export { CommanderError, InvalidArgumentError };
 
@@ -90,6 +92,8 @@ export class PeggyCLI extends Command {
     this.testGrammarSource = null;
     /** @type {string?} */
     this.testText = null;
+    /** @type {string?} */
+    this.outputJS = null;
 
     this
       .version(peggy.VERSION, "-v, --version")
@@ -257,15 +261,19 @@ export class PeggyCLI extends Command {
           this.inputFile = this.progOptions.input;
         }
         this.outputFile = this.progOptions.output;
+        this.outputJS = this.progOptions.output;
 
         if (!this.outputFile) {
-          if ((this.inputFile !== "-")
-            && !this.progOptions.test
-            && !this.progOptions.testFile) {
-            this.outputFile = this.inputFile.substr(
+          if (this.inputFile !== "-") {
+            this.outputJS = this.inputFile.substr(
               0,
               this.inputFile.length - path.extname(this.inputFile).length
             ) + ".js";
+
+            this.outputFile = ((typeof this.progOptions.test !== "string")
+                               && !this.progOptions.testFile)
+              ? this.outputJS
+              : "-";
           } else {
             this.outputFile = "-";
           }
@@ -489,7 +497,49 @@ export class PeggyCLI extends Command {
     }
     if (typeof this.testText === "string") {
       this.verbose("TEST TEXT:", this.testText);
-      const exec = eval(source);
+
+      const filename = this.outputJS
+        ? path.resolve(this.outputJS)
+        : path.join(process.cwd(), "stdout.js"); // Synthetic
+
+      const dirname = path.dirname(filename);
+      const m = new Module(filename, module);
+      m.require = (
+        // In node 12+, createRequire is documented.
+        // In node 10, createRequireFromPath is the least-undocumented approach.
+        Module.createRequire || Module.createRequireFromPath
+      )(filename);
+      const script = new vm.Script(source, { filename });
+      const exec = script.runInNewContext({
+        module: m,
+        exports: m.exports,
+        require: m.require,
+        __dirname: dirname,
+        __filename: filename,
+
+        // Anything that is normally in the global scope that we think
+        // might be needed.  Limit to what is available in lowest-supported
+        // engine version.
+
+        // See: https://github.com/nodejs/node/blob/master/lib/internal/bootstrap/node.js
+        // for more things to add.
+        Buffer,
+        TextDecoder: (typeof TextDecoder === "undefined") ? undefined : TextDecoder,
+        TextEncoder: (typeof TextEncoder === "undefined") ? undefined : TextEncoder,
+        URL,
+        URLSearchParams,
+        atob: Buffer.atob,
+        btoa: Buffer.btoa,
+        clearImmediate,
+        clearInterval,
+        clearTimeout,
+        console,
+        process,
+        setImmediate,
+        setInterval,
+        setTimeout,
+      });
+
       const results = exec.parse(this.testText, {
         grammarSource: this.testGrammarSource,
       });

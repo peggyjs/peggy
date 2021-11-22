@@ -974,4 +974,12 @@ Error: Expected "1" but end of input found.
       error: "Bad write",
     });
   });
+
+  it("handles tests that require other modules", async() => {
+    const grammar = path.join(__dirname, "fixtures", "req.peggy");
+    await exec({
+      args: ["-t", "1", grammar],
+      expected: "[ 'zazzy' ]\n",
+    });
+  });
 });

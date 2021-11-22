@@ -11,8 +11,10 @@ const require$$0 = require('events');
 const require$$1 = require('child_process');
 const path$1 = require('path');
 const fs$1 = require('fs');
+const module$1 = require('module');
 const peggy = require('../lib/peg.js');
 const util = require('util');
+const vm = require('vm');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -22,6 +24,7 @@ const path__default = /*#__PURE__*/_interopDefaultLegacy(path$1);
 const fs__default = /*#__PURE__*/_interopDefaultLegacy(fs$1);
 const peggy__default = /*#__PURE__*/_interopDefaultLegacy(peggy);
 const util__default = /*#__PURE__*/_interopDefaultLegacy(util);
+const vm__default = /*#__PURE__*/_interopDefaultLegacy(vm);
 
 var commander = {exports: {}};
 
@@ -2992,6 +2995,8 @@ class PeggyCLI extends commander.exports.Command {
     this.testGrammarSource = null;
     /** @type {string?} */
     this.testText = null;
+    /** @type {string?} */
+    this.outputJS = null;
 
     this
       .version(peggy__default["default"].VERSION, "-v, --version")
@@ -3159,15 +3164,19 @@ class PeggyCLI extends commander.exports.Command {
           this.inputFile = this.progOptions.input;
         }
         this.outputFile = this.progOptions.output;
+        this.outputJS = this.progOptions.output;
 
         if (!this.outputFile) {
-          if ((this.inputFile !== "-")
-            && !this.progOptions.test
-            && !this.progOptions.testFile) {
-            this.outputFile = this.inputFile.substr(
+          if (this.inputFile !== "-") {
+            this.outputJS = this.inputFile.substr(
               0,
               this.inputFile.length - path__default["default"].extname(this.inputFile).length
             ) + ".js";
+
+            this.outputFile = ((typeof this.progOptions.test !== "string")
+                               && !this.progOptions.testFile)
+              ? this.outputJS
+              : "-";
           } else {
             this.outputFile = "-";
           }
@@ -3187,10 +3196,10 @@ class PeggyCLI extends commander.exports.Command {
           }
         }
 
-        if (this.progOptions.test && this.progOptions.testFile) {
-          this.error("The -t/--test and -T/--test-file options are mutually exclusive.");
-        }
-        if (this.progOptions.test) {
+        if (typeof this.progOptions.test === "string") {
+          if (this.progOptions.testFile) {
+            this.error("The -t/--test and -T/--test-file options are mutually exclusive.");
+          }
           this.testText = this.progOptions.test;
           this.testGrammarSource = "command line";
         }
@@ -3306,7 +3315,7 @@ class PeggyCLI extends commander.exports.Command {
 
     if (this.outputFile === "-") {
       return Promise.resolve(
-        (!this.testFile && !this.testText) ? this.std.out : null
+        (!this.testFile && (typeof this.testText !== "string")) ? this.std.out : null
       );
     }
     return new Promise((resolve, reject) => {
@@ -3391,7 +3400,49 @@ class PeggyCLI extends commander.exports.Command {
     }
     if (typeof this.testText === "string") {
       this.verbose("TEST TEXT:", this.testText);
-      const exec = eval(source);
+
+      const filename = this.outputJS
+        ? path__default["default"].resolve(this.outputJS)
+        : path__default["default"].join(process.cwd(), "stdout.js"); // Synthetic
+
+      const dirname = path__default["default"].dirname(filename);
+      const m = new module$1.Module(filename, module);
+      m.require = (
+        // In node 12+, createRequire is documented.
+        // In node 10, createRequireFromPath is the least-undocumented approach.
+        module$1.Module.createRequire || module$1.Module.createRequireFromPath
+      )(filename);
+      const script = new vm__default["default"].Script(source, { filename });
+      const exec = script.runInNewContext({
+        module: m,
+        exports: m.exports,
+        require: m.require,
+        __dirname: dirname,
+        __filename: filename,
+
+        // Anything that is normally in the global scope that we think
+        // might be needed.  Limit to what is available in lowest-supported
+        // engine version.
+
+        // See: https://github.com/nodejs/node/blob/master/lib/internal/bootstrap/node.js
+        // for more things to add.
+        Buffer,
+        TextDecoder: (typeof TextDecoder === "undefined") ? undefined : TextDecoder,
+        TextEncoder: (typeof TextEncoder === "undefined") ? undefined : TextEncoder,
+        URL,
+        URLSearchParams,
+        atob: Buffer.atob,
+        btoa: Buffer.btoa,
+        clearImmediate,
+        clearInterval,
+        clearTimeout,
+        console,
+        process,
+        setImmediate,
+        setInterval,
+        setTimeout,
+      });
+
       const results = exec.parse(this.testText, {
         grammarSource: this.testGrammarSource,
       });
@@ -3447,6 +3498,9 @@ class PeggyCLI extends commander.exports.Command {
         sources: [{
           source: this.argv.grammarSource,
           text: input,
+        }, {
+          source: this.testGrammarSource,
+          text: this.testText,
         }],
       });
     }
