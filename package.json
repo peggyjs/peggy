@@ -34,7 +34,7 @@
     "terser:bench": "terser -c passes=2 -m --sequences 40 --module build/rollup/benchmark.umd.js -o build/benchmark-bundle.min.js",
     "headers": "node ./tools/header.js build/peggy.min.js build/benchmark-bundle.min.js build/test-bundle.min.js",
     "deploy": "npm run deploy:peggy && npm run deploy:tests && npm run deploy:bench",
-    "coverage": "PEGGY_CLI_DEBUG=1 npm run rollup && npm run parser -- -m inline && jest run.spec.ts",
+    "coverage": "PEGGY_CLI_DEBUG=1 npm run rollup && npm run parser -- -m inline && npm test",
     "deploy:peggy": "copyfiles build/peggy.min.js docs/vendor/peggy/ && copyfiles build/peggy.min.js browser/",
     "deploy:tests": "copyfiles build/test-bundle.min.js docs/js/",
     "deploy:bench": "copyfiles build/benchmark-bundle.min.js docs/js/",
