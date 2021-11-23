@@ -325,9 +325,12 @@ Options:
                                    specified, the source map will be named
                                    "<input_file>.map" if input is a file and
                                    "source.map" if input is a standard input.
-                                   This option conflicts with the \`-t/--test\`
-                                   and \`-T/--test-file\` options unless
-                                   \`-o/--output\` is also specified
+                                   If the special filename 'inline' is given,
+                                   the sourcemap will be embedded in the output
+                                   file as a data URI.  This option conflicts
+                                   with the \`-t/--test\` and \`-T/--test-file\`
+                                   options unless \`-o/--output\` is also
+                                   specified
   -t, --test <text>                Test the parser with the given text,
                                    outputting the result of running the parser
                                    instead of the parser itself. If the input
