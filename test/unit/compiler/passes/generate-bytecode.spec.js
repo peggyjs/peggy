@@ -15,6 +15,13 @@ describe("compiler pass |generateBytecode|", () => {
     };
   }
 
+  function bytecodeLocationDetails(bytecode, locations) {
+    return {
+      rules: [{ bytecode }],
+      locations,
+    };
+  }
+
   function constsDetails(literals, classes, expectations, functions) {
     return { literals, classes, expectations, functions };
   }
@@ -49,6 +56,24 @@ describe("compiler pass |generateBytecode|", () => {
         ],
         []
       ));
+    });
+
+    it("generates correct source mapping", () => {
+      expect(pass).to.changeAST([
+        "a = 'a'",
+      ].join("\n"), bytecodeLocationDetails(
+        [37, 0, 18, 0, 2, 2, 22, 0, 23, 0, 38],
+        [
+          {
+            source: "-",
+            start: { offset: 4, line: 1, column: 5 },
+            end: { offset: 7, line: 1, column: 8 },
+          },
+        ]
+      ), {
+        grammarSource: "-",
+        output: "source-and-map",
+      });
     });
 
     it("generates correct plucking bytecode", () => {
@@ -129,16 +154,63 @@ describe("compiler pass |generateBytecode|", () => {
   });
 
   describe("for choice", () => {
-    it("generates correct bytecode", () => {
-      expect(pass).to.changeAST("start = 'a' / 'b' / 'c'", bytecodeDetails([
+    it("generates correct bytecode and source mapping", () => {
+      expect(pass).to.changeAST("start = 'a' / label:'b' / 'c'", bytecodeLocationDetails([
+        37, 5,                       // SOURCE_MAP_PUSH 5
+        37, 0,                       // SOURCE_MAP_PUSH 0
         18, 0, 2, 2, 22, 0, 23, 0,   // <alternatives[0]>
-        14, 21, 0,                   // IF_ERROR
+        38,                          // SOURCE_MAP_POP
+        14, 36, 0,                   // IF_ERROR
         6,                           //   * POP
+        37, 3,                       //     SOURCE_MAP_PUSH 3
+        39, 0, 2,                    //     SOURCE_MAP_LABEL_PUSH 0 2
+        2,                           //     PUSH_NULL
+        37, 1,                       //     SOURCE_MAP_PUSH 1
         18, 1, 2, 2, 22, 1, 23, 1,   //     <alternatives[1]>
-        14, 9, 0,                    //     IF_ERROR
+        38,                          //     SOURCE_MAP_POP
+        40, 0,                       //     SOURCE_MAP_LABEL_POP 0
+        38,                          //     SOURCE_MAP_POP
+        14, 12, 0,                   //     IF_ERROR
         6,                           //       * POP
-        18, 2, 2, 2, 22, 2, 23, 2,    //         <alternatives[2]>
-      ]));
+        37, 4,                       //          SOURCE_MAP_PUSH 2
+        18, 3, 2, 2, 22, 3, 23, 2,   //          <alternatives[2]>
+        38,                          //          SOURCE_MAP_POP
+        38,                          // SOURCE_MAP_POP
+      ], [
+        {
+          source: "-",
+          start: { offset: 8, line: 1, column: 9 },
+          end: { offset: 11, line: 1, column: 12 },
+        },
+        {
+          source: "-",
+          start: { offset: 20, line: 1, column: 21 },
+          end: { offset: 23, line: 1, column: 24 },
+        },
+        {
+          source: "-",
+          start: { offset: 14, line: 1, column: 15 },
+          end: { offset: 19, line: 1, column: 20 },
+        },
+        {
+          source: "-",
+          start: { offset: 14, line: 1, column: 15 },
+          end: { offset: 23, line: 1, column: 24 },
+        },
+        {
+          source: "-",
+          start: { offset: 26, line: 1, column: 27 },
+          end: { offset: 29, line: 1, column: 30 },
+        },
+        {
+          source: "-",
+          start: { offset: 8, line: 1, column: 9 },
+          end: { offset: 29, line: 1, column: 30 },
+        },
+      ]), {
+        grammarSource: "-",
+        output: "source-and-map",
+      });
     });
   });
 

@@ -226,7 +226,9 @@ describe("Peggy API", () => {
 
     describe("generates source map", () => {
       function findLocationOf(input, chunk) {
-        const offset = input.indexOf(chunk);
+        const offset = chunk instanceof RegExp
+          ? input.search(chunk)
+          : input.indexOf(chunk);
         let line = 1;
         let column = 0;
 
@@ -251,7 +253,8 @@ describe("Peggy API", () => {
         {{${GLOBAL_INITIALIZER}}}
         {${PER_PARSE_INITIALIZER}}
         RULE_1 = !{${NOT_BLOCK}} 'a' rule:RULE_2 {${ACTION_BLOCK}};
-        RULE_2 'named' = &{${AND_BLOCK}} @'b';
+        RULE_2 'named' = &{${AND_BLOCK}} @'b' [abc] 'def';
+        RULE_3 = RULE_1 / RULE_2;
       `;
 
       function check(chunk, source, name, generatedChunk = chunk) {
@@ -286,6 +289,21 @@ describe("Peggy API", () => {
 
           it("rule name", () => check("RULE_1", source, "RULE_1", "peg$parseRULE_1() {"));
           it("labelled rule name", () => check("RULE_2 'named'", source, "RULE_2", "peg$parseRULE_2() {"));
+          it("literal expression", () => check("'a'", source, null, "input.charCodeAt(peg$currPos) === 97"));
+          it("multichar literal", () => check("'def'", source, null, "input.substr(peg$currPos, 3) === peg$c3"));
+          it("chars expression", () => check("[abc]", source, null, "peg$r0.test(input.charAt(peg$currPos))"));
+          it("rule expression", () => check("RULE_2", source, null, "peg$parseRULE_2();"));
+          it("choice expression", () => check(
+            "RULE_1 / RULE_2",
+            source,
+            null,
+            new RegExp([
+              // Lint complained about a long regex, so split and join.
+              /peg\$parseRULE_1\(\);\s*/,
+              /if \(s. === peg\$FAILED\) \{\s*/,
+              /s. = peg\$parseRULE_2/,
+            ].map(r => r.source).join(""))
+          ));
         });
       }
     });
