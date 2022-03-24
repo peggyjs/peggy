@@ -74,6 +74,7 @@ declare namespace ast {
      classes?: CharacterClass[];
      expectations?: parser.Expectation[];
      functions?: FunctionConst[];
+     locations?: LocationRange[];
    }
 
   /**
