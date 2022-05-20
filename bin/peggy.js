@@ -3196,6 +3196,7 @@ class PeggyCLI extends commander.exports.Command {
           }
         }
 
+        // Empty string is a valid test input.  Don't just test for falsy.
         if (typeof this.progOptions.test === "string") {
           if (this.progOptions.testFile) {
             this.error("The -t/--test and -T/--test-file options are mutually exclusive.");
@@ -3314,9 +3315,10 @@ class PeggyCLI extends commander.exports.Command {
     // if no test and no outputFile, write to stdout.
 
     if (this.outputFile === "-") {
-      return Promise.resolve(
-        (!this.testFile && (typeof this.testText !== "string")) ? this.std.out : null
-      );
+      // Note: empty string is a valid input for testText.
+      // Don't just test for falsy.
+      const hasTest = !this.testFile && (typeof this.testText !== "string");
+      return Promise.resolve(hasTest ? this.std.out : null);
     }
     return new Promise((resolve, reject) => {
       const outputStream = fs__default["default"].createWriteStream(this.outputFile);
@@ -3405,8 +3407,12 @@ class PeggyCLI extends commander.exports.Command {
         ? path__default["default"].resolve(this.outputJS)
         : path__default["default"].join(process.cwd(), "stdout.js"); // Synthetic
 
+      // Create a module that exports the parser, then load it from the
+      // correct directory, so that any modules that the parser requires will
+      // be loaded from the correct place.
       const dirname = path__default["default"].dirname(filename);
       const m = new module$1.Module(filename, module);
+      // This is the function that will be called by `require()` in the parser.
       m.require = (
         // In node 12+, createRequire is documented.
         // In node 10, createRequireFromPath is the least-undocumented approach.
@@ -3414,18 +3420,18 @@ class PeggyCLI extends commander.exports.Command {
       )(filename);
       const script = new vm__default["default"].Script(source, { filename });
       const exec = script.runInNewContext({
-        module: m,
-        exports: m.exports,
-        require: m.require,
-        __dirname: dirname,
-        __filename: filename,
-
         // Anything that is normally in the global scope that we think
         // might be needed.  Limit to what is available in lowest-supported
         // engine version.
 
         // See: https://github.com/nodejs/node/blob/master/lib/internal/bootstrap/node.js
         // for more things to add.
+        module: m,
+        exports: m.exports,
+        require: m.require,
+        __dirname: dirname,
+        __filename: filename,
+
         Buffer,
         TextDecoder: (typeof TextDecoder === "undefined") ? undefined : TextDecoder,
         TextEncoder: (typeof TextEncoder === "undefined") ? undefined : TextEncoder,
