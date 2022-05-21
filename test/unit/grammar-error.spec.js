@@ -63,6 +63,20 @@ GrammarError: message
         location.source = "foo.peggy";
         const e = new GrammarError("message", location, diagnostics);
 
+        it("with zero-length error at the end", () => {
+          const ze = new GrammarError("message", {
+            source: "foo.peggy",
+            start: { offset: 4, line: 1, column: 5 },
+            end: { offset: 4, line: 1, column: 5 },
+          });
+          expect(ze.format([source])).to.equal(`\
+error: message
+ --> foo.peggy:1:5
+  |
+1 | some error
+  |     ^`);
+        });
+
         it("with source", () => {
           expect(e.format([source])).to.equal(`\
 error: message

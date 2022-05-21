@@ -938,6 +938,20 @@ Options:
       exitCode: 2,
       error: "Error running test",
     });
+
+    await exec({
+      args: ["-t", ""],
+      stdin: "foo='1'",
+      errorCode: "peggy.cli",
+      exitCode: 2,
+      error: `\
+Error running test
+Error: Expected "1" but end of input found.
+ --> command line:1:1
+  |
+1 |${" "}
+  | ^`,
+    });
   });
 
   it("handles stdout errors", async() => {
@@ -958,6 +972,14 @@ Options:
       exitCode: 1,
       errorCode: "peggy.cli",
       error: "Bad write",
+    });
+  });
+
+  it("handles tests that require other modules", async() => {
+    const grammar = path.join(__dirname, "fixtures", "req.peggy");
+    await exec({
+      args: ["-t", "1", grammar],
+      expected: "[ 'zazzy' ]\n",
     });
   });
 });
