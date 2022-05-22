@@ -166,7 +166,7 @@ export class PeggyCLI extends Command {
       )
       .option(
         "-m, --source-map [mapfile]",
-        "Generate a source map. If name is not specified, the source map will be named \"<input_file>.map\" if input is a file and \"source.map\" if input is a standard input. This option conflicts with the `-t/--test` and `-T/--test-file` options unless `-o/--output` is also specified"
+        "Generate a source map. If name is not specified, the source map will be named \"<input_file>.map\" if input is a file and \"source.map\" if input is a standard input. If the special filename `inline` is given, the sourcemap will be embedded in the output file as a data URI.  If the filename is prefixed with `hidden:`, no mapping URL will be included so that the mapping can be specified with an HTTP SourceMap: header.  This option conflicts with the `-t/--test` and `-T/--test-file` options unless `-o/--output` is also specified"
       )
       .option(
         "-t, --test <text>",
@@ -276,6 +276,8 @@ export class PeggyCLI extends Command {
               : "-";
           } else {
             this.outputFile = "-";
+            // Synthetic
+            this.outputJS = path.join(process.cwd(), "stdout.js");
           }
         }
         // If CLI parameter was defined, enable source map generation
@@ -290,6 +292,10 @@ export class PeggyCLI extends Command {
           // If source map name is not specified, calculate it
           if (this.progOptions.sourceMap === true) {
             this.progOptions.sourceMap = this.outputFile === "-" ? "source.map" : this.outputFile + ".map";
+          }
+
+          if (this.progOptions.sourceMap === "hidden:inline") {
+            this.error("hidden + inline sourceMap makes no sense.");
           }
         }
 
@@ -438,11 +444,17 @@ export class PeggyCLI extends Command {
         return;
       }
 
-      const mapDir = path.dirname(this.progOptions.sourceMap);
+      let hidden = false;
+      if (this.progOptions.sourceMap.startsWith("hidden:")) {
+        hidden = true;
+        this.progOptions.sourceMap = this.progOptions.sourceMap.slice(7);
+      }
+      const inline = this.progOptions.sourceMap === "inline";
+      const mapDir = inline
+        ? path.dirname(this.outputJS)
+        : path.dirname(this.progOptions.sourceMap);
 
-      const file = (this.outputFile === "-")
-        ? null
-        : path.relative(mapDir, this.outputFile);
+      const file = path.relative(mapDir, this.outputJS);
       const sourceMap = source.toStringWithSourceMap({ file });
 
       // According to specifications, paths in the "sources" array should be
@@ -453,18 +465,33 @@ export class PeggyCLI extends Command {
         src => (src === null) ? null : path.relative(mapDir, src)
       );
 
-      fs.writeFile(
-        this.progOptions.sourceMap,
-        JSON.stringify(json),
-        "utf8",
-        err => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(sourceMap.code);
+      if (inline) {
+        // Note: hidden + inline makes no sense.
+        const buf = Buffer.from(JSON.stringify(json));
+        resolve(sourceMap.code + `\
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,${buf.toString("base64")}
+`);
+      } else {
+        fs.writeFile(
+          this.progOptions.sourceMap,
+          JSON.stringify(json),
+          "utf8",
+          err => {
+            if (err) {
+              reject(err);
+            } else {
+              if (hidden) {
+                resolve(sourceMap.code);
+              } else {
+                // Opposite direction from mapDir
+                resolve(sourceMap.code + `\
+//# sourceMappingURL=${path.relative(path.dirname(this.outputJS), this.progOptions.sourceMap)}
+`);
+              }
+            }
           }
-        }
-      );
+        );
+      }
     });
   }
 
@@ -500,13 +527,12 @@ export class PeggyCLI extends Command {
     if (typeof this.testText === "string") {
       this.verbose("TEST TEXT:", this.testText);
 
-      const filename = this.outputJS
-        ? path.resolve(this.outputJS)
-        : path.join(process.cwd(), "stdout.js"); // Synthetic
-
       // Create a module that exports the parser, then load it from the
       // correct directory, so that any modules that the parser requires will
       // be loaded from the correct place.
+      const filename = this.outputJS
+        ? path.resolve(this.outputJS)
+        : path.join(process.cwd(), "stdout.js"); // Synthetic
       const dirname = path.dirname(filename);
       const m = new Module(filename, module);
       // This is the function that will be called by `require()` in the parser.

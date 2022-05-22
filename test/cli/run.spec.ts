@@ -325,6 +325,12 @@ Options:
                                    specified, the source map will be named
                                    "<input_file>.map" if input is a file and
                                    "source.map" if input is a standard input.
+                                   If the special filename \`inline\` is given,
+                                   the sourcemap will be embedded in the output
+                                   file as a data URI.  If the filename is
+                                   prefixed with \`hidden:\`, no mapping URL will
+                                   be included so that the mapping can be
+                                   specified with an HTTP SourceMap: header.
                                    This option conflicts with the \`-t/--test\`
                                    and \`-T/--test-file\` options unless
                                    \`-o/--output\` is also specified
@@ -820,6 +826,27 @@ Options:
         expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
         fs.unlinkSync(testOutput);
       });
+
+      it("emits an error with hidden:inline", async() => {
+        await expect(exec({
+          args: ["-m", "hidden:inline", "-o", testOutput],
+          stdin: "foo = '1' { return 42; }",
+          errorCode: "peggy.invalidArgument",
+          exitCode: 1,
+          error: "hidden + inline sourceMap makes no sense.",
+        }));
+      });
+
+      it("hides sourceMap with hidden:", async() => {
+        await checkSourceMap(
+          sourceMap,
+          ["-o", testOutput, "-m", "hidden:" + sourceMap]
+        );
+        expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
+        const output = fs.readFileSync(testOutput, "utf8");
+        expect(output).not.toMatch(/# sourceMappingURL=/);
+        fs.unlinkSync(testOutput);
+      });
     });
 
     describe("with specified name", () => {
@@ -866,6 +893,17 @@ Options:
           // Make sure the file isn't there
           fs.statSync(sourceMap);
         }).toThrow();
+      });
+    });
+
+    describe("with inline map", () => {
+      it("generates map inline", async() => {
+        await exec({
+          args: ["-m", "inline"],
+          stdin: "foo = '1'",
+          // eslint-disable-next-line max-len
+          expected: /^\/\/# sourceMappingURL=data:application\/json;charset=utf-8;base64,./m,
+        });
       });
     });
   });

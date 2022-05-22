@@ -69,6 +69,7 @@ const cli_config = {
 
 if (process.env.PEGGY_CLI_DEBUG) {
   cli_config.output.sourcemap = "inline";
+  cli_config.output.sourcemapExcludeSources = true;
 }
 
 /**
