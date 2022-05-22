@@ -1,11 +1,11 @@
 // This is typescript so that it only runs in node contexts, not on the web
 
+import * as fs from "fs";
+import * as path from "path";
 import * as peggy from "../../lib/peg.js";
 import { CommanderError, PeggyCLI } from "../../bin/peggy.js";
 import { Transform, TransformCallback, TransformOptions } from "stream";
 import { SourceMapConsumer } from "source-map";
-import fs from "fs";
-import path from "path";
 import { spawn } from "child_process";
 
 const foobarbaz = `\
