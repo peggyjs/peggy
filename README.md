@@ -958,7 +958,7 @@ changes in the grammar, for example, replacing proxy rules.
 Both the parser generator and generated parsers should run well in the following
 environments:
 
-- Node.js 10+
+- Node.js 12+
 - Internet Explorer 9+
 - Edge
 - Firefox

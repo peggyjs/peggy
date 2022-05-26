@@ -3,7 +3,7 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-1.3.0
+2.0.0
 -----
 
 Released: TBD
@@ -17,6 +17,12 @@ Released: TBD
   passes. New API allows reporting several diagnostics at once with intermediate
   results checking after each compilation stage.
   [@Mingun](https://github.com/peggyjs/peggy/pull/160)
+
+- Remove support for Node.js version 10.  When updating dependencies, too many
+  of the tools we use no longer work on the Node 10, which went out of
+  security maintenance more than a year ago.  Added support for Node.js
+  version 18.
+  [@hildjj](https://github.com/peggyjs/peggy/pull/248)
 
 ### Minor Changes
 
