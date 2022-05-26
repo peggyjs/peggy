@@ -324,7 +324,9 @@ export class PeggyCLI extends Command {
 
   /**
    * Print error message to std.err, and either call process.exit or throw an
-   * exception if exitOverride() has been called.
+   * exception if exitOverride() has been called.  If opts.error is specified,
+   * it will be used to generate the error message, rather than using the
+   * message provided.
    *
    * @param {string} message The message to print.
    * @param {object} [opts] Options
@@ -353,9 +355,7 @@ export class PeggyCLI extends Command {
       }
     }
 
-    // Internal API, subject to change.  See:
-    // https://github.com/tj/commander.js/issues/1632
-    this._displayError(opts.exitCode, opts.code, `Error ${message}`);
+    super.error(`Error ${message}`, opts);
   }
 
   print(stream, ...args) {
@@ -468,8 +468,10 @@ export class PeggyCLI extends Command {
       if (inline) {
         // Note: hidden + inline makes no sense.
         const buf = Buffer.from(JSON.stringify(json));
+        // Use \x23 instead of # so that Jest won't treat this as a real
+        // source map URL for *this* file.
         resolve(sourceMap.code + `\
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,${buf.toString("base64")}
+//\x23 sourceMappingURL=data:application/json;charset=utf-8;base64,${buf.toString("base64")}
 `);
       } else {
         fs.writeFile(
