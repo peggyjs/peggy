@@ -1,5 +1,6 @@
 
 import commonjs    from "@rollup/plugin-commonjs";
+import ignore      from "rollup-plugin-ignore";
 import json        from "@rollup/plugin-json";
 import multiEntry  from "@rollup/plugin-multi-entry";
 import nodeResolve from "@rollup/plugin-node-resolve";
@@ -37,6 +38,8 @@ const umd_config = {
  */
 const browser_test_config = {
   onwarn(message) {
+    // Avoid this warning: "Use of eval is strongly discouraged, as it poses
+    // security risks and may cause issues with minification"
     if (message.code === "EVAL") { return; }
     console.error(message);
   },
@@ -49,13 +52,11 @@ const browser_test_config = {
     name   : "browser",
     globals: {
       chai: "chai",
-      fs: "ignore_fs",
-      path: "ignore_path",
-      url: "ignore_url",
     },
   },
   external: ["chai"],
   plugins : [
+    ignore(["fs", "os", "path", "tty", "url", "util"]),
     json(),
     nodeResolve(),
     commonjs(),
