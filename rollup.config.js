@@ -1,5 +1,6 @@
 
 import commonjs    from "@rollup/plugin-commonjs";
+import ignore      from "rollup-plugin-ignore";
 import json        from "@rollup/plugin-json";
 import multiEntry  from "@rollup/plugin-multi-entry";
 import nodeResolve from "@rollup/plugin-node-resolve";
@@ -9,7 +10,11 @@ import nodeResolve from "@rollup/plugin-node-resolve";
  */
 const umd_config = {
   onwarn(message) {
-    if (message.code === "EVAL") { return; }
+    // Avoid this warning: "Use of eval is strongly discouraged, as it poses
+    // security risks and may cause issues with minification"
+    if (message.code === "EVAL") {
+      return;
+    }
     console.error(message);
   },
 
@@ -37,7 +42,16 @@ const umd_config = {
  */
 const browser_test_config = {
   onwarn(message) {
-    if (message.code === "EVAL") { return; }
+    // Avoid this warning: "Use of eval is strongly discouraged, as it poses
+    // security risks and may cause issues with minification"
+    if (message.code === "EVAL") {
+      return;
+    }
+
+    // Sinon has a circular dependency.  Ignore it - everything seems to work
+    // in spite of the issue.
+    if ((message.code === "CIRCULAR_DEPENDENCY")
+        && message.importer.includes("node_modules/@sinonjs")) { return; }
     console.error(message);
   },
 
@@ -49,13 +63,11 @@ const browser_test_config = {
     name   : "browser",
     globals: {
       chai: "chai",
-      fs: "ignore_fs",
-      path: "ignore_path",
-      url: "ignore_url",
     },
   },
   external: ["chai"],
   plugins : [
+    ignore(["fs", "os", "path", "tty", "url", "util"]),
     json(),
     nodeResolve(),
     commonjs(),
@@ -68,7 +80,11 @@ const browser_test_config = {
  */
 const browser_benchmark_config = {
   onwarn(message) {
-    if (message.code === "EVAL") { return; }
+    // Avoid this warning: "Use of eval is strongly discouraged, as it poses
+    // security risks and may cause issues with minification"
+    if (message.code === "EVAL") {
+      return;
+    }
     console.error(message);
   },
 
