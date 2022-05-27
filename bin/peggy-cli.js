@@ -1,12 +1,17 @@
-import { Command, CommanderError, InvalidArgumentError, Option } from "commander";
-import { Module } from "module";
-import fs from "fs";
-import path from "path";
-import { default as peggy } from "../lib/peg.js";
-import util from "util";
-import vm from "vm";
+"use strict";
 
-export { CommanderError, InvalidArgumentError };
+const {
+  Command, CommanderError, InvalidArgumentError, Option,
+} = require("commander");
+const { Module } = require("module");
+const fs = require("fs");
+const path = require("path");
+const peggy = require("../lib/peg.js");
+const util = require("util");
+const vm = require("vm");
+
+exports.CommanderError = CommanderError;
+exports.InvalidArgumentError = InvalidArgumentError;
 
 // Options that aren't for the API directly:
 const PROG_OPTIONS = ["input", "output", "sourceMap", "test", "testFile", "verbose"];
@@ -60,7 +65,7 @@ function readFile(name) {
  */
 
 // Command line processing
-export class PeggyCLI extends Command {
+class PeggyCLI extends Command {
   /**
    * Create a CLI environment.
    *
@@ -675,3 +680,5 @@ export class PeggyCLI extends Command {
     return super.exitOverride(fn);
   }
 }
+
+exports.PeggyCLI = PeggyCLI;

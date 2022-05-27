@@ -5,7 +5,6 @@ module.exports = {
   extends: "@peggyjs",
   ignorePatterns: [
     "docs/",
-    "bin/peggy.js", // Generated
     "lib/parser.js", // Generated
     "examples/*.js", // Testing examples
     "test/vendor/",
@@ -22,6 +21,25 @@ module.exports = {
       parserOptions: {
         sourceType: "module",
         ecmaVersion: 2018,
+      },
+      rules: {
+        "comma-dangle": ["error", {
+          arrays: "always-multiline",
+          objects: "always-multiline",
+          imports: "always-multiline",
+          exports: "always-multiline",
+          functions: "never",
+        }],
+      },
+    },
+    {
+      files: ["bin/*.js"],
+      parserOptions: {
+        // Doesn't have to run in a browser, and Node 10 not supported.
+        ecmaVersion: 2020,
+      },
+      env: {
+        node: true,
       },
       rules: {
         "comma-dangle": ["error", {
