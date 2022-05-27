@@ -10,34 +10,66 @@ Released: TBD
 
 ### Major Changes
 
-- Add support for generating source maps.
-  [@Mingun](https://github.com/peggyjs/peggy/pull/163)
-
-- Introduce an API for reporting errors, warnings and information messages from
-  passes. New API allows reporting several diagnostics at once with intermediate
-  results checking after each compilation stage.
-  [@Mingun](https://github.com/peggyjs/peggy/pull/160)
-
-- Remove support for Node.js version 10.  When updating dependencies, too many
-  of the tools we use no longer work on the Node 10, which went out of
-  security maintenance more than a year ago.  Added support for Node.js
-  version 18.
-  [@hildjj](https://github.com/peggyjs/peggy/pull/248)
+- [#163](https://github.com/peggyjs/peggy/pull/163): Add support for
+  generating source maps, from @Mingun
+- [#160](https://github.com/peggyjs/peggy/pull/160): Introduce an API for
+  reporting errors, warnings and information messages from passes. New API
+  allows reporting several diagnostics at once with intermediate results
+  checking after each compilation stage, from @Mingun
+- [#218](https://github.com/peggyjs/peggy/pull/218): Add a `sourceMappingURL`
+  to the generated code, from @hildjj
+- [#248](https://github.com/peggyjs/peggy/pull/248): Remove support for
+  Node.js version 10.  When updating dependencies, too many of the tools we
+  use no longer work on the Node 10, which went out of security maintenance
+  more than a year ago.  Added support for Node.js version 18, from @hildjj
+- [#251](https://github.com/peggyjs/peggy/pull/251): Make `commander` and
+  `source-map-generator` full dependencies.  These are not needed for the
+  pre-packaged web build, but will be used by Node or people that are doing
+  their own packaging for the web, from @hildjj
 
 ### Minor Changes
 
-- New CLI [@hildjj](https://github.com/peggyjs/peggy/pull/167)
+- [#167](https://github.com/peggyjs/peggy/pull/167): New CLI, from @hildjj
   - Backward compatible with the previous
   - New -t/--test and -T/--testfile flags to directly test the generated grammar
-- Check allowedStartRules for validity [@hildjj](https://github.com/peggyjs/peggy/pull/175)
+- [#169](https://github.com/peggyjs/peggy/issues/169): Expose string escape
+  functions, `stringEscape()` and `regexpClassEscape()`, from @hildjj
+- [#175](https://github.com/peggyjs/peggy/pull/175): Check allowedStartRules
+  for validity, from @hildjj
+- [#185](https://github.com/peggyjs/peggy/pull/185): Updated eslint rules,
+  from @hildjj
+- [#196](https://github.com/peggyjs/peggy/pull/196): Add example grammars for
+  XML and source-mapping, from @hildjj
+- [#204](https://github.com/peggyjs/peggy/pull/204): Increase coverage for the
+  tests, from @Mingun
+- [#210](https://github.com/peggyjs/peggy/pull/210): Refactor CLI testing,
+  from @hildjj
 
 ### Bug fixes
 
-- [#164](https://github.com/peggyjs/peggy/pull/164): Fix some errors in the typescript definitions
-- [#169](https://github.com/peggyjs/peggy/issues/169): Expose string escape functions
-- [#197](https://github.com/peggyjs/peggy/pull/197): Fix a regression of redundant commas in the
-  character classes in the error messages, introduced in fad4ab74d1de67ef1902cd22d479c81ccab73224
-- [#216](https://github.com/peggyjs/peggy/issues/216): Fix typescript definition of SyntaxError
+- [#164](https://github.com/peggyjs/peggy/pull/164): Fix some errors in the
+  typescript definitions, from @Mingun
+- [#170](https://github.com/peggyjs/peggy/issues/170): Add
+  missing argument in function call, from @darlanalves
+- [#182](https://github.com/peggyjs/peggy/issues/182): Fix typo in
+  documentation, from @zargold
+- [#197](https://github.com/peggyjs/peggy/pull/197): Fix a regression of
+  redundant commas in the character classes in the error messages, introduced
+  in fad4ab74d1de67ef1902cd22d479c81ccab73224, from @Mingun
+- [#198](https://github.com/peggyjs/peggy/pull/198): Make all build scripts
+  run on Windows, from @hildjj
+- [#199](https://github.com/peggyjs/peggy/pull/199): Test web version locally,
+  using puppeteer, from @hildjj
+- [#211](https://github.com/peggyjs/peggy/pull/211):Command-line -t requires
+  from wrong directory, from @hildjj
+- [#212](https://github.com/peggyjs/peggy/pull/212): Parse errors with zero
+  length give badly-formatted errors, from @hildjj
+- [#214](https://github.com/peggyjs/peggy/pull/214): Failing tests don't
+  format errors
+- [#216](https://github.com/peggyjs/peggy/issues/216): Fix typescript
+  definition of SyntaxError, from @cmfcmf
+- [#220](https://github.com/peggyjs/peggy/issues/220): Fix rollup warnings,
+  from @hildjj
 
 1.2.0
 -----
