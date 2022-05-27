@@ -38,6 +38,9 @@ module.exports = {
         // Doesn't have to run in a browser, and Node 10 not supported.
         ecmaVersion: 2020,
       },
+      env: {
+        node: true,
+      },
       rules: {
         "comma-dangle": ["error", {
           arrays: "always-multiline",
