@@ -12,23 +12,25 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 15.x, 16.x, 18.x]
+        node-version: [12.x, 14.x, 16.x, 18.x]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
       - name: Install dependencies
         run: npm install
       - name: Check coding standards
-        if: matrix.node-version == '16.x' && matrix.os == 'ubuntu-latest'
+        if: matrix.node-version == '18.x' && matrix.os == 'ubuntu-latest'
         run: npm run lint
       - name: Static analysis - check types
+        if: matrix.node-version == '18.x' && matrix.os == 'ubuntu-latest'
         run: npm run ts
       - name: Test
         run: npm run test
