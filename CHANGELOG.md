@@ -6,7 +6,7 @@ This file documents all notable changes to Peggy.
 2.0.0
 -----
 
-Released: TBD
+Released: 2022-05-28
 
 ### Major Changes
 
