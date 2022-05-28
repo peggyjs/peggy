@@ -5,14 +5,14 @@ on:
     branches:
       - '*'
   pull_request:
-    branches: [main]
+    branches: ['*']
 
 jobs:
   build:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x, 16.x]
+        node-version: [12.x, 14.x, 15.x, 16.x, 18.x]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
@@ -26,6 +26,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Check coding standards
+        if: matrix.node-version == '16.x' && matrix.os == 'ubuntu-latest'
         run: npm run lint
       - name: Static analysis - check types
         run: npm run ts

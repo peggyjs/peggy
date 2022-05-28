@@ -162,7 +162,16 @@ describe("compiler pass |generateBytecode|", () => {
           ["a"],
           [],
           [{ type: "literal", value: "a", ignoreCase: false }],
-          [{ predicate: false, params: [], body: " code " }]
+          [{
+            predicate: false,
+            params: [],
+            body: " code ",
+            location: {
+              source: undefined,
+              start: { offset: 13, line: 1, column: 14 },
+              end: { offset: 19, line: 1, column: 20 },
+            },
+          }]
         ));
       });
     });
@@ -186,7 +195,16 @@ describe("compiler pass |generateBytecode|", () => {
           ["a"],
           [],
           [{ type: "literal", value: "a", ignoreCase: false }],
-          [{ predicate: false, params: ["a"], body: " code " }]
+          [{
+            predicate: false,
+            params: ["a"],
+            body: " code ",
+            location: {
+              source: undefined,
+              start: { offset: 15, line: 1, column: 16 },
+              end: { offset: 21, line: 1, column: 22 },
+            },
+          }]
         ));
       });
     });
@@ -226,7 +244,16 @@ describe("compiler pass |generateBytecode|", () => {
             { type: "literal", value: "b", ignoreCase: false },
             { type: "literal", value: "c", ignoreCase: false },
           ],
-          [{ predicate: false, params: ["a", "b", "c"], body: " code " }]
+          [{
+            predicate: false,
+            params: ["a", "b", "c"],
+            body: " code ",
+            location: {
+              source: undefined,
+              start: { offset: 27, line: 1, column: 28 },
+              end: { offset: 33, line: 1, column: 34 },
+            },
+          }]
         ));
       });
     });
@@ -467,7 +494,16 @@ describe("compiler pass |generateBytecode|", () => {
             [],
             [],
             [],
-            [{ predicate: true, params: [], body: " code " }]
+            [{
+              predicate: true,
+              params: [],
+              body: " code ",
+              location: {
+                source: undefined,
+                start: { offset: 10, line: 1, column: 11 },
+                end: { offset: 16, line: 1, column: 17 },
+              },
+            }]
           )
         );
       });
@@ -519,7 +555,16 @@ describe("compiler pass |generateBytecode|", () => {
             { type: "literal", value: "b", ignoreCase: false },
             { type: "literal", value: "c", ignoreCase: false },
           ],
-          [{ predicate: true, params: ["a", "b", "c"], body: " code " }]
+          [{
+            predicate: true,
+            params: ["a", "b", "c"],
+            body: " code ",
+            location: {
+              source: undefined,
+              start: { offset: 28, line: 1, column: 29 },
+              end: { offset: 34, line: 1, column: 35 },
+            },
+          }]
         ));
       });
     });
@@ -548,7 +593,16 @@ describe("compiler pass |generateBytecode|", () => {
             [],
             [],
             [],
-            [{ predicate: true, params: [], body: " code " }]
+            [{
+              predicate: true,
+              params: [],
+              body: " code ",
+              location: {
+                source: undefined,
+                start: { offset: 10, line: 1, column: 11 },
+                end: { offset: 16, line: 1, column: 17 },
+              },
+            }]
           )
         );
       });
@@ -600,7 +654,16 @@ describe("compiler pass |generateBytecode|", () => {
             { type: "literal", value: "b", ignoreCase: false },
             { type: "literal", value: "c", ignoreCase: false },
           ],
-          [{ predicate: true, params: ["a", "b", "c"], body: " code " }]
+          [{
+            predicate: true,
+            params: ["a", "b", "c"],
+            body: " code ",
+            location: {
+              source: undefined,
+              start: { offset: 28, line: 1, column: 29 },
+              end: { offset: 34, line: 1, column: 35 },
+            },
+          }]
         ));
       });
     });

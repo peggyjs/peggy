@@ -5,8 +5,8 @@ module.exports = {
   extends: "@peggyjs",
   ignorePatterns: [
     "docs/",
-    "bin/peggy.js", // Generated
     "lib/parser.js", // Generated
+    "examples/*.js", // Testing examples
     "test/vendor/",
     "test/cli/fixtures/bad.js", // Intentionally-invalid
     "benchmark/vendor/",
@@ -18,7 +18,38 @@ module.exports = {
   overrides: [
     {
       files: ["rollup.config.js", "*.mjs"],
-      parserOptions: { sourceType: "module" },
+      parserOptions: {
+        sourceType: "module",
+        ecmaVersion: 2018,
+      },
+      rules: {
+        "comma-dangle": ["error", {
+          arrays: "always-multiline",
+          objects: "always-multiline",
+          imports: "always-multiline",
+          exports: "always-multiline",
+          functions: "never",
+        }],
+      },
+    },
+    {
+      files: ["bin/*.js"],
+      parserOptions: {
+        // Doesn't have to run in a browser, and Node 10 not supported.
+        ecmaVersion: 2020,
+      },
+      env: {
+        node: true,
+      },
+      rules: {
+        "comma-dangle": ["error", {
+          arrays: "always-multiline",
+          objects: "always-multiline",
+          imports: "always-multiline",
+          exports: "always-multiline",
+          functions: "never",
+        }],
+      },
     },
   ],
 };

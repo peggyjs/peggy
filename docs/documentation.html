@@ -3,14 +3,14 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="copyright" content="Copyright &copy; 2021 The Peggy Authors">
+    <meta name="copyright" content="Copyright &copy; 2022 The Peggy Authors">
     <meta name="keywords" content="parser generator, PEG, JavaScript, PEG.js">
     <meta name="description" content="Peggy is a parser generator for JavaScript based on the parsing expression grammar formalism.">
     <title>Documentation &raquo; Peggy &ndash; Parser Generator for JavaScript</title>
-    <link rel="stylesheet" href="/css/common.css">
-    <link rel="stylesheet" href="/css/layout-default.css">
-    <link rel="stylesheet" href="/css/content.css">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/layout-default.css">
+    <link rel="stylesheet" href="css/content.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <!--[if IE]>
     <script>
         var html5elements = ["aside", "footer", "header", "nav"];
@@ -25,15 +25,15 @@
 <body>
     <div id='main'>
         <header id="header">
-            <h1><a href="/">Peggy</a></h1>
+            <h1><a href="index.html">Peggy</a></h1>
             <h2>Parser Generator for JavaScript</h2>
         </header>
 
         <nav id="menu">
-            <a  href="/">Home</a>
-            <a  href="/online.html">Online Version</a>
-            <a  class="current" href="/documentation.html">Documentation</a>
-            <a  href="/development">Development</a>
+            <a  href="index.html">Home</a>
+            <a  href="online.html">Online Version</a>
+            <a  class="current" href="documentation.html">Documentation</a>
+            <a  href="development/index.html">Development</a>
         </nav>
 
         <div id="content">
@@ -54,7 +54,12 @@
     <a href="#generating-a-parser">Generating a Parser</a>
     <ul>
       <li><a href="#generating-a-parser-command-line">Command Line</a></li>
-      <li><a href="#generating-a-parser-javascript-api">JavaScript API</a></li>
+      <li>
+        <a href="#generating-a-parser-javascript-api">JavaScript API</a>
+        <ul>
+          <li><a href="#error-reporting">Error Reporting</a></li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li><a href="#using-the-parser">Using the Parser</a></li>
@@ -68,7 +73,12 @@
   </li>
   <li><a href="#error-messages">Error Messages</a></li>
   <li><a href="#locations">Locations</a></li>
-  <li><a href="#plugins-api">Plugins API</a></li>
+  <li>
+    <a href="#plugins-api">Plugins API</a>
+    <ul>
+      <li><a href="#session-api">Session API</a></li>
+    </ul>
+  </li>
   <li><a href="#compatibility">Compatibility</a></li>
 </ul>
 
@@ -144,13 +154,17 @@ override this using the <code>--format</code> option.</p>
   <dd>Makes the parser cache results, avoiding exponential parsing time in
   pathological cases but making the parser slower.</dd>
 
-  <dt><code>-d</code>, </code><code>--dependency &lt;[name:]module&gt;</code></dt>
+  <dt><code>-d</code>, <code>--dependency &lt;[name:]module&gt;</code></dt>
   <dd>Makes the parser require a specified dependency (can be specified
   multiple times).  A variable name for the import/require/etc. may be given,
   followed by a colon.  If no name is given, the module name will also be used
   for the variable name.</dd>
 
-  <dt><code>-e</code>, </code><code>--export-var &lt;variable&gt;</code></dt>
+  <dt><code>-D</code>, <code>--dependencies &lt;json&gt;</code></dt>
+  <dd>Dependencies, in JSON object format with variable:module pairs. (Can be
+  specified multiple times).</dd>
+
+  <dt><code>-e</code>, <code>--export-var &lt;variable&gt;</code></dt>
   <dd>Name of a global variable into which the parser object is assigned to when
   no module loader is detected.</dd>
 
@@ -158,7 +172,7 @@ override this using the <code>--format</code> option.</p>
   <dd>Additional options (in JSON format, as an object) to pass to
   <code>peg.generate</code>.</dd>
 
-  <dt><code>--extra-options-file &lt;file&gt;</code></dt>
+  <dt><code>-c</code>, <code>--extra-options-file &lt;file&gt;</code></dt>
   <dd>File with additional options (in JSON format, as an object) to pass to
   <code>peg.generate</code>.</dd>
 
@@ -166,7 +180,7 @@ override this using the <code>--format</code> option.</p>
   <dd>Format of the generated parser: <code>amd</code>, <code>commonjs</code>,
   <code>globals</code>, <code>umd</code>, <code>es</code> (default: <code>commonjs</code>).</dd>
 
-  <dt><code>-o</code>, <code>--output &lt;file&gt;</file></code></dt>
+  <dt><code>-o</code>, <code>--output &lt;file&gt;</code></dt>
   <dd>File to send output to.  Defaults to input file name with
     extension changed to <code>.js</code>, or stdout if no input file is given.</dd>
 
@@ -174,13 +188,26 @@ override this using the <code>--format</code> option.</p>
   <dd>Makes Peggy use a specified plugin (can be specified multiple
   times).</dd>
 
+  <dt><code>-m</code>, <code>--source-map &lt;file&gt;</code></dt>
+  <dd>Generate a source map. If name is not specified, the source map will be
+  named "&lt;input_file&gt;.map" if input is a file and "source.map" if input
+  is a standard input. If the special filename <code>inline</code> is given,
+  the sourcemap will be embedded in the output file as a data URI.  If the
+  filename is prefixed with <code>hidden:</code>, no mapping URL will be
+  included so that the mapping can be specified with an HTTP SourceMap:
+  header. This option conflicts with the <code>-t/--test</code> and
+  <code>-T/--test-file</code> options unless <code>-o/--output</code> is also
+  specified</dd>
+
   <dt><code>-t</code>, <code>--test &lt;text&gt;</code></dt>
   <dd>Test the parser with the given text, outputting the result of running
-  the parser against this input</dd>
+  the parser against this input.
+  If the input to be tested is not parsed, the CLI will exit with code 2</dd>
 
   <dt><code>-T</code>, <code>--test-file &lt;text&gt;</code></dt>
   <dd>Test the parser with the contents of the given file, outputting the
-  result of running the parser against this input</dd>
+  result of running the parser against this input.
+  If the input to be tested is not parsed, the CLI will exit with code 2</dd>
 
   <dt><code>--trace</code></dt>
   <dd>Makes the parser trace its progress.</dd>
@@ -194,11 +221,12 @@ override this using the <code>--format</code> option.</p>
 </dl>
 
 <p>
-If you specify options using `-c <file>` or `--extra-options-file <file>`, you
-will need to ensure you are using the correct types.  In particular, you may
-specify "plugin" as a string, or "plugins" as an array of objects that have a
-`use` method.  Always use the long (two-dash) form of the option.  Options
-that contain dashes should be specified in camel case. You may also specify an
+If you specify options using <code>-c &lt;file&gt;</code> or
+<code>--extra-options-file &lt;file&gt;</code>, you will need to ensure you
+are using the correct types.  In particular, you may specify "plugin" as a
+string, or "plugins" as an array of objects that have a <code>use</code>
+method.  Always use the long (two-dash) form of the option.  Options that
+contain dashes should be specified in camel case. You may also specify an
 "input" field instead of using the command line.  For example:
 </p>
 
@@ -212,6 +240,54 @@ module.exports = {
   testFile: "myTestInput.foo",
   trace: true
 };
+</code></pre>
+
+<p>
+You can test generated parser immediately if you specify the <code>-t/--test</code> or <code>-T/--test-file</code>
+option. This option conflicts with the option <code>-m/--source-map</code> unless <code>-o/--output</code> is
+also specified.
+</p>
+
+<p>The CLI will exit with the code:</p>
+
+<ul>
+  <li><code>0</code> if all was success</li>
+  <li><code>1</code> if you supply incorrect or conflicting parameters</li>
+  <li><code>2</code> if all parameters is correct, you specify the <code>-t/--test</code> or <code>-T/--test-file</code> option
+  and specified input does not parsed with the specified grammar</li>
+</ul>
+
+<p>Examples:</p>
+
+<pre><code class="language-console"># - write test results to stdout (42)
+# - exit with the code 0
+echo "foo = '1' { return 42 }" | peggy --test 1
+
+# - write a parser error to stdout (Expected "1" but "2" found)
+# - exit with the code 2
+echo "foo = '1' { return 42 }" | peggy --test 2
+
+# - write an error to stdout (Generation of the source map is useless if you don't
+#   store a generated parser code, perhaps you forgot to add an `-o/--output` option?)
+# - exit with the code 1
+echo "foo = '1' { return 42 }" | peggy --source-map --test 1
+
+# - write an error to stdout (Generation of the source map is useless if you don't
+#   store a generated parser code, perhaps you forgot to add an `-o/--output` option?)
+# - exit with the code 1
+echo "foo = '1' { return 42 }" | peggy --source-map --test 2
+
+# - write an output to `parser.js`,
+# - write a source map to `parser.js.map`
+# - write test results to stdout (42)
+# - exit with the code 0
+echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 1
+
+# - write an output to `parser.js`,
+# - write a source map to `parser.js.map`
+# - write a parser error to stdout (Expected "1" but "2" found)
+# - exit with the code 2
+echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 </code></pre>
 
 <h3 id="generating-a-parser-javascript-api">JavaScript API</h3>
@@ -264,6 +340,9 @@ supported:</p>
   dependencies from within the <em>global initializer</em> (default:
   <code>{}</code>).</dd>
 
+  <dt><code>error</code></dt>
+  <dd>Callback for errors. See <a href="#error-reporting">Error Reporting</a></dd>
+
   <dt><code>exportVar</code></dt>
   <dd>Name of a global variable into which the parser object is assigned to when
   no module loader is detected; valid only when <code>format</code> is set to
@@ -283,17 +362,55 @@ supported:</p>
   <code>source</code> in the location objects, that returned by the
   <code>location()</code> API function (default: <code>undefined</code>).</dd>
 
+  <dt><code>info</code></dt>
+  <dd>Callback for informational messages. See <a href="#error-reporting">Error Reporting</a></dd>
+
   <dt><code>output</code></dt>
-  <dd>If set to <code>"parser"</code>, the method will return generated parser
+  <dd><p>If set to <code>"parser"</code>, the method will return generated parser
   object; if set to <code>"source"</code>, it will return parser source code as
-  a string (default: <code>"parser"</code>).</dd>
+  a string (default: <code>"parser"</code>).
+  If set to <code>"source-and-map"</code>, it will return a <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a> object; you can
+  get source code by calling <code>toString()</code> method or source code and mapping by
+  calling <code>toStringWithSourceMap()</code> method, see the <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a> documentation
+  (default: <code>"parser"</code>)</p>
+  <blockquote>
+  <p><strong>Note</strong>: because of bug <a href="https://github.com/mozilla/source-map/issues/444">source-map/444</a> you should also set <code>grammarSource</code> to
+  a not-empty string if you set this value to <code>"source-and-map"</code></p>
+  </blockquote></dd>
 
   <dt><code>plugins</code></dt>
   <dd>Plugins to use. See the <a href="#plugins-api">Plugins API</a> section.</dd>
 
   <dt><code>trace</code></dt>
   <dd>Makes the parser trace its progress (default: <code>false</code>).</dd>
+
+  <dt><code>warning</code></dt>
+  <dd>Callback for warnings. See <a href="#error-reporting">Error Reporting</a></dd>
 </dl>
+
+<h4 id="error-reporting">Error Reporting</h4>
+
+<p>While generating the parser, the compiler may throw a <code>GrammarError</code> which collects
+all of the issues that were seen.</p>
+
+<p>There is also another way to collect problems as fast as they are reported —
+register one or more of these callbacks:</p>
+
+<ul>
+  <li><code>error(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
+  <li><code>warning(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
+  <li><code>info(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
+</ul>
+
+<p>All parameters are the same as the parameters of the <a href="#session-api">reporting API</a> except the first.
+The <code>stage</code> represent one of possible stages during which execution a diagnostic was generated.
+This is a string enumeration, that currently has one of three values:</p>
+
+<ul>
+  <li><code>check</code></li>
+  <li><code>transform</code></li>
+  <li><code>generate</code></li>
+</ul>
 
 <h2 id="using-the-parser">Using the Parser</h2>
 
@@ -807,6 +924,10 @@ note: Step 3: call itself without input consumption - left recursion
 3 | end = !start
   |        ^^^^^</code></pre>
 
+<p>A plugin may register additional passes that can generate <code>GrammarError</code>s to report about
+problems, but they shouldn't do that by throwing an instance of <code>GrammarError</code>. They should
+use a <a href="#session-api">session API</a> instead.</p>
+
 <h2 id="locations">Locations</h2>
 
 <p>During the parsing you can access to the information of the current parse location,
@@ -907,14 +1028,16 @@ method.</p>
       <li><code>generate</code> — passes used for actual code generating</li>
     </ul>
 
-    <p>A plugin that implement a pass usually should push it to the end of one of that
-    arrays. Pass is a simple function with signature <code>pass(ast, options)</code>:</p>
+    <p>A plugin that implement a pass usually should push it to the end of the correct
+    array. Pass is a simple function with signature <code>pass(ast, options, session)</code>:</p>
 
     <ul>
       <li><code>ast</code> — the AST created by the <code>config.parser.parse()</code> method</li>
       <li><code>options</code> — compilation options passed to the <code>peggy.compiler.compile()</code> method.
       If parser generation is started because <code>generate()</code> function was called that
       is also an options, passed to the <code>generate()</code> method</li>
+      <li><code>session</code> — a <a href="#session-api"><code>Session</code></a> object that allows raising errors,
+      warnings and informational messages</li>
     </ul>
   </dd>
 
@@ -933,13 +1056,67 @@ method.</p>
 <dd>Build options passed to the <code>generate()</code> method. A best practice for
 a plugin would look for its own options under a <code>&lt;plugin_name&gt;</code> key.</dd>
 
+
+<h3 id="session-api">Session API</h3>
+
+<p>Each compilation request is represented by a <code>Session</code> instance. An object of this class
+is created by the compiler and passed to an each pass as a 3rd parameter. The session
+object gives access to the various compiler services. At the present time there is only
+one such service: reporting of diagnostics.</p>
+
+<p>All diagnostics are divided into three groups: errors, warnings and informational
+messages. For each of them the <code>Session</code> object has a method, described below.</p>
+
+<p>All reporting methods have an identical signature:</p>
+
+<pre><code class="language-typescript">(message: string, location?: LocationRange, notes?: DiagnosticNote[]) =&gt; void;
+</code></pre>
+
+<ul>
+  <li><code>message</code>: a main diagnostic message</li>
+  <li><code>location</code>: an optional location information if diagnostic is related to the grammar
+  source code</li>
+  <li><code>notes</code>: an array with additional details about diagnostic, pointing to the
+  different places in the grammar. For example, each note could be a location of
+  a duplicated rule definition</li>
+</ul>
+
+<dl>
+  <dt><code>error(...)</code></dt>
+  <dd>
+    <p>Reports an error. Compilation process is subdivided into pieces called <em>stages</em> and
+    each stage consist of one or more <em>passes</em>. Within the one stage all errors, reported
+    by different passes, are collected without interrupting the parsing process.</p>
+
+    <p>When all passes in the stage are completed, the stage is checked for errors. If one
+    was registered, a <code>GrammarError</code> with all found problems in the <code>problems</code> property
+    is thrown. If there are no errors, then the next stage is processed.</p>
+
+    <p>After processing all three stages (<code>check</code>, <code>transform</code> and <code>generate</code>) the compilation
+    process is finished.</p>
+
+    <p>The process, described above, means that passes should be careful about what they do.
+    For example, if you place your pass into the <code>check</code> stage there is no guarantee that
+    all rules exists, because checking for existing rules is also performed during the
+    <code>check</code> stage. On the contrary, passes in the <code>transform</code> and <code>generate</code> stages can be
+    sure that all rules exists, because that precondition was checked on the <code>check</code> stage.</p>
+  </dd>
+
+  <dt><code>warning(...)</code></dt>
+  <dd>Reports a warning. Warnings are similar to errors, but they do not interrupt a compilation.</dd>
+
+  <dt><code>info(...)</code></dt>
+  <dd>Report an informational message. This method can be used to inform user about
+  significant changes in the grammar, for example, replacing proxy rules.</dd>
+</dl>
+
 <h2 id="compatibility">Compatibility</h2>
 
 <p>Both the parser generator and generated parsers should run well in the
 following environments:</p>
 
 <ul>
-  <li>Node.js 10+</li>
+  <li>Node.js 12+</li>
   <li>Internet Explorer 9+</li>
   <li>Edge</li>
   <li>Firefox</li>
@@ -952,7 +1129,7 @@ following environments:</p>
         </div>
 
         <footer id="footer">
-            Copyright &copy; 2021 <a href="https://github.com/peggyjs/peggy/blob/main/AUTHORS">The Peggy Authors</a>
+            Copyright &copy; 2022 <a href="https://github.com/peggyjs/peggy/blob/main/AUTHORS">The Peggy Authors</a>
             &bull;
             <a href="https://github.com/peggyjs/peggy">Source code</a>
         </footer>

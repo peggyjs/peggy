@@ -1754,31 +1754,58 @@ describe("generated parser behavior", () => {
   });
   describe("syntax errors", () => {
     it("formats", () => {
-      expect(() => {
-        const source = { source: "stdin",  text: "===" };
-        try {
-          peg.generate(source.text, { grammarSource: source.source });
-        } catch (er) {
-          expect(er.format([source])).to.equal(`\
+      const source = { source: "stdin",  text: "===" };
+      try {
+        peg.generate(source.text, { grammarSource: source.source });
+      } catch (er) {
+        expect(er).to.be.an.instanceof(peg.parser.SyntaxError);
+        expect(er.format([source])).to.equal(`\
 Error: Expected "{", code block, comment, end of line, identifier, or whitespace but "=" found.
  --> stdin:1:1
   |
 1 | ===
   | ^`);
-          throw er;
-        }
-      }).to.throw(peg.parser.SyntaxError);
+      }
 
-      expect(() => {
-        try {
-          peg.generate("===", { grammarSource: "stdin" });
-        } catch (er) {
-          expect(er.format([])).to.equal(`\
+      try {
+        peg.generate("===", { grammarSource: "stdin" });
+      } catch (er) {
+        expect(er).to.be.an.instanceof(peg.parser.SyntaxError);
+        expect(er.format([])).to.equal(`\
 Error: Expected "{", code block, comment, end of line, identifier, or whitespace but "=" found.
  at stdin:1:1`);
-          throw er;
-        }
-      }).to.throw(peg.parser.SyntaxError);
+      }
+    });
+
+    it("reports multiple errors in each compilation stage", () => {
+      try {
+        peg.generate(`
+          start = leftRecursion
+          leftRecursion = duplicatedLabel:duplicatedRule duplicatedLabel:missingRule
+          duplicatedRule = missingRule
+          duplicatedRule = start
+        `);
+      } catch (e) {
+        expect(e).with.property("stage", "check");
+        expect(e).with.property("problems").to.be.an("array");
+
+        // Check that each problem is an array with at least two members and the first is a severity
+        e.problems.forEach(problem => {
+          expect(problem).to.be.an("array").lengthOf.gte(2);
+          expect(problem[0]).to.be.oneOf(["error", "warning", "info"]);
+        });
+
+        // Get second elements of errors (error messages)
+        const messages = e.problems.filter(p => p[0] === "error").map(p => p[1]);
+
+        // Check that all messages present in the list
+        expect(messages).to.include.members([
+          "Rule \"missingRule\" is not defined",
+          "Rule \"duplicatedRule\" is already defined",
+          "Label \"duplicatedLabel\" is already defined",
+          "Possible infinite loop when parsing (left recursion: duplicatedRule -> start -> leftRecursion -> duplicatedRule)",
+        ]);
+      }
     });
   });
 });
