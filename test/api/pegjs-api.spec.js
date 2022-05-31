@@ -6,6 +6,10 @@ const pkg = require("../../package.json");
 const { SourceMapConsumer } = require("source-map");
 const { spy } = require("../utils.js");
 
+exports.peggyVersion = function peggyVersion() {
+  return peg.VERSION;
+};
+
 beforeEach(() => {
   // In the browser, initialize SourceMapConsumer's wasm bits.
   // This is *async*, so make sure to return the promise to make
