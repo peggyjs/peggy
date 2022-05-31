@@ -3,6 +3,17 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
+Unreleased
+----------
+
+Released: TBD
+
+### Major Changes
+
+### Minor Changes
+
+### Bug Fixes
+
 2.0.0
 -----
 
