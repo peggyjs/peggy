@@ -10,9 +10,24 @@ Released: TBD
 
 ### Major Changes
 
+- None
+
 ### Minor Changes
 
+- [#261](https://github.com/peggyjs/peggy/pull/261): Remove documentation from
+  README.md, instead linking to the HTML documentation.  HTML documentation on
+  peggyjs.org is now served from the `docs` branch, so that it won't update as
+  we chaing the `main` branch.  `main` must be merged onto `docs` as a part of
+  the releaase process going forward.
+- [#266](https://github.com/peggyjs/peggy/issues/266): Expose the private
+  field `problems` in the `Session` class, from @hildjj.
+
 ### Bug Fixes
+
+- [#263](https://github.com/peggyjs/peggy/issues/263): Broken link to unpkg.
+  This bug was a symptom of a relatively bad issue in the 2.0.0 release, where
+  the web version of peggy was put in the wrong place, and therefore not
+  tested in the release process.  From @hildjj.
 
 2.0.0
 -----
