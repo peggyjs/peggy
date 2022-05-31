@@ -68,7 +68,6 @@
     "rimraf": "^3.0.2",
     "rollup": "^2.74.1",
     "rollup-plugin-ignore": "1.0.10",
-    "sinon": "^14.0.0",
     "source-map": "^0.8.0-beta.0",
     "terser": "^5.13.1",
     "ts-jest": "^28.0.3",

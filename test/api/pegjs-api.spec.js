@@ -2,9 +2,9 @@
 
 const chai = require("chai");
 const peg = require("../../lib/peg");
-const sinon = require("sinon");
 const pkg = require("../../package.json");
 const { SourceMapConsumer } = require("source-map");
+const { spy } = require("../utils.js");
 
 beforeEach(() => {
   // In the browser, initialize SourceMapConsumer's wasm bits.
@@ -109,7 +109,7 @@ describe("Peggy API", () => {
       describe("when |trace| is not set", () => {
         it("generated parser doesn't trace", () => {
           const parser = peg.generate(grammar);
-          const tracer = { trace: sinon.spy() };
+          const tracer = { trace: spy() };
 
           parser.parse("a", { tracer });
 
@@ -120,7 +120,7 @@ describe("Peggy API", () => {
       describe("when |trace| is set to |false|", () => {
         it("generated parser doesn't trace", () => {
           const parser = peg.generate(grammar, { trace: false });
-          const tracer = { trace: sinon.spy() };
+          const tracer = { trace: spy() };
 
           parser.parse("a", { tracer });
 
@@ -131,7 +131,7 @@ describe("Peggy API", () => {
       describe("when |trace| is set to |true|", () => {
         it("generated parser traces", () => {
           const parser = peg.generate(grammar, { trace: true });
-          const tracer = { trace: sinon.spy() };
+          const tracer = { trace: spy() };
 
           parser.parse("a", { tracer });
 

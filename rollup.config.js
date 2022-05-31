@@ -47,11 +47,6 @@ const browser_test_config = {
     if (message.code === "EVAL") {
       return;
     }
-
-    // Sinon has a circular dependency.  Ignore it - everything seems to work
-    // in spite of the issue.
-    if ((message.code === "CIRCULAR_DEPENDENCY")
-        && message.importer.includes("node_modules/@sinonjs")) { return; }
     console.error(message);
   },
 
