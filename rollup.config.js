@@ -28,7 +28,7 @@ const umd_config = {
 
   plugins : [
     nodeResolve({
-      mainFields     : ["module", "main"],
+      mainFields     : ["browser", "module", "main"],
       browser        : true,
       extensions     : [".js", ".json", ".ts", ".tsx"],
       preferBuiltins : false,
@@ -57,14 +57,20 @@ const browser_test_config = {
     format : "umd",
     name   : "browser",
     globals: {
-      chai: "chai",
+      "chai": "chai",
+      "whatwg-url": "whatwgURL",
     },
   },
-  external: ["chai"],
+  external: ["chai", "whatwg-url"],
   plugins : [
     ignore(["fs", "os", "path", "tty", "url", "util"]),
     json(),
-    nodeResolve(),
+    nodeResolve({
+      mainFields     : ["browser", "module", "main"],
+      browser        : true,
+      extensions     : [".js", ".json", ".ts", ".tsx"],
+      preferBuiltins : false,
+    }),
     commonjs(),
     multiEntry(),
   ],
@@ -91,7 +97,12 @@ const browser_benchmark_config = {
     name   : "browser",
   },
   plugins : [
-    nodeResolve(),
+    nodeResolve({
+      mainFields     : ["browser", "module", "main"],
+      browser        : true,
+      extensions     : [".js", ".json", ".ts", ".tsx"],
+      preferBuiltins : false,
+    }),
     commonjs(),
   ],
 };
