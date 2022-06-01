@@ -173,14 +173,14 @@ class PeggyCLI extends Command {
         "-m, --source-map [mapfile]",
         "Generate a source map. If name is not specified, the source map will be named \"<input_file>.map\" if input is a file and \"source.map\" if input is a standard input. If the special filename `inline` is given, the sourcemap will be embedded in the output file as a data URI.  If the filename is prefixed with `hidden:`, no mapping URL will be included so that the mapping can be specified with an HTTP SourceMap: header.  This option conflicts with the `-t/--test` and `-T/--test-file` options unless `-o/--output` is also specified"
       )
-      .option(
+      .addOption(new Option(
         "-t, --test <text>",
         "Test the parser with the given text, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
-      )
-      .option(
+      ).conflicts("test-file"))
+      .addOption(new Option(
         "-T, --test-file <filename>",
         "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
-      )
+      ).conflicts("test"))
       .option("--trace", "Enable tracing in generated parser", false)
       .addOption(
         // Not interesting yet.  If it becomes so, unhide the help.
@@ -306,9 +306,6 @@ class PeggyCLI extends Command {
 
         // Empty string is a valid test input.  Don't just test for falsy.
         if (typeof this.progOptions.test === "string") {
-          if (this.progOptions.testFile) {
-            this.error("The -t/--test and -T/--test-file options are mutually exclusive.");
-          }
           this.testText = this.progOptions.test;
           this.testGrammarSource = "command line";
         }
@@ -359,8 +356,11 @@ class PeggyCLI extends Command {
           : `${message}\n${opts.error.message}`;
       }
     }
+    if (!/^error/i.test(message)) {
+      message = `Error ${message}`;
+    }
 
-    super.error(`Error ${message}`, opts);
+    super.error(message, opts);
   }
 
   print(stream, ...args) {

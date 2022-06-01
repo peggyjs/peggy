@@ -948,9 +948,9 @@ Options:
 
     await exec({
       args: ["-t", "boo", "-T", "foo"],
-      errorCode: "peggy.invalidArgument",
+      errorCode: "commander.conflictingOption",
       exitCode: 1,
-      error: "The -t/--test and -T/--test-file options are mutually exclusive.",
+      error: "error: option '-T, --test-file <filename>' cannot be used with option '-t, --test <text>'",
     });
 
     await exec({
