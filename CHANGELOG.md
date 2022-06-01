@@ -3,10 +3,10 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
+2.0.1
 ----------
 
-Released: TBD
+Released: 2022-01-01
 
 ### Major Changes
 
@@ -16,9 +16,9 @@ Released: TBD
 
 - [#261](https://github.com/peggyjs/peggy/pull/261): Remove documentation from
   README.md, instead linking to the HTML documentation.  HTML documentation on
-  <https://peggyjs.org> is now served from the `docs` branch, so that it won't update as
-  we change the `main` branch.  `main` must be merged onto `docs` as a part of
-  the release process going forward.
+  <https://peggyjs.org> is now served from the `docs` branch, so that it won't
+  update as we change the `main` branch.  `main` must be merged onto `docs` as
+  a part of the release process going forward.
 - [#266](https://github.com/peggyjs/peggy/issues/266): Expose the private
   field `problems` in the `Session` class, from @hildjj.
 
