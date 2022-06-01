@@ -2,6 +2,7 @@
 
 const puppeteer = require("puppeteer");
 const path = require("path");
+const version = require("../package.json").version;
 
 const TOP = `file://${path.resolve(
   __dirname, "..", "docs", "development", "test.html",
@@ -22,7 +23,18 @@ async function main() {
   page
     .on("console", message => {
       const txt = message.text();
-      switch (txt) {
+      const m = txt.match(/([A-Z]+): \d+ failures.  Peggy Version: (.*)/);
+      if (!m) {
+        console.error("Bad console message:", txt);
+        done.reject();
+        return;
+      }
+      if (m[2] !== version) {
+        console.error(`Bad version: "${m[2]}" expected "${version}"`);
+        done.reject();
+        return;
+      }
+      switch (m[1]) {
         case "PASS":
           console.log("Tests: PASS");
           done.resolve();
@@ -36,6 +48,8 @@ async function main() {
             .type()
             .toUpperCase();
           console.error(`${type}: ${txt}`);
+          done.reject();
+          break;
         }
       }
     })

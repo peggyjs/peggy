@@ -942,6 +942,10 @@ export interface Plugin {
  */
 export interface Session {
   /**
+   * The issues that have been registered during the compilation.
+   */
+  problems: Problem[];
+  /**
    * Reports an error. Pass shouldn't assume that after reporting error it
    * will be interrupted by throwing exception or in the other way. Therefore,
    * if after reporting error further execution of the pass is impossible, it

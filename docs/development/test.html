@@ -24,11 +24,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.4/chai.min.js"></script>
+    <script src="https://jsdom.github.io/whatwg-url/whatwg-url.js"></script>
 
 <script>
   mocha.setup('bdd');
 </script>
 <script src='../js/test-bundle.min.js'></script>
+<style>
+.hidden {
+  display: none;
+}
+</style>
 </head>
 
 <body>
@@ -45,7 +51,7 @@
             <a  href="index.html">Development</a>
         </nav>
 
-        <div id='results'>PASS</div>
+        <div id='results' class="hidden"></div>
         <div id="content">
           <div id="mocha"></div>
         </div>
@@ -58,6 +64,13 @@
     </div>
 </body>
 <script class="mocha-exec">
-  mocha.run(failures => console.log(failures === 0 ? 'PASS' : 'FAIL'));
+  mocha.run(failures => {
+    const result = failures === 0 ? 'PASS' : 'FAIL';
+    const status = result + ': ' + failures + ' failures.  Peggy Version: ' + browser.peggyVersion()
+    console.log(status);
+    const div = document.getElementById('results');
+    div.innerHTML = status;
+    div.classList.remove('hidden');
+  });
 </script>
 </html>

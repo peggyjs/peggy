@@ -2,8 +2,7 @@
 
 const chai = require("chai");
 const peg = require("../../lib/peg");
-const sinon = require("sinon");
-
+const { spy, stub } = require("../utils.js");
 const expect = chai.expect;
 
 describe("generated parser API", () => {
@@ -73,7 +72,7 @@ describe("generated parser API", () => {
           ];
 
           if (typeof console === "object") {
-            sinon.stub(console, "log");
+            stub(console, "log");
           }
 
           try {
@@ -156,7 +155,7 @@ describe("generated parser API", () => {
               },
             ];
 
-            const tracer = { trace: sinon.spy() };
+            const tracer = { trace: spy() };
 
             parser.parse("b", { tracer });
 

@@ -2,9 +2,8 @@
 
 const chai = require("chai");
 const peg = require("../../lib/peg");
-const sinon = require("sinon");
-
 const expect = chai.expect;
+const { stub } = require("../utils.js");
 
 describe("generated parser behavior", () => {
   function varyOptimizationOptions(block) {
@@ -39,7 +38,7 @@ describe("generated parser behavior", () => {
 
   function withConsoleStub(block) {
     if (typeof console === "object") {
-      sinon.stub(console, "log");
+      stub(console, "log");
     }
 
     try {
