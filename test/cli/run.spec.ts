@@ -334,6 +334,9 @@ Options:
                                    This option conflicts with the \`-t/--test\`
                                    and \`-T/--test-file\` options unless
                                    \`-o/--output\` is also specified
+  -S, --start-rule <rule>          When testing, use the given rule as the
+                                   start rule.  If this rule is not in the
+                                   allowed start rules, it will be added.
   -t, --test <text>                Test the parser with the given text,
                                    outputting the result of running the parser
                                    instead of the parser itself. If the input
@@ -929,6 +932,16 @@ Options:
       args: ["-t", "boo"],
       stdin: "foo = 'boo'",
       expected: "'boo'\n",
+    });
+
+    // Start rule
+    await exec({
+      args: ["-t", "2", "-S", "bar"],
+      stdin: `\
+foo='1' { throw new Error('bar') }
+bar = '2'
+`,
+      expected: "'2'\n",
     });
 
     const grammarFile = path.join(__dirname, "..", "..", "examples", "json.pegjs");
