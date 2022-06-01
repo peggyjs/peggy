@@ -3,8 +3,25 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-2.0.1
+Unreleased
 ----------
+
+Released: TBD
+
+### Major Changes
+
+- None
+
+### Minor Changes
+
+- None
+
+### Bug Fixes
+
+- None
+
+2.0.1
+-----
 
 Released: 2022-01-01
 
