@@ -199,6 +199,10 @@ override this using the <code>--format</code> option.</p>
   <code>-T/--test-file</code> options unless <code>-o/--output</code> is also
   specified</dd>
 
+  <dt><code>-S</code>, <code>--start-rule &lt;rule&gt;</code></dt>
+  <dd>When testing, use this rule as the start rule.  Automatically added to
+  the allowedStartRules.</dd>
+
   <dt><code>-t</code>, <code>--test &lt;text&gt;</code></dt>
   <dd>Test the parser with the given text, outputting the result of running
   the parser against this input.
@@ -321,8 +325,9 @@ supported:</p>
 
 <dl>
   <dt><code>allowedStartRules</code></dt>
-  <dd>Rules the parser will be allowed to start parsing from (default: the first
-  rule in the grammar).</dd>
+  <dd>Rules the parser will be allowed to start parsing from (default: the
+  first rule in the grammar).  If any of the rules specified is "*", any of
+  the rules in the grammar can be used as start rules.</dd>
 
   <dt><code>cache</code></dt>
   <dd>If <code>true</code>, makes the parser cache results, avoiding exponential

@@ -14,7 +14,12 @@ Released: TBD
 
 ### Minor Changes
 
-- None
+- [TBD] Use commander's new `.conflicts()` to check for mutually-exclusive CLI
+  options, from @hildjj
+- [TBD] `"*"` is now a valid `allowedStartRule`, which means all rules are allowed, from @hildjj
+- [#229](https://github.com/peggyjs/peggy/issues/229) new CLI option
+  `-S <rule>` or `--start-rule <rule>` to specify the start rule when testing,
+  from @hildjj
 
 ### Bug Fixes
 

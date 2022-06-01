@@ -14,7 +14,7 @@ exports.CommanderError = CommanderError;
 exports.InvalidArgumentError = InvalidArgumentError;
 
 // Options that aren't for the API directly:
-const PROG_OPTIONS = ["input", "output", "sourceMap", "test", "testFile", "verbose"];
+const PROG_OPTIONS = ["input", "output", "sourceMap", "startRule", "test", "testFile", "verbose"];
 const MODULE_FORMATS = ["amd", "bare", "commonjs", "es", "globals", "umd"];
 const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
 const MODULE_FORMATS_WITH_GLOBAL = ["globals", "umd"];
@@ -174,13 +174,17 @@ class PeggyCLI extends Command {
         "Generate a source map. If name is not specified, the source map will be named \"<input_file>.map\" if input is a file and \"source.map\" if input is a standard input. If the special filename `inline` is given, the sourcemap will be embedded in the output file as a data URI.  If the filename is prefixed with `hidden:`, no mapping URL will be included so that the mapping can be specified with an HTTP SourceMap: header.  This option conflicts with the `-t/--test` and `-T/--test-file` options unless `-o/--output` is also specified"
       )
       .option(
+        "-S, --start-rule <rule>",
+        "When testing, use the given rule as the start rule.  If this rule is not in the allowed start rules, it will be added."
+      )
+      .addOption(new Option(
         "-t, --test <text>",
         "Test the parser with the given text, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
-      )
-      .option(
+      ).conflicts("test-file"))
+      .addOption(new Option(
         "-T, --test-file <filename>",
         "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
-      )
+      ).conflicts("test"))
       .option("--trace", "Enable tracing in generated parser", false)
       .addOption(
         // Not interesting yet.  If it becomes so, unhide the help.
@@ -201,6 +205,11 @@ class PeggyCLI extends Command {
       .action((inputFile, opts) => { // On parse()
         this.inputFile = inputFile;
         this.argv = opts;
+
+        if ((typeof this.argv.startRule === "string")
+          && !this.argv.allowedStartRules.includes(this.argv.startRule)) {
+          this.argv.allowedStartRules.push(this.argv.startRule);
+        }
 
         if (this.argv.allowedStartRules.length === 0) {
           // [] is an invalid input, as is null
@@ -306,9 +315,6 @@ class PeggyCLI extends Command {
 
         // Empty string is a valid test input.  Don't just test for falsy.
         if (typeof this.progOptions.test === "string") {
-          if (this.progOptions.testFile) {
-            this.error("The -t/--test and -T/--test-file options are mutually exclusive.");
-          }
           this.testText = this.progOptions.test;
           this.testGrammarSource = "command line";
         }
@@ -359,8 +365,11 @@ class PeggyCLI extends Command {
           : `${message}\n${opts.error.message}`;
       }
     }
+    if (!/^error/i.test(message)) {
+      message = `Error ${message}`;
+    }
 
-    super.error(`Error ${message}`, opts);
+    super.error(message, opts);
   }
 
   print(stream, ...args) {
@@ -579,9 +588,13 @@ class PeggyCLI extends Command {
         setTimeout,
       });
 
-      const results = exec.parse(this.testText, {
+      const opts = {
         grammarSource: this.testGrammarSource,
-      });
+      };
+      if (typeof this.progOptions.startRule === "string") {
+        opts.startRule = this.progOptions.startRule;
+      }
+      const results = exec.parse(this.testText, opts);
       this.print(this.std.out, util.inspect(results, {
         depth: Infinity,
         colors: this.colors,

@@ -151,5 +151,19 @@ describe("plugin API", () => {
       expect(parser.parse("x", { startRule: "b" })).to.equal("x");
       expect(parser.parse("x", { startRule: "c" })).to.equal("x");
     });
+
+    it("can use star for start rules", () => {
+      const grammar = [
+        "a = 'x'",
+        "b = 'x'",
+        "c = 'x'",
+      ].join("\n");
+      const parser = peg.generate(grammar, {
+        allowedStartRules: ["*"],
+      });
+      expect(parser.parse("x", { startRule: "a" })).to.equal("x");
+      expect(parser.parse("x", { startRule: "b" })).to.equal("x");
+      expect(parser.parse("x", { startRule: "c" })).to.equal("x");
+    });
   });
 });
