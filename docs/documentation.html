@@ -19,7 +19,25 @@
         }
     </script>
     <![endif]-->
-
+    <script src="js/examples.js?2022-06-03T00:53:11Z"></script>
+    <style>
+.example {
+  background-color: #f0f0f0;
+  display: flex;
+  flex-direction: row;
+  padding: 0.25em .5em;
+  margin: .5em;
+  border-radius: .5em;
+}
+.example .result {
+  font-family: monospace;
+  white-space: pre-wrap;
+  margin-left: 5px;
+}
+.example .try {
+  margin-left: 30px;
+}
+    </style>
 </head>
 
 <body>
@@ -600,7 +618,11 @@ form a number and converts it to a JavaScript <code>number</code> object.</p>
 <h3 id="grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</h3>
 
 <p>There are several types of parsing expressions, some of them containing
-subexpressions and thus forming a recursive structure:</p>
+subexpressions and thus forming a recursive structure.  Each example below is
+a part of a <a href="js/examples.peggy">full grammar</a>, which produces an
+object that contains <code>match</code> and <code>rest</code>.
+<code>match</code> is the part of the input that matched the example,
+<code>rest</code> is any remaining input after the match.</p>
 
 <dl>
   <dt><code>"<em>literal</em>"<br>'<em>literal</em>'</code></dt>
@@ -609,12 +631,50 @@ subexpressions and thus forming a recursive structure:</p>
     <p>Match exact literal string and return it. The string syntax is the same
     as in JavaScript. Appending <code>i</code> right after the literal makes the
     match case-insensitive.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>literal = "foo"</code></div>
+        <div><em>Matches:</em> <code>"foo"</code></div>
+        <div><em>Does not match:</em> <code>"Foo"</code>, <code>"fOo"</code>, <code>"bar"</code>, <code>"fo"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="foo" class="exampleInput" name="literal">
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>literal_i = "foo"i</code></div>
+        <div><em>Matches:</em> <code>"foo"</code>, <code>"Foo"</code>, <code>"fOo"</code></div>
+        <div><em>Does not match:</em> <code>"bar"</code>, <code>"fo"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="FOO" class="exampleInput" name="literal_i">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
-  <dt><code>.</code></dt>
+  <dt><code>.</code> (U+002E: FULL STOP, or "period")</dt>
 
   <dd>
     <p>Match exactly one character and return it as a string.</p>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>any = .</code></div>
+        <div><em>Matches:</em> <code>"f"</code>, <code>"."</code>, <code>" "</code></div>
+        <div><em>Does not match:</em> <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="f" class="exampleInput" name="any">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code>[<em>characters</em>]</code></dt>
@@ -627,6 +687,32 @@ subexpressions and thus forming a recursive structure:</p>
     inverts the matched set (e.g. <code>[^a-z]</code> means “all character but
     lowercase letters”). Appending <code>i</code> right after the literal makes
     the match case-insensitive.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>class = [a-z]</code></div>
+        <div><em>Matches:</em> <code>"f"</code></div>
+        <div><em>Does not match:</em> <code>"A"</code>, <code>"-"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="f" class="exampleInput" name="class">
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>class_i = [^a-z]i</code></div>
+        <div><em>Matches:</em> <code>"="</code>, <code>" "</code></div>
+        <div><em>Does not match:</em> <code>"F"</code>, <code>"f"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="=" class="exampleInput" name="class_i">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code><em>rule</em></code></dt>
@@ -634,12 +720,38 @@ subexpressions and thus forming a recursive structure:</p>
   <dd>
     <p>Match a parsing expression of a rule recursively and return its match
     result.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>rule = child; child = "foo"</code></div>
+        <div><em>Matches:</em> <code>"foo"</code></div>
+        <div><em>Does not match:</em> <code>"Foo"</code>, <code>"fOo"</code>, <code>"bar"</code>, <code>"fo"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="foo" class="exampleInput" name="rule">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code>( <em>expression</em> )</code></dt>
 
   <dd>
     <p>Match a subexpression and return its match result.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>paren = ("1" { return 2; })+</code></div>
+        <div><em>Matches:</em> <code>"11"</code></div>
+        <div><em>Does not match:</em> <code>"2"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="11" class="exampleInput" name="paren">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code><em>expression</em> *</code></dt>
@@ -649,6 +761,19 @@ subexpressions and thus forming a recursive structure:</p>
     results in an array. The matching is greedy, i.e. the parser tries to match
     the expression as many times as possible. Unlike in regular expressions,
     there is no backtracking.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>star = "a"*</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"aaa"</code></div>
+        <div><em>Does not match:</em> </div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aa" class="exampleInput" name="star">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code><em>expression</em> +</code></dt>
@@ -658,6 +783,19 @@ subexpressions and thus forming a recursive structure:</p>
     results in an array. The matching is greedy, i.e. the parser tries to match
     the expression as many times as possible. Unlike in regular expressions,
     there is no backtracking.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>plus = "a"+</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"aaa"</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aa" class="exampleInput" name="plus">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code><em>expression</em> ?</code></dt>
@@ -666,22 +804,65 @@ subexpressions and thus forming a recursive structure:</p>
     <p>Try to match the expression. If the match succeeds, return its match
     result, otherwise return <code>null</code>. Unlike in regular expressions,
     there is no backtracking.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>maybe = "a"?</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>""</code></div>
+        <div><em>Does not match:</em> </div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aa" class="exampleInput" name="maybe">
+        <div class="result"></div>
+      </div>
+    </div>
+
   </dd>
 
   <dt><code>&amp; <em>expression</em></code></dt>
 
   <dd>
+    <p>This is a positive assertion.  No input is consumed.</p>
     <p>Try to match the expression. If the match succeeds, just return
     <code>undefined</code> and do not consume any input, otherwise consider the
     match failed.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>posAssertion = "a" &"b"</code></div>
+        <div><em>Matches:</em> <code>"ab"</code></div>
+        <div><em>Does not match:</em> <code>"ac"</code>, <code>"a"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="ab" class="exampleInput" name="posAssertion">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code>! <em>expression</em></code></dt>
 
   <dd>
-    <p>Try to match the expression. If the match does not succeed, just return
-    <code>undefined</code> and do not consume any input, otherwise consider the
-    match failed.</p>
+    <p>This is a negative assertion.  No input is consumed.</p>
+
+    <p>Try to match the expression. If the match does
+    not succeed, just return <code>undefined</code> and do not consume any
+    input, otherwise consider the match failed.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>negAssertion = "a" !"b"</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"ac"</code></div>
+        <div><em>Does not match:</em> <code>"ab"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="ac" class="exampleInput" name="negAssertion">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt id="-predicate-"><code>&amp; { <em>predicate</em> }</code></dt>
@@ -692,12 +873,26 @@ subexpressions and thus forming a recursive structure:</p>
     <p>The predicate should be JavaScript code, and it's executed as a
     function. Curly braces in the predicate must be balanced.</p>
 
-    <p>The predicate should <code>return</code> a boolean value. If the result is
-    truthy, it's match result is <code>undefined</code>, otherwise the match is
-    considered failed.</p>
+    <p>The predicate should <code>return</code> a boolean value. If the result
+    is truthy, it's match result is <code>undefined</code>, otherwise the
+    match is considered failed.  Failure to include the <code>return</code>
+    keyword is a common mistake.</p>
 
     <p>The predicate has access to all variables and functions in the
     <a href="#action-execution-environment">Action Execution Environment</a>.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <br><code>posPredicate = [0-9]+ &amp;{return parseInt(match, 10) &lt; 100}</code></div>
+        <div><em>Matches:</em> <code>"0"</code>, <code>"99"</code></div>
+        <div><em>Does not match:</em> <code>"100"</code>, <code>"-1"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="56" class="exampleInput" name="posPredicate">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt id="--predicate-"><code>! { <em>predicate</em> }</code></dt>
@@ -714,6 +909,19 @@ subexpressions and thus forming a recursive structure:</p>
 
     <p>The predicate has access to all variables and functions in the
     <a href="#action-execution-environment">Action Execution Environment</a>.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <br><code>negPredicate = $[0-9]+ !{ return parseInt(match, 10) &lt; 100 }</code></div>
+        <div><em>Matches:</em> <code>"100"</code>, <code>"156"</code></div>
+        <div><em>Does not match:</em> <code>"56"</code>, <code>"-1"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="156" class="exampleInput" name="negPredicate">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt id="-expression-2"><code>$ <em>expression</em></code></dt>
@@ -724,6 +932,19 @@ subexpressions and thus forming a recursive structure:</p>
 
     <p>If you need to return the matched text in an action, use the
     <a href="#action-execution-environment"><code>text()</code> function</a>.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>dollar = $"a"+</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"aa"</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aaa" class="exampleInput" name="dollar">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code><em>label</em> : <em>expression</em></code></dt>
@@ -736,6 +957,19 @@ subexpressions and thus forming a recursive structure:</p>
 
     <p>Labeled expressions are useful together with actions, where saved match
     results can be accessed by action's JavaScript code.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>label = foo:"bar"i { return {foo}; }</code></div>
+        <div><em>Matches:</em> <code>"bar"</code>, <code>"BAR"</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="BAR" class="exampleInput" name="label">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
@@ -756,12 +990,51 @@ subexpressions and thus forming a recursive structure:</p>
 
     <p>Pluck expressions are useful for writing terse grammars, or returning
     parts of an expression that is wrapped in parentheses.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>pluck_1 = @$"a"+ " "+ @$"b"+</code></div>
+        <div><em>Matches:</em> <code>"aaa "</code>, <code>"a  "</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aaa   " class="exampleInput" name="pluck_1">
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>pluck_2 = @$"a"+ " "+ @two:$"b"+</code></div>
+        <div><em>Matches:</em> <code>"aaa b"</code>, <code>"a  bbb"</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aaa   bbb" class="exampleInput" name="pluck_2">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code><em>expression<sub>1</sub></em> <em>expression<sub>2</sub></em> ...  <em>expression<sub>n</sub></em></code></dt>
 
   <dd>
     <p>Match a sequence of expressions and return their match results in an array.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>sequence = "a" "b" "c"</code></div>
+        <div><em>Matches:</em> <code>"abc"</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="abc" class="exampleInput" name="sequence">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code><em>expression</em> { <em>action</em> }</code></dt>
@@ -778,6 +1051,19 @@ subexpressions and thus forming a recursive structure:</p>
 
     <p>The action has access to all variables and functions in the
     <a href="#action-execution-environment">Action Execution Environment</a>.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>action = " "+ "a" { return location(); }</code></div>
+        <div><em>Matches:</em> <code>"  a"</code></div>
+        <div><em>Does not match:</em> <code>"a"</code>, <code>" "</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="  a" class="exampleInput" name="action">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 
   <dt><code><em>expression<sub>1</sub></em> / <em>expression<sub>2</sub></em> / ... / <em>expression<sub>n</sub></em></code></dt>
@@ -786,6 +1072,19 @@ subexpressions and thus forming a recursive structure:</p>
     <p>Try to match the first expression, if it does not succeed, try the second
     one, etc. Return the match result of the first successfully matched
     expression. If no expression matches, consider the match failed.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>alt = "a" / "b" / "c"</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"b"</code>, <code>"c"</code></div>
+        <div><em>Does not match:</em> <code>"d"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="a" class="exampleInput" name="alt">
+        <div class="result"></div>
+      </div>
+    </div>
   </dd>
 </dl>
 
@@ -1141,4 +1440,20 @@ following environments:</p>
     </div>
 </body>
 
+<script>
+function validateGrammar({target}) {
+  try {
+    const res = peggyExamples.parse(target.value, {startRule: target.name});
+    // not innerHTML, or needs to be escaped.
+    target.nextElementSibling.innerText = JSON.stringify(res);
+  } catch (e) {
+    target.nextElementSibling.innerText = e.toString();
+  }
+}
+const inputs = document.querySelectorAll('.example input');
+for (const i of inputs) {
+  i.addEventListener("input", validateGrammar)
+  validateGrammar({target: i});
+}
+</script>
 </html>

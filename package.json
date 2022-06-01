@@ -23,6 +23,7 @@
   "scripts": {
     "clean": "rimraf build browser bin/*.map && mkdir browser",
     "parser": "node bin/peggy.js -o lib/parser.js --format commonjs src/parser.pegjs",
+    "examples": "node bin/peggy.js -c docs/js/options.js docs/js/examples.peggy",
     "set_version": "node ./tools/set_version",
     "lint": "eslint . --ext js,ts,mjs",
     "ts": "tsc --build tsconfig.json",
@@ -42,7 +43,7 @@
     "build": "npm run build:notidy && npm run tidy",
     "build:notidy": "npm run setup && npm run make && npm run headers && npm run lint && npm run deploy && npm run audit",
     "setup": "npm run clean && npm run set_version",
-    "make": "npm run parser && npm run ts && npm run rollup && npm run terser",
+    "make": "npm run parser && npm run ts && npm run rollup && npm run terser && npm run examples",
     "audit": "npm run test && npm run benchmark",
     "tidy": "rimraf -f build",
     "start": "browser-sync start -c .bs-config.js"
