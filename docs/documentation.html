@@ -321,8 +321,9 @@ supported:</p>
 
 <dl>
   <dt><code>allowedStartRules</code></dt>
-  <dd>Rules the parser will be allowed to start parsing from (default: the first
-  rule in the grammar).</dd>
+  <dd>Rules the parser will be allowed to start parsing from (default: the
+  first rule in the grammar).  If any of the rules specified is "*", any of
+  the rules in the grammar can be used as start rules.</dd>
 
   <dt><code>cache</code></dt>
   <dd>If <code>true</code>, makes the parser cache results, avoiding exponential
