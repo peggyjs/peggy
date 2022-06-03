@@ -37,6 +37,9 @@
 .example .try {
   margin-left: 30px;
 }
+.error {
+  color: red;
+}
     </style>
 </head>
 
@@ -766,7 +769,7 @@ object that contains <code>match</code> and <code>rest</code>.
       <div>
         <div><em>Example:</em> <code>star = "a"*</code></div>
         <div><em>Matches:</em> <code>"a"</code>, <code>"aaa"</code></div>
-        <div><em>Does not match:</em> </div>
+        <div><em>Does not match:</em> (always matches)</div>
       </div>
       <div class="try">
         <em>Try it:</em>
@@ -809,7 +812,7 @@ object that contains <code>match</code> and <code>rest</code>.
       <div>
         <div><em>Example:</em> <code>maybe = "a"?</code></div>
         <div><em>Matches:</em> <code>"a"</code>, <code>""</code></div>
-        <div><em>Does not match:</em> </div>
+        <div><em>Does not match:</em> (always matches)</div>
       </div>
       <div class="try">
         <em>Try it:</em>
@@ -1442,12 +1445,15 @@ following environments:</p>
 
 <script>
 function validateGrammar({target}) {
+  const results = target.nextElementSibling;
   try {
     const res = peggyExamples.parse(target.value, {startRule: target.name});
     // not innerHTML, or needs to be escaped.
-    target.nextElementSibling.innerText = JSON.stringify(res);
+    results.innerText = JSON.stringify(res);
+    results.classList.remove('error');
   } catch (e) {
-    target.nextElementSibling.innerText = e.toString();
+    results.innerText = e.toString();
+    results.classList.add('error');
   }
 }
 const inputs = document.querySelectorAll('.example input');
