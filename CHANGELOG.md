@@ -29,7 +29,8 @@ Released: TBD
 
 ### Bug Fixes
 
-- None
+- [#283](https://github.com/peggyjs/peggy/issues/283) Fix incorrect type
+  information for DiagnosticCallback, from @hildjj
 
 2.0.1
 -----
