@@ -81,6 +81,9 @@ describe("peg.d.ts", () => {
 
     const p3 = peggy.generate(src, { output: true as boolean ? "source-and-map" : "source" });
     expectType<string | SourceNode>(p3);
+
+    const p4 = peggy.generate(src, { output: "source-with-inline-map" });
+    expectType<string>(p4);
   });
 
   it("compiles with source map", () => {
@@ -107,6 +110,13 @@ describe("peg.d.ts", () => {
       { output: true as boolean ? "source-and-map" : "source" }
     );
     expectType<string | SourceNode>(p3);
+
+    const p4 = peggy.compiler.compile(
+      ast,
+      peggy.compiler.passes,
+      { output: "source-with-inline-map" }
+    );
+    expectType<string>(p4);
   });
 
   it("creates an AST", () => {
