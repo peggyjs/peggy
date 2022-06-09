@@ -419,7 +419,10 @@ supported:</p>
       you should also set <code>grammarSource</code> to a not-empty string if
       you set this value to <code>"source-and-map"</code> or
       <code>"source-with-inline-map"</code>.  The path should be relative to
-      the location where the generated parser code will be stored.</p>
+      the location where the generated parser code will be stored.  For
+      example, if you are generating <code>lib/parser.js</code> from
+      <code>src/parser.peggy</code>, then your options should be:
+      <code>{ grammarSource: "../src/parser.peggy" }</code></p>
     </blockquote>
   </dd>
 

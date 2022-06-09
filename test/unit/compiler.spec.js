@@ -33,7 +33,6 @@ describe("Peggy compiler", () => {
 
   it("generates inline sourceMappingURL", () => {
     const ast = parser.parse("foo='1'");
-    // Ensure there is an expect even if we don't run the good tests below.
     expect(ast).to.be.an("object");
 
     // Don't run on old IE

@@ -1215,10 +1215,8 @@ export function generate(
  * Returns the generated source code as a string appended with a source map as
  * a `data:` URI.
  *
- * Note, that `SourceNode.source`s of the generated source map will depend
- * on the `options.grammarSource` value. Therefore, value `options.grammarSource`
- * will propagate to the `sources` array of the source map. That array MUST
- * contain a path relative to the source map location, as no further path
+ * Note, `options.grammarSource` MUST contain a string that is a path relative
+ * to the location the generated source will be written to, as no further path
  * processing will be performed.
  *
  * @param grammar String in the format described by the meta-grammar in the
@@ -1227,8 +1225,8 @@ export function generate(
  *
  * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
  *         an unclosed brace
- * @throws {GrammarError} If the grammar contains a semantic error, for example,
- *         duplicated labels
+ * @throws {GrammarError} If the grammar contains a semantic error, for
+ *         example, duplicated labels
  */
 export function generate(
   grammar: string,
