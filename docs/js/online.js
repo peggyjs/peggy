@@ -17,6 +17,9 @@ $(document).ready(function() {
       lineNumbers: true,
       mode: "pegjs"
   });
+  var input = CodeMirror.fromTextArea($("#input").get(0), {
+      lineNumbers: true,
+  });
 
   function buildSizeAndTimeInfoHtml(title, size, time) {
     return $("<span/>", {
@@ -82,15 +85,16 @@ $(document).ready(function() {
   }
 
   function parse() {
-    oldInput = $("#input").val();
+    oldInput = input.getValue();
 
     $("#input").removeAttr("disabled");
     $("#parse-message").attr("class", "message progress").text("Parsing the input...");
     $("#output").addClass("disabled").text("Output not available.");
 
     try {
+      var newInput = input.getValue();
       var timeBefore = (new Date).getTime();
-      var output = parser.parse($("#input").val());
+      var output = parser.parse(newInput);
       var timeAfter = (new Date).getTime();
 
       $("#parse-message")
@@ -98,7 +102,7 @@ $(document).ready(function() {
         .text("Input parsed successfully.")
         .append(buildSizeAndTimeInfoHtml(
           "Parsing time and speed",
-          $("#input").val().length,
+          newInput.length,
           timeAfter - timeBefore
         ));
       $("#output").removeClass("disabled").text(jsDump.parse(output));
@@ -140,7 +144,7 @@ $(document).ready(function() {
   }
 
   function scheduleParse() {
-    if ($("#input").val() === oldInput) { return; }
+    if (input.getValue() === oldInput) { return; }
     if (buildAndParseTimer !== null) { return; }
 
     if (parseTimer !== null) {
@@ -155,19 +159,22 @@ $(document).ready(function() {
   }
 
   function doLayout() {
+    var editors = $(".CodeMirror");
     /*
      * This forces layout of the page so that the |#columns| table gets a chance
      * make itself smaller when the browser window shrinks.
      */
     $("#left-column").height("0px");    // needed for IE
     $("#right-column").height("0px");   // needed for IE
-    $(".CodeMirror").height("0px");
-    $("#input").height("0px");
+    for (var i = 0; i < editors.length; ++i) {
+      $(editors[i]).height("0px");
+    }
 
     $("#left-column").height(($("#left-column").parent().innerHeight() - 2) + "px");     // needed for IE
     $("#right-column").height(($("#right-column").parent().innerHeight() - 2) + "px");   // needed for IE
-    $(".CodeMirror").height(($(".CodeMirror").parent().parent().innerHeight() - 14) + "px");
-    $("#input").height(($("#input").parent().parent().innerHeight() - 14) + "px");
+    for (var i = 0; i < editors.length; ++i) {
+      $(editors[i]).height(($(editors[i]).parent().parent().innerHeight() - 14) + "px");
+    }
   }
 
   function getGrammar() {
@@ -185,14 +192,7 @@ $(document).ready(function() {
     .keyup(scheduleBuildAndParse)
     .keypress(scheduleBuildAndParse);
 
-  $("#input")
-    .change(scheduleParse)
-    .mousedown(scheduleParse)
-    .mouseup(scheduleParse)
-    .click(scheduleParse)
-    .keydown(scheduleParse)
-    .keyup(scheduleParse)
-    .keypress(scheduleParse);
+  input.on("change", scheduleParse);
 
   $( "#parser-download" )
     .click(function(){
@@ -214,4 +214,5 @@ $(document).ready(function() {
 
   editor.refresh();
   editor.focus();
+  input.refresh();
 });

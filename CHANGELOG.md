@@ -20,6 +20,8 @@ Released: TBD
 - [#229](https://github.com/peggyjs/peggy/issues/229) new CLI option
   `-S <rule>` or `--start-rule <rule>` to specify the start rule when testing,
   from @hildjj
+- [#236](https://github.com/peggyjs/peggy/issues/236) Website: show line numbers
+  in parser input textarea, from @Mingun
 
 ### Bug Fixes
 
