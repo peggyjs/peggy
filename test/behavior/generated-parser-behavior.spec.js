@@ -1750,6 +1750,14 @@ describe("generated parser behavior", () => {
         expect(parser).to.parse("b", 1);
       });
     });
+    it("Handles non-BMP Unicode escapes", () => {
+      const p1 = peg.generate("bee = '\\u{1F41D}'");
+      expect(p1).to.parse("\u{1F41D}");
+      expect(p1).to.failToParse("\u{1F41E}");
+      expect(() => peg.generate("bad = '\\u{11ffff}'")).to.throw("Invalid Unicode codepoint: U+11ffff");
+      const p2 = peg.generate("om = '\\u{0F00}'");
+      expect(p2).to.parse("\u0F00");
+    });
   });
   describe("syntax errors", () => {
     it("formats", () => {

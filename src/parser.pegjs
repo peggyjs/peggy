@@ -411,6 +411,23 @@ UnicodeEscapeSequence
   = "u" digits:$(HexDigit HexDigit HexDigit HexDigit) {
       return String.fromCharCode(parseInt(digits, 16));
     }
+  / "u{" digits:$HexDigit+ "}" {
+    // String.fromCodePoint() is not supported in IE11.
+    let codepoint = parseInt(digits, 16);
+    if (codepoint > 0x10FFFF) {
+      error("Invalid Unicode codepoint: U+" + digits + ".");
+    }
+
+    if (codepoint > 0xFFFF) {
+      codepoint -= 0x10000;
+      return String.fromCharCode(
+        (codepoint >> 10) | 0xD800,
+        (codepoint & 0x3ff) | 0xDC00
+      );
+    } else {
+      return String.fromCharCode(codepoint);
+    }
+  }
 
 DecimalDigit
   = [0-9]

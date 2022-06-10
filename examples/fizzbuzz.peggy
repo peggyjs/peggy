@@ -34,7 +34,8 @@ line
 
 fizzbuzz = f:fizz _ b:buzz { return f + b }
 fizz = @"fizz"i !{ return currentNumber % 3 }
-buzz = @"buzz"i !{ return currentNumber % 5 }
+// That's U+1F41D: HONEYBEE
+buzz = @("buzz"i / "\u{1F41D}") !{ return currentNumber % 5 }
 
 // Arbitrary requirement needing &
 number "number without trailing comment"
