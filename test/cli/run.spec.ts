@@ -6,6 +6,7 @@ import * as peggy from "../../lib/peg.js";
 import { CommanderError, PeggyCLI } from "../../bin/peggy.js";
 import { Transform, TransformCallback, TransformOptions } from "stream";
 import { SourceMapConsumer } from "source-map";
+import { promisify } from "util";
 import { spawn } from "child_process";
 
 const foobarbaz = `\
@@ -123,6 +124,8 @@ async function exec(opts: Options = {}) {
   });
   const err = opts.stderr || out;
   let outputString = null;
+  const outputBuffers: (Buffer | string)[] = [];
+  out.on("data", buf => outputBuffers.push(buf));
   const p = new Promise<number>((resolve, reject) => {
     const cli = new PeggyCLI({ in: stdin, out, err })
       .exitOverride()
@@ -186,7 +189,14 @@ async function exec(opts: Options = {}) {
   }
 
   if (outputString === null) {
-    outputString = out.read();
+    if (outputBuffers.length === 0) {
+      outputString = "";
+    } else if (typeof outputBuffers[0] === "string") {
+      outputString = outputBuffers.join("");
+    } else {
+      outputString = Buffer.concat(outputBuffers as Buffer[])
+        .toString(opts.encoding);
+    }
   }
   if (opts.expected instanceof RegExp) {
     expect(outputString).toMatch(opts.expected);
@@ -280,6 +290,20 @@ async function checkSourceMap(
 
   fs.unlinkSync(sourceMap);
 }
+
+describe("MockStream", () => {
+  it("Accepts input larger than highwaterMark", async() => {
+    const s = new MockStream({ highWaterMark: 1 });
+    const recv: Buffer[] = [];
+    // Note: before adding this callback, the write's below would block
+    // unless the highwaterMark above was changed to 3 or more.
+    s.on("data", d => recv.push(d));
+    const write = promisify<string, void>(s.write.bind(s));
+    await write("ab");
+    await write("c");
+    expect(Buffer.concat(recv).toString()).toBe("abc");
+  });
+});
 
 describe("Command Line Interface", () => {
   it("has help", async() => {
