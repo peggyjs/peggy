@@ -110,13 +110,22 @@ describe("peg.d.ts", () => {
     const p1 = peggy.generate(src, { output: "source" });
     expectType<string>(p1);
 
-    const p2 = peggy.generate(src, { output: "source-and-map" });
+    const p2 = peggy.generate(src, {
+      output: "source-and-map",
+      grammarSource: "src.peggy",
+    });
     expectType<SourceNode>(p2);
 
-    const p3 = peggy.generate(src, { output: true as boolean ? "source-and-map" : "source" });
+    const p3 = peggy.generate(src, {
+      output: true as boolean ? "source-and-map" : "source",
+      grammarSource: "src.peggy",
+    });
     expectType<string | SourceNode>(p3);
 
-    const p4 = peggy.generate(src, { output: "source-with-inline-map" });
+    const p4 = peggy.generate(src, {
+      output: "source-with-inline-map",
+      grammarSource: "src.peggy",
+    });
     expectType<string>(p4);
   });
 
@@ -134,21 +143,27 @@ describe("peg.d.ts", () => {
     const p2 = peggy.compiler.compile(
       ast,
       peggy.compiler.passes,
-      { output: "source-and-map" }
+      { output: "source-and-map", grammarSource: "src.peggy" }
     );
     expectType<SourceNode>(p2);
 
     const p3 = peggy.compiler.compile(
       ast,
       peggy.compiler.passes,
-      { output: true as boolean ? "source-and-map" : "source" }
+      {
+        output: true as boolean ? "source-and-map" : "source",
+        grammarSource: "src.peggy",
+      }
     );
     expectType<string | SourceNode>(p3);
 
     const p4 = peggy.compiler.compile(
       ast,
       peggy.compiler.passes,
-      { output: "source-with-inline-map" }
+      {
+        output: "source-with-inline-map",
+        grammarSource: "src.peggy",
+      }
     );
     expectType<string>(p4);
   });

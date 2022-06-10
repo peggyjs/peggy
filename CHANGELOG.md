@@ -127,6 +127,9 @@ Released: 2022-05-28
   definition of SyntaxError, from @cmfcmf
 - [#220](https://github.com/peggyjs/peggy/issues/220): Fix rollup warnings,
   from @hildjj
+- [#285](https://github.com/peggyjs/peggy/issues/285): Work around source-map
+  bug by throwing an exception if no grammarSource is given when generating
+  source maps, from @hildjj.
 
 1.2.0
 -----

@@ -39,6 +39,7 @@ describe("Peggy compiler", () => {
     if (typeof TextEncoder === "function") {
       expect(compiler.compile(ast, compiler.passes, {
         output: "source-with-inline-map",
+        grammarSource: "src.peggy",
       })).to.match(
         /^\/\/# sourceMappingURL=data:application\/json;charset=utf-8;base64,/m
       );
@@ -50,6 +51,7 @@ describe("Peggy compiler", () => {
         delete globalThis.TextEncoder;
         expect(() => compiler.compile(ast, compiler.passes, {
           output: "source-with-inline-map",
+          grammarSource: "src.peggy",
         })).to.throw("TextEncoder is not supported by this platform");
         globalThis.TextEncoder = TE;
       }
