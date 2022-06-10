@@ -376,10 +376,13 @@ supported:</p>
   <code>null</code>).</dd>
 
   <dt><code>format</code></dt>
-  <dd>format of the generated parser (<code>"amd"</code>, <code>"bare"</code>,
-  <code>"commonjs"</code>, <code>"es"</code>, <code>"globals"</code>, or
-  <code>"umd"</code>); valid only when <code>output</code> is set to
-  <code>"source"</code> (default: <code>"bare"</code>).</dd>
+  <dd>
+    Format of the generated parser (<code>"amd"</code>, <code>"bare"</code>,
+    <code>"commonjs"</code>, <code>"es"</code>, <code>"globals"</code>, or
+    <code>"umd"</code>); valid only when <code>output</code> is set to
+    <code>"source"</code>, <code>"source-and-map"</code>, or
+    <code>"source-with-inline-map"</code>. (default: <code>"bare"</code>).
+  </dd>
 
   <dt><code>grammarSource</code></dt>
   <dd>any object that represent origin of the input grammar. The CLI will set
@@ -392,17 +395,36 @@ supported:</p>
   <dd>Callback for informational messages. See <a href="#error-reporting">Error Reporting</a></dd>
 
   <dt><code>output</code></dt>
-  <dd><p>If set to <code>"parser"</code>, the method will return generated parser
-  object; if set to <code>"source"</code>, it will return parser source code as
-  a string (default: <code>"parser"</code>).
-  If set to <code>"source-and-map"</code>, it will return a <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a> object; you can
-  get source code by calling <code>toString()</code> method or source code and mapping by
-  calling <code>toStringWithSourceMap()</code> method, see the <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a> documentation
-  (default: <code>"parser"</code>)</p>
-  <blockquote>
-  <p><strong>Note</strong>: because of bug <a href="https://github.com/mozilla/source-map/issues/444">source-map/444</a> you should also set <code>grammarSource</code> to
-  a not-empty string if you set this value to <code>"source-and-map"</code></p>
-  </blockquote></dd>
+  <dd><p>A string, one of:</p>
+    <ul>
+      <li><code>"parser"</code> - return generated parser object.</li>
+      <li><code>"source"</code> - return parser source code as a string.</li>
+      <li><code>"source-and-map"</code> - return a
+        <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a>
+        object; you can get source code by calling <code>toString()</code>
+        method or source code and mapping by calling
+        <code>toStringWithSourceMap()</code> method, see the
+        <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a>
+        documentation.
+      </li>
+      <li><code>"source-with-inline-map"</code> - return the parser source along
+        with an embedded source map as a <code>data:</code> URI.  This option
+        leads to a larger output string, but is the easiest to integrate with
+        developer tooling.</li>
+    </ul>
+    <p>(default: <code>"parser"</code>)</p>
+    <blockquote>
+      <p><strong>Note</strong>: because of bug <a
+      href="https://github.com/mozilla/source-map/issues/444">source-map/444</a>
+      you should also set <code>grammarSource</code> to a not-empty string if
+      you set this value to <code>"source-and-map"</code> or
+      <code>"source-with-inline-map"</code>.  The path should be relative to
+      the location where the generated parser code will be stored.  For
+      example, if you are generating <code>lib/parser.js</code> from
+      <code>src/parser.peggy</code>, then your options should be:
+      <code>{ grammarSource: "../src/parser.peggy" }</code></p>
+    </blockquote>
+  </dd>
 
   <dt><code>plugins</code></dt>
   <dd>Plugins to use. See the <a href="#plugins-api">Plugins API</a> section.</dd>

@@ -15,6 +15,35 @@ const src = readFileSync(
   "utf8"
 );
 
+const problems: peggy.Problem[] = [];
+
+function error(
+  stage: peggy.Stage,
+  message: string,
+  location?: peggy.LocationRange,
+  notes?: peggy.DiagnosticNote[]
+): void {
+  problems.push(["error", message, location, notes]);
+}
+
+function info(
+  stage: peggy.Stage,
+  message: string,
+  location?: peggy.LocationRange,
+  notes?: peggy.DiagnosticNote[]
+): void {
+  problems.push(["info", message, location, notes]);
+}
+
+function warning(
+  stage: peggy.Stage,
+  message: string,
+  location?: peggy.LocationRange,
+  notes?: peggy.DiagnosticNote[]
+): void {
+  problems.push(["warning", message, location, notes]);
+}
+
 describe("peg.d.ts", () => {
   it("executes a grammar", () => {
     expectType<string>(src);
@@ -45,7 +74,12 @@ describe("peg.d.ts", () => {
   });
 
   it("takes a valid tracer", () => {
-    const parser = peggy.generate(src, { trace: true });
+    const parser = peggy.generate(src, {
+      trace: true,
+      error,
+      info,
+      warning,
+    });
     expectType<peggy.Parser>(parser);
 
     parser.parse(" /**/ 1\n", {
@@ -81,6 +115,9 @@ describe("peg.d.ts", () => {
 
     const p3 = peggy.generate(src, { output: true as boolean ? "source-and-map" : "source" });
     expectType<string | SourceNode>(p3);
+
+    const p4 = peggy.generate(src, { output: "source-with-inline-map" });
+    expectType<string>(p4);
   });
 
   it("compiles with source map", () => {
@@ -107,6 +144,13 @@ describe("peg.d.ts", () => {
       { output: true as boolean ? "source-and-map" : "source" }
     );
     expectType<string | SourceNode>(p3);
+
+    const p4 = peggy.compiler.compile(
+      ast,
+      peggy.compiler.passes,
+      { output: "source-with-inline-map" }
+    );
+    expectType<string>(p4);
   });
 
   it("creates an AST", () => {
@@ -369,7 +413,12 @@ describe("peg.d.ts", () => {
     expectType<peggy.ast.Grammar>(ast);
     const parser = peggy.compiler.compile(
       ast,
-      peggy.compiler.passes
+      peggy.compiler.passes,
+      {
+        error,
+        info,
+        warning,
+      }
     );
     expectType<peggy.Parser>(parser);
     expectType<peggy.ast.MatchResult | undefined>(ast.rules[0].match);

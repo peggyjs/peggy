@@ -30,4 +30,30 @@ describe("Peggy compiler", () => {
       output: "INVALID OUTPUT TYPE",
     })).to.throw("Invalid output format: INVALID OUTPUT TYPE.");
   });
+
+  it("generates inline sourceMappingURL", () => {
+    const ast = parser.parse("foo='1'");
+    expect(ast).to.be.an("object");
+
+    // Don't run on old IE
+    if (typeof TextEncoder === "function") {
+      expect(compiler.compile(ast, compiler.passes, {
+        output: "source-with-inline-map",
+      })).to.match(
+        /^\/\/# sourceMappingURL=data:application\/json;charset=utf-8;base64,/m
+      );
+      /* eslint-disable no-undef */
+      // I *think* everywhere that has TextEncoder also has globalThis, but
+      // I'm not positive.
+      if (typeof globalThis === "object") {
+        const TE = globalThis.TextEncoder;
+        delete globalThis.TextEncoder;
+        expect(() => compiler.compile(ast, compiler.passes, {
+          output: "source-with-inline-map",
+        })).to.throw("TextEncoder is not supported by this platform");
+        globalThis.TextEncoder = TE;
+      }
+      /* eslint-enable no-undef */
+    }
+  });
 });

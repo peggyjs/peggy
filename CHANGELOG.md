@@ -10,22 +10,27 @@ Released: TBD
 
 ### Major Changes
 
-- None
+- [#280](https://github.com/peggyjs/peggy/issues/280) Add inline examples to
+  the documentation, from @hildjj
 
 ### Minor Changes
 
-- [TBD] Use commander's new `.conflicts()` to check for mutually-exclusive CLI
-  options, from @hildjj
-- [TBD] `"*"` is now a valid `allowedStartRule`, which means all rules are allowed, from @hildjj
+- [#274](https://github.com/peggyjs/peggy/issues/274) Use commander's new
+  `.conflicts()` to check for mutually-exclusive CLI options, from @hildjj
+- [#274](https://github.com/peggyjs/peggy/issues/274) `"*"` is now a valid `allowedStartRule`, which means all rules are allowed, from @hildjj
 - [#229](https://github.com/peggyjs/peggy/issues/229) new CLI option
   `-S <rule>` or `--start-rule <rule>` to specify the start rule when testing,
   from @hildjj
 - [#236](https://github.com/peggyjs/peggy/issues/236) Website: show line numbers
   in parser input textarea, from @Mingun
+- [#280](https://github.com/peggyjs/peggy/issues/280) new output type
+  `source-with-inline-map`, which generates source text with an inline map,
+  from @hildjj
 
 ### Bug Fixes
 
-- None
+- [#283](https://github.com/peggyjs/peggy/issues/283) Fix incorrect type
+  information for DiagnosticCallback, from @hildjj
 
 2.0.1
 -----

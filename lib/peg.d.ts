@@ -765,6 +765,12 @@ export namespace compiler {
     options: SourceBuildOptions<"source">
   ): string;
 
+  function compile(
+    ast: ast.Grammar,
+    stages: Stages,
+    options: SourceBuildOptions<"source-with-inline-map">
+  ): string;
+
   /**
    * Generates a parser source and source map from a specified grammar AST.
    *
@@ -991,50 +997,20 @@ export interface Session {
   ): void;
 }
 
-export interface DiagnosticCallback {
-  /**
-   * Called when compiler reports an error.
-   *
-   * @param stage Stage in which this diagnostic was originated
-   * @param message Main message, which should describe error objectives
-   * @param location If defined, this is location described in the `message`
-   * @param notes Additional messages with context information
-   */
-  error?(
-    stage: Stage,
-    message: string,
-    location?: LocationRange,
-    notes?: DiagnosticNote[]
-  ): void;
-  /**
-   * Called when compiler reports a warning.
-   *
-   * @param stage Stage in which this diagnostic was originated
-   * @param message Main message, which should describe warning objectives
-   * @param location If defined, this is location described in the `message`
-   * @param notes Additional messages with context information
-   */
-  warning?(
-    stage: Stage,
-    message: string,
-    location?: LocationRange,
-    notes?: DiagnosticNote[]
-  ): void;
-  /**
-   * Called when compiler reports an informational message.
-   *
-   * @param stage Stage in which this diagnostic was originated
-   * @param message Main message, which gives information about an event
-   * @param location If defined, this is location described in the `message`
-   * @param notes Additional messages with context information
-   */
-  info?(
-    stage: Stage,
-    message: string,
-    location?: LocationRange,
-    notes?: DiagnosticNote[]
-  ): void;
-}
+/**
+ * Called when compiler reports an error, warning, or info.
+ *
+ * @param stage Stage in which this diagnostic was originated
+ * @param message Main message, which should describe error objectives
+ * @param location If defined, this is location described in the `message`
+ * @param notes Additional messages with context information
+ */
+export type DiagnosticCallback = (
+  stage: Stage,
+  message: string,
+  location?: LocationRange,
+  notes?: DiagnosticNote[]
+) => void;
 
 /**
  * Parser dependencies, is an object which maps variables used to access the
@@ -1087,14 +1063,20 @@ export interface ParserBuildOptions extends BuildOptionsBase {
    * If set to `"parser"`, the method will return generated parser object;
    * if set to `"source"`, it will return parser source code as a string;
    * if set to `"source-and-map"`, it will return a `SourceNode` object
-   * which can give a parser source code as a string and a source map;
+   *   which can give a parser source code as a string and a source map;
+   * if set to `"source-with-inline-map"`, it will return the parser source
+   *   along with an embedded source map as a `data:` URI;
    * (default: `"parser"`)
    */
   output?: "parser";
 }
 
 /** Possible kinds of source output generators. */
-export type SourceOutputs = "source" | "source-and-map";
+export type SourceOutputs =
+  "parser" |
+  "source" |
+  "source-and-map" |
+  "source-with-inline-map";
 
 /** Base options for all source-generating formats. */
 interface SourceOptionsBase<Output extends SourceOutputs>
@@ -1103,7 +1085,9 @@ interface SourceOptionsBase<Output extends SourceOutputs>
    * If set to `"parser"`, the method will return generated parser object;
    * if set to `"source"`, it will return parser source code as a string;
    * if set to `"source-and-map"`, it will return a `SourceNode` object
-   * which can give a parser source code as a string and a source map;
+   *   which can give a parser source code as a string and a source map;
+   * if set to `"source-with-inline-map"`, it will return the parser source
+   *   along with an embedded source map as a `data:` URI;
    * (default: `"parser"`)
    */
   output: Output;
@@ -1195,6 +1179,28 @@ export function generate(grammar: string, options?: ParserBuildOptions): Parser;
 export function generate(
   grammar: string,
   options: SourceBuildOptions<"source">
+): string;
+
+/**
+ * Returns the generated source code as a string appended with a source map as
+ * a `data:` URI.
+ *
+ * Note, `options.grammarSource` MUST contain a string that is a path relative
+ * to the location the generated source will be written to, as no further path
+ * processing will be performed.
+ *
+ * @param grammar String in the format described by the meta-grammar in the
+ *        `parser.pegjs` file
+ * @param options Options that allow you to customize returned parser object
+ *
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
+ *         an unclosed brace
+ * @throws {GrammarError} If the grammar contains a semantic error, for
+ *         example, duplicated labels
+ */
+export function generate(
+  grammar: string,
+  options: SourceBuildOptions<"source-with-inline-map">
 ): string;
 
 /**
