@@ -1757,6 +1757,9 @@ describe("generated parser behavior", () => {
       expect(() => peg.generate("bad = '\\u{11ffff}'")).to.throw("Invalid Unicode codepoint: U+11ffff");
       const p2 = peg.generate("om = '\\u{0F00}'");
       expect(p2).to.parse("\u0F00");
+      // This is no worse an idea than \u0061 = 'a', which currently works:
+      const p3 = peg.generate("\\u{61} = 'a'");
+      expect(p3).to.parse("a");
     });
   });
   describe("syntax errors", () => {
