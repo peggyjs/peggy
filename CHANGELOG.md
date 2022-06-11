@@ -26,6 +26,9 @@ Released: TBD
 - [#280](https://github.com/peggyjs/peggy/issues/280) new output type
   `source-with-inline-map`, which generates source text with an inline map,
   from @hildjj
+- [#285](https://github.com/peggyjs/peggy/issues/285) Require that a non-empty
+  string be given as a grammarSource if you are generating a source map, from
+  @hildjj
 
 ### Bug Fixes
 
