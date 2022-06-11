@@ -10,6 +10,8 @@ exports.peggyVersion = function peggyVersion() {
   return peg.VERSION;
 };
 
+chai.use(require("chai-like"));
+
 beforeEach(() => {
   // In the browser, initialize SourceMapConsumer's wasm bits.
   // This is *async*, so make sure to return the promise to make
@@ -171,6 +173,15 @@ describe("Peggy API", () => {
 
           expect(source).to.be.a("string");
           expect(eval(source).parse("a")).to.equal("a");
+        });
+      });
+
+      describe("when |output| is set to |\"ast\"|", () => {
+        it("returns generated parser AST", () => {
+          const ast = peg.generate(grammar, { output: "ast" });
+
+          expect(ast).to.be.an("object");
+          expect(ast).to.be.like(peg.parser.parse(grammar));
         });
       });
     });

@@ -7,44 +7,10 @@ const Session = require("../../../../lib/compiler/session");
 module.exports = function(chai, utils) {
   const Assertion = chai.Assertion;
 
+  chai.use(require("chai-like"));
+
   Assertion.addMethod("changeAST", function(grammar, props, options) {
     options = options !== undefined ? options : {};
-
-    function matchProps(value, props) {
-      function isArray(value) {
-        return Object.prototype.toString.apply(value) === "[object Array]";
-      }
-
-      function isObject(value) {
-        return value !== null && typeof value === "object";
-      }
-
-      if (isArray(props)) {
-        if (!isArray(value)) { return false; }
-
-        if (value.length !== props.length) { return false; }
-        for (let i = 0; i < props.length; i++) {
-          if (!matchProps(value[i], props[i])) { return false; }
-        }
-
-        return true;
-      } else if (isObject(props)) {
-        if (!isObject(value)) { return false; }
-
-        const keys = Object.keys(props);
-        for (let i = 0; i < keys.length; i++) {
-          const key = keys[i];
-
-          if (!(key in value)) { return false; }
-
-          if (!matchProps(value[key], props[key])) { return false; }
-        }
-
-        return true;
-      } else {
-        return value === props;
-      }
-    }
 
     const ast = parser.parse(grammar);
 
@@ -52,13 +18,7 @@ module.exports = function(chai, utils) {
       error(stage, ...args) { throw new GrammarError(...args); },
     }));
 
-    this.assert(
-      matchProps(ast, props),
-      "expected #{this} to change the AST to match #{exp}",
-      "expected #{this} to not change the AST to match #{exp}",
-      props,
-      ast
-    );
+    new Assertion(ast).like(props);
   });
 
   Assertion.addMethod("reportError", function(grammar, props) {

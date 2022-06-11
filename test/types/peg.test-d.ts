@@ -104,6 +104,9 @@ describe("peg.d.ts", () => {
 
     const p2 = peggy.generate(src, { output: "source", grammarSource: { foo: "src" } });
     expectType<string>(p2);
+
+    const p3 = peggy.generate(src, { output: "ast", grammarSource: { foo: "src" } });
+    expectType<peggy.ast.Grammar>(p3);
   });
 
   it("generates a source map", () => {

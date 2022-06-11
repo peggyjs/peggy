@@ -356,6 +356,8 @@ Options:
                                    This option conflicts with the \`-t/--test\`
                                    and \`-T/--test-file\` options unless
                                    \`-o/--output\` is also specified
+  --ast                            Output a grammar AST instead of a parser
+                                   code (default: false)
   -S, --start-rule <rule>          When testing, use the given rule as the
                                    start rule.  If this rule is not in the
                                    allowed start rules, it will be added.
@@ -630,6 +632,70 @@ Options:
       errorCode: "commander.invalidArgument",
       exitCode: 1,
       error: "option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, bare, commonjs, es, globals, umd.",
+    });
+  });
+
+  describe("--ast option", () => {
+    it("conflicts with --test/--test-file/--source-map", async() => {
+      await exec({
+        args: ["--ast", "--test", "1"],
+        stdin: 'foo = "1"',
+        error: CommanderError,
+        errorCode: "commander.conflictingOption",
+        exitCode: 1,
+        expected: "error: option '--ast' cannot be used with option '-t, --test <text>'\n",
+      });
+      await exec({
+        args: ["--ast", "--test-file", "file"],
+        stdin: 'foo = "1"',
+        error: CommanderError,
+        errorCode: "commander.conflictingOption",
+        exitCode: 1,
+        expected: "error: option '--ast' cannot be used with option '-T, --test-file <filename>'\n",
+      });
+      await exec({
+        args: ["--ast", "--source-map"],
+        stdin: 'foo = "1"',
+        error: CommanderError,
+        errorCode: "commander.conflictingOption",
+        exitCode: 1,
+        expected: "error: option '--ast' cannot be used with option '-m, --source-map [mapfile]'\n",
+      });
+      await exec({
+        args: ["--ast", "--source-map", "file"],
+        stdin: 'foo = "1"',
+        error: CommanderError,
+        errorCode: "commander.conflictingOption",
+        exitCode: 1,
+        expected: "error: option '--ast' cannot be used with option '-m, --source-map [mapfile]'\n",
+      });
+    });
+
+    it("produces AST", async() => {
+      const output = await exec({
+        args: ["--ast"],
+        stdin: 'foo = "1"',
+      });
+
+      // Do not check exact location information and concrete values of some other fields
+      expect(JSON.parse(output)).toMatchObject({
+        type: "grammar",
+        topLevelInitializer: null,
+        initializer: null,
+        location: {},
+        rules: [{
+          type: "rule",
+          name: "foo",
+          location: {},
+          expression: {
+            type: "literal",
+            value: "1",
+            ignoreCase: false,
+            location: {},
+          },
+        }],
+        code: expect.anything(),
+      });
     });
   });
 

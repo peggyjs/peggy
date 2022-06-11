@@ -14,7 +14,7 @@ exports.CommanderError = CommanderError;
 exports.InvalidArgumentError = InvalidArgumentError;
 
 // Options that aren't for the API directly:
-const PROG_OPTIONS = ["input", "output", "sourceMap", "startRule", "test", "testFile", "verbose"];
+const PROG_OPTIONS = ["ast", "input", "output", "sourceMap", "startRule", "test", "testFile", "verbose"];
 const MODULE_FORMATS = ["amd", "bare", "commonjs", "es", "globals", "umd"];
 const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
 const MODULE_FORMATS_WITH_GLOBAL = ["globals", "umd"];
@@ -173,14 +173,22 @@ class PeggyCLI extends Command {
         "-m, --source-map [mapfile]",
         "Generate a source map. If name is not specified, the source map will be named \"<input_file>.map\" if input is a file and \"source.map\" if input is a standard input. If the special filename `inline` is given, the sourcemap will be embedded in the output file as a data URI.  If the filename is prefixed with `hidden:`, no mapping URL will be included so that the mapping can be specified with an HTTP SourceMap: header.  This option conflicts with the `-t/--test` and `-T/--test-file` options unless `-o/--output` is also specified"
       )
+      .addOption(
+        new Option(
+          "--ast",
+          "Output a grammar AST instead of a parser code"
+        )
+          .default(false)
+          .conflicts(["test", "testFile", "sourceMap"])
+      )
       .option(
         "-S, --start-rule <rule>",
         "When testing, use the given rule as the start rule.  If this rule is not in the allowed start rules, it will be added."
       )
-      .addOption(new Option(
+      .option(
         "-t, --test <text>",
         "Test the parser with the given text, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
-      ).conflicts("test-file"))
+      )
       .addOption(new Option(
         "-T, --test-file <filename>",
         "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
@@ -311,6 +319,10 @@ class PeggyCLI extends Command {
           if (this.progOptions.sourceMap === "hidden:inline") {
             this.error("hidden + inline sourceMap makes no sense.");
           }
+        }
+
+        if (this.progOptions.ast) {
+          this.argv.output = "ast";
         }
 
         // Empty string is a valid test input.  Don't just test for falsy.
@@ -511,7 +523,7 @@ class PeggyCLI extends Command {
     });
   }
 
-  writeParser(outputStream, source) {
+  writeOutput(outputStream, source) {
     return new Promise((resolve, reject) => {
       if (!outputStream) {
         resolve();
@@ -626,18 +638,24 @@ class PeggyCLI extends Command {
       this.verbose("CLI", errorText = "parsing grammar");
       const source = peggy.generate(input, this.argv); // All of the real work.
 
-      this.verbose("CLI", errorText = "writing to output file");
+      this.verbose("CLI", errorText = "open output stream");
       const outputStream = await this.openOutputStream();
 
-      this.verbose("CLI", errorText = "writing sourceMap");
-      const mappedSource = await this.writeSourceMap(source);
+      // If option `--ast` is specified, `generate()` returns an AST object
+      if (this.progOptions.ast) {
+        this.verbose("CLI", errorText = "writing AST");
+        await this.writeOutput(outputStream, JSON.stringify(source, null, 2));
+      } else {
+        this.verbose("CLI", errorText = "writing sourceMap");
+        const mappedSource = await this.writeSourceMap(source);
 
-      this.verbose("CLI", errorText = "writing parser");
-      await this.writeParser(outputStream, mappedSource);
+        this.verbose("CLI", errorText = "writing parser");
+        await this.writeOutput(outputStream, mappedSource);
 
-      exitCode = 2;
-      this.verbose("CLI", errorText = "running test");
-      this.test(mappedSource);
+        exitCode = 2;
+        this.verbose("CLI", errorText = "running test");
+        this.test(mappedSource);
+      }
     } catch (error) {
       // Will either exit or throw.
       this.error(errorText, {

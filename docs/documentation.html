@@ -171,6 +171,13 @@ override this using the <code>--format</code> option.</p>
   <dd>Comma-separated list of rules the parser will be allowed to start parsing
   from (default: only the first rule in the grammar).</dd>
 
+  <dt><code>--ast</code></dt>
+  <dd>Outputting an internal AST representation of the grammar after
+  all optimizations instead of the parser source code. Useful for plugin authors
+  to see how their plugin changes the AST. This option cannot be mixed with the
+  <code>-t/--test</code>, <code>-T/--test-file</code> and <code>-m/--source-map</code>
+  options.</dd>
+
   <dt><code>--cache</code></dt>
   <dd>Makes the parser cache results, avoiding exponential parsing time in
   pathological cases but making the parser slower.</dd>
@@ -227,21 +234,21 @@ override this using the <code>--format</code> option.</p>
   <dt><code>-t</code>, <code>--test &lt;text&gt;</code></dt>
   <dd>Test the parser with the given text, outputting the result of running
   the parser against this input.
-  If the input to be tested is not parsed, the CLI will exit with code 2</dd>
+  If the input to be tested is not parsed, the CLI will exit with code 2.</dd>
 
   <dt><code>-T</code>, <code>--test-file &lt;text&gt;</code></dt>
   <dd>Test the parser with the contents of the given file, outputting the
   result of running the parser against this input.
-  If the input to be tested is not parsed, the CLI will exit with code 2</dd>
+  If the input to be tested is not parsed, the CLI will exit with code 2.</dd>
 
   <dt><code>--trace</code></dt>
   <dd>Makes the parser trace its progress.</dd>
 
   <dt><code>-v</code>, <code>--version</code></dt>
-  <dd>Output the version number</dd>
+  <dd>Output the version number.</dd>
 
   <dt><code>-h</code>, <code>--help</code></dt>
-  <dd>Display help for the command</dd>
+  <dd>Display help for the command.</dd>
 
 </dl>
 
@@ -270,7 +277,7 @@ module.exports = {
 <p>
 You can test generated parser immediately if you specify the <code>-t/--test</code> or <code>-T/--test-file</code>
 option. This option conflicts with the option <code>-m/--source-map</code> unless <code>-o/--output</code> is
-also specified.
+also specified. This option conflicts with the <code>--ast</code> option.
 </p>
 
 <p>The CLI will exit with the code:</p>
@@ -411,6 +418,9 @@ supported:</p>
         with an embedded source map as a <code>data:</code> URI.  This option
         leads to a larger output string, but is the easiest to integrate with
         developer tooling.</li>
+        <li><code>"ast"</code> - return the internal AST of the grammar as a JSON
+          string. Useful for plugin authors to explore internals of Peggy and
+          for automation.</li>
     </ul>
     <p>(default: <code>"parser"</code>)</p>
     <blockquote>

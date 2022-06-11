@@ -1079,7 +1079,7 @@ export type SourceOutputs =
   "source-with-inline-map";
 
 /** Base options for all source-generating formats. */
-interface SourceOptionsBase<Output extends SourceOutputs>
+interface SourceOptionsBase<Output>
   extends BuildOptionsBase {
   /**
    * If set to `"parser"`, the method will return generated parser object;
@@ -1245,6 +1245,27 @@ export function generate(
   grammar: string,
   options: SourceBuildOptions<SourceOutputs>
 ): string | SourceNode;
+
+/**
+ * Returns the generated AST for the grammar. Unlike result of the
+ * `peggy.compiler.compile(...)` an AST returned by this method is augmented
+ * with data from passes. In other words, the compiler gives you the raw AST,
+ * and this method provides the final AST after all optimizations and
+ * transformations.
+ *
+ * @param grammar String in the format described by the meta-grammar in the
+ *        `parser.pegjs` file
+ * @param options Options that allow you to customize returned AST
+ *
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
+ *         an unclosed brace
+ * @throws {GrammarError} If the grammar contains a semantic error, for example,
+ *         duplicated labels
+ */
+export function generate(
+  grammar: string,
+  options: SourceOptionsBase<"ast">
+): ast.Grammar;
 
 // Export all exported stuff under a global variable PEG in non-module environments
 export as namespace PEG;
