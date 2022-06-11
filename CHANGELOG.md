@@ -26,6 +26,9 @@ Released: TBD
 - [#280](https://github.com/peggyjs/peggy/issues/280) new output type
   `source-with-inline-map`, which generates source text with an inline map,
   from @hildjj
+- [#285](https://github.com/peggyjs/peggy/issues/285) Require that a non-empty
+  string be given as a grammarSource if you are generating a source map, from
+  @hildjj
 
 ### Bug Fixes
 
@@ -127,6 +130,9 @@ Released: 2022-05-28
   definition of SyntaxError, from @cmfcmf
 - [#220](https://github.com/peggyjs/peggy/issues/220): Fix rollup warnings,
   from @hildjj
+- [#285](https://github.com/peggyjs/peggy/issues/285): Work around source-map
+  bug by throwing an exception if no grammarSource is given when generating
+  source maps, from @hildjj.
 
 1.2.0
 -----
