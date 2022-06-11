@@ -1760,6 +1760,9 @@ describe("generated parser behavior", () => {
       // This is no worse an idea than \u0061 = 'a', which currently works:
       const p3 = peg.generate("\\u{61} = 'a'");
       expect(p3).to.parse("a");
+      // OLD HUNGARIAN SMALL LETTER A
+      const p4 = peg.generate("\u{10cc0} = 'b'");
+      expect(p4).to.parse("b");
     });
   });
   describe("syntax errors", () => {
