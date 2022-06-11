@@ -123,7 +123,6 @@ async function exec(opts: Options = {}) {
     encoding: opts.encoding,
   });
   const err = opts.stderr || out;
-  let outputString = null;
   const outputBuffers: (Buffer | string)[] = [];
   out.on("data", buf => outputBuffers.push(buf));
   const p = new Promise<number>((resolve, reject) => {
@@ -188,10 +187,9 @@ async function exec(opts: Options = {}) {
     expect(exitCode).toBe(0);
   }
 
-  if (outputString === null) {
-    if (outputBuffers.length === 0) {
-      outputString = "";
-    } else if (typeof outputBuffers[0] === "string") {
+  let outputString = "";
+  if (outputBuffers.length > 0) {
+    if (typeof outputBuffers[0] === "string") {
       outputString = outputBuffers.join("");
     } else {
       outputString = Buffer.concat(outputBuffers as Buffer[])
