@@ -31,6 +31,8 @@ Released: TBD
 
 - [#283](https://github.com/peggyjs/peggy/issues/283) Fix incorrect type
   information for DiagnosticCallback, from @hildjj
+- [#287](https://github.com/peggyjs/peggy/issues/287) Allow large outputs
+  to be received without blocking on the CLI tests, from @hildjj
 
 2.0.1
 -----
