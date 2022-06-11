@@ -242,7 +242,18 @@ SemanticPredicateOperator
 // ---- Lexical Grammar -----
 
 SourceCharacter
-  = .
+  = SourceCharacterLow
+  / SourceCharacterHigh
+
+// Not surrogates
+SourceCharacterLow
+  = [\u0000-\uD7FF\uE000-\uFFFF]
+
+// Can be properly-matched surrogates or lone surrogates.
+SourceCharacterHigh
+  = $([\uD800-\uDBFF][\uDC00-\uDFFF]) // Surrogate pair
+  / $([\uD800-\uDBFF] ![\uDC00-\uDFFF]) // Lone first surrogate
+  / $(![\uD800-\uDBFF] [\uDC00-\uDFFF]) // Lone second surrogate
 
 WhiteSpace "whitespace"
   = "\t"
@@ -366,7 +377,7 @@ ClassCharacterRange
     }
 
 ClassCharacter
-  = $(!("]" / "\\" / LineTerminator) SourceCharacter)
+  = $(!("]" / "\\" / LineTerminator) SourceCharacterLow)
   / "\\" @EscapeSequence
   / LineContinuation
 
