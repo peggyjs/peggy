@@ -286,6 +286,7 @@ IdentifierStart
   / "$"
   / "_"
   / "\\" @UnicodeEscapeSequence
+  / "\\" @ExtendedUnicodeEscapeSequence
 
 IdentifierPart
   = IdentifierStart
@@ -329,12 +330,12 @@ StringLiteral "string"
 
 DoubleStringCharacter
   = $(!('"' / "\\" / LineTerminator) SourceCharacter)
-  / "\\" @EscapeSequence
+  / "\\" @ExtendedEscapeSequence
   / LineContinuation
 
 SingleStringCharacter
   = $(!("'" / "\\" / LineTerminator) SourceCharacter)
-  / "\\" @EscapeSequence
+  / "\\" @ExtendedEscapeSequence
   / LineContinuation
 
 CharacterClassMatcher "character class"
@@ -371,6 +372,10 @@ ClassCharacter
 
 LineContinuation
   = "\\" LineTerminatorSequence { return ""; }
+
+ExtendedEscapeSequence
+  = EscapeSequence
+  / ExtendedUnicodeEscapeSequence
 
 EscapeSequence
   = CharacterEscapeSequence
@@ -411,7 +416,9 @@ UnicodeEscapeSequence
   = "u" digits:$(HexDigit HexDigit HexDigit HexDigit) {
       return String.fromCharCode(parseInt(digits, 16));
     }
-  / "u{" digits:$HexDigit+ "}" {
+
+ExtendedUnicodeEscapeSequence
+  = "u{" digits:$HexDigit+ "}" {
     // String.fromCodePoint() is not supported in IE11.
     let codepoint = parseInt(digits, 16);
     if (codepoint > 0x10FFFF) {
