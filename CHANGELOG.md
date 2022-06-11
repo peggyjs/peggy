@@ -14,6 +14,17 @@ Released: TBD
   the documentation, from @hildjj
 - [#240](https://github.com/peggyjs/peggy/issues/240) Generate SourceNodes for bytecode
 - [#338](https://github.com/peggyjs/peggy/pull/338) BREAKING CHANGE. Update dependencies, causing minimum supported version of node.js to move to 14.  Generated grammar source should still work on older node versions and some older browsers, but testing is currently manual for those.
+- [#291]: Add support for repetition operator `expression|min .. max, delimiter|`, from @Mingun
+
+Important information for plug-ins' authors: PR [#291] added 4 new opcodes to the bytecode:
+- `IF_LT`
+- `IF_GE`
+- `IF_LT_DYNAMIC`
+- `IF_GE_DYNAMIC`
+
+and added a new AST node and a visitor method `repeated`. Do not forgot to update your plug-ins.
+
+[#291]: https://github.com/peggyjs/peggy/pull/291
 
 ### Minor Changes
 

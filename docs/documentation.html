@@ -780,6 +780,63 @@ there is no backtracking.</p>
 </div>
 </dd>
 
+<dt><code><em>expression</em> |count|
+      <br><em>expression</em> |min..max|
+      <br><em>expression</em> |count, delimiter|
+      <br><em>expression</em> |min..max, delimiter|</code></dt>
+
+<dd>
+  <p>Match exact <code>count</code> repetitions of <code>expression</code>.
+  If the match succeeds, return their match results in an array.</p>
+
+  <p><em>-or-</em></p>
+
+  <p>Match expression at least <code>min</code> but not more then <code>max</code> times.
+  If the match succeeds, return their match results in an array. Both <code>min</code>
+  and <code>max</code> may be omitted. If <code>min</code> is omitted, then it is assumed
+  to be <code>0</code>. If <code>max</code> is omitted, then it is assumed to be infinity.
+  Hence</p>
+
+  <ul>
+    <li><code>expression |..|</code> is an equivalent of <code>expression |0..|</code>
+    and <code>expression *</code></li>
+    <li><code>expression |1..|</code> is an equivalent of <code>expression +</code></li>
+  </ul>
+
+  <p>Optionally, <code>delimiter</code> expression can be specified. Delimiter must appear
+  between expressions exactly once and it is not included in the final array.</p>
+
+  <p><code>count</code>, <code>min</code> and <code>max</code> can be represented as:</p>
+
+  <ul>
+    <li>positive integer:
+      <pre><code class="language-peggy">start = "a"|2|;</code></pre>
+    </li>
+    <li>name of the preceding label:
+      <pre><code class="language-peggy">start = count:n1 "a"|count|;
+n1 = n:$[0-9] { return parseInt(n); };</code></pre>
+    </li>
+    <li>code block:
+      <pre><code class="language-peggy">start = "a"|{ return options.count; }|;</code></pre>
+    </li>
+    Any non-number values, returned by the code block, will be interpreted as <code>0</code>.
+  </ul>
+
+  <div class="example">
+    <div>
+      <div><em>Example:</em> <code>repetition = "a"|2..3, ","|</code></div>
+      <div><em>Matches:</em> <code>"a,a"</code>, <code>"a,a,a"</code></div>
+      <div><em>Does not match:</em> <code>"a"</code>, <code>"b,b"</code>,
+            <code>"a,a,a,"</code>, <code>"a,a,a,a"</code></div>
+    </div>
+    <div class="try">
+      <em>Try it:</em>
+      <input type="text" value="a,a" class="exampleInput" name="repetition">
+      <div class="result"></div>
+    </div>
+  </div>
+</dd>
+
 <dt><code><em>expression</em> ?</code></dt>
 
 <dd>
@@ -1123,6 +1180,21 @@ using the <a href="#-expression-2"><code>$</code> operator</a>.</p>
 
 <p>One of the most frequent questions about Peggy grammars is how to parse a
 delimited list of items.  The cleanest current approach is:</p>
+
+<pre><code class="language-peggy">list = word|.., _ "," _|
+  word = $[a-z]i+
+  _ = [ \t]*</code></pre>
+
+<p>If you want to allow a trailing delimiter, append it to the end of the rule:</p>
+
+<pre><code class="language-peggy">list = word|.., delimiter| delimiter?
+  delimiter = _ "," _
+  word = $[a-z]i+
+  _ = [ \t]*</code></pre>
+
+<p>In the grammars created before the repetition operator was added to the peggy
+  (in 2.1.0) you could see that approach, which is equivalent of the new approach
+  with the repetition operator, but less efficient on long lists:</p>
 
 <pre><code class="language-peggy">list = head:word tail:(_ "," _ @word)* { return [head, ...tail]; }
 word = $[a-z]i+

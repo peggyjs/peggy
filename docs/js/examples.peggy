@@ -16,6 +16,8 @@ star = match:"a"* rest:rest { return {match, rest}; }
 
 plus = match:"a"+ rest:rest { return {match, rest}; }
 
+repetition = match:"a"|2..3, ","| rest:rest { return {match, rest}; }
+
 maybe = match:"a"? rest:rest { return {match, rest}; }
 
 posAssertion = match:"a" &"b" rest:rest { return {match, rest}; }
