@@ -5,10 +5,6 @@ $(document).ready(function() {
   var parser;
   var parserSource       = null;
 
-  var parseTimer         = null;
-
-  var oldInput          = null;
-
   var editor = CodeMirror.fromTextArea($("#grammar").get(0), {
       lineNumbers: true,
       mode: "pegjs",
@@ -17,11 +13,20 @@ $(document).ready(function() {
   });
   var input = CodeMirror.fromTextArea($("#input").get(0), {
       lineNumbers: true,
+      mode: null,
+      gutters: ["CodeMirror-lint-markers"],
+      lint: true,
   });
 
   CodeMirror.registerHelper("lint", "pegjs", function(grammar) {
     var problems = [];
     buildAndParse(grammar, problems);
+    return problems;
+  });
+
+  CodeMirror.registerHelper("lint", null, function(content) {
+    var problems = [];
+    parse(content, problems);
     return problems;
   });
 
@@ -142,15 +147,12 @@ $(document).ready(function() {
     return result;
   }
 
-  function parse() {
-    oldInput = input.getValue();
-
+  function parse(newInput, problems) {
     $("#input").removeAttr("disabled");
     $("#parse-message").attr("class", "message progress").text("Parsing the input...");
     $("#output").addClass("disabled").text("Output not available.");
 
     try {
-      var newInput = input.getValue();
       var timeBefore = (new Date).getTime();
       var output = parser.parse(newInput);
       var timeAfter = (new Date).getTime();
@@ -167,6 +169,7 @@ $(document).ready(function() {
 
       var result = true;
     } catch (e) {
+      convertError(e, problems);
       $("#parse-message").attr("class", "message error").text(buildErrorMessage(e));
 
       var result = false;
@@ -177,25 +180,11 @@ $(document).ready(function() {
   }
 
   function buildAndParse(grammar, problems) {
-    build(grammar, problems) && parse();
+    build(grammar, problems) && parse(input.getValue(), []);
   }
 
   function rebuildGrammar() {
     buildAndParse(editor.getValue(), []);
-  }
-
-  function scheduleParse() {
-    if (input.getValue() === oldInput) { return; }
-
-    if (parseTimer !== null) {
-      clearTimeout(parseTimer);
-      parseTimer = null;
-    }
-
-    parseTimer = setTimeout(function() {
-      parse();
-      parseTimer = null;
-    }, 500);
   }
 
   function doLayout() {
@@ -225,8 +214,6 @@ $(document).ready(function() {
     .keydown(rebuildGrammar)
     .keyup(rebuildGrammar)
     .keypress(rebuildGrammar);
-
-  input.on("change", scheduleParse);
 
   $( "#parser-download" )
     .click(function(){
