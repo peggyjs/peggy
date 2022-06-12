@@ -32,6 +32,8 @@ Released: TBD
 - [#206](https://github.com/peggyjs/peggy/pull/206): New output type `ast` and
   an `--ast` flag for the CLI to get an internal grammar AST for investigation
   (can be useful for plugin writers), from @Mingun
+- [#294](https://github.com/peggyjs/peggy/pull/294) Website: show errors in the
+  editors, from @Mingun
 
 ### Bug Fixes
 
