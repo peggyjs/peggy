@@ -13,6 +13,8 @@ Released: TBD
 - [#280](https://github.com/peggyjs/peggy/issues/280) Add inline examples to
   the documentation, from @hildjj
 
+- [#240](https://github.com/peggyjs/peggy/issues/240) Generate SourceNodes for bytecode
+
 ### Minor Changes
 
 - [#274](https://github.com/peggyjs/peggy/issues/274) Use commander's new
