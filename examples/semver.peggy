@@ -5,10 +5,7 @@
  */
 
 semver
-  = versionCore:versionCore
-    pre:('-' @preRelease)?
-    build:('+' @build)?
-  {
+  = versionCore:versionCore pre:('-' @preRelease)? build:('+' @build)? {
     return { ...versionCore, pre, build };
   }
 
@@ -19,12 +16,12 @@ versionCore
 
 preRelease
   = head:preReleaseIdentifier tail:('.' @preReleaseIdentifier)* {
-    return [head, ...tail];
+    return [ head, ...tail ];
   }
 
 build
   = head:buildIdentifier tail:('.' @buildIdentifier)* {
-    return [head, ...tail];
+    return [ head, ...tail ];
   }
 
 preReleaseIdentifier
@@ -40,10 +37,10 @@ buildIdentifier
 alphanumericIdentifier
   = $(digit* nonDigit identifierChar*)
 
-// Any semantically significant numbers are turned into integers for
-// later numeric comparison.
+// Any semantically significant numbers are turned into BigInts (note: there
+// is no length maximum for numbers in semver) for later numeric comparison.
 numericIdentifier
-  = n:('0' / $(positiveDigit digit*)) { return parseInt(n, 10); }
+  = n:('0' / $(positiveDigit digit*)) { return BigInt(n); }
 
 identifierChar
   = [a-z0-9-]i
