@@ -6,9 +6,6 @@ This file documents all notable changes to Peggy.
 Unreleased
 ----------
 
-- [#299](https://github.com/peggyjs/peggy/issues/299) Add example grammar for a
-  [SemVer.org](https://semver.org) semantic version string
-
 Released: TBD
 
 ### Major Changes
@@ -37,6 +34,8 @@ Released: TBD
   (can be useful for plugin writers), from @Mingun
 - [#294](https://github.com/peggyjs/peggy/pull/294) Website: show errors in the
   editors, from @Mingun
+- [#299](https://github.com/peggyjs/peggy/issues/299) Add example grammar for a
+  [SemVer.org](https://semver.org) semantic version string, from @dselman
 
 ### Bug Fixes
 
