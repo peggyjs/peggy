@@ -43,6 +43,14 @@ declare namespace ast {
     match?: MatchResult;
   }
 
+  /** A function implementing an action */
+  interface FunctionConst {
+    predicate: boolean;
+    params: string[];
+    body: string;
+    location: LocationRange;
+  }
+
   /** The main Peggy AST class returned by the parser. */
   interface Grammar extends Node<"grammar"> {
     /** Initializer that run once when importing generated parser module. */
@@ -57,7 +65,17 @@ declare namespace ast {
      * map for it.
      */
     code?: SourceNode;
-  }
+
+    /**
+     * Added by the `generateBytecode` pass and contain data for
+     * bytecodes to refer back to via index.
+     */
+     literals?: string[];
+     classes?: CharacterClass[];
+     expectations?: parser.Expectation[];
+     functions?: FunctionConst[];
+     locations?: LocationRange[];
+   }
 
   /**
    * Base interface for all initializer nodes with the code.

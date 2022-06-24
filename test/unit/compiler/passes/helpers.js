@@ -12,7 +12,7 @@ module.exports = function(chai, utils) {
   Assertion.addMethod("changeAST", function(grammar, props, options) {
     options = options !== undefined ? options : {};
 
-    const ast = parser.parse(grammar);
+    const ast = parser.parse(grammar, options);
 
     utils.flag(this, "object")(ast, options, new Session({
       error(stage, ...args) { throw new GrammarError(...args); },
