@@ -370,7 +370,8 @@ Options:
                                    given file, outputting the result of running
                                    the parser instead of the parser itself. If
                                    the input to be tested is not parsed, the
-                                   CLI will exit with code 2
+                                   CLI will exit with code 2. A filename of '-'
+                                   will read from stdin.
   --trace                          Enable tracing in generated parser (default:
                                    false)
   -h, --help                       display help for command
@@ -1038,6 +1039,12 @@ bar = '2'
     await exec({
       args: ["-T", testFile, grammarFile],
       expected: /name: 'peggy',$/m, // Output is JS, not JSON
+    });
+
+    await exec({
+      args: [grammarFile, "-T", "-"],
+      stdin: '{"foo": null}',
+      expected: "{ foo: null }\n", // Still JS, not JSON
     });
 
     await exec({

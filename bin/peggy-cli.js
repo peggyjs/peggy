@@ -191,7 +191,7 @@ class PeggyCLI extends Command {
       )
       .addOption(new Option(
         "-T, --test-file <filename>",
-        "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
+        "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2. A filename of '-' will read from stdin."
       ).conflicts("test"))
       .option("--trace", "Enable tracing in generated parser", false)
       .addOption(
@@ -548,9 +548,13 @@ class PeggyCLI extends Command {
     });
   }
 
-  test(source) {
+  async test(source) {
     if (this.testFile) {
-      this.testText = fs.readFileSync(this.testFile, "utf8");
+      if (this.testFile === "-") {
+        this.testText = await readStream(this.std.in);
+      } else {
+        this.testText = fs.readFileSync(this.testFile, "utf8");
+      }
     }
     if (typeof this.testText === "string") {
       this.verbose("TEST TEXT:", this.testText);
@@ -654,7 +658,7 @@ class PeggyCLI extends Command {
 
         exitCode = 2;
         this.verbose("CLI", errorText = "running test");
-        this.test(mappedSource);
+        await this.test(mappedSource);
       }
     } catch (error) {
       // Will either exit or throw.
