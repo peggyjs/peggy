@@ -352,6 +352,39 @@ export class GrammarError extends Error {
   public toString(): string;
 }
 
+/**
+ * When used as a grammarSource, allows grammars embedded in larger files to
+ * specify their offset.  The start location is the first character in the
+ * grammar.  The first line is often moved to the right by some number of
+ * columns, but subsequent lines all start at the first column.
+ */
+export class GrammarLocation {
+  /**
+   * The original grammarSource.  Should be a string or have a toString()
+   * method.
+   */
+  source: any;
+
+  /**
+   * The starting offset for the grammar in the larger file.
+   */
+  start: Location;
+
+  constructor(source: any, start: Location);
+
+  toString(): string;
+
+  /**
+   * Return a new Location offset from the given location by the start of the
+   * grammar.
+   *
+   * @param loc The location as if the start of the grammar was the start of
+   *   the file.
+   * @returns The offset location.
+   */
+  offset(loc: Location): Location;
+}
+
 export namespace parser {
   /**
    * Parses grammar and returns the grammar AST.
