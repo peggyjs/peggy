@@ -1,7 +1,7 @@
 "use strict";
 
 const chai = require("chai");
-const { GrammarError } = require("../../lib/peg");
+const { GrammarError, GrammarLocation } = require("../../lib/peg");
 
 const expect = chai.expect;
 
@@ -52,6 +52,7 @@ GrammarError: message
       start: { offset: 5, line: 1, column: 6 },
       end: { offset: 11, line: 2, column: 1 },
     };
+
     /** @type {import("../../lib/peg").DiagnosticNote} */
     const diagnostics = [{
       message: "Subinfo",
@@ -160,6 +161,55 @@ note: Warning Subinfo
   |
 1 | some error
   |      ^^^^^`);
+        });
+
+        it("with GrammarLocation", () => {
+          const gl = new GrammarLocation("foo.peggy", {
+            offset: 12,
+            line: 5,
+            column: 8,
+          });
+          expect(String(gl)).to.equal("foo.peggy");
+          location.source = gl;
+          subSpan.source = gl;
+          e.diagnostics.push({
+            message: "Column not offset",
+            location: {
+              source: gl,
+              start: { offset: 11, line: 2, column: 1 },
+              end: { offset: 15, line: 2, column: 5 },
+            },
+          });
+          expect(e.format([{ source: gl, text: source.text }])).to.equal(`\
+error: message
+ --> foo.peggy:6:8
+  |
+6 | some error
+  | ^^^^
+note: Subinfo
+ --> foo.peggy:6:13
+  |
+6 | some error
+  |      ^^^^^
+note: Column not offset
+ --> foo.peggy:7:1
+  |
+7 | that
+  | ^^^^
+
+warning: Warning message
+ --> foo.peggy:6:13
+  |
+6 | some error
+  |      ^^^^^
+note: Warning Subinfo
+ --> foo.peggy:6:13
+  |
+6 | some error
+  |      ^^^^^`);
+          location.source = "foo.peggy";
+          subSpan.source = "foo.peggy";
+          e.diagnostics.pop();
         });
 
         it("without source", () => {
