@@ -166,7 +166,7 @@ note: Warning Subinfo
         it("with GrammarLocation", () => {
           const gl = new GrammarLocation("foo.peggy", {
             offset: 12,
-            line: 5,
+            line: 15,
             column: 8,
           });
           expect(String(gl)).to.equal("foo.peggy");
@@ -182,31 +182,31 @@ note: Warning Subinfo
           });
           expect(e.format([{ source: gl, text: source.text }])).to.equal(`\
 error: message
- --> foo.peggy:6:8
-  |
-6 | some error
-  | ^^^^
+ --> foo.peggy:16:8
+   |
+16 | some error
+   | ^^^^
 note: Subinfo
- --> foo.peggy:6:13
-  |
-6 | some error
-  |      ^^^^^
+ --> foo.peggy:16:13
+   |
+16 | some error
+   |      ^^^^^
 note: Column not offset
- --> foo.peggy:7:1
-  |
-7 | that
-  | ^^^^
+ --> foo.peggy:17:1
+   |
+17 | that
+   | ^^^^
 
 warning: Warning message
- --> foo.peggy:6:13
-  |
-6 | some error
-  |      ^^^^^
+ --> foo.peggy:16:13
+   |
+16 | some error
+   |      ^^^^^
 note: Warning Subinfo
- --> foo.peggy:6:13
-  |
-6 | some error
-  |      ^^^^^`);
+ --> foo.peggy:16:13
+   |
+16 | some error
+   |      ^^^^^`);
           location.source = "foo.peggy";
           subSpan.source = "foo.peggy";
           e.diagnostics.pop();
