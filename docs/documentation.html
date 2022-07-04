@@ -1234,6 +1234,12 @@ object have a <code>toString()</code> implementation that returns meaningful str
 because that string will be used when getting formatted error representation
 with <a href="#error-messages"><code>e.format()</code></a>.</p>
 
+<p>For certain special cases, you can use an instance of the
+  <code>GrammarLocation</code> class as the <code>grammarSource</code>.
+  <code>GrammarLocation</code> allows you to specify the offset of the grammar
+  source in another file, such as when that grammar is embedded in a larger
+  document.</p>
+
 <p>If <code>source</code> is <code>null</code> or <code>undefined</code> it doesn't appear in the formatted messages.
 The default value for <code>source</code> is <code>undefined</code>.</p>
 
