@@ -225,7 +225,7 @@ describe("Peggy API", () => {
     });
 
     describe("generates source map", () => {
-      function findLocationOf(input, chunk) {
+      function findLocationOf(input, chunk, source) {
         const offset = chunk instanceof RegExp
           ? input.search(chunk)
           : input.indexOf(chunk);
@@ -241,6 +241,11 @@ describe("Peggy API", () => {
           }
         }
 
+        if (source && source.offset) {
+          const o = source.offset({ line, column, offset });
+          delete o.offset;
+          return o;
+        }
         return { line, column };
       }
 
@@ -264,14 +269,26 @@ describe("Peggy API", () => {
         });
         const { code, map } = node.toStringWithSourceMap();
 
-        const original  = findLocationOf(SOURCE, chunk);
+        const original  = findLocationOf(SOURCE, chunk, source);
         const generated = findLocationOf(code, generatedChunk);
+
+        delete original.offset;
+        delete generated.offset;
 
         return SourceMapConsumer.fromSourceMap(map).then(consumer => {
           expect(consumer.originalPositionFor(generated))
-            .to.be.deep.equal(Object.assign(original, { source, name }));
+            .to.be.deep.equal(Object.assign(original, {
+              source: String(source),
+              name,
+            }));
         });
       }
+
+      const gl = new peg.GrammarLocation("-", {
+        offset: 51,
+        line: 13,
+        column: 7,
+      });
 
       for (const source of [
         // Because of https://github.com/mozilla/source-map/issues/444 this variants not working
@@ -279,6 +296,7 @@ describe("Peggy API", () => {
         // null,
         // "",
         "-",
+        gl,
       ]) {
         describe(`with source = ${chai.util.inspect(source)}`, () => {
           it("global initializer", () => check(GLOBAL_INITIALIZER, source, "$top_level_initializer"));
