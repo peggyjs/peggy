@@ -45,16 +45,19 @@ peg$SyntaxError.prototype.format = function(sources) {
       }
     }
     var s = this.location.start;
-    var loc = this.location.source + ":" + s.line + ":" + s.column;
+    var offset_s = (typeof this.location.source.offset === "function")
+      ? this.location.source.offset(s)
+      : s;
+    var loc = this.location.source + ":" + offset_s.line + ":" + offset_s.column;
     if (src) {
       var e = this.location.end;
-      var filler = peg$padEnd("", s.line.toString().length, ' ');
+      var filler = peg$padEnd("", offset_s.line.toString().length, ' ');
       var line = src[s.line - 1];
       var last = s.line === e.line ? e.column : line.length + 1;
       var hatLen = (last - s.column) || 1;
       str += "\n --> " + loc + "\n"
           + filler + " |\n"
-          + s.line + " | " + line + "\n"
+          + offset_s.line + " | " + line + "\n"
           + filler + " | " + peg$padEnd("", s.column - 1, ' ')
           + peg$padEnd("", hatLen, "^");
     } else {

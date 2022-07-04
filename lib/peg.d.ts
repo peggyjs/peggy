@@ -383,6 +383,24 @@ export class GrammarLocation {
    * @returns The offset location.
    */
   offset(loc: Location): Location;
+
+  /**
+   * If the range has a grammarSource that is a GrammarLocation, offset the
+   * start of that range by the GrammarLocation.
+   *
+   * @param range The range to extract from.
+   * @returns The offset start if possible, or the original start.
+   */
+  static offsetStart(range: LocationRange): Location;
+
+  /**
+   * If the range has a grammarSource that is a GrammarLocation, offset the
+   * end of that range by the GrammarLocation.
+   *
+   * @param range The range to extract from.
+   * @returns The offset end if possible, or the original end.
+   */
+  static offsetEnd(range: LocationRange): Location;
 }
 
 export namespace parser {
