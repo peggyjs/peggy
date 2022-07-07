@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="copyright" content="Copyright &copy; 2022 The Peggy Authors" />
+    <meta name="keywords" content="parser generator, PEG, JavaScript, PEG.js" />
+    <meta
+      name="description"
+      content="Peggy is a parser generator for JavaScript based on the parsing expression grammar formalism."
+    />
+    <title>Peggy &ndash; Parser Generator for JavaScript</title>
+    <link rel="stylesheet" href="{{ "/css/common.css" | url }}" />
+    <link rel="stylesheet" href="{{ "/css/layout-default.css" | url }}" />
+    <link rel="stylesheet" href="{{ "/css/content.css" | url }}" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <!--[if IE]>
+      <script>
+        var html5elements = ["aside", "footer", "header", "nav"];
+        for (var i = 0; i < html5elements.length; i++) {
+          document.createElement(html5elements[i]);
+        }
+      </script>
+    <![endif]-->
+    {% if scripts %}
+      {% for script in scripts %}
+        <script src="{{ script | url }}"></script>
+      {% endfor %}
+    {% endif %}
+    {% if stylesheets %}
+      {% for stylesheet in stylesheets %}
+        <link rel="stylesheet" href="{{ stylesheet | url }}" />
+      {% endfor %}
+    {% endif %}
+  </head>
+  <body>
+    <div id="main">
+      <header id="header">
+        <h1><a href="#main">Peggy</a></h1>
+        <h2>Parser Generator for JavaScript</h2>
+      </header>
+
+      <nav id="menu">
+        <a {% if page.url == "/" %} aria-current="page" class="current" {% endif %} href="{{ "/index.html" | url }}">Home</a>
+        <a {% if page.url == "/online.html" %} aria-current="page" class="current" {% endif %} href="{{ "/online.html" | url }}">Online Version</a>
+        <a {% if page.url == "/documentation.html" %} aria-current="page" class="current" {% endif %} href="{{ "/documentation.html" | url }}">Documentation</a>
+        <a {% if page.url contains "/development" %} aria-current="page" class="current" {% endif %} href="{{ "/development/index.html" | url }}">Development</a>
+      </nav>
+
+      <div id="content">{{content}}</div>
+
+      <footer id="footer">
+        Copyright &copy; 2022
+        <a href="https://github.com/peggyjs/peggy/blob/main/AUTHORS"
+          >The Peggy Authors</a
+        >
+        &bull;
+        <a href="https://github.com/peggyjs/peggy">Source code</a>
+      </footer>
+    </div>
+  </body>
+</html>
