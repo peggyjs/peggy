@@ -1,3 +1,7 @@
+---
+permalink: '/documentation.html'
+---
+
 <!DOCTYPE html>
 <html>
 
@@ -566,7 +570,7 @@ allowed.</p>
 
 <p>The first rule can be preceded by a <em>global initializer</em> and/or a
 <em>per-parse initializer</em>, in that order. Both are pieces of JavaScript
-code in double curly braces (“{{” and “}}”) and single curly braces (“{” and
+code in double curly braces (“{{'{{'}}” and “}}”) and single curly braces (“{” and
 “}”) respectively. All variables and functions defined in both
 <em>initializers</em> are accessible in rule actions and semantic predicates.
 Curly braces in both <em>initializers</em> code must be balanced.</p>
@@ -584,7 +588,7 @@ parse or to modify the input before the parse.</p>
 <p>Let's look at the example grammar from above using a <em>global
 initializer</em> and a <em>per-parse initializer</em>:</p>
 
-<pre><code class="language-peggy">{{
+<pre><code class="language-peggy">{{'{{'}}
   function makeInteger(o) {
     return parseInt(o.join(""), 10);
   }
