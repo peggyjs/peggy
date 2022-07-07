@@ -1,80 +1,42 @@
 ---
-permalink: '/development/test.html'
+permalink: "/development/test.html"
+layout: base-layout
 ---
 
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="utf-8">
-    <meta name="copyright" content="Copyright &copy; 2022 The Peggy Authors">
-    <meta name="keywords" content="parser generator, PEG, JavaScript, PEG.js">
-    <meta name="description" content="Peggy is a parser generator for JavaScript based on the parsing expression grammar formalism.">
-    <title>Test &raquo; Peggy &ndash; Parser Generator for JavaScript</title>
-    <link rel="stylesheet" href="../css/common.css">
-    <link rel="stylesheet" href="../css/layout-default.css">
-    <link rel="stylesheet" href="../css/content.css">
-    <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
-    <!--[if IE]>
-    <script>
-        var html5elements = ["aside", "footer", "header", "nav"];
-        for (var i = 0; i < html5elements.length; i++) {
-          document.createElement(html5elements[i]);
-        }
-    </script>
-    <![endif]-->
-
-    <!-- replace with Jest one day -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.4/chai.min.js"></script>
-    <script src="https://jsdom.github.io/whatwg-url/whatwg-url.js"></script>
+<!-- replace with Jest one day -->
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.css"
+/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.4/chai.min.js"></script>
+<script src="https://jsdom.github.io/whatwg-url/whatwg-url.js"></script>
 
 <script>
-  mocha.setup('bdd');
+  mocha.setup("bdd");
 </script>
-<script src='../js/test-bundle.min.js'></script>
+<script src="../js/test-bundle.min.js"></script>
 <style>
-.hidden {
-  display: none;
-}
+  .hidden {
+    display: none;
+  }
 </style>
-</head>
 
-<body>
-    <div id='main'>
-        <header id="header">
-            <h1><a href="../index.html">Peggy</a></h1>
-            <h2>Parser Generator for JavaScript</h2>
-        </header>
+<div id="results" class="hidden"></div>
+<div id="mocha"></div>
 
-        <nav id="menu">
-            <a  href="../index.html">Home</a>
-            <a  href="../online.html">Online Version</a>
-            <a  href="../documentation.html">Documentation</a>
-            <a  href="index.html">Development</a>
-        </nav>
-
-        <div id='results' class="hidden"></div>
-        <div id="content">
-          <div id="mocha"></div>
-        </div>
-
-        <footer id="footer">
-            Copyright &copy; 2022 <a href="https://github.com/peggyjs/peggy/blob/main/AUTHORS">The Peggy Authors</a>
-            &bull;
-            <a href="https://github.com/pegjs/pegjs">Source code</a>
-        </footer>
-    </div>
-</body>
 <script class="mocha-exec">
-  mocha.run(failures => {
-    const result = failures === 0 ? 'PASS' : 'FAIL';
-    const status = result + ': ' + failures + ' failures.  Peggy Version: ' + browser.peggyVersion()
+  mocha.run((failures) => {
+    const result = failures === 0 ? "PASS" : "FAIL";
+    const status =
+      result +
+      ": " +
+      failures +
+      " failures.  Peggy Version: " +
+      browser.peggyVersion();
     console.log(status);
-    const div = document.getElementById('results');
+    const div = document.getElementById("results");
     div.innerHTML = status;
-    div.classList.remove('hidden');
+    div.classList.remove("hidden");
   });
 </script>
-</html>
