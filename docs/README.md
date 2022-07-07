@@ -10,8 +10,8 @@ To build the site for production, run:
 npm run build
 ```
 
-For local development, to watch changes and rebuild automatically, run:
+For local development, you can use the development server which will watch changes and rebuild the site automatically. To do this, run:
 
 ```sh
-npm run build:watch
+npm run start
 ```
