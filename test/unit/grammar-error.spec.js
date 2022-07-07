@@ -182,30 +182,30 @@ note: Warning Subinfo
           });
           expect(e.format([{ source: gl, text: source.text }])).to.equal(`\
 error: message
- --> foo.peggy:16:8
+ --> foo.peggy:15:8
    |
-16 | some error
+15 | some error
    | ^^^^
 note: Subinfo
- --> foo.peggy:16:13
+ --> foo.peggy:15:13
    |
-16 | some error
+15 | some error
    |      ^^^^^
 note: Column not offset
- --> foo.peggy:17:1
+ --> foo.peggy:16:1
    |
-17 | that
+16 | that
    | ^^^^
 
 warning: Warning message
- --> foo.peggy:16:13
+ --> foo.peggy:15:13
    |
-16 | some error
+15 | some error
    |      ^^^^^
 note: Warning Subinfo
- --> foo.peggy:16:13
+ --> foo.peggy:15:13
    |
-16 | some error
+15 | some error
    |      ^^^^^`);
           location.source = "foo.peggy";
           subSpan.source = "foo.peggy";
