@@ -26,6 +26,11 @@
         <link rel="stylesheet" href="{{ stylesheet | url }}" />
       {% endfor %}
     {% endif %}
+    {% if scripts %}
+      {% for script in scripts %}
+        <script src="{{ script | url }}"></script>
+      {% endfor %}
+    {% endif %}
   </head>
   <body>
     <div id="main">
@@ -52,10 +57,5 @@
         <a href="https://github.com/peggyjs/peggy">Source code</a>
       </footer>
     </div>
-    {% if scripts %}
-      {% for script in scripts %}
-        <script src="{{ script | url }}"></script>
-      {% endfor %}
-    {% endif %}
   </body>
 </html>

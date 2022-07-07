@@ -1,16 +1,14 @@
 ---
 permalink: "/development/test.html"
 layout: base-layout
+stylesheets: ["https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.css"]
+scripts:
+  [
+    "https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.4/chai.min.js",
+    "https://jsdom.github.io/whatwg-url/whatwg-url.js",
+  ]
 ---
-
-<!-- replace with Jest one day -->
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.css"
-/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.4/chai.min.js"></script>
-<script src="https://jsdom.github.io/whatwg-url/whatwg-url.js"></script>
 
 <script>
   mocha.setup("bdd");
