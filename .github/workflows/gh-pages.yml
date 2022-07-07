@@ -1,0 +1,16 @@
+name: Deploy to GitHub Pages
+
+on: workflow_dispatch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Build
+        run: "cd docs && npm run build"
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/_site
+          publish_branch: docs
