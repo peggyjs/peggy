@@ -9,9 +9,7 @@ module.exports = function (eleventyConfig) {
   return {
     // Control which files Eleventy will process
     // e.g.: *.md, *.njk, *.html, *.liquid
-    templateFormats: ["html", "njk"],
-    // Process .html files with nunjucks
-    htmlTemplateEngine: "njk",
+    templateFormats: ["html", "njk", "liquid", "md"],
     // Path prefix for URLs
     pathPrefix: "/",
     // Config for input/output/data/etc. directories
