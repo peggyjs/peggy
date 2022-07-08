@@ -25,7 +25,7 @@ scripts:
 <div id="mocha"></div>
 
 <script class="mocha-exec">
-  mocha.run((failures) => {
+  mocha.run(failures => {
     const result = failures === 0 ? 'PASS' : 'FAIL';
     const status = result + ': ' + failures + ' failures. Peggy Version: ' + browser.peggyVersion()
     console.log(status);
