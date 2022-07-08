@@ -12,30 +12,25 @@ scripts:
 ---
 
 <script>
-  mocha.setup("bdd");
+  mocha.setup('bdd');
 </script>
-<script src="../js/test-bundle.min.js"></script>
+<script src='../js/test-bundle.min.js'></script>
 <style>
   .hidden {
     display: none;
   }
 </style>
 
-<div id="results" class="hidden"></div>
+<div id='results' class="hidden"></div>
 <div id="mocha"></div>
 
 <script class="mocha-exec">
   mocha.run((failures) => {
-    const result = failures === 0 ? "PASS" : "FAIL";
-    const status =
-      result +
-      ": " +
-      failures +
-      " failures.  Peggy Version: " +
-      browser.peggyVersion();
+    const result = failures === 0 ? 'PASS' : 'FAIL';
+    const status = result + ': ' + failures + ' failures. Peggy Version: ' + browser.peggyVersion()
     console.log(status);
-    const div = document.getElementById("results");
+    const div = document.getElementById('results');
     div.innerHTML = status;
-    div.classList.remove("hidden");
+    div.classList.remove('hidden');
   });
 </script>
