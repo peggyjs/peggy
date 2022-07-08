@@ -1,45 +1,25 @@
 ---
 title: 'Online Version'
 permalink: "/online.html"
+layout: base-layout
+stylesheets: [
+  "/css/layout-online.css",
+  "/css/content.css",
+  "/vendor/codemirror/codemirror.css",
+  "/vendor/codemirror/lint.css"
+]
+scripts: [
+  "https://unpkg.com/jquery@1.12.4/dist/jquery.min.js",
+  "https://unpkg.com/file-saver@2.0.2/dist/FileSaver.min.js",
+  "https://unpkg.com/node-inspect-extracted@1.1.0/dist/inspect.js",
+  "/vendor/peggy/peggy.min.js",
+  "/vendor/codemirror/codemirror.js",
+  "/vendor/codemirror/lint.js",
+  "/js/online.js"
+]
 ---
-<!DOCTYPE html>
-<html>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="copyright" content="Copyright &copy; 2022 The Peggy Authors">
-    <meta name="keywords" content="parser generator, PEG, JavaScript, PEG.js">
-    <meta name="description" content="Peggy is a parser generator for JavaScript based on the parsing expression grammar formalism.">
-    <title>Online Version &raquo; Peggy &ndash; Parser Generator for JavaScript</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/layout-online.css">
-    <link rel="stylesheet" href="css/content.css">
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <!--[if IE]>
-    <script>
-        var html5elements = ["aside", "footer", "header", "nav"];
-        for (var i = 0; i < html5elements.length; i++) {
-          document.createElement(html5elements[i]);
-        }
-    </script>
-    <![endif]-->
-    <link rel="stylesheet" href="vendor/codemirror/codemirror.css">
-    <link rel="stylesheet" href="vendor/codemirror/lint.css">
-</head>
-
-<body>
-
-        <header id="header">
-            <h1><a href="index.html">Peggy</a></h1>
-            <h2>Parser Generator for JavaScript</h2>
-        </header>
-
-        <nav id="menu">
-            <a  href="index.html">Home</a>
-            <a  class="current" href="online.html">Online Version</a>
-            <a  href="documentation.html">Documentation</a>
-            <a  href="development/index.html">Development</a>
-        </nav>
+{% include 'components/header.html' %}
 
         <div id="loader"> <div id="loader-inner">Loading...</div> </div>
 
@@ -155,17 +135,3 @@ _ "whitespace"
         </td>
     </tr>
 </table>
-
-
-        </div>
-
-        <script src="https://unpkg.com/jquery@1.12.4/dist/jquery.min.js"></script>
-        <script src="https://unpkg.com/file-saver@2.0.2/dist/FileSaver.min.js"></script>
-        <script src="https://unpkg.com/node-inspect-extracted@1.1.0/dist/inspect.js"></script>
-        <script src="vendor/peggy/peggy.min.js"></script>
-        <script src="vendor/codemirror/codemirror.js"></script>
-        <script src="vendor/codemirror/lint.js"></script>
-        <script src="js/online.js"></script>
-</body>
-
-</html>
