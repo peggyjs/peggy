@@ -33,29 +33,6 @@
     {% endif %}
   </head>
   <body>
-    <div id="main">
-      <header id="header">
-        <h1><a href="#main">Peggy</a></h1>
-        <h2>Parser Generator for JavaScript</h2>
-      </header>
-
-      <nav id="menu">
-        <a {% if page.url == "/" %} aria-current="page" class="current" {% endif %} href="{{ "/index.html" | url }}">Home</a>
-        <a {% if page.url == "/online.html" %} aria-current="page" class="current" {% endif %} href="{{ "/online.html" | url }}">Online Version</a>
-        <a {% if page.url == "/documentation.html" %} aria-current="page" class="current" {% endif %} href="{{ "/documentation.html" | url }}">Documentation</a>
-        <a {% if page.url contains "/development" %} aria-current="page" class="current" {% endif %} href="{{ "/development/index.html" | url }}">Development</a>
-      </nav>
-
-      <div id="content">{{content}}</div>
-
-      <footer id="footer">
-        Copyright &copy; 2022
-        <a href="https://github.com/peggyjs/peggy/blob/main/AUTHORS"
-          >The Peggy Authors</a
-        >
-        &bull;
-        <a href="https://github.com/peggyjs/peggy">Source code</a>
-      </footer>
-    </div>
+    {{content}}
   </body>
 </html>
