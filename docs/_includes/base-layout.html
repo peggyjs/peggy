@@ -13,14 +13,6 @@
     <link rel="stylesheet" href="{{ "/css/layout-default.css" | url }}" />
     <link rel="stylesheet" href="{{ "/css/content.css" | url }}" />
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <!--[if IE]>
-      <script>
-        var html5elements = ["aside", "footer", "header", "nav"];
-        for (var i = 0; i < html5elements.length; i++) {
-          document.createElement(html5elements[i]);
-        }
-      </script>
-    <![endif]-->
     {% if stylesheets %}
       {% for stylesheet in stylesheets %}
         <link rel="stylesheet" href="{{ stylesheet | url }}" />
