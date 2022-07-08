@@ -101,7 +101,7 @@ command:</p>
 <pre><code class="language-console">$ peggy arithmetics.pegjs</code></pre>
 
 <p>This writes parser source code into a file with the same name as the grammar
-file but with &ldquo;.js&rdquo; extension. You can also specify the output file
+file but with “.js” extension. You can also specify the output file
 explicitly:</p>
 
 <pre><code class="language-console">$ peggy -o arithmetics-parser.js arithmetics.pegjs</code></pre>
@@ -506,16 +506,16 @@ name</em> that is used in error messages (in our example, only the
 first rule, which is also called the <em>start rule</em>.</p>
 
 <p>A rule name must be a JavaScript identifier. It is followed by an equality
-sign (&ldquo;=&rdquo;) and a parsing expression. If the rule has a human-readable name, it
+sign (“=”) and a parsing expression. If the rule has a human-readable name, it
 is written as a JavaScript string between the rule name and the equality sign.
 Rules need to be separated only by whitespace (their beginning is easily
-recognizable), but a semicolon (&ldquo;;&rdquo;) after the parsing expression is
+recognizable), but a semicolon (“;”) after the parsing expression is
 allowed.</p>
 
 <p>The first rule can be preceded by a <em>global initializer</em> and/or a
 <em>per-parse initializer</em>, in that order. Both are pieces of JavaScript
-code in double curly braces (&ldquo;{{'{{'}}&rdquo; and &ldquo;}}&rdquo;) and single curly braces (&ldquo;{&rdquo; and
-&ldquo;}&rdquo;) respectively. All variables and functions defined in both
+code in double curly braces (“{{'{{'}}” and “}}”) and single curly braces (“{” and
+“}”) respectively. All variables and functions defined in both
 <em>initializers</em> are accessible in rule actions and semantic predicates.
 Curly braces in both <em>initializers</em> code must be balanced.</p>
 <p>The <em>global initializer</em> is executed once and only once, when the
@@ -586,7 +586,7 @@ expressions, up to the start rule. The generated parser returns start rule's
 match result when parsing is successful.</p>
 
 <p>One special case of parser expression is a <em>parser action</em> &mdash; a
-piece of JavaScript code inside curly braces (&ldquo;{&rdquo; and &ldquo;}&rdquo;) that takes match
+piece of JavaScript code inside curly braces (“{” and “}”) that takes match
 results of some of the the preceding expressions and returns a JavaScript value.
 This value is considered match result of the preceding expression (in other
 words, the parser action is a match result transformer).</p>
