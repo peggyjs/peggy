@@ -49,7 +49,7 @@
     "start": "browser-sync start -c .bs-config.js"
   },
   "devDependencies": {
-    "@peggyjs/eslint-config": "^2.0.0",
+    "@peggyjs/eslint-config": "^3.0.0",
     "@rollup/plugin-commonjs": "^22.0.1",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-multi-entry": "^4.1.0",
