@@ -27,18 +27,27 @@ interface CodeObject {
 
 /** Capture stdin/stdout. */
 class MockStream extends Transform {
-  private errorsToThrow: Error[];
-
   public name?: string;
 
-  constructor(opts: ErrorWritableOptions = {}) {
+  private errorsToThrow: Error[];
+
+  public constructor(opts: ErrorWritableOptions = {}) {
     const { name, errorsToThrow, ...others } = opts;
     super(others);
     this.name = name;
     this.errorsToThrow = errorsToThrow || [];
   }
 
-  _transform(
+  public static create(
+    src?: Buffer | string,
+    opts: ErrorWritableOptions = {}
+  ): MockStream {
+    const b = new MockStream(opts);
+    b.end(src);
+    return b;
+  }
+
+  public _transform(
     chunk: any,
     encoding: BufferEncoding,
     callback: TransformCallback
@@ -51,29 +60,20 @@ class MockStream extends Transform {
       callback();
     }
   }
-
-  static create(
-    src?: string | Buffer,
-    opts: ErrorWritableOptions = {}
-  ): MockStream {
-    const b = new MockStream(opts);
-    b.end(src);
-    return b;
-  }
 }
 
 /** Execution failed */
 class ExecError extends Error {
   /** Result error code, always non-zero */
-  code: number;
+  public code: number;
 
   /** Stdout as a string, decoded with opts.encoding */
-  str: string;
+  public str: string;
 
   /** Stdout as a Buffer */
-  buf?: Buffer;
+  public buf?: Buffer;
 
-  constructor(
+  public constructor(
     message: string,
     code: number,
     str: string,
@@ -89,24 +89,24 @@ ${str}`);
   }
 }
 
-type Options = {
+interface Options {
   args?: string[];
   encoding?: BufferEncoding;
-  env?: Record<string, string>;
-  stdin?: string | Buffer | MockStream;
+  env?: { [variable: string]: string };
+  stdin?: Buffer | MockStream | string;
   stdout?: MockStream;
   stderr?: MockStream;
   error?: any;
-  errorCode?: string | number;
+  errorCode?: number | string;
   exitCode?: number;
   expected?: any;
-};
+}
 
 /**
  * "Execute" the CLI by calling it as the wrapper would, but substituting
  * our own stdin, stdout, stderr.
  */
-async function exec(opts: Options = {}) {
+async function exec(opts: Options = {}): Promise<string> {
   opts = {
     args: [],
     encoding: "utf8",
@@ -204,7 +204,7 @@ async function exec(opts: Options = {}) {
   return outputString;
 }
 
-function forkExec(opts: Options = {}) {
+function forkExec(opts: Options = {}): Promise<string> {
   opts = {
     args: [],
     encoding: "utf8",
@@ -266,8 +266,8 @@ function forkExec(opts: Options = {}) {
 async function checkSourceMap(
   sourceMap: string,
   args: string[],
-  error?: string,
-) {
+  error?: string
+): Promise<void> {
   expect(() => {
     // Make sure the file isn't there before we start
     fs.statSync(sourceMap);
@@ -296,6 +296,10 @@ describe("MockStream", () => {
     // Note: before adding this callback, the write's below would block
     // unless the highwaterMark above was changed to 3 or more.
     s.on("data", d => recv.push(d));
+
+    // This should be promisify<string>, but TS can't figure out how to
+    // use the correct overload.
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     const write = promisify<string, void>(s.write.bind(s));
     await write("ab");
     await write("c");

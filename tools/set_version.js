@@ -25,7 +25,7 @@ console.log(` - Updated ${path.relative(process.cwd(), version_file)} to version
 const index_file = path.join(__dirname, "..", "docs", "index.html");
 const index = fs.readFileSync(
   index_file,
-  "utf8",
+  "utf8"
 );
 
 const updated = index.replace(/(https:\/\/unpkg.com\/peggy@)\d+\.\d+\.\d+/, `$1${pkg.version}`);
