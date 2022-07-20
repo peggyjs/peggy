@@ -84,7 +84,6 @@ class PeggyCLI extends Command {
 
     /** @type {peggy.BuildOptionsBase} */
     this.argv = {};
-    this.colors = this.std.err.isTTY;
     /** @type {string?} */
     this.inputFile = null;
     /** @type {string?} */
@@ -386,7 +385,7 @@ class PeggyCLI extends Command {
 
   print(stream, ...args) {
     stream.write(util.formatWithOptions({
-      colors: this.colors,
+      colors: stream.isTTY,
       depth: Infinity,
       maxArrayLength: Infinity,
       maxStringLength: Infinity,
@@ -611,12 +610,7 @@ class PeggyCLI extends Command {
         opts.startRule = this.progOptions.startRule;
       }
       const results = exec.parse(this.testText, opts);
-      this.print(this.std.out, util.inspect(results, {
-        depth: Infinity,
-        colors: this.colors,
-        maxArrayLength: Infinity,
-        maxStringLength: Infinity,
-      }));
+      this.print(this.std.out, "%O", results);
     }
   }
 
