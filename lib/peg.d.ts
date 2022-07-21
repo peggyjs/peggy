@@ -1,6 +1,6 @@
 // Based on PEG.js Type Definitions by: vvakame <https://github.com/vvakame>, Tobias Kahlert <https://github.com/SrTobi>, C.J. Bell <https://github.com/siegebell>
 
-import { SourceNode } from "source-map-generator";
+import type { SourceNode } from "source-map-generator";
 
 /** Interfaces that describe the abstract syntax tree used by Peggy. */
 declare namespace ast {
@@ -119,7 +119,7 @@ declare namespace ast {
      */
     nameLocation: LocationRange;
     /** Parsing expression of this rule. */
-    expression: Named | Expression;
+    expression: Expression | Named;
 
     /** Added by the `generateBytecode` pass. */
     bytecode?: number[];
@@ -134,22 +134,22 @@ declare namespace ast {
 
   /** Arbitrary expression of the grammar. */
   type Expression
-    = Choice
-    | Action
-    | Sequence
+    = Action
+    | Choice
     | Labeled
     | Prefixed
-    | Suffixed
-    | Primary;
+    | Primary
+    | Sequence
+    | Suffixed;
 
   /** One element of the choice node. */
   type Alternative
     = Action
-    | Sequence
     | Labeled
     | Prefixed
-    | Suffixed
-    | Primary;
+    | Primary
+    | Sequence
+    | Suffixed;
 
   interface Choice extends Expr<"choice"> {
     /**
@@ -161,11 +161,7 @@ declare namespace ast {
 
   interface Action extends CodeBlockExpr<"action"> {
     expression: (
-        Sequence
-      | Labeled
-      | Prefixed
-      | Suffixed
-      | Primary
+        Labeled | Prefixed | Primary | Sequence | Suffixed
     );
   }
 
@@ -173,8 +169,8 @@ declare namespace ast {
   type Element
     = Labeled
     | Prefixed
-    | Suffixed
-    | Primary;
+    | Primary
+    | Suffixed;
 
   interface Sequence extends Expr<"sequence"> {
     /** List of expressions each of them should match in order to match the sequence. */
@@ -196,26 +192,26 @@ declare namespace ast {
      */
     labelLocation: LocationRange;
     /** Expression which result will be available in the user code under name `label`. */
-    expression: Prefixed | Suffixed | Primary;
+    expression: Prefixed | Primary | Suffixed;
   }
 
   /** Expression with a preceding operator. */
-  interface Prefixed extends Expr<"text" | "simple_and" | "simple_not"> {
-    expression: Suffixed | Primary;
+  interface Prefixed extends Expr<"simple_and" | "simple_not" | "text"> {
+    expression: Primary | Suffixed;
   }
 
   /** Expression with a following operator. */
-  interface Suffixed extends Expr<"optional" | "zero_or_more" | "one_or_more"> {
+  interface Suffixed extends Expr<"one_or_more" | "optional" | "zero_or_more"> {
     expression: Primary;
   }
 
   type Primary
-    = RuleReference
-    | SemanticPredicate
+    = Any
+    | CharacterClass
     | Group
     | Literal
-    | CharacterClass
-    | Any;
+    | RuleReference
+    | SemanticPredicate;
 
   interface RuleReference extends Expr<"rule_ref"> {
     /** Name of the rule to refer. */
@@ -292,7 +288,7 @@ export interface DiagnosticNote {
 /** Possible compilation stage name. */
 type Stage = keyof Stages;
 /** Severity level of problems that can be registered in compilation session. */
-type Severity = "error" | "warning" | "info";
+type Severity = "error" | "info" | "warning";
 
 type Problem = [
   /** Problem severity. */
@@ -308,21 +304,21 @@ type Problem = [
 /** Thrown if the grammar contains a semantic error. */
 export class GrammarError extends Error {
   /** Location of the error in the source. */
-  location?: LocationRange;
+  public location?: LocationRange;
 
   /** Additional messages with context information. */
-  diagnostics: DiagnosticNote[];
+  public diagnostics: DiagnosticNote[];
 
   /** Compilation stage during which error was generated. */
-  stage: Stage | null;
+  public stage: Stage | null;
 
   /**
    * List of diagnostics containing all errors, warnings and information
    * messages generated during compilation stage `stage`.
    */
-  problems: Problem[];
+  public problems: Problem[];
 
-  constructor(
+  public constructor(
     message: string,
     location?: LocationRange,
     diagnostics?: DiagnosticNote[]
@@ -351,9 +347,9 @@ export class GrammarError extends Error {
    *
    * @returns the formatted error
    */
-  format(sources: SourceText[]): string;
+  public format(sources: SourceText[]): string;
 
-  toString(): string;
+  public toString(): string;
 }
 
 export namespace parser {
@@ -433,20 +429,21 @@ export namespace parser {
   }
 
   type Expectation
-    = LiteralExpectation
+    = AnyExpectation
     | ClassExpectation
-    | AnyExpectation
     | EndExpectation
+    | LiteralExpectation
     | OtherExpectation;
 
   interface SyntaxErrorConstructor {
+    readonly prototype: SyntaxError;
+
     new (
       message: string,
       expected: Expectation[] | null,
       found: string | null,
       location: LocationRange
     ): SyntaxError;
-    readonly prototype: SyntaxError;
 
     // Static methods
     /**
@@ -461,19 +458,19 @@ export namespace parser {
   /** Thrown if the grammar contains a syntax error. */
   class SyntaxError extends Error {
     /** Location where error was originated. */
-    location: LocationRange;
+    public location: LocationRange;
 
     /**
      * List of possible tokens in the parse position, or `null` if error was
      * created by the `error()` call.
      */
-    expected: Expectation[] | null;
+    public expected: Expectation[] | null;
 
     /**
      * Character in the current parse position, or `null` if error was created
      * by the `error()` call.
      */
-    found: string | null;
+    public found: string | null;
 
     /**
      * Format the error with associated sources.  The `location.source` should have
@@ -493,7 +490,7 @@ export namespace parser {
      *
      * @returns the formatted error
      */
-    format(sources: SourceText[]): string;
+    public format(sources: SourceText[]): string;
   }
 }
 
@@ -705,7 +702,7 @@ export namespace compiler {
       <T extends keyof NodeTypes>(
         node: ast.Node<T>,
         ...args: any[]
-      ): ReturnType<F[T] & AnyFunction>;
+      ): ReturnType<AnyFunction & F[T]>;
     }
 
     /**
@@ -721,6 +718,9 @@ export namespace compiler {
    * Plugins can extend or replace the list of passes during configuration.
    */
   interface Stages {
+    /** Any additional stages that can be added in the future. */
+    [key: string]: Pass[];
+
     /**
      * Pack of passes that performing checks on the AST. This bunch of passes
      * executed in the very beginning of the compilation stage.
@@ -733,9 +733,6 @@ export namespace compiler {
     transform: Pass[];
     /** Pack of passes that generates the code. */
     generate: Pass[];
-
-    /** Any additional stages that can be added in the future. */
-    [key: string]: Pass[];
   }
 
   /** List of the compilation stages. */
@@ -814,7 +811,7 @@ export namespace compiler {
     ast: ast.Grammar,
     stages: Stages,
     options: SourceBuildOptions<SourceOutputs>
-  ): string | SourceNode;
+  ): SourceNode | string;
 }
 
 /** Provides information pointing to a location within a source. */
@@ -838,6 +835,7 @@ export interface LocationRange {
 }
 
 export interface ParserOptions {
+  [key: string]: any;
   /**
    * Object that will be attached to the each `LocationRange` object created by
    * the parser. For example, this can be path to the parsed file or even the
@@ -846,23 +844,22 @@ export interface ParserOptions {
   grammarSource?: any;
   startRule?: string;
   tracer?: ParserTracer;
-  [key: string]: any;
 }
 
 export interface Parser {
-  parse(input: string, options?: ParserOptions): any;
-
   SyntaxError: parser.SyntaxErrorConstructor;
+
+  parse(input: string, options?: ParserOptions): any;
 }
 
 export interface ParserTracer {
   trace(event: ParserTracerEvent): void;
 }
 
-export type ParserTracerEvent =
-  | { type: "rule.enter"; rule: string; location: LocationRange }
-  | { type: "rule.match"; rule: string; result: any; location: LocationRange }
-  | { type: "rule.fail"; rule: string; location: LocationRange };
+export type ParserTracerEvent
+  = { type: "rule.enter"; rule: string; location: LocationRange }
+  | { type: "rule.fail"; rule: string; location: LocationRange }
+  | { type: "rule.match"; rule: string; result: any; location: LocationRange };
 
 /**
  * Function that performs checking, transformation or analysis of the AST.
@@ -1060,7 +1057,7 @@ export interface BuildOptionsBase {
    *             It will be deleted in 2.0.
    *             Parser is always generated in the former `"speed"` mode
    */
-  optimize?: "speed" | "size";
+  optimize?: "size" | "speed";
 
   /** Plugins to use */
   plugins?: Plugin[];
@@ -1090,11 +1087,11 @@ export interface ParserBuildOptions extends BuildOptionsBase {
 }
 
 /** Possible kinds of source output generators. */
-export type SourceOutputs =
-  "parser" |
-  "source" |
-  "source-and-map" |
-  "source-with-inline-map";
+export type SourceOutputs
+  = "parser"
+  | "source-and-map"
+  | "source-with-inline-map"
+  | "source";
 
 /** Base options for all source-generating formats. */
 interface SourceOptionsBase<Output>
@@ -1163,10 +1160,10 @@ export interface OutputFormatBare<Output extends SourceOutputs = "source">
 
 /** Options for generating source code of the parser. */
 export type SourceBuildOptions<Output extends SourceOutputs = "source">
-  = OutputFormatUmd<Output>
+  = OutputFormatAmdCommonjsEs<Output>
   | OutputFormatBare<Output>
   | OutputFormatGlobals<Output>
-  | OutputFormatAmdCommonjsEs<Output>;
+  | OutputFormatUmd<Output>;
 
 /**
  * Returns a generated parser object.
@@ -1262,7 +1259,7 @@ export function generate(
 export function generate(
   grammar: string,
   options: SourceBuildOptions<SourceOutputs>
-): string | SourceNode;
+): SourceNode | string;
 
 /**
  * Returns the generated AST for the grammar. Unlike result of the

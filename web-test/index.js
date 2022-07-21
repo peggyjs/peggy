@@ -5,7 +5,7 @@ const path = require("path");
 const version = require("../package.json").version;
 
 const TOP = `file://${path.resolve(
-  __dirname, "..", "docs", "development", "test.html",
+  __dirname, "..", "docs", "development", "test.html"
 )}`;
 
 async function main() {
@@ -55,7 +55,7 @@ async function main() {
     })
     .on("pageerror", ({ message }) => console.log(`ERROR: ${message}`))
     .on("requestfailed", request => console.log(
-      `FAIL: ${request.failure().errorText} ${request.url()}`,
+      `FAIL: ${request.failure().errorText} ${request.url()}`
     ));
   await page.goto(TOP, { waitUntil: "load" });
   await donePromise;
