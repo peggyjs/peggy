@@ -363,16 +363,34 @@ export class GrammarLocation {
    * The original grammarSource.  Should be a string or have a toString()
    * method.
    */
-  source: any;
+  public source: any;
 
   /**
    * The starting offset for the grammar in the larger file.
    */
-  start: Location;
+  public start: Location;
 
-  constructor(source: any, start: Location);
+  public constructor(source: unknown, start: Location);
 
-  toString(): string;
+  /**
+   * If the range has a grammarSource that is a GrammarLocation, offset the
+   * start of that range by the GrammarLocation.
+   *
+   * @param range The range to extract from.
+   * @returns The offset start if possible, or the original start.
+   */
+  public static offsetStart(range: LocationRange): Location;
+
+  /**
+    * If the range has a grammarSource that is a GrammarLocation, offset the
+    * end of that range by the GrammarLocation.
+    *
+    * @param range The range to extract from.
+    * @returns The offset end if possible, or the original end.
+    */
+  public static offsetEnd(range: LocationRange): Location;
+
+  public toString(): string;
 
   /**
    * Return a new Location offset from the given location by the start of the
@@ -382,25 +400,7 @@ export class GrammarLocation {
    *   the file.
    * @returns The offset location.
    */
-  offset(loc: Location): Location;
-
-  /**
-   * If the range has a grammarSource that is a GrammarLocation, offset the
-   * start of that range by the GrammarLocation.
-   *
-   * @param range The range to extract from.
-   * @returns The offset start if possible, or the original start.
-   */
-  static offsetStart(range: LocationRange): Location;
-
-  /**
-   * If the range has a grammarSource that is a GrammarLocation, offset the
-   * end of that range by the GrammarLocation.
-   *
-   * @param range The range to extract from.
-   * @returns The offset end if possible, or the original end.
-   */
-  static offsetEnd(range: LocationRange): Location;
+  public offset(loc: Location): Location;
 }
 
 export namespace parser {
