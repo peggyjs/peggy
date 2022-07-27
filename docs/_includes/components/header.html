@@ -1,0 +1,11 @@
+<header id="header">
+  <h1><a href="#main">Peggy</a></h1>
+  <h2>Parser Generator for JavaScript</h2>
+</header>
+
+<nav id="menu">
+  <a {% if page.url == "/" %} aria-current="page" class="current" {% endif %} href="{{ "/index.html" | url }}">Home</a>
+  <a {% if page.url == "/online.html" %} aria-current="page" class="current" {% endif %} href="{{ "/online.html" | url }}">Online Version</a>
+  <a {% if page.url == "/documentation.html" %} aria-current="page" class="current" {% endif %} href="{{ "/documentation.html" | url }}">Documentation</a>
+  <a {% if page.url contains "/development" %} aria-current="page" class="current" {% endif %} href="{{ "/development/index.html" | url }}">Development</a>
+</nav>

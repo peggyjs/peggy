@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="copyright" content="Copyright &copy; 2022 The Peggy Authors" />
+    <meta name="keywords" content="parser generator, PEG, JavaScript, PEG.js" />
+    <meta
+      name="description"
+      content="Peggy is a parser generator for JavaScript based on the parsing expression grammar formalism."
+    />
+    <title>{% if title %}{{ title }} &raquo; {% endif %}Peggy &ndash; Parser Generator for JavaScript</title>
+    <link rel="stylesheet" href="{{ "/css/common.css" | url }}" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    {% if stylesheets %}
+      {% for stylesheet in stylesheets %}
+        <link rel="stylesheet" href="{{ stylesheet | url }}" />
+      {% endfor %}
+    {% endif %}
+    {% if scripts %}
+      {% for script in scripts %}
+        <script src="{{ script | url }}"></script>
+      {% endfor %}
+    {% endif %}
+  </head>
+  <body>
+    {{content}}
+  </body>
+</html>
