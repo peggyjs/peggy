@@ -27,6 +27,7 @@ scripts:
 <script class="mocha-exec">
   mocha.run(failures => {
     const result = failures === 0 ? 'PASS' : 'FAIL';
+    // If you change the next line, please modifiy the regexp in web-test/index.js
     const status = result + ': ' + failures + ' failures. Peggy Version: ' + browser.peggyVersion()
     console.log(status);
     const div = document.getElementById('results');

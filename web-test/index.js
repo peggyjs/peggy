@@ -43,7 +43,7 @@ async function main() {
   page
     .on("console", message => {
       const txt = message.text();
-      const m = txt.match(/([A-Z]+): \d+ failures. Peggy Version: (.*)/);
+      const m = txt.match(/([A-Z]+): \d+ failures.\s+Peggy Version: (.*)/);
       if (!m) {
         console.error("Console:", txt);
         return;
