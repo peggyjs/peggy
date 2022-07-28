@@ -24,10 +24,7 @@ module.exports = {
     "ignoreInitial": true,
   },
   "server": {
-    baseDir: "./docs",
-    routes: {
-      "/coverage": "./coverage/lcov-report",
-    },
+    baseDir: "./coverage/lcov-report",
   },
   "port": 5000,
   "ghostMode": false,
