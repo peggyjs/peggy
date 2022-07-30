@@ -45,7 +45,7 @@ peg$SyntaxError.prototype.format = function(sources) {
       }
     }
     var s = this.location.start;
-    var offset_s = (typeof this.location.source.offset === "function")
+    var offset_s = (this.location.source && (typeof this.location.source.offset === "function"))
       ? this.location.source.offset(s)
       : s;
     var loc = this.location.source + ":" + offset_s.line + ":" + offset_s.column;
@@ -340,11 +340,11 @@ function peg$parse(input, options) {
     }
   }
 
-  function peg$computeLocation(startPos, endPos) {
+  function peg$computeLocation(startPos, endPos, offset) {
     var startPosDetails = peg$computePosDetails(startPos);
     var endPosDetails = peg$computePosDetails(endPos);
 
-    return {
+    var res = {
       source: peg$source,
       start: {
         offset: startPos,
@@ -357,6 +357,11 @@ function peg$parse(input, options) {
         column: endPosDetails.column
       }
     };
+    if (offset && peg$source && (typeof peg$source.offset === "function")) {
+      res.start = peg$source.offset(res.start);
+      res.end = peg$source.offset(res.end);
+    }
+    return res;
   }
 
   function peg$fail(expected) {
