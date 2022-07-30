@@ -52,11 +52,12 @@ Full documentation is available at [peggyjs.org](https://peggyjs.org/documentati
 - [Discussions](https://github.com/peggyjs/peggy/discussions)
 - [Browser Benchmark Suite](https://peggyjs.org/development/benchmark.html)
 - [Browser Test Suite](https://peggyjs.org/development/test.html)
+- [Discord Server](https://discord.gg/HU5tbEbwAB)
 
 Peggy was originally developed by [David Majda](https://majda.cz/)
 ([@dmajda](http://twitter.com/dmajda)). It is currently maintained by
 [Joe Hildebrand](https://github.com/hildjj) ([@hildjj](https://twitter.com/hildjj)).
 
 You are welcome to contribute code. Unless your contribution is really trivial
-you should [get in touch with us](https://github.com/peggyjs/peggy/discussions)
+you should [get in touch with us](https://discord.gg/HU5tbEbwAB)
 first — this can prevent wasted effort on both sides.

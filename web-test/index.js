@@ -1,15 +1,35 @@
 "use strict";
 
 const puppeteer = require("puppeteer");
-const path = require("path");
 const version = require("../package.json").version;
+const { spawn } = require("child_process");
+const path = require("path");
 
-const TOP = `file://${path.resolve(
-  __dirname, "..", "docs", "development", "test.html"
-)}`;
+let eleventy = null;
+
+function startServer() {
+  return new Promise((resolve, reject) => {
+    eleventy = spawn("node", ["node_modules/.bin/eleventy", "--serve"], {
+      cwd: path.resolve(__dirname, "..", "docs"),
+      stdio: ["inherit", "ignore", "pipe"],
+    });
+    eleventy.stderr.setEncoding("utf8");
+    eleventy.stderr.once("data", data => {
+      const match = data.match(/http:\/\/localhost:\d+\//);
+      if (!match) {
+        reject(new Error(`Invalid URL: "${data}"`));
+      } else {
+        const url = new URL("/development/test.html", match[0]);
+        resolve(url);
+      }
+    });
+    eleventy.once("error", reject);
+  });
+}
 
 async function main() {
   let done = null;
+  const url = await startServer();
   const donePromise = new Promise((resolve, reject) => {
     done = { resolve, reject };
   });
@@ -23,10 +43,9 @@ async function main() {
   page
     .on("console", message => {
       const txt = message.text();
-      const m = txt.match(/([A-Z]+): \d+ failures.  Peggy Version: (.*)/);
+      const m = txt.match(/([A-Z]+): \d+ failures.\s+Peggy Version: (.*)/);
       if (!m) {
-        console.error("Bad console message:", txt);
-        done.reject();
+        console.error("Console:", txt);
         return;
       }
       if (m[2] !== version) {
@@ -53,13 +72,21 @@ async function main() {
         }
       }
     })
-    .on("pageerror", ({ message }) => console.log(`ERROR: ${message}`))
-    .on("requestfailed", request => console.log(
-      `FAIL: ${request.failure().errorText} ${request.url()}`
-    ));
-  await page.goto(TOP, { waitUntil: "load" });
+    .on("pageerror", ({ message }) => {
+      console.log(`ERROR: ${message}`);
+      done.reject(new Error(message));
+    })
+    .on("requestfailed", request => {
+      const txt = request.failure().errorText;
+      console.log(
+        `FAIL: ${txt} ${request.url()}`
+      );
+      done.reject(new Error(txt));
+    });
+  await page.goto(url, { waitUntil: "load" });
   await donePromise;
-  await page.goto(new URL("benchmark.html", TOP), { waitUntil: "load" });
+  const url2 = new URL("benchmark.html", url);
+  await page.goto(url2, { waitUntil: "load" });
   await page.click("#run");
   const el = await page.waitForSelector(".total .parse-speed .value");
   const val = await el.evaluate(e => e.innerText);
@@ -67,4 +94,8 @@ async function main() {
   await browser.close();
 }
 
-main().catch(console.error);
+main().catch(console.error).finally(() => new Promise((resolve, reject) => {
+  eleventy.on("exit", resolve);
+  eleventy.on("error", reject);
+  eleventy.kill("SIGINT");
+}));
