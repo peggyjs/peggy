@@ -37,9 +37,8 @@ _ "whitespace"
 `;
 
 /**
- *
  * @param {URL} url
- * @returns
+ * @returns {string | null}
  */
 function getSandboxInitialContents(url) {
   if (url.hash.startsWith("#code/")) {
@@ -56,8 +55,25 @@ function getSandboxInitialContents(url) {
   return exampleGrammar;
 }
 
+/**
+ * @param {string} code
+ * @param {URL | string | undefined} baseUrl
+ * @returns {string}
+ */
+function getEncodedSandboxUrl(code, baseUrl = undefined) {
+  const encodedCode = LZString.compressToEncodedURIComponent(code);
+  if (baseUrl) {
+    return `${
+      typeof baseUrl === "string" ? baseUrl : baseUrl.toString()
+    }#code/${encodedCode}`;
+  } else {
+    return `#code/${encodedCode}`;
+  }
+}
+
 module.exports = {
   getSandboxInitialContents,
+  getEncodedSandboxUrl,
   exampleGrammar,
   codeStorageKey,
 };
