@@ -1,3 +1,5 @@
+import {getSandboxInitialContents, getEncodedSandboxUrl, codeStorageKey} from './sandbox.js'
+
 $(document).ready(function() {
   var KB      = 1024;
   var MS_IN_S = 1000;
@@ -130,6 +132,10 @@ $(document).ready(function() {
           grammar.length,
           timeAfter - timeBefore
         ));
+      
+      // Now save the grammar to local storage so it will be persisted.
+      localStorage.setItem(codeStorageKey, grammar);
+
       $("#input").removeAttr("disabled");
       $("#parser-var").removeAttr("disabled");
       $("#option-cache").removeAttr("disabled");
@@ -229,11 +235,21 @@ $(document).ready(function() {
 
     });
 
+  $("#copy-link").click(function () {
+    const grammar = editor.getValue();
+    const fragment = getEncodedSandboxUrl(grammar);
+    // set the fragment for the current page without navigating away
+    window.history.replaceState(null, null, fragment);
+  })
+
   doLayout();
   $(window).resize(doLayout);
 
   $("#loader").hide();
   $("#content").show();
+
+  const grammarContents = getSandboxInitialContents(new URL(location.href));
+  editor.setValue(grammarContents);
 
   $("#grammar, #parser-var, #option-cache").removeAttr("disabled");
 

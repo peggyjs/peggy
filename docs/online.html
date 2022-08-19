@@ -8,15 +8,18 @@ stylesheets: [
   "/vendor/codemirror/codemirror.css",
   "/vendor/codemirror/lint.css"
 ]
+modules: [
+  "/vendor/lz-string/lz-string.js",
+  "/js/sandbox.js",
+  "/js/online.js"
+]
 scripts: [
   "https://unpkg.com/jquery@1.12.4/dist/jquery.min.js",
   "https://unpkg.com/file-saver@2.0.2/dist/FileSaver.min.js",
   "https://unpkg.com/node-inspect-extracted@1.1.0/dist/inspect.js",
   "/vendor/peggy/peggy.min.js",
   "/vendor/codemirror/codemirror.js",
-  "/vendor/codemirror/lint.js",
-  "/vendor/lz-string/lz-string.js",
-  "/js/online.js"
+  "/vendor/codemirror/lint.js"
 ]
 ---
 
@@ -40,38 +43,10 @@ scripts: [
                 </tr>
                 <tr>
                     <td>
+                        <button id="copy-link">Copy link</button>
                         <div class="textarea-wrapper">
                             <textarea class="code" id="grammar" autocomplete="off" autocorrect="off"
-                                autocapitalize="off" spellcheck="false" disabled>// Simple Arithmetics Grammar
-// ==========================
-//
-// Accepts expressions like "2 * (3 + 4)" and computes their value.
-
-Expression
-  = head:Term tail:(_ ("+" / "-") _ Term)* {
-      return tail.reduce(function(result, element) {
-        if (element[1] === "+") { return result + element[3]; }
-        if (element[1] === "-") { return result - element[3]; }
-      }, head);
-    }
-
-Term
-  = head:Factor tail:(_ ("*" / "/") _ Factor)* {
-      return tail.reduce(function(result, element) {
-        if (element[1] === "*") { return result * element[3]; }
-        if (element[1] === "/") { return result / element[3]; }
-      }, head);
-    }
-
-Factor
-  = "(" _ expr:Expression _ ")" { return expr; }
-  / Integer
-
-Integer "integer"
-  = _ [0-9]+ { return parseInt(text(), 10); }
-
-_ "whitespace"
-  = [ \t\n\r]*</textarea>
+                                autocapitalize="off" spellcheck="false" disabled></textarea>
                         </div>
                     </td>
                 </tr>

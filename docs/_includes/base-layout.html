@@ -16,6 +16,11 @@
         <link rel="stylesheet" href="{{ stylesheet | url }}" />
       {% endfor %}
     {% endif %}
+    {% if modules %}
+      {% for module in modules %}
+        <script type="module" src="{{ module | url }}"></script>
+      {% endfor %}
+    {% endif %}
     {% if scripts %}
       {% for script in scripts %}
         <script src="{{ script | url }}"></script>

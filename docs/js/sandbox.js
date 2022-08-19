@@ -1,10 +1,11 @@
-const LZString = require("../vendor/lz-string/lz-string");
+import * as LZString from "../vendor/lz-string/lz-string.js";
 
 // The key used to store the sandbox in local/session storage
-const codeStorageKey = `sandbox-code`;
+export const codeStorageKey = `sandbox-code`;
 
 // The example grammar to use when there is no saved code in the URL or local storage
-const exampleGrammar = `
+export const exampleGrammar = `
+// Simple Arithmetics Grammar
 // ==========================
 //
 // Accepts expressions like "2 * (3 + 4)" and computes their value.
@@ -40,7 +41,7 @@ _ "whitespace"
  * @param {URL} url
  * @returns {string | null}
  */
-function getSandboxInitialContents(url) {
+export function getSandboxInitialContents(url) {
   if (url.hash.startsWith("#code/")) {
     const code = url.hash.substring(6);
     const decodedCode = LZString.decompressFromEncodedURIComponent(code);
@@ -60,7 +61,7 @@ function getSandboxInitialContents(url) {
  * @param {URL | string | undefined} baseUrl
  * @returns {string}
  */
-function getEncodedSandboxUrl(code, baseUrl = undefined) {
+export function getEncodedSandboxUrl(code, baseUrl = undefined) {
   const encodedCode = LZString.compressToEncodedURIComponent(code);
   if (baseUrl) {
     return `${
@@ -70,10 +71,3 @@ function getEncodedSandboxUrl(code, baseUrl = undefined) {
     return `#code/${encodedCode}`;
   }
 }
-
-module.exports = {
-  getSandboxInitialContents,
-  getEncodedSandboxUrl,
-  exampleGrammar,
-  codeStorageKey,
-};
