@@ -18,5 +18,9 @@ module.exports = {
   ],
   "transform": {
     "^.+\\.ts$": "ts-jest",
+    "^.+\\.js$": "babel-jest",
   },
+  "transformIgnorePatterns": [
+    "/test/cli/fixtures/bad",
+  ],
 };
