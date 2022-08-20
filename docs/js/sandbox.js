@@ -1,4 +1,4 @@
-import * as LZString from "../vendor/lz-string/lz-string.js";
+import LZString from "../vendor/lz-string/lz-string.js";
 
 // The key used to store the sandbox in local/session storage
 export const codeStorageKey = `sandbox-code`;
