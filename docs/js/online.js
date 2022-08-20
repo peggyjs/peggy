@@ -132,8 +132,6 @@ $(document).ready(function() {
           grammar.length,
           timeAfter - timeBefore
         ));
-      
-
       $("#input").removeAttr("disabled");
       $("#parser-var").removeAttr("disabled");
       $("#option-cache").removeAttr("disabled");
