@@ -240,6 +240,10 @@ $(document).ready(function() {
     const fragment = getEncodedSandboxUrl(grammar);
     // set the fragment for the current page without navigating away
     window.history.replaceState(null, null, fragment);
+    // copy the link to the clipboard
+    if ('clipboard' in navigator) {
+      navigator.clipboard.writeText(window.location.href);
+    }
   })
 
   doLayout();
