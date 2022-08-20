@@ -1,4 +1,4 @@
-import {getSandboxInitialContents, getEncodedSandboxUrl, codeStorageKey} from './sandbox.js'
+import {getSandboxInitialContents, getEncodedSandboxUrl, saveSandboxCodeToStorage} from './sandbox.js'
 
 $(document).ready(function() {
   var KB      = 1024;
@@ -150,7 +150,7 @@ $(document).ready(function() {
     // Now save the grammar to local storage so it will be persisted.
     // Note: we are persisting regardless of whether there is an error
     // or not, since saving invalid grammars is also potentially useful.
-    localStorage.setItem(codeStorageKey, grammar);
+    saveSandboxCodeToStorage(grammar);
 
     doLayout();
     return result;

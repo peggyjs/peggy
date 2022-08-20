@@ -3,6 +3,10 @@ import LZString from "../vendor/lz-string/lz-string.js";
 // The key used to store the sandbox in local/session storage
 export const codeStorageKey = `sandbox-code`;
 
+export const saveSandboxCodeToStorage = (code) => {
+  localStorage.setItem(codeStorageKey, code);
+}
+
 // The example grammar to use when there is no saved code in the URL or local storage
 export const exampleGrammar = `
 // Simple Arithmetics Grammar

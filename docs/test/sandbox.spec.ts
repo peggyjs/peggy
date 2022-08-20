@@ -1,7 +1,7 @@
 import {
   getSandboxInitialContents,
   exampleGrammar,
-  codeStorageKey,
+  saveSandboxCodeToStorage,
   getEncodedSandboxUrl,
 } from "../js/sandbox";
 
@@ -38,7 +38,7 @@ describe("getSandboxInitialContents", () => {
     expect(getSandboxInitialContents(url)).toEqual(exampleGrammar);
   });
   it("returns stored grammar when it is in local storage", () => {
-    localStorage.setItem(codeStorageKey, "stored grammar");
+    saveSandboxCodeToStorage("stored grammar");
     const url = new URL("https://peggyjs.org/online");
     expect(getSandboxInitialContents(url)).toEqual("stored grammar");
   });
@@ -52,7 +52,7 @@ describe("getSandboxInitialContents", () => {
     const url = new URL(
       "https://peggyjs.org/online#code/OYJwhgthYgBAzgFwPYgKYBNYEsB2sBVAJQBkg"
     );
-    localStorage.setItem(codeStorageKey, "stored grammar");
+    saveSandboxCodeToStorage("stored grammar");
     expect(getSandboxInitialContents(url)).toEqual("grammar stored in URL");
   });
 });
