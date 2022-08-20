@@ -133,8 +133,6 @@ $(document).ready(function() {
           timeAfter - timeBefore
         ));
       
-      // Now save the grammar to local storage so it will be persisted.
-      localStorage.setItem(codeStorageKey, grammar);
 
       $("#input").removeAttr("disabled");
       $("#parser-var").removeAttr("disabled");
@@ -148,6 +146,11 @@ $(document).ready(function() {
 
       var result = false;
     }
+
+    // Now save the grammar to local storage so it will be persisted.
+    // Note: we are persisting regardless of whether there is an error
+    // or not, since saving invalid grammars is also potentially useful.
+    localStorage.setItem(codeStorageKey, grammar);
 
     doLayout();
     return result;
