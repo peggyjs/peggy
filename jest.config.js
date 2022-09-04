@@ -9,7 +9,6 @@ module.exports = {
   ],
   "roots": [
     "<rootDir>/test",
-    "<rootDir>/docs/test",
   ],
   "testMatch": [
     "**/*.spec.js",

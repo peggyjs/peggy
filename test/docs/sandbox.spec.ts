@@ -1,15 +1,15 @@
 import {
-  getSandboxInitialContents,
   exampleGrammar,
-  saveSandboxCodeToStorage,
   getEncodedSandboxUrl,
-} from "../js/sandbox";
+  getSandboxInitialContents,
+  saveSandboxCodeToStorage,
+} from "../../docs/js/sandbox";
 
 // Jest can implement localStorage using jsdom, but that is way overkill
 // for this simple test suite, so we'll just use a simple in-memory
 // mock implementation of local storage for now.
 class LocalStorageMock {
-  store: Record<string, string> = {};
+  store: { [key: string]: string } = {};
 
   clear() {
     this.store = {};
