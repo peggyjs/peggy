@@ -1,6 +1,5 @@
 import {
-  exampleGrammar,
-  exampleInput,
+  examples,
   getEncodedSandboxUrl,
   getSandboxInitialState,
   saveSandboxCodeToStorage,
@@ -37,8 +36,8 @@ describe("getSandboxInitialContents", () => {
   it("returns example grammar when nothing is stored locally or in the URL", () => {
     const url = new URL("https://peggyjs.org/online");
     expect(getSandboxInitialState(url)).toEqual({
-      grammar: exampleGrammar,
-      input: exampleInput,
+      grammar: examples[0].grammar,
+      input: examples[0].input,
     });
   });
   it("returns stored grammar when it is in local storage", () => {

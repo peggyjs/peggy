@@ -16,8 +16,16 @@ export const saveSandboxCodeToStorage = (state) => {
   localStorage.setItem(stateStorageKey, JSON.stringify(state));
 };
 
-// The example grammar to use when there is no saved code in the URL or local storage
-export const exampleGrammar = `
+/**
+ * @typedef {SandboxState} SandboxExample
+ * @property {string} name
+ */
+
+/** @type {Array<SandboxState>} */
+export const examples = [
+  {
+    name: "Simple arithmetic grammar",
+    grammar: `
 // Simple Arithmetics Grammar
 // ==========================
 //
@@ -47,10 +55,10 @@ Integer "integer"
   = _ [0-9]+ { return parseInt(text(), 10); }
 
 _ "whitespace"
-  = [ \\t\\n\\r]*
-`;
-
-export const exampleInput = `2 * (3 + 4)`;
+  = [ \\t\\n\\r]*`,
+    input: `2 * (3 + 4)`,
+  },
+];
 
 /**
  * @param {URL} url
@@ -73,8 +81,8 @@ export function getSandboxInitialState(url) {
   }
 
   return {
-    grammar: exampleGrammar,
-    input: exampleInput,
+    grammar: examples[0].grammar,
+    input: examples[0].input,
   };
 }
 
