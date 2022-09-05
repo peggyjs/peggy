@@ -249,7 +249,10 @@ $(document).ready(function() {
 
   $("#copy-link").click(function () {
     const grammar = editor.getValue();
-    const fragment = getEncodedSandboxUrl(grammar);
+    const fragment = getEncodedSandboxUrl({
+      grammar,
+      input: input.getValue(),
+    });
     // set the fragment for the current page without navigating away
     window.history.replaceState(null, null, fragment);
     // copy the link to the clipboard
