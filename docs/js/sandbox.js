@@ -12,7 +12,7 @@ export const stateStorageKey = `sandbox-code`;
 /**
  * @param {SandboxState} state
  */
-export const saveSandboxCodeToStorage = (state) => {
+export const saveSandboxStateToStorage = (state) => {
   localStorage.setItem(stateStorageKey, JSON.stringify(state));
 };
 
@@ -67,17 +67,25 @@ _ "whitespace"
 export function getSandboxInitialState(url) {
   if (url.hash.startsWith("#state/")) {
     const state = url.hash.substring(7);
-    const decodedState = JSON.parse(
-      LZString.decompressFromEncodedURIComponent(state)
-    );
-    return decodedState;
+    try {
+      const decodedState = JSON.parse(
+        LZString.decompressFromEncodedURIComponent(state)
+      );
+      return decodedState;
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   const storedStateRaw = localStorage.getItem(stateStorageKey);
   if (storedStateRaw !== null) {
-    /** @type {SandboxState} */
-    const storedState = JSON.parse(localStorage.getItem(stateStorageKey));
-    return storedState;
+    try {
+      /** @type {SandboxState} */
+      const storedState = JSON.parse(storedStateRaw);
+      return storedState;
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return {

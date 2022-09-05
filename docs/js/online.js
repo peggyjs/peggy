@@ -1,4 +1,4 @@
-import {getSandboxInitialContents, getEncodedSandboxUrl, saveSandboxCodeToStorage} from './sandbox.js'
+import {getSandboxInitialState, getEncodedSandboxUrl, saveSandboxStateToStorage} from './sandbox.js'
 
 $(document).ready(function() {
   var KB      = 1024;
@@ -148,7 +148,10 @@ $(document).ready(function() {
     // Now save the grammar to local storage so it will be persisted.
     // Note: we are persisting regardless of whether there is an error
     // or not, since saving invalid grammars is also potentially useful.
-    saveSandboxCodeToStorage(grammar);
+    saveSandboxStateToStorage({
+      grammar: editor.getValue(),
+      input: input.getValue(),
+    });
 
     doLayout();
     return result;
@@ -187,6 +190,14 @@ $(document).ready(function() {
 
       var result = false;
     }
+
+    // Now save the grammar to local storage so it will be persisted.
+    // Note: we are persisting regardless of whether there is an error
+    // or not, since saving invalid parse results is also potentially useful.
+    saveSandboxStateToStorage({
+      grammar: editor.getValue(),
+      input: input.getValue(),
+    });
 
     doLayout();
     return result;
@@ -253,8 +264,9 @@ $(document).ready(function() {
   $("#loader").hide();
   $("#content").show();
 
-  const grammarContents = getSandboxInitialContents(new URL(location.href));
-  editor.setValue(grammarContents);
+  const sandboxState = getSandboxInitialState(new URL(location.href));
+  editor.setValue(sandboxState.grammar);
+  input.setValue(sandboxState.input);
 
   $("#grammar, #parser-var, #option-cache").removeAttr("disabled");
 
