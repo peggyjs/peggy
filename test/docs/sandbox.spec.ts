@@ -2,7 +2,7 @@ import {
   examples,
   getEncodedSandboxUrl,
   getSandboxInitialState,
-  saveSandboxCodeToStorage,
+  saveSandboxStateToStorage,
 } from "../../docs/js/sandbox";
 
 // Jest can implement localStorage using jsdom, but that is way overkill
@@ -41,7 +41,7 @@ describe("getSandboxInitialContents", () => {
     });
   });
   it("returns stored grammar when it is in local storage", () => {
-    saveSandboxCodeToStorage({ grammar: "stored grammar", input: "test" });
+    saveSandboxStateToStorage({ grammar: "stored grammar", input: "test" });
     const url = new URL("https://peggyjs.org/online");
     expect(getSandboxInitialState(url)).toEqual({
       grammar: "stored grammar",
@@ -60,7 +60,7 @@ describe("getSandboxInitialContents", () => {
     const url = new URL(
       "https://peggyjs.org/online#state/N4Ig5gTghgtjURALnNOCAEBnALgewgFMATDASwDsMBVAJQBkQAaESgBwFcdkQdDcQAXyA"
     );
-    saveSandboxCodeToStorage({ grammar: "stored grammar", input: "test" });
+    saveSandboxStateToStorage({ grammar: "stored grammar", input: "test" });
     expect(getSandboxInitialState(url)).toEqual({
       grammar: "grammar stored in URL",
       input: "test",
