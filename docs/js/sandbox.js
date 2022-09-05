@@ -1,11 +1,20 @@
 import LZString from "../vendor/lz-string/lz-string.js";
 
-// The key used to store the sandbox in local/session storage
-export const codeStorageKey = `sandbox-code`;
+/**
+ * @typedef {Object} SandboxState
+ * @property {string} grammar
+ * @property {string} input
+ */
 
-export const saveSandboxCodeToStorage = (code) => {
-  localStorage.setItem(codeStorageKey, code);
-}
+// The key used to store the sandbox in local/session storage
+export const stateStorageKey = `sandbox-code`;
+
+/**
+ * @param {SandboxState} state
+ */
+export const saveSandboxCodeToStorage = (state) => {
+  localStorage.setItem(stateStorageKey, JSON.stringify(state));
+};
 
 // The example grammar to use when there is no saved code in the URL or local storage
 export const exampleGrammar = `
@@ -41,37 +50,48 @@ _ "whitespace"
   = [ \\t\\n\\r]*
 `;
 
+export const exampleInput = `2 * (3 + 4)`;
+
 /**
  * @param {URL} url
- * @returns {string | null}
+ * @returns {SandboxState}
  */
-export function getSandboxInitialContents(url) {
-  if (url.hash.startsWith("#code/")) {
-    const code = url.hash.substring(6);
-    const decodedCode = LZString.decompressFromEncodedURIComponent(code);
-    return decodedCode;
+export function getSandboxInitialState(url) {
+  if (url.hash.startsWith("#state/")) {
+    const state = url.hash.substring(7);
+    const decodedState = JSON.parse(
+      LZString.decompressFromEncodedURIComponent(state)
+    );
+    return decodedState;
   }
 
-  const storedCode = localStorage.getItem(codeStorageKey);
-  if (storedCode) {
-    return storedCode;
+  const storedStateRaw = localStorage.getItem(stateStorageKey);
+  if (storedStateRaw !== null) {
+    /** @type {SandboxState} */
+    const storedState = JSON.parse(localStorage.getItem(stateStorageKey));
+    return storedState;
   }
 
-  return exampleGrammar;
+  return {
+    grammar: exampleGrammar,
+    input: exampleInput,
+  };
 }
 
 /**
- * @param {string} code
+ * @param {SandboxState} state
  * @param {URL | string | undefined} baseUrl
  * @returns {string}
  */
-export function getEncodedSandboxUrl(code, baseUrl = undefined) {
-  const encodedCode = LZString.compressToEncodedURIComponent(code);
+export function getEncodedSandboxUrl(state, baseUrl = undefined) {
+  const encodedState = LZString.compressToEncodedURIComponent(
+    JSON.stringify(state)
+  );
   if (baseUrl) {
     return `${
       typeof baseUrl === "string" ? baseUrl : baseUrl.toString()
-    }#code/${encodedCode}`;
+    }#state/${encodedState}`;
   } else {
-    return `#code/${encodedCode}`;
+    return `#state/${encodedState}`;
   }
 }

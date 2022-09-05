@@ -1,7 +1,8 @@
 import {
   exampleGrammar,
+  exampleInput,
   getEncodedSandboxUrl,
-  getSandboxInitialContents,
+  getSandboxInitialState,
   saveSandboxCodeToStorage,
 } from "../../docs/js/sandbox";
 
@@ -35,46 +36,62 @@ Object.defineProperty(globalThis, "localStorage", {
 describe("getSandboxInitialContents", () => {
   it("returns example grammar when nothing is stored locally or in the URL", () => {
     const url = new URL("https://peggyjs.org/online");
-    expect(getSandboxInitialContents(url)).toEqual(exampleGrammar);
+    expect(getSandboxInitialState(url)).toEqual({
+      grammar: exampleGrammar,
+      input: exampleInput,
+    });
   });
   it("returns stored grammar when it is in local storage", () => {
-    saveSandboxCodeToStorage("stored grammar");
+    saveSandboxCodeToStorage({ grammar: "stored grammar", input: "test" });
     const url = new URL("https://peggyjs.org/online");
-    expect(getSandboxInitialContents(url)).toEqual("stored grammar");
+    expect(getSandboxInitialState(url)).toEqual({
+      grammar: "stored grammar",
+      input: "test",
+    });
   });
   it("returns grammar stored in URL", () => {
     const url = new URL(
-      "https://peggyjs.org/online#code/OYJwhgthYgBAzgFwPYgKYBNYEsB2sBVAJQBkg"
+      "https://peggyjs.org/online#state/N4Ig5gTghgtjURALnNOCAEBnALgewgFMATDASwDsMBVAJQBkQAaESgBwFcdkQdDcQAXyA"
     );
-    expect(getSandboxInitialContents(url)).toEqual("grammar stored in URL");
+    expect(getSandboxInitialState(url).grammar).toEqual(
+      "grammar stored in URL"
+    );
   });
   it("returns grammar in URL over stored grammar", () => {
     const url = new URL(
-      "https://peggyjs.org/online#code/OYJwhgthYgBAzgFwPYgKYBNYEsB2sBVAJQBkg"
+      "https://peggyjs.org/online#state/N4Ig5gTghgtjURALnNOCAEBnALgewgFMATDASwDsMBVAJQBkQAaESgBwFcdkQdDcQAXyA"
     );
-    saveSandboxCodeToStorage("stored grammar");
-    expect(getSandboxInitialContents(url)).toEqual("grammar stored in URL");
+    saveSandboxCodeToStorage({ grammar: "stored grammar", input: "test" });
+    expect(getSandboxInitialState(url)).toEqual({
+      grammar: "grammar stored in URL",
+      input: "test",
+    });
   });
 });
 
 describe("getEncodedSandboxUrl", () => {
   it("returns just a fragment if there is no base URL", () => {
     const grammar = "grammar stored in URL";
-    expect(getEncodedSandboxUrl(grammar)).toEqual(
-      "#code/OYJwhgthYgBAzgFwPYgKYBNYEsB2sBVAJQBkg"
+    expect(getEncodedSandboxUrl({ grammar, input: "test" })).toEqual(
+      "#state/N4Ig5gTghgtjURALnNOCAEBnALgewgFMATDASwDsMBVAJQBkQAaESgBwFcdkQdDcQAXyA"
     );
   });
   it("prepends base URL if it exists", () => {
     const grammar = "grammar stored in URL";
     const url = "https://peggyjs.org/online";
-    expect(getEncodedSandboxUrl(grammar, url)).toEqual(
-      "https://peggyjs.org/online#code/OYJwhgthYgBAzgFwPYgKYBNYEsB2sBVAJQBkg"
+    expect(getEncodedSandboxUrl({ grammar, input: "test" }, url)).toEqual(
+      "https://peggyjs.org/online#state/N4Ig5gTghgtjURALnNOCAEBnALgewgFMATDASwDsMBVAJQBkQAaESgBwFcdkQdDcQAXyA"
     );
   });
-  it("works with getSandboxInitialContents", () => {
+  it("works with getSandboxInitialState", () => {
     const baseUrl = new URL("https://peggyjs.org/online");
     const grammar = "grammar which will be stored in URL";
-    const url = new URL(getEncodedSandboxUrl(grammar, baseUrl));
-    expect(getSandboxInitialContents(url)).toEqual(grammar);
+    const url = new URL(
+      getEncodedSandboxUrl({ grammar, input: "test" }, baseUrl)
+    );
+    expect(getSandboxInitialState(url)).toEqual({
+      grammar,
+      input: "test",
+    });
   });
 });
