@@ -58,3 +58,17 @@
 }
 
 #content { display: none; position: absolute; top: 4em; left: 0; right: 0; bottom: 0; }
+
+.suggestion {
+  display: flex;
+  flex-direction: row;
+}
+.suggestion .step-title {
+  flex: 1 1 auto;
+}
+.suggestion #copy-link {
+  justify-self: flex-end;
+}
+#copy-link {
+  margin-right: 4px;
+}

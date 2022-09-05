@@ -92,7 +92,7 @@
   text-align: center;
   color: white; background-color: black;
 }
-#content h2.suggestion .step-title { margin-left: 2.5em; }
+#content h2.suggestion .step-title { margin-left: 1rem; }
 
 #content textarea.code {
   width: 100%; height: 20em;
