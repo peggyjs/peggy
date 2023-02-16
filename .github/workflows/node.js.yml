@@ -30,7 +30,7 @@ jobs:
         if: matrix.node-version == '19.x' && matrix.os == 'ubuntu-latest'
         run: npm run lint
       - name: Static analysis - check types
-        if: matrix.node-version == '10.x' && matrix.os == 'ubuntu-latest'
+        if: matrix.node-version == '19.x' && matrix.os == 'ubuntu-latest'
         run: npm run ts
       - name: Test
         run: npm run test
