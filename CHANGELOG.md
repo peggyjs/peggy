@@ -12,8 +12,8 @@ Released: TBD
 
 - [#280](https://github.com/peggyjs/peggy/issues/280) Add inline examples to
   the documentation, from @hildjj
-
 - [#240](https://github.com/peggyjs/peggy/issues/240) Generate SourceNodes for bytecode
+- [#338](https://github.com/peggyjs/peggy/pull/338) BREAKING CHANGE. Update dependencies, causing minimum supported version of node.js to move to 14.  Generated grammar source should still work on older node versions and some older browsers, but testing is currently manual for those.
 
 ### Minor Changes
 

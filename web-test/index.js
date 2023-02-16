@@ -9,9 +9,17 @@ let eleventy = null;
 
 function startServer() {
   return new Promise((resolve, reject) => {
-    eleventy = spawn("node", ["node_modules/.bin/eleventy", "--serve"], {
+    const elbin = path.resolve(
+      __dirname,
+      "..",
+      "docs",
+      "node_modules",
+      ".bin",
+      "eleventy"
+    );
+    eleventy = spawn(elbin, ["--serve"], {
       cwd: path.resolve(__dirname, "..", "docs"),
-      stdio: ["inherit", "ignore", "pipe"],
+      stdio: ["inherit", "inherit", "pipe"],
     });
     eleventy.stderr.setEncoding("utf8");
     eleventy.stderr.once("data", data => {
