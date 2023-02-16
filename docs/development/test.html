@@ -7,11 +7,13 @@ scripts:
   [
     "https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.min.js",
     "https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.4/chai.min.js",
-    "https://jsdom.github.io/whatwg-url/whatwg-url.js",
   ]
 ---
 
 <script>
+  // Modern browsers don't need whatwgURL.
+  // source-map looks for it with this name, as configured in rollup.config.mjs
+  window.whatwgURL = { URL };
   mocha.setup('bdd');
 </script>
 <script src='../js/test-bundle.min.js'></script>
