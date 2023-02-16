@@ -38,6 +38,9 @@ Released: TBD
   editors, from @Mingun
 - [#299](https://github.com/peggyjs/peggy/issues/299) Add example grammar for a
   [SemVer.org](https://semver.org) semantic version string, from @dselman
+- [[#307](https://github.com/peggyjs/peggy/issues/307)] Allow grammars to have
+  relative offsets into their source files (e.g. if embedded in another doc),
+  from @hildjj.
 - [#308](https://github.com/peggyjs/peggy/pull/308) Add support for reading test data from stdin using `-T -`, from @hildjj.
 
 ### Bug Fixes
