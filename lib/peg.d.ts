@@ -139,6 +139,7 @@ declare namespace ast {
     | Labeled
     | Prefixed
     | Primary
+    | Repeated
     | Sequence
     | Suffixed;
 
@@ -148,6 +149,7 @@ declare namespace ast {
     | Labeled
     | Prefixed
     | Primary
+    | Repeated
     | Sequence
     | Suffixed;
 
@@ -161,7 +163,12 @@ declare namespace ast {
 
   interface Action extends CodeBlockExpr<"action"> {
     expression: (
-        Labeled | Prefixed | Primary | Sequence | Suffixed
+        Labeled
+      | Prefixed
+      | Primary
+      | Repeated
+      | Sequence
+      | Suffixed
     );
   }
 
@@ -170,6 +177,7 @@ declare namespace ast {
     = Labeled
     | Prefixed
     | Primary
+    | Repeated
     | Suffixed;
 
   interface Sequence extends Expr<"sequence"> {
@@ -192,16 +200,60 @@ declare namespace ast {
      */
     labelLocation: LocationRange;
     /** Expression which result will be available in the user code under name `label`. */
-    expression: Prefixed | Primary | Suffixed;
+    expression: Prefixed | Primary | Repeated | Suffixed;
   }
 
   /** Expression with a preceding operator. */
   interface Prefixed extends Expr<"simple_and" | "simple_not" | "text"> {
-    expression: Primary | Suffixed;
+    expression: Primary | Repeated | Suffixed;
   }
 
   /** Expression with a following operator. */
   interface Suffixed extends Expr<"one_or_more" | "optional" | "zero_or_more"> {
+    expression: Primary;
+  }
+
+  interface Boundary<T> {
+    type: T;
+    location: LocationRange;
+  }
+
+  interface ConstantBoundary extends Boundary<"constant"> {
+    /** Repetition count. Always a positive integer. */
+    value: number;
+  }
+
+  interface VariableBoundary extends Boundary<"variable"> {
+    /** Repetition count - name of the label of the one of preceding expressions. */
+    value: string;
+  }
+
+  interface FunctionBoundary extends Boundary<"function"> {
+    /** The code from the grammar. */
+    value: string;
+    /** Span that covers all code between `{` and `}`. */
+    codeLocation: LocationRange;
+  }
+
+  type RepeatedBoundary
+    = ConstantBoundary
+    | FunctionBoundary
+    | VariableBoundary;
+
+  /** Expression repeated from `min` to `max` times. */
+  interface Repeated extends Expr<"repeated"> {
+    /**
+     * Minimum count of repetitions. If `null` then exact repetition
+     * is used and minimum the same as maximum.
+     */
+    min: RepeatedBoundary | null;
+    /** Maximum count of repetitions. */
+    max: RepeatedBoundary;
+    /**
+     * An expression that should appear between occurrences of the `expression`.
+     * Matched parts of input skipped and do not included to the result array.
+     */
+    delimiter: Expression | null;
     expression: Primary;
   }
 
@@ -673,6 +725,14 @@ export namespace compiler {
        * @param args Any arguments passed to the `Visitor`
        */
       one_or_more?(node: ast.Suffixed, ...args: any[]): any;
+      /**
+       * Default behavior: run visitor on `delimiter` if it is defined then
+       * run visitor on `expression` and return it result
+       *
+       * @param node Node, representing repetition of the `expression` specified number of times
+       * @param args Any arguments passed to the `Visitor`
+       */
+      repeated?(node: ast.Repeated, ...args: any[]): any;
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
