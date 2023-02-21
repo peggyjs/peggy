@@ -1,102 +1,65 @@
-<!DOCTYPE html>
-<html>
+---
+permalink: "/index.html"
+layout: main-layout
+---
 
-<head>
-  <meta charset="utf-8">
-  <meta name="copyright" content="Copyright &copy; 2022 The Peggy Authors">
-  <meta name="keywords" content="parser generator, PEG, JavaScript, PEG.js">
-  <meta name="description"
-    content="Peggy is a parser generator for JavaScript based on the parsing expression grammar formalism.">
-  <title>Peggy &ndash; Parser Generator for JavaScript</title>
-  <link rel="stylesheet" href="css/common.css">
-  <link rel="stylesheet" href="css/layout-default.css">
-  <link rel="stylesheet" href="css/content.css">
-  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-  <!--[if IE]>
-    <script>
-        var html5elements = ["aside", "footer", "header", "nav"];
-        for (var i = 0; i < html5elements.length; i++) {
-          document.createElement(html5elements[i]);
-        }
-    </script>
-  <![endif]-->
+<div id="sidebar">
+  <a class="try" href="online.html">Try Peggy online</a>
+  <div class="separator">&mdash; or &mdash;</div>
+  <pre class="install">npm install peggy</pre>
+  <div class="separator">&mdash; or &mdash;</div>
+  <div class="label">Download browser version</div>
+  <span id="download">
+    <a
+      title="Download a minified version of Peggy for the browser"
+      href="https://unpkg.com/peggy@3.0.0/browser/peggy.min.js"
+      >minified</a
+    >
+  </span>
+  <iframe
+    id="discord"
+    src="https://discordapp.com/widget?id=985995982909100082&theme=dark"
+    width="250"
+    height="250"
+    allowtransparency="true"
+    frameborder="0"
+    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+  >
+  </iframe>
+</div>
 
-</head>
+<div id="left-column">
+  <p>
+    Peggy is a simple parser generator for JavaScript that produces fast parsers
+    with excellent error reporting. You can use it to process complex data or
+    computer languages and build transformers, interpreters, compilers and other
+    tools easily.
+  </p>
 
-<body>
-  <div id='main'>
-    <header id="header">
-      <h1><a href="#main">Peggy</a></h1>
-      <h2>Parser Generator for JavaScript</h2>
-    </header>
+  <h2>Features</h2>
 
-    <nav id="menu">
-      <a class="current" href="#main">Home</a>
-      <a href="online.html">Online Version</a>
-      <a href="documentation.html">Documentation</a>
-      <a href="development/index.html">Development</a>
-    </nav>
-
-    <div id="content">
-
-      <div id="sidebar">
-        <a class="try" href="online.html">Try Peggy online</a>
-        <div class="separator">&mdash; or &mdash;</div>
-        <pre class="install">npm install peggy</pre>
-        <div class="separator">&mdash; or &mdash;</div>
-        <div class="label">Download browser version</div>
-        <span id="download">
-          <a title="Download a minified version of Peggy for the browser"
-            href="https://unpkg.com/peggy@2.0.1/browser/peggy.min.js">minified</a>
-        </span>
-        <iframe
-          id="discord"
-          src="https://discordapp.com/widget?id=985995982909100082&theme=dark"
-          width="250"
-          height="250"
-          allowtransparency="true"
-          frameborder="0"
-          sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
-        </iframe>
-      </div>
-
-      <div id="left-column">
-        <p>
-          Peggy is a simple parser generator for JavaScript that produces fast
-          parsers with excellent error reporting. You can use it to process complex data
-          or computer languages and build transformers, interpreters, compilers and
-          other tools easily.
-        </p>
-
-        <h2>Features</h2>
-
-        <ul>
-          <li>Simple and expressive grammar syntax</li>
-          <li>Integrates both lexical and syntactical analysis</li>
-          <li>Parsers have excellent error reporting out of the box</li>
-          <li>
-            Based on <a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">parsing
-            expression grammar</a> formalism &mdash; more powerful than traditional LL(<em>k</em>)
-            and LR(<em>k</em>) parsers
-          </li>
-          <li>
-            Usable <a href="online.html">from your browser</a>, from the command
-            line, or via JavaScript API
-          </li>
-          <li>
-            <a href="https://developer.mozilla.org/en-US/docs/Tools/Debugger/How_to/Use_a_source_map">Source map</a>
-            support.
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    <footer id="footer">
-      Copyright &copy; 2022 <a href="https://github.com/peggyjs/peggy/blob/main/AUTHORS">The Peggy Authors</a>
-      &bull;
-      <a href="https://github.com/peggyjs/peggy">Source code</a>
-    </footer>
-  </div>
-</body>
-
-</html>
+  <ul>
+    <li>Simple and expressive grammar syntax</li>
+    <li>Integrates both lexical and syntactical analysis</li>
+    <li>Parsers have excellent error reporting out of the box</li>
+    <li>
+      Based on
+      <a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar"
+        >parsing expression grammar</a
+      >
+      formalism &mdash; more powerful than traditional LL(<em>k</em>) and
+      LR(<em>k</em>) parsers
+    </li>
+    <li>
+      Usable <a href="online.html">from your browser</a>, from the command line,
+      or via JavaScript API
+    </li>
+    <li>
+      <a
+        href="https://developer.mozilla.org/en-US/docs/Tools/Debugger/How_to/Use_a_source_map"
+        >Source map</a
+      >
+      support.
+    </li>
+  </ul>
+</div>

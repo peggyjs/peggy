@@ -6,17 +6,17 @@ const expect = chai.expect;
 const { stub } = require("../utils.js");
 
 describe("generated parser behavior", () => {
+  function clone(object) {
+    const result = {};
+
+    Object.keys(object).forEach(key => {
+      result[key] = object[key];
+    });
+
+    return result;
+  }
+
   function varyOptimizationOptions(block) {
-    function clone(object) {
-      const result = {};
-
-      Object.keys(object).forEach(key => {
-        result[key] = object[key];
-      });
-
-      return result;
-    }
-
     const optionsVariants = [
       { cache: false, trace: false },
       { cache: false, trace: true },
@@ -500,6 +500,38 @@ describe("generated parser behavior", () => {
                 input: "a",
               },
               {
+                grammar: "start = (a:'a')| .. | &{ return a === 'a'; }",
+                input: "a",
+              },
+              {
+                grammar: "start = (a:'a')|0.. | &{ return a === 'a'; }",
+                input: "a",
+              },
+              {
+                grammar: "start = (a:'a')|1.. | &{ return a === 'a'; }",
+                input: "a",
+              },
+              {
+                grammar: "start = (a:'a')|2.. | &{ return a === 'a'; }",
+                input: "aa",
+              },
+              {
+                grammar: "start = (a:'a')| ..1| &{ return a === 'a'; }",
+                input: "a",
+              },
+              {
+                grammar: "start = (a:'a')| ..3| &{ return a === 'a'; }",
+                input: "a",
+              },
+              {
+                grammar: "start = (a:'a')|2..3| &{ return a === 'a'; }",
+                input: "aa",
+              },
+              {
+                grammar: "start = (a:'a')|3| &{ return a === 'a'; }",
+                input: "aaa",
+              },
+              {
                 grammar: "start = $(a:'a') &{ return a === 'a'; }",
                 input: "a",
               },
@@ -718,6 +750,38 @@ describe("generated parser behavior", () => {
                 input: "a",
               },
               {
+                grammar: "start = (a:'a')| .. | !{ return a !== 'a'; }",
+                input: "a",
+              },
+              {
+                grammar: "start = (a:'a')|0.. | !{ return a !== 'a'; }",
+                input: "a",
+              },
+              {
+                grammar: "start = (a:'a')|1.. | !{ return a !== 'a'; }",
+                input: "a",
+              },
+              {
+                grammar: "start = (a:'a')|2.. | !{ return a !== 'a'; }",
+                input: "aa",
+              },
+              {
+                grammar: "start = (a:'a')| ..1| !{ return a !== 'a'; }",
+                input: "a",
+              },
+              {
+                grammar: "start = (a:'a')| ..3| !{ return a !== 'a'; }",
+                input: "a",
+              },
+              {
+                grammar: "start = (a:'a')|2..3| !{ return a !== 'a'; }",
+                input: "aa",
+              },
+              {
+                grammar: "start = (a:'a')|3| !{ return a !== 'a'; }",
+                input: "aaa",
+              },
+              {
                 grammar: "start = $(a:'a') !{ return a !== 'a'; }",
                 input: "a",
               },
@@ -909,6 +973,1066 @@ describe("generated parser behavior", () => {
           const parser = peg.generate("start = 'a'+", options);
 
           expect(parser).to.failToParse("");
+        });
+      });
+    });
+
+    describe("repeated", () => {
+      function buildParser(boundary) {
+        const start = [];
+        for (let i = 1; i <= 4; ++i) {
+          for (let j = 1; j <= 4; ++j) {
+            start[start.length] = "start" + String(i) + j;
+          }
+        }
+        const opt = clone(options);
+        opt.allowedStartRules = start;
+
+        return peg.generate([
+          "start11 =         val:n1      x|" + boundary + "|      $.*",
+          "start12 =         val:n1 data:x|" + boundary + "|      $.*",
+          "start13 =         val:n1      x|" + boundary + "| rest:$.*",
+          "start14 =         val:n1 data:x|" + boundary + "| rest:$.*",
+
+          "start21 = .       val:n1      x|" + boundary + "|      $.*",
+          "start22 = .       val:n1 data:x|" + boundary + "|      $.*",
+          "start23 = .       val:n1      x|" + boundary + "| rest:$.*",
+          "start24 = .       val:n1 data:x|" + boundary + "| rest:$.*",
+
+          "start31 = a:.     val:n1      x|" + boundary + "|      $.*",
+          "start32 = a:.     val:n1 data:x|" + boundary + "|      $.*",
+          "start33 = a:.     val:n1      x|" + boundary + "| rest:$.*",
+          "start34 = a:.     val:n1 data:x|" + boundary + "| rest:$.*",
+
+          "start41 = a:. b:. val:n1      x|" + boundary + "|      $.*",
+          "start42 = a:. b:. val:n1 data:x|" + boundary + "|      $.*",
+          "start43 = a:. b:. val:n1      x|" + boundary + "| rest:$.*",
+          "start44 = a:. b:. val:n1 data:x|" + boundary + "| rest:$.*",
+
+          "n1 = n:$[0-9] { return parseInt(n, 10); }",
+          "x = '='",
+        ].join(";\n"), opt);
+      }
+
+      describe("without delimiter", () => {
+        describe("with constant boundaries", () => {
+          it("| .. | matches correctly", () => {
+            const parser = peg.generate("start = 'a'|..|", options);
+
+            expect(parser).to.parse("",    []);
+            expect(parser).to.parse("a",   ["a"]);
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.parse("aaa", ["a", "a", "a"]);
+          });
+
+          it("|0.. | matches correctly", () => {
+            const parser = peg.generate("start = 'a'|0..|", options);
+
+            expect(parser).to.parse("",    []);
+            expect(parser).to.parse("a",   ["a"]);
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.parse("aaa", ["a", "a", "a"]);
+          });
+
+          it("|1.. | matches correctly", () => {
+            const parser = peg.generate("start = 'a'|1..|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.parse("a",   ["a"]);
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.parse("aaa", ["a", "a", "a"]);
+          });
+
+          it("|2.. | matches correctly", () => {
+            const parser = peg.generate("start = 'a'|2..|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.parse("aaa", ["a", "a", "a"]);
+          });
+
+          it("| ..1| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|..1|", options);
+
+            expect(parser).to.parse("",    []);
+            expect(parser).to.parse("a",   ["a"]);
+            expect(parser).to.failToParse("aa");
+            expect(parser).to.failToParse("aaa");
+          });
+
+          it("| ..2| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|..2|", options);
+
+            expect(parser).to.parse("",    []);
+            expect(parser).to.parse("a",   ["a"]);
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.failToParse("aaa");
+          });
+
+          it("|2..3| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|2..3|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.parse("aaa", ["a", "a", "a"]);
+            expect(parser).to.failToParse("aaaa");
+          });
+
+          it("|2..2| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|2..2|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.failToParse("aaa");
+          });
+
+          it("| 2  | matches correctly", () => {
+            const parser = peg.generate("start = 'a'|2|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.failToParse("aaa");
+          });
+
+          it("|3..2| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|3..2|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.failToParse("aa");
+            expect(parser).to.failToParse("aaa");
+          });
+
+          it("does not consume input on failure", () => {
+            const parser = peg.generate("start = 'a'|3| / 'a'|2| { return 42; }", options);
+
+            expect(parser).to.parse("aa", 42);
+          });
+        });
+
+        describe("with variable boundaries", () => {
+          it("|min..   | matches correctly", () => {
+            const parser = buildParser("val..");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("1", undefined, opt);
+              expect(parser).to.failToParse("2=", undefined, opt);
+              expect(parser).to.parse("2==", [2, ["=", "="], ""], opt);
+              expect(parser).to.parse("2=====", [2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("-1", undefined, opt);
+              expect(parser).to.failToParse("-2=", undefined, opt);
+              expect(parser).to.parse("-2==", ["-", 2, ["=", "="], ""], opt);
+              expect(parser).to.parse("-2=====", ["-", 2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("-1", undefined, opt);
+              expect(parser).to.failToParse("-2=", undefined, opt);
+              expect(parser).to.parse("-2==", ["-", 2, ["=", "="], ""], opt);
+              expect(parser).to.parse("-2=====", ["-", 2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("--1", undefined, opt);
+              expect(parser).to.failToParse("--2=", undefined, opt);
+              expect(parser).to.parse("--2==", ["-", "-", 2, ["=", "="], ""], opt);
+              expect(parser).to.parse("--2=====", ["-", "-", 2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+          });
+
+          it("|   ..max| matches correctly", () => {
+            const parser = buildParser("..val");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, [], "=="], opt);
+              expect(parser).to.parse("3", [3, [], ""], opt);
+              expect(parser).to.parse("3=", [3, ["="], ""], opt);
+              expect(parser).to.parse("3===", [3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("3=====", [3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.parse("-3", ["-", 3, [], ""], opt);
+              expect(parser).to.parse("-3=", ["-", 3, ["="], ""], opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.parse("-3", ["-", 3, [], ""], opt);
+              expect(parser).to.parse("-3=", ["-", 3, ["="], ""], opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, [], "=="], opt);
+              expect(parser).to.parse("--3", ["-", "-", 3, [], ""], opt);
+              expect(parser).to.parse("--3=", ["-", "-", 3, ["="], ""], opt);
+              expect(parser).to.parse("--3===", ["-", "-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--3=====", ["-", "-", 3, ["=", "=", "="], "=="], opt);
+            }
+          });
+
+          it("|min..max| matches correctly", () => {
+            function buildRangeParser() {
+              const start = [];
+              for (let i = 1; i <= 4; ++i) {
+                for (let j = 1; j <= 4; ++j) {
+                  start[start.length] = "start" + String(i) + j;
+                }
+              }
+              const opt = clone(options);
+              opt.allowedStartRules = start;
+
+              return peg.generate([
+                "start11 =         min:n1 max:n1      .|min..max|      $.*",
+                "start12 =         min:n1 max:n1 data:.|min..max|      $.*",
+                "start13 =         min:n1 max:n1      .|min..max| rest:$.*",
+                "start14 =         min:n1 max:n1 data:.|min..max| rest:$.*",
+
+                "start21 = .       min:n1 max:n1      .|min..max|      $.*",
+                "start22 = .       min:n1 max:n1 data:.|min..max|      $.*",
+                "start23 = .       min:n1 max:n1      .|min..max| rest:$.*",
+                "start24 = .       min:n1 max:n1 data:.|min..max| rest:$.*",
+
+                "start31 = a:.     min:n1 max:n1      .|min..max|      $.*",
+                "start32 = a:.     min:n1 max:n1 data:.|min..max|      $.*",
+                "start33 = a:.     min:n1 max:n1      .|min..max| rest:$.*",
+                "start34 = a:.     min:n1 max:n1 data:.|min..max| rest:$.*",
+
+                "start41 = a:. b:. min:n1 max:n1      .|min..max|      $.*",
+                "start42 = a:. b:. min:n1 max:n1 data:.|min..max|      $.*",
+                "start43 = a:. b:. min:n1 max:n1      .|min..max| rest:$.*",
+                "start44 = a:. b:. min:n1 max:n1 data:.|min..max| rest:$.*",
+
+                "n1 = n:$[0-9] { return parseInt(n, 10); }",
+              ].join(";\n"), opt);
+            }
+
+            const parser = buildRangeParser();
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("00", [0, 0, [], ""], opt);
+              expect(parser).to.parse("00==", [0, 0, [], "=="], opt);
+              expect(parser).to.failToParse("23", undefined, opt);
+              expect(parser).to.failToParse("23=", undefined, opt);
+              expect(parser).to.parse("23==", [2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("23===", [2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("23=====", [2, 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-00", ["-", 0, 0, [], ""], opt);
+              expect(parser).to.parse("-00==", ["-", 0, 0, [], "=="], opt);
+              expect(parser).to.failToParse("-23", undefined, opt);
+              expect(parser).to.failToParse("-23=", undefined, opt);
+              expect(parser).to.parse("-23==", ["-", 2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("-23===", ["-", 2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-23=====", ["-", 2, 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-00", ["-", 0, 0, [], ""], opt);
+              expect(parser).to.parse("-00==", ["-", 0, 0, [], "=="], opt);
+              expect(parser).to.failToParse("-23", undefined, opt);
+              expect(parser).to.failToParse("-23=", undefined, opt);
+              expect(parser).to.parse("-23==", ["-", 2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("-23===", ["-", 2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-23=====", ["-", 2, 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--00", ["-", "-", 0, 0, [], ""], opt);
+              expect(parser).to.parse("--00==", ["-", "-", 0, 0, [], "=="], opt);
+              expect(parser).to.failToParse("--23", undefined, opt);
+              expect(parser).to.failToParse("--23=", undefined, opt);
+              expect(parser).to.parse("--23==", ["-", "-", 2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("--23===", ["-", "-", 2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--23=====", ["-", "-", 2, 3, ["=", "=", "="], "=="], opt);
+            }
+          });
+
+          it("|val..val| matches correctly", () => {
+            const parser = buildParser("val");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, [], "=="], opt);
+              expect(parser).to.failToParse("3", undefined, opt);
+              expect(parser).to.failToParse("3=", undefined, opt);
+              expect(parser).to.parse("3===", [3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("3=====", [3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("--3", undefined, opt);
+              expect(parser).to.failToParse("--3=", undefined, opt);
+              expect(parser).to.parse("--3===", ["-", "-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--3=====", ["-", "-", 3, ["=", "=", "="], "=="], opt);
+            }
+          });
+
+          it("| exact  | matches correctly", () => {
+            const parser = buildParser("val");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, [], "=="], opt);
+              expect(parser).to.failToParse("3", undefined, opt);
+              expect(parser).to.failToParse("3=", undefined, opt);
+              expect(parser).to.parse("3===", [3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("3=====", [3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=====", ["-", 3, ["=", "=", "="], "=="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, [], "=="], opt);
+              expect(parser).to.failToParse("--3", undefined, opt);
+              expect(parser).to.failToParse("--3=", undefined, opt);
+              expect(parser).to.parse("--3===", ["-", "-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--3=====", ["-", "-", 3, ["=", "=", "="], "=="], opt);
+            }
+          });
+        });
+
+        describe("with function boundaries", () => {
+          it("|{min}..     | matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }..|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.parse("aaa", ["a", "a", "a"]);
+          });
+
+          it("|     ..{max}| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|..{ return 2; }|", options);
+
+            expect(parser).to.parse("",    []);
+            expect(parser).to.parse("a",   ["a"]);
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.failToParse("aaa");
+          });
+
+          it("|{min}..{max}| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }..{ return 3; }|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.parse("aaa", ["a", "a", "a"]);
+            expect(parser).to.failToParse("aaaa");
+          });
+
+          it("|{val}..{val}| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }..{ return 2; }|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.failToParse("aaa");
+          });
+
+          it("|  {exact}   | matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("aa",  ["a", "a"]);
+            expect(parser).to.failToParse("aaa");
+          });
+
+          describe("function called only once", () => {
+            it("in |{min}..     |", () => {
+              const parser = peg.generate(`
+                { let min = 0; }
+                start = 'a'|{ ++min; return 2; }..| { return min; }
+              `, options);
+
+              // Always one check - after the loop
+              expect(parser).to.parse("aa", 1);
+              expect(parser).to.parse("aaa", 1);
+            });
+
+            it("in |     ..{max}|", () => {
+              const parser = peg.generate(`
+                { let max = 0; }
+                start = 'a'|..{ ++max; return 3; }| { return max; }
+              `, options);
+
+              expect(parser).to.parse("aa", 1);
+              expect(parser).to.parse("aaa", 1);
+            });
+
+            it("in |{min}..{max}|", () => {
+              const parser = peg.generate(`
+                {
+                  let min = 0;
+                  let max = 0;
+                }
+                start = 'a'|
+                  { ++min; return 0; }
+                  ..
+                  { ++max; return 3; }
+                | { return [min, max]; }
+              `, options);
+
+              expect(parser).to.parse("",    [1, 1]);
+              expect(parser).to.parse("a",   [1, 1]);
+              expect(parser).to.parse("aa",  [1, 1]);
+              expect(parser).to.parse("aaa", [1, 1]);
+            });
+
+            it("in |  {exact}   |", () => {
+              const parser = peg.generate(`
+                { let count = 0; }
+                start = 'a'|{ ++count; return options.exact; }| { return count; }
+              `, options);
+
+              expect(parser).to.parse("", 1, { exact: 0 });
+              expect(parser).to.parse("aa", 1, { exact: 2 });
+            });
+          });
+        });
+      });
+
+      describe("with delimiter", () => {
+        describe("with constant boundaries", () => {
+          it("| .. , delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|.., '~'|", options);
+
+            expect(parser).to.parse("",      []);
+            expect(parser).to.parse("a",     ["a"]);
+            expect(parser).to.parse("a~a",   ["a", "a"]);
+            expect(parser).to.parse("a~a~a", ["a", "a", "a"]);
+          });
+
+          it("|0.. , delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|0.., '~'|", options);
+
+            expect(parser).to.parse("",      []);
+            expect(parser).to.parse("a",     ["a"]);
+            expect(parser).to.parse("a~a",   ["a", "a"]);
+            expect(parser).to.parse("a~a~a", ["a", "a", "a"]);
+          });
+
+          it("|1.. , delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|1.., '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.parse("a",     ["a"]);
+            expect(parser).to.parse("a~a",   ["a", "a"]);
+            expect(parser).to.parse("a~a~a", ["a", "a", "a"]);
+          });
+
+          it("|2.. , delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|2.., '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("a~a",   ["a", "a"]);
+            expect(parser).to.parse("a~a~a", ["a", "a", "a"]);
+          });
+
+          it("| ..1, delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|..1, '~'|", options);
+
+            expect(parser).to.parse("",    []);
+            expect(parser).to.parse("a",   ["a"]);
+            expect(parser).to.failToParse("a~a");
+            expect(parser).to.failToParse("a~a~a");
+          });
+
+          it("| ..2, delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|..2, '~'|", options);
+
+            expect(parser).to.parse("",     []);
+            expect(parser).to.parse("a",    ["a"]);
+            expect(parser).to.parse("a~a",  ["a", "a"]);
+            expect(parser).to.failToParse("a~a~a");
+          });
+
+          it("|2..3, delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|2..3, '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("a~a",   ["a", "a"]);
+            expect(parser).to.parse("a~a~a", ["a", "a", "a"]);
+            expect(parser).to.failToParse("a~a~a~a");
+          });
+
+          it("|2..2, delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|2..2, '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("a~a",  ["a", "a"]);
+            expect(parser).to.failToParse("a~a~a");
+          });
+
+          it("|2   , delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|2, '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("a~a",  ["a", "a"]);
+            expect(parser).to.failToParse("a~a~a");
+          });
+
+          it("|3..2, delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|3..2, '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.failToParse("a~a");
+            expect(parser).to.failToParse("a~a~a");
+          });
+        });
+
+        describe("with variable boundaries", () => {
+          it("|min..   , delimiter| matches correctly", () => {
+            const parser = buildParser("val.., '~'");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, ["="], "="], opt);
+              expect(parser).to.parse("0=~=", [0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("1", undefined, opt);
+              expect(parser).to.failToParse("1~", undefined, opt);
+              expect(parser).to.failToParse("2=", undefined, opt);
+              expect(parser).to.failToParse("2=~", undefined, opt);
+              expect(parser).to.failToParse("2==", undefined, opt);
+              expect(parser).to.parse("2=~=", [2, ["=", "="], ""], opt);
+              expect(parser).to.parse("2=~=~", [2, ["=", "="], "~"], opt);
+              expect(parser).to.parse("2=~=~=~=~=", [2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, ["="], "="], opt);
+              expect(parser).to.parse("-0=~=", ["-", 0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("-1", undefined, opt);
+              expect(parser).to.failToParse("-1~", undefined, opt);
+              expect(parser).to.failToParse("-2=", undefined, opt);
+              expect(parser).to.failToParse("-2=~", undefined, opt);
+              expect(parser).to.failToParse("-2==", undefined, opt);
+              expect(parser).to.parse("-2=~=", ["-", 2, ["=", "="], ""], opt);
+              expect(parser).to.parse("-2=~=~", ["-", 2, ["=", "="], "~"], opt);
+              expect(parser).to.parse("-2=~=~=~=~=", ["-", 2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, ["="], "="], opt);
+              expect(parser).to.parse("-0=~=", ["-", 0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("-1", undefined, opt);
+              expect(parser).to.failToParse("-1~", undefined, opt);
+              expect(parser).to.failToParse("-2=", undefined, opt);
+              expect(parser).to.failToParse("-2=~", undefined, opt);
+              expect(parser).to.failToParse("-2==", undefined, opt);
+              expect(parser).to.parse("-2=~=", ["-", 2, ["=", "="], ""], opt);
+              expect(parser).to.parse("-2=~=~", ["-", 2, ["=", "="], "~"], opt);
+              expect(parser).to.parse("-2=~=~=~=~=", ["-", 2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, ["="], "="], opt);
+              expect(parser).to.parse("--0=~=", ["-", "-", 0, ["=", "="], ""], opt);
+              expect(parser).to.failToParse("--1", undefined, opt);
+              expect(parser).to.failToParse("--1~", undefined, opt);
+              expect(parser).to.failToParse("--2=", undefined, opt);
+              expect(parser).to.failToParse("--2=~", undefined, opt);
+              expect(parser).to.failToParse("--2==", undefined, opt);
+              expect(parser).to.parse("--2=~=", ["-", "-", 2, ["=", "="], ""], opt);
+              expect(parser).to.parse("--2=~=~", ["-", "-", 2, ["=", "="], "~"], opt);
+              expect(parser).to.parse("--2=~=~=~=~=", ["-", "-", 2, ["=", "=", "=", "=", "="], ""], opt);
+            }
+          });
+
+          it("|   ..max, delimiter| matches correctly", () => {
+            const parser = buildParser("..val, '~'");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, [], "=="], opt);
+              expect(parser).to.parse("0=~=", [0, [], "=~="], opt);
+              expect(parser).to.parse("3", [3, [], ""], opt);
+              expect(parser).to.parse("3=", [3, ["="], ""], opt);
+              expect(parser).to.parse("3===", [3, ["="], "=="], opt);
+              expect(parser).to.parse("3=~=~", [3, ["=", "="], "~"], opt);
+              expect(parser).to.parse("3=~=~=", [3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("3=~=~=~=~=", [3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.parse("-0=~=", ["-", 0, [], "=~="], opt);
+              expect(parser).to.parse("-3", ["-", 3, [], ""], opt);
+              expect(parser).to.parse("-3=", ["-", 3, ["="], ""], opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["="], "=="], opt);
+              expect(parser).to.parse("-3=~=~", ["-", 3, ["=", "="], "~"], opt);
+              expect(parser).to.parse("-3=~=~=", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=~=~=~=~=", ["-", 3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.parse("-0=~=", ["-", 0, [], "=~="], opt);
+              expect(parser).to.parse("-3", ["-", 3, [], ""], opt);
+              expect(parser).to.parse("-3=", ["-", 3, ["="], ""], opt);
+              expect(parser).to.parse("-3===", ["-", 3, ["="], "=="], opt);
+              expect(parser).to.parse("-3=~=~", ["-", 3, ["=", "="], "~"], opt);
+              expect(parser).to.parse("-3=~=~=", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=~=~=~=~=", ["-", 3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, [], "=="], opt);
+              expect(parser).to.parse("--0=~=", ["-", "-", 0, [], "=~="], opt);
+              expect(parser).to.parse("--3", ["-", "-", 3, [], ""], opt);
+              expect(parser).to.parse("--3=", ["-", "-", 3, ["="], ""], opt);
+              expect(parser).to.parse("--3===", ["-", "-", 3, ["="], "=="], opt);
+              expect(parser).to.parse("--3=~=~", ["-", "-", 3, ["=", "="], "~"], opt);
+              expect(parser).to.parse("--3=~=~=", ["-", "-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--3=~=~=~=~=", ["-", "-", 3, ["=", "=", "="], "~=~="], opt);
+            }
+          });
+
+          it("|min..max, delimiter| matches correctly", () => {
+            function buildRangeParser() {
+              const start = [];
+              for (let i = 1; i <= 4; ++i) {
+                for (let j = 1; j <= 4; ++j) {
+                  start[start.length] = "start" + String(i) + j;
+                }
+              }
+              const opt = clone(options);
+              opt.allowedStartRules = start;
+
+              return peg.generate([
+                "start11 =         min:n1 max:n1      .|min..max, '~'|      $.*",
+                "start12 =         min:n1 max:n1 data:.|min..max, '~'|      $.*",
+                "start13 =         min:n1 max:n1      .|min..max, '~'| rest:$.*",
+                "start14 =         min:n1 max:n1 data:.|min..max, '~'| rest:$.*",
+
+                "start21 = .       min:n1 max:n1      .|min..max, '~'|      $.*",
+                "start22 = .       min:n1 max:n1 data:.|min..max, '~'|      $.*",
+                "start23 = .       min:n1 max:n1      .|min..max, '~'| rest:$.*",
+                "start24 = .       min:n1 max:n1 data:.|min..max, '~'| rest:$.*",
+
+                "start31 = a:.     min:n1 max:n1      .|min..max, '~'|      $.*",
+                "start32 = a:.     min:n1 max:n1 data:.|min..max, '~'|      $.*",
+                "start33 = a:.     min:n1 max:n1      .|min..max, '~'| rest:$.*",
+                "start34 = a:.     min:n1 max:n1 data:.|min..max, '~'| rest:$.*",
+
+                "start41 = a:. b:. min:n1 max:n1      .|min..max, '~'|      $.*",
+                "start42 = a:. b:. min:n1 max:n1 data:.|min..max, '~'|      $.*",
+                "start43 = a:. b:. min:n1 max:n1      .|min..max, '~'| rest:$.*",
+                "start44 = a:. b:. min:n1 max:n1 data:.|min..max, '~'| rest:$.*",
+
+                "n1 = n:$[0-9] { return parseInt(n, 10); }",
+              ].join(";\n"), opt);
+            }
+
+            const parser = buildRangeParser();
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("00", [0, 0, [], ""], opt);
+              expect(parser).to.parse("00==", [0, 0, [], "=="], opt);
+              expect(parser).to.parse("00=~=", [0, 0, [], "=~="], opt);
+              expect(parser).to.failToParse("23", undefined, opt);
+              expect(parser).to.failToParse("23=", undefined, opt);
+              expect(parser).to.failToParse("23=~", undefined, opt);
+              expect(parser).to.failToParse("23==", undefined, opt);
+              expect(parser).to.parse("23=~=", [2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("23=~=~", [2, 3, ["=", "="], "~"], opt);
+              expect(parser).to.parse("23=~=~=", [2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("23=~=~=~=~=", [2, 3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-00", ["-", 0, 0, [], ""], opt);
+              expect(parser).to.parse("-00==", ["-", 0, 0, [], "=="], opt);
+              expect(parser).to.parse("-00=~=", ["-", 0, 0, [], "=~="], opt);
+              expect(parser).to.failToParse("-23", undefined, opt);
+              expect(parser).to.failToParse("-23=", undefined, opt);
+              expect(parser).to.failToParse("-23=~", undefined, opt);
+              expect(parser).to.failToParse("-23==", undefined, opt);
+              expect(parser).to.parse("-23=~=", ["-", 2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("-23=~=~", ["-", 2, 3, ["=", "="], "~"], opt);
+              expect(parser).to.parse("-23=~=~=", ["-", 2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-23=~=~=~=~=", ["-", 2, 3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-00", ["-", 0, 0, [], ""], opt);
+              expect(parser).to.parse("-00==", ["-", 0, 0, [], "=="], opt);
+              expect(parser).to.parse("-00=~=", ["-", 0, 0, [], "=~="], opt);
+              expect(parser).to.failToParse("-23", undefined, opt);
+              expect(parser).to.failToParse("-23=", undefined, opt);
+              expect(parser).to.failToParse("-23=~", undefined, opt);
+              expect(parser).to.failToParse("-23==", undefined, opt);
+              expect(parser).to.parse("-23=~=", ["-", 2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("-23=~=~", ["-", 2, 3, ["=", "="], "~"], opt);
+              expect(parser).to.parse("-23=~=~=", ["-", 2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-23=~=~=~=~=", ["-", 2, 3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--00", ["-", "-", 0, 0, [], ""], opt);
+              expect(parser).to.parse("--00==", ["-", "-", 0, 0, [], "=="], opt);
+              expect(parser).to.parse("--00=~=", ["-", "-", 0, 0, [], "=~="], opt);
+              expect(parser).to.failToParse("--23", undefined, opt);
+              expect(parser).to.failToParse("--23=", undefined, opt);
+              expect(parser).to.failToParse("--23=~", undefined, opt);
+              expect(parser).to.failToParse("--23==", undefined, opt);
+              expect(parser).to.parse("--23=~=", ["-", "-", 2, 3, ["=", "="], ""], opt);
+              expect(parser).to.parse("--23=~=~", ["-", "-", 2, 3, ["=", "="], "~"], opt);
+              expect(parser).to.parse("--23=~=~=", ["-", "-", 2, 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--23=~=~=~=~=", ["-", "-", 2, 3, ["=", "=", "="], "~=~="], opt);
+            }
+          });
+
+          it("|val..val, delimiter| matches correctly", () => {
+            const parser = buildParser("val, '~'");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, [], "=="], opt);
+              expect(parser).to.parse("0=~=", [0, [], "=~="], opt);
+              expect(parser).to.failToParse("3", undefined, opt);
+              expect(parser).to.failToParse("3=", undefined, opt);
+              expect(parser).to.failToParse("3=~", undefined, opt);
+              expect(parser).to.parse("3=~=~=", [3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("3=~=~=~", [3, ["=", "=", "="], "~"], opt);
+              expect(parser).to.parse("3=~=~=~=~=", [3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.parse("-0=~=", ["-", 0, [], "=~="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.failToParse("-3=~", undefined, opt);
+              expect(parser).to.parse("-3=~=~=", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=~=~=~", ["-", 3, ["=", "=", "="], "~"], opt);
+              expect(parser).to.parse("-3=~=~=~=~=", ["-", 3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.parse("-0=~=", ["-", 0, [], "=~="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.failToParse("-3=~", undefined, opt);
+              expect(parser).to.parse("-3=~=~=", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=~=~=~", ["-", 3, ["=", "=", "="], "~"], opt);
+              expect(parser).to.parse("-3=~=~=~=~=", ["-", 3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, [], "=="], opt);
+              expect(parser).to.parse("--0=~=", ["-", "-", 0, [], "=~="], opt);
+              expect(parser).to.failToParse("--3", undefined, opt);
+              expect(parser).to.failToParse("--3=", undefined, opt);
+              expect(parser).to.failToParse("--3=~", undefined, opt);
+              expect(parser).to.parse("--3=~=~=", ["-", "-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--3=~=~=~", ["-", "-", 3, ["=", "=", "="], "~"], opt);
+              expect(parser).to.parse("--3=~=~=~=~=", ["-", "-", 3, ["=", "=", "="], "~=~="], opt);
+            }
+          });
+
+          it("| exact  , delimiter| matches correctly", () => {
+            const parser = buildParser("val, '~'");
+
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start1" + i };
+              expect(parser).to.failToParse("", undefined, opt);
+              expect(parser).to.parse("0", [0, [], ""], opt);
+              expect(parser).to.parse("0==", [0, [], "=="], opt);
+              expect(parser).to.parse("0=~=", [0, [], "=~="], opt);
+              expect(parser).to.failToParse("3", undefined, opt);
+              expect(parser).to.failToParse("3=", undefined, opt);
+              expect(parser).to.failToParse("3=~", undefined, opt);
+              expect(parser).to.parse("3=~=~=", [3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("3=~=~=~", [3, ["=", "=", "="], "~"], opt);
+              expect(parser).to.parse("3=~=~=~=~=", [3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start2" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.parse("-0=~=", ["-", 0, [], "=~="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.failToParse("-3=~", undefined, opt);
+              expect(parser).to.parse("-3=~=~=", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=~=~=~", ["-", 3, ["=", "=", "="], "~"], opt);
+              expect(parser).to.parse("-3=~=~=~=~=", ["-", 3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start3" + i };
+              expect(parser).to.failToParse("-", undefined, opt);
+              expect(parser).to.parse("-0", ["-", 0, [], ""], opt);
+              expect(parser).to.parse("-0==", ["-", 0, [], "=="], opt);
+              expect(parser).to.parse("-0=~=", ["-", 0, [], "=~="], opt);
+              expect(parser).to.failToParse("-3", undefined, opt);
+              expect(parser).to.failToParse("-3=", undefined, opt);
+              expect(parser).to.failToParse("-3=~", undefined, opt);
+              expect(parser).to.parse("-3=~=~=", ["-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("-3=~=~=~", ["-", 3, ["=", "=", "="], "~"], opt);
+              expect(parser).to.parse("-3=~=~=~=~=", ["-", 3, ["=", "=", "="], "~=~="], opt);
+            }
+            for (let i = 1; i <= 4; ++i) {
+              const opt = { startRule: "start4" + i };
+              expect(parser).to.failToParse("--", undefined, opt);
+              expect(parser).to.parse("--0", ["-", "-", 0, [], ""], opt);
+              expect(parser).to.parse("--0==", ["-", "-", 0, [], "=="], opt);
+              expect(parser).to.parse("--0=~=", ["-", "-", 0, [], "=~="], opt);
+              expect(parser).to.failToParse("--3", undefined, opt);
+              expect(parser).to.failToParse("--3=", undefined, opt);
+              expect(parser).to.failToParse("--3=~", undefined, opt);
+              expect(parser).to.parse("--3=~=~=", ["-", "-", 3, ["=", "=", "="], ""], opt);
+              expect(parser).to.parse("--3=~=~=~", ["-", "-", 3, ["=", "=", "="], "~"], opt);
+              expect(parser).to.parse("--3=~=~=~=~=", ["-", "-", 3, ["=", "=", "="], "~=~="], opt);
+            }
+          });
+        });
+
+        describe("with function boundaries", () => {
+          it("|{2}..   , delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }.., '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("a~a",   ["a", "a"]);
+            expect(parser).to.parse("a~a~a", ["a", "a", "a"]);
+          });
+
+          it("|   ..{2}, delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|..{ return 2; }, '~'|", options);
+
+            expect(parser).to.parse("",     []);
+            expect(parser).to.parse("a",    ["a"]);
+            expect(parser).to.parse("a~a",  ["a", "a"]);
+            expect(parser).to.failToParse("a~a~a");
+          });
+
+          it("|{2}..{3}, delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }..{ return 3; }, '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("a~a",   ["a", "a"]);
+            expect(parser).to.parse("a~a~a", ["a", "a", "a"]);
+            expect(parser).to.failToParse("a~a~a~a");
+          });
+
+          it("|{2}..{2}, delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }..{ return 2; }, '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("a~a",  ["a", "a"]);
+            expect(parser).to.failToParse("a~a~a");
+          });
+
+          it("|{2}     , delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 2; }, '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.parse("a~a",  ["a", "a"]);
+            expect(parser).to.failToParse("a~a~a");
+          });
+
+          it("|{3}..{2}, delimiter| matches correctly", () => {
+            const parser = peg.generate("start = 'a'|{ return 3; }..{ return 2; }, '~'|", options);
+
+            expect(parser).to.failToParse("");
+            expect(parser).to.failToParse("a");
+            expect(parser).to.failToParse("a~a");
+            expect(parser).to.failToParse("a~a~a");
+          });
+        });
+      });
+
+      describe("handle delimiter correctly", () => {
+        it("with constant boundaries", () => {
+          const parser = peg.generate("start = 'a'|2..3, '~'|", options);
+
+          expect(parser).to.failToParse("");
+          expect(parser).to.failToParse("a");
+          expect(parser).to.failToParse("aa");
+          expect(parser).to.failToParse("a~");
+          expect(parser).to.parse("a~a",   ["a", "a"]);
+          expect(parser).to.failToParse("a~a~");
+          expect(parser).to.parse("a~a~a", ["a", "a", "a"]);
+          expect(parser).to.failToParse("a~a~a~");
+          expect(parser).to.failToParse("a~a~a~a");
+        });
+
+        it("with variable boundaries", () => {
+          const parser = peg.generate([
+            "start = min:n1 max:n1 'a'|min..max, '~'|",
+            "n1 = n:$[0-9] { return parseInt(n, 10); }",
+          ].join(";\n"), options);
+
+          expect(parser).to.failToParse("23");
+          expect(parser).to.failToParse("23a");
+          expect(parser).to.failToParse("23aa");
+          expect(parser).to.failToParse("23a~");
+          expect(parser).to.parse("23a~a",   [2, 3, ["a", "a"]]);
+          expect(parser).to.failToParse("23a~a~");
+          expect(parser).to.parse("23a~a~a", [2, 3, ["a", "a", "a"]]);
+          expect(parser).to.failToParse("23a~a~a~");
+          expect(parser).to.failToParse("23a~a~a~a");
+        });
+
+        it("with variable boundaries in delimiter", () => {
+          const parser = peg.generate([
+            "start = min:n1 max:n1 'a'|2, '~'|min..max||",
+            "n1 = n:$[0-9] { return parseInt(n, 10); }",
+          ].join(";\n"), options);
+
+          expect(parser).to.failToParse("23");
+          expect(parser).to.failToParse("23a");
+          expect(parser).to.failToParse("23aa");
+          expect(parser).to.failToParse("23a~");
+          expect(parser).to.failToParse("23a~a");
+          expect(parser).to.failToParse("23a~~");
+          expect(parser).to.parse("23a~~a",   [2, 3, ["a", "a"]]);
+          expect(parser).to.parse("23a~~~a",   [2, 3, ["a", "a"]]);
+          expect(parser).to.failToParse("23a~~~~a");
+          expect(parser).to.failToParse("23a~~a~~a");
+        });
+
+        it("with function boundaries", () => {
+          const parser = peg.generate("start = 'a'|{ return 2; }..{ return 3; }, '~'|", options);
+
+          expect(parser).to.failToParse("");
+          expect(parser).to.failToParse("a");
+          expect(parser).to.failToParse("aa");
+          expect(parser).to.failToParse("a~");
+          expect(parser).to.parse("a~a",   ["a", "a"]);
+          expect(parser).to.failToParse("a~a~");
+          expect(parser).to.parse("a~a~a", ["a", "a", "a"]);
+          expect(parser).to.failToParse("a~a~a~");
+          expect(parser).to.failToParse("a~a~a~a");
         });
       });
     });
@@ -1133,6 +2257,38 @@ describe("generated parser behavior", () => {
                 {
                   grammar: "start = (a:'a')+ { return a; }",
                   input: "a",
+                },
+                {
+                  grammar: "start = (a:'a')| .. | { return a; }",
+                  input: "a",
+                },
+                {
+                  grammar: "start = (a:'a')|0.. | { return a; }",
+                  input: "a",
+                },
+                {
+                  grammar: "start = (a:'a')|1.. | { return a; }",
+                  input: "a",
+                },
+                {
+                  grammar: "start = (a:'a')|2.. | { return a; }",
+                  input: "aa",
+                },
+                {
+                  grammar: "start = (a:'a')| ..1| { return a; }",
+                  input: "a",
+                },
+                {
+                  grammar: "start = (a:'a')| ..3| { return a; }",
+                  input: "a",
+                },
+                {
+                  grammar: "start = (a:'a')|2..3| { return a; }",
+                  input: "aa",
+                },
+                {
+                  grammar: "start = (a:'a')|3| { return a; }",
+                  input: "aaa",
                 },
                 {
                   grammar: "start = $(a:'a') { return a; }",

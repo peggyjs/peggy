@@ -10,6 +10,8 @@ exports.peggyVersion = function peggyVersion() {
   return peg.VERSION;
 };
 
+chai.use(require("chai-like"));
+
 beforeEach(() => {
   // In the browser, initialize SourceMapConsumer's wasm bits.
   // This is *async*, so make sure to return the promise to make
@@ -173,6 +175,15 @@ describe("Peggy API", () => {
           expect(eval(source).parse("a")).to.equal("a");
         });
       });
+
+      describe("when |output| is set to |\"ast\"|", () => {
+        it("returns generated parser AST", () => {
+          const ast = peg.generate(grammar, { output: "ast" });
+
+          expect(ast).to.be.an("object");
+          expect(ast).to.be.like(peg.parser.parse(grammar));
+        });
+      });
     });
 
     // The |format|, |exportVars|, and |dependencies| options are not tested
@@ -214,8 +225,10 @@ describe("Peggy API", () => {
     });
 
     describe("generates source map", () => {
-      function findLocationOf(input, chunk) {
-        const offset = input.indexOf(chunk);
+      function findLocationOf(input, chunk, source) {
+        const offset = chunk instanceof RegExp
+          ? input.search(chunk)
+          : input.indexOf(chunk);
         let line = 1;
         let column = 0;
 
@@ -228,6 +241,11 @@ describe("Peggy API", () => {
           }
         }
 
+        if (source && source.offset) {
+          const o = source.offset({ line, column, offset });
+          delete o.offset;
+          return o;
+        }
         return { line, column };
       }
 
@@ -236,11 +254,16 @@ describe("Peggy API", () => {
       const NOT_BLOCK = "NOT\nBLOCK";
       const AND_BLOCK = "AND\nBLOCK";
       const ACTION_BLOCK = "ACTION\nBLOCK";
+      const MIN_BLOCK = "MIN\nBLOCK";
+      const MAX_BLOCK = "MAX\nBLOCK";
+      const EXACT_BLOCK = "EXACT\nBLOCK";
       const SOURCE = `
         {{${GLOBAL_INITIALIZER}}}
         {${PER_PARSE_INITIALIZER}}
         RULE_1 = !{${NOT_BLOCK}} 'a' rule:RULE_2 {${ACTION_BLOCK}};
-        RULE_2 'named' = &{${AND_BLOCK}} @'b';
+        RULE_2 'named' = &{${AND_BLOCK}} @'b' [abc] 'def';
+        RULE_3 = RULE_1 / RULE_2;
+        RULE_4 = RULE_1|{${MIN_BLOCK}} .. {${MAX_BLOCK}}, RULE_2|{${EXACT_BLOCK}}| |;
       `;
 
       function check(chunk, source, name, generatedChunk = chunk) {
@@ -250,14 +273,26 @@ describe("Peggy API", () => {
         });
         const { code, map } = node.toStringWithSourceMap();
 
-        const original  = findLocationOf(SOURCE, chunk);
+        const original  = findLocationOf(SOURCE, chunk, source);
         const generated = findLocationOf(code, generatedChunk);
+
+        delete original.offset;
+        delete generated.offset;
 
         return SourceMapConsumer.fromSourceMap(map).then(consumer => {
           expect(consumer.originalPositionFor(generated))
-            .to.be.deep.equal(Object.assign(original, { source, name }));
+            .to.be.deep.equal(Object.assign(original, {
+              source: String(source),
+              name,
+            }));
         });
       }
+
+      const gl = new peg.GrammarLocation("-", {
+        offset: 51,
+        line: 13,
+        column: 7,
+      });
 
       for (const source of [
         // Because of https://github.com/mozilla/source-map/issues/444 this variants not working
@@ -265,6 +300,7 @@ describe("Peggy API", () => {
         // null,
         // "",
         "-",
+        gl,
       ]) {
         describe(`with source = ${chai.util.inspect(source)}`, () => {
           it("global initializer", () => check(GLOBAL_INITIALIZER, source, "$top_level_initializer"));
@@ -272,9 +308,27 @@ describe("Peggy API", () => {
           it("action block", () => check(ACTION_BLOCK, source, null));
           it("semantic and predicate", () => check(AND_BLOCK, source, null));
           it("semantic not predicate", () => check(NOT_BLOCK, source, null));
+          it("min function boundary", () => check(MIN_BLOCK, source, null));
+          it("max function boundary", () => check(MAX_BLOCK, source, null));
+          it("exact function boundary", () => check(EXACT_BLOCK, source, null));
 
           it("rule name", () => check("RULE_1", source, "RULE_1", "peg$parseRULE_1() {"));
           it("labelled rule name", () => check("RULE_2 'named'", source, "RULE_2", "peg$parseRULE_2() {"));
+          it("literal expression", () => check("'a'", source, null, "input.charCodeAt(peg$currPos) === 97"));
+          it("multichar literal", () => check("'def'", source, null, "input.substr(peg$currPos, 3) === peg$c3"));
+          it("chars expression", () => check("[abc]", source, null, "peg$r0.test(input.charAt(peg$currPos))"));
+          it("rule expression", () => check("RULE_2", source, null, "peg$parseRULE_2();"));
+          it("choice expression", () => check(
+            "RULE_1 / RULE_2",
+            source,
+            null,
+            new RegExp([
+              // Lint complained about a long regex, so split and join.
+              /peg\$parseRULE_1\(\);\s*/,
+              /if \(s. === peg\$FAILED\) \{\s*/,
+              /s. = peg\$parseRULE_2/,
+            ].map(r => r.source).join(""))
+          ));
         });
       }
     });

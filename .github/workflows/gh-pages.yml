@@ -1,0 +1,34 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: choice
+        description: Which branch to deploy to peggyjs.org
+        required: true
+        options:
+          - stable
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.branch }}
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: npm
+      - name: Install dependencies
+        run: "cd docs && npm ci"
+      - name: Build
+        run: "cd docs && npm run build"
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/_site
+          publish_branch: docs

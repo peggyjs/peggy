@@ -16,7 +16,7 @@ examples
 jest.config.js
 lib/.eslintrc.json
 pnpm-lock.yaml
-rollup.config.js
+rollup.config.mjs
 src
 test
 tools

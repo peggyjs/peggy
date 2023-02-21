@@ -40,6 +40,8 @@ describe("compiler pass |reportDuplicateLabels|", () => {
       expect(pass).to.not.reportError("start = (a:'a')? a:'a'");
       expect(pass).to.not.reportError("start = (a:'a')* a:'a'");
       expect(pass).to.not.reportError("start = (a:'a')+ a:'a'");
+      expect(pass).to.not.reportError("start = (a:'a')|2..3| a:'a'");
+      expect(pass).to.not.reportError("start = 'a'|2..3, a:'a'| a:'a'");
       expect(pass).to.not.reportError("start = (a:'a') a:'a'");
     });
   });

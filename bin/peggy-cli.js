@@ -14,7 +14,7 @@ exports.CommanderError = CommanderError;
 exports.InvalidArgumentError = InvalidArgumentError;
 
 // Options that aren't for the API directly:
-const PROG_OPTIONS = ["input", "output", "sourceMap", "test", "testFile", "verbose"];
+const PROG_OPTIONS = ["ast", "input", "output", "sourceMap", "startRule", "test", "testFile", "verbose"];
 const MODULE_FORMATS = ["amd", "bare", "commonjs", "es", "globals", "umd"];
 const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
 const MODULE_FORMATS_WITH_GLOBAL = ["globals", "umd"];
@@ -84,7 +84,6 @@ class PeggyCLI extends Command {
 
     /** @type {peggy.BuildOptionsBase} */
     this.argv = {};
-    this.colors = this.std.err.isTTY;
     /** @type {string?} */
     this.inputFile = null;
     /** @type {string?} */
@@ -111,6 +110,14 @@ class PeggyCLI extends Command {
         )
           .default([], "the first rule in the grammar")
           .argParser(commaArg)
+      )
+      .addOption(
+        new Option(
+          "--ast",
+          "Output a grammar AST instead of a parser code"
+        )
+          .default(false)
+          .conflicts(["test", "testFile", "sourceMap"])
       )
       .option(
         "--cache",
@@ -174,13 +181,17 @@ class PeggyCLI extends Command {
         "Generate a source map. If name is not specified, the source map will be named \"<input_file>.map\" if input is a file and \"source.map\" if input is a standard input. If the special filename `inline` is given, the sourcemap will be embedded in the output file as a data URI.  If the filename is prefixed with `hidden:`, no mapping URL will be included so that the mapping can be specified with an HTTP SourceMap: header.  This option conflicts with the `-t/--test` and `-T/--test-file` options unless `-o/--output` is also specified"
       )
       .option(
+        "-S, --start-rule <rule>",
+        "When testing, use the given rule as the start rule.  If this rule is not in the allowed start rules, it will be added."
+      )
+      .option(
         "-t, --test <text>",
         "Test the parser with the given text, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
       )
-      .option(
+      .addOption(new Option(
         "-T, --test-file <filename>",
-        "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2"
-      )
+        "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2. A filename of '-' will read from stdin."
+      ).conflicts("test"))
       .option("--trace", "Enable tracing in generated parser", false)
       .addOption(
         // Not interesting yet.  If it becomes so, unhide the help.
@@ -201,6 +212,11 @@ class PeggyCLI extends Command {
       .action((inputFile, opts) => { // On parse()
         this.inputFile = inputFile;
         this.argv = opts;
+
+        if ((typeof this.argv.startRule === "string")
+          && !this.argv.allowedStartRules.includes(this.argv.startRule)) {
+          this.argv.allowedStartRules.push(this.argv.startRule);
+        }
 
         if (this.argv.allowedStartRules.length === 0) {
           // [] is an invalid input, as is null
@@ -304,11 +320,12 @@ class PeggyCLI extends Command {
           }
         }
 
+        if (this.progOptions.ast) {
+          this.argv.output = "ast";
+        }
+
         // Empty string is a valid test input.  Don't just test for falsy.
         if (typeof this.progOptions.test === "string") {
-          if (this.progOptions.testFile) {
-            this.error("The -t/--test and -T/--test-file options are mutually exclusive.");
-          }
           this.testText = this.progOptions.test;
           this.testGrammarSource = "command line";
         }
@@ -359,13 +376,16 @@ class PeggyCLI extends Command {
           : `${message}\n${opts.error.message}`;
       }
     }
+    if (!/^error/i.test(message)) {
+      message = `Error ${message}`;
+    }
 
-    super.error(`Error ${message}`, opts);
+    super.error(message, opts);
   }
 
   print(stream, ...args) {
     stream.write(util.formatWithOptions({
-      colors: this.colors,
+      colors: stream.isTTY,
       depth: Infinity,
       maxArrayLength: Infinity,
       maxStringLength: Infinity,
@@ -502,7 +522,7 @@ class PeggyCLI extends Command {
     });
   }
 
-  writeParser(outputStream, source) {
+  writeOutput(outputStream, source) {
     return new Promise((resolve, reject) => {
       if (!outputStream) {
         resolve();
@@ -527,9 +547,13 @@ class PeggyCLI extends Command {
     });
   }
 
-  test(source) {
+  async test(source) {
     if (this.testFile) {
-      this.testText = fs.readFileSync(this.testFile, "utf8");
+      if (this.testFile === "-") {
+        this.testText = await readStream(this.std.in);
+      } else {
+        this.testText = fs.readFileSync(this.testFile, "utf8");
+      }
     }
     if (typeof this.testText === "string") {
       this.verbose("TEST TEXT:", this.testText);
@@ -579,15 +603,14 @@ class PeggyCLI extends Command {
         setTimeout,
       });
 
-      const results = exec.parse(this.testText, {
+      const opts = {
         grammarSource: this.testGrammarSource,
-      });
-      this.print(this.std.out, util.inspect(results, {
-        depth: Infinity,
-        colors: this.colors,
-        maxArrayLength: Infinity,
-        maxStringLength: Infinity,
-      }));
+      };
+      if (typeof this.progOptions.startRule === "string") {
+        opts.startRule = this.progOptions.startRule;
+      }
+      const results = exec.parse(this.testText, opts);
+      this.print(this.std.out, "%O", results);
     }
   }
 
@@ -613,18 +636,24 @@ class PeggyCLI extends Command {
       this.verbose("CLI", errorText = "parsing grammar");
       const source = peggy.generate(input, this.argv); // All of the real work.
 
-      this.verbose("CLI", errorText = "writing to output file");
+      this.verbose("CLI", errorText = "open output stream");
       const outputStream = await this.openOutputStream();
 
-      this.verbose("CLI", errorText = "writing sourceMap");
-      const mappedSource = await this.writeSourceMap(source);
+      // If option `--ast` is specified, `generate()` returns an AST object
+      if (this.progOptions.ast) {
+        this.verbose("CLI", errorText = "writing AST");
+        await this.writeOutput(outputStream, JSON.stringify(source, null, 2));
+      } else {
+        this.verbose("CLI", errorText = "writing sourceMap");
+        const mappedSource = await this.writeSourceMap(source);
 
-      this.verbose("CLI", errorText = "writing parser");
-      await this.writeParser(outputStream, mappedSource);
+        this.verbose("CLI", errorText = "writing parser");
+        await this.writeOutput(outputStream, mappedSource);
 
-      exitCode = 2;
-      this.verbose("CLI", errorText = "running test");
-      this.test(mappedSource);
+        exitCode = 2;
+        this.verbose("CLI", errorText = "running test");
+        await this.test(mappedSource);
+      }
     } catch (error) {
       // Will either exit or throw.
       this.error(errorText, {

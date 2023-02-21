@@ -6,6 +6,7 @@ import * as peggy from "../../lib/peg.js";
 import { CommanderError, PeggyCLI } from "../../bin/peggy.js";
 import { Transform, TransformCallback, TransformOptions } from "stream";
 import { SourceMapConsumer } from "source-map";
+import { promisify } from "util";
 import { spawn } from "child_process";
 
 const foobarbaz = `\
@@ -26,18 +27,27 @@ interface CodeObject {
 
 /** Capture stdin/stdout. */
 class MockStream extends Transform {
-  private errorsToThrow: Error[];
-
   public name?: string;
 
-  constructor(opts: ErrorWritableOptions = {}) {
+  private errorsToThrow: Error[];
+
+  public constructor(opts: ErrorWritableOptions = {}) {
     const { name, errorsToThrow, ...others } = opts;
     super(others);
     this.name = name;
     this.errorsToThrow = errorsToThrow || [];
   }
 
-  _transform(
+  public static create(
+    src?: Buffer | string,
+    opts: ErrorWritableOptions = {}
+  ): MockStream {
+    const b = new MockStream(opts);
+    b.end(src);
+    return b;
+  }
+
+  public _transform(
     chunk: any,
     encoding: BufferEncoding,
     callback: TransformCallback
@@ -50,29 +60,20 @@ class MockStream extends Transform {
       callback();
     }
   }
-
-  static create(
-    src?: string | Buffer,
-    opts: ErrorWritableOptions = {}
-  ): MockStream {
-    const b = new MockStream(opts);
-    b.end(src);
-    return b;
-  }
 }
 
 /** Execution failed */
 class ExecError extends Error {
   /** Result error code, always non-zero */
-  code: number;
+  public code: number;
 
   /** Stdout as a string, decoded with opts.encoding */
-  str: string;
+  public str: string;
 
   /** Stdout as a Buffer */
-  buf?: Buffer;
+  public buf?: Buffer;
 
-  constructor(
+  public constructor(
     message: string,
     code: number,
     str: string,
@@ -88,24 +89,24 @@ ${str}`);
   }
 }
 
-type Options = {
+interface Options {
   args?: string[];
   encoding?: BufferEncoding;
-  env?: Record<string, string>;
-  stdin?: string | Buffer | MockStream;
+  env?: { [variable: string]: string };
+  stdin?: Buffer | MockStream | string;
   stdout?: MockStream;
   stderr?: MockStream;
   error?: any;
-  errorCode?: string | number;
+  errorCode?: number | string;
   exitCode?: number;
   expected?: any;
-};
+}
 
 /**
  * "Execute" the CLI by calling it as the wrapper would, but substituting
  * our own stdin, stdout, stderr.
  */
-async function exec(opts: Options = {}) {
+async function exec(opts: Options = {}): Promise<string> {
   opts = {
     args: [],
     encoding: "utf8",
@@ -122,7 +123,8 @@ async function exec(opts: Options = {}) {
     encoding: opts.encoding,
   });
   const err = opts.stderr || out;
-  let outputString = null;
+  const outputBuffers: (Buffer | string)[] = [];
+  out.on("data", buf => outputBuffers.push(buf));
   const p = new Promise<number>((resolve, reject) => {
     const cli = new PeggyCLI({ in: stdin, out, err })
       .exitOverride()
@@ -185,8 +187,14 @@ async function exec(opts: Options = {}) {
     expect(exitCode).toBe(0);
   }
 
-  if (outputString === null) {
-    outputString = out.read();
+  let outputString = "";
+  if (outputBuffers.length > 0) {
+    if (typeof outputBuffers[0] === "string") {
+      outputString = outputBuffers.join("");
+    } else {
+      outputString = Buffer.concat(outputBuffers as Buffer[])
+        .toString(opts.encoding);
+    }
   }
   if (opts.expected instanceof RegExp) {
     expect(outputString).toMatch(opts.expected);
@@ -196,7 +204,7 @@ async function exec(opts: Options = {}) {
   return outputString;
 }
 
-function forkExec(opts: Options = {}) {
+function forkExec(opts: Options = {}): Promise<string> {
   opts = {
     args: [],
     encoding: "utf8",
@@ -258,8 +266,8 @@ function forkExec(opts: Options = {}) {
 async function checkSourceMap(
   sourceMap: string,
   args: string[],
-  error?: string,
-) {
+  error?: string
+): Promise<void> {
   expect(() => {
     // Make sure the file isn't there before we start
     fs.statSync(sourceMap);
@@ -281,6 +289,24 @@ async function checkSourceMap(
   fs.unlinkSync(sourceMap);
 }
 
+describe("MockStream", () => {
+  it("Accepts input larger than highwaterMark", async() => {
+    const s = new MockStream({ highWaterMark: 1 });
+    const recv: Buffer[] = [];
+    // Note: before adding this callback, the write's below would block
+    // unless the highwaterMark above was changed to 3 or more.
+    s.on("data", d => recv.push(d));
+
+    // This should be promisify<string>, but TS can't figure out how to
+    // use the correct overload.
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    const write = promisify<string, void>(s.write.bind(s));
+    await write("ab");
+    await write("c");
+    expect(Buffer.concat(recv).toString()).toBe("abc");
+  });
+});
+
 describe("Command Line Interface", () => {
   it("has help", async() => {
     const HELP = `\
@@ -296,6 +322,8 @@ Options:
                                    parser will be allowed to start parsing
                                    from.  (Can be specified multiple times)
                                    (default: the first rule in the grammar)
+  --ast                            Output a grammar AST instead of a parser
+                                   code (default: false)
   --cache                          Make generated parser cache results
                                    (default: false)
   -d, --dependency <dependency>    Comma-separated list of dependencies, either
@@ -334,6 +362,9 @@ Options:
                                    This option conflicts with the \`-t/--test\`
                                    and \`-T/--test-file\` options unless
                                    \`-o/--output\` is also specified
+  -S, --start-rule <rule>          When testing, use the given rule as the
+                                   start rule.  If this rule is not in the
+                                   allowed start rules, it will be added.
   -t, --test <text>                Test the parser with the given text,
                                    outputting the result of running the parser
                                    instead of the parser itself. If the input
@@ -343,7 +374,8 @@ Options:
                                    given file, outputting the result of running
                                    the parser instead of the parser itself. If
                                    the input to be tested is not parsed, the
-                                   CLI will exit with code 2
+                                   CLI will exit with code 2. A filename of '-'
+                                   will read from stdin.
   --trace                          Enable tracing in generated parser (default:
                                    false)
   -h, --help                       display help for command
@@ -605,6 +637,70 @@ Options:
       errorCode: "commander.invalidArgument",
       exitCode: 1,
       error: "option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, bare, commonjs, es, globals, umd.",
+    });
+  });
+
+  describe("--ast option", () => {
+    it("conflicts with --test/--test-file/--source-map", async() => {
+      await exec({
+        args: ["--ast", "--test", "1"],
+        stdin: 'foo = "1"',
+        error: CommanderError,
+        errorCode: "commander.conflictingOption",
+        exitCode: 1,
+        expected: "error: option '--ast' cannot be used with option '-t, --test <text>'\n",
+      });
+      await exec({
+        args: ["--ast", "--test-file", "file"],
+        stdin: 'foo = "1"',
+        error: CommanderError,
+        errorCode: "commander.conflictingOption",
+        exitCode: 1,
+        expected: "error: option '--ast' cannot be used with option '-T, --test-file <filename>'\n",
+      });
+      await exec({
+        args: ["--ast", "--source-map"],
+        stdin: 'foo = "1"',
+        error: CommanderError,
+        errorCode: "commander.conflictingOption",
+        exitCode: 1,
+        expected: "error: option '--ast' cannot be used with option '-m, --source-map [mapfile]'\n",
+      });
+      await exec({
+        args: ["--ast", "--source-map", "file"],
+        stdin: 'foo = "1"',
+        error: CommanderError,
+        errorCode: "commander.conflictingOption",
+        exitCode: 1,
+        expected: "error: option '--ast' cannot be used with option '-m, --source-map [mapfile]'\n",
+      });
+    });
+
+    it("produces AST", async() => {
+      const output = await exec({
+        args: ["--ast"],
+        stdin: 'foo = "1"',
+      });
+
+      // Do not check exact location information and concrete values of some other fields
+      expect(JSON.parse(output)).toMatchObject({
+        type: "grammar",
+        topLevelInitializer: null,
+        initializer: null,
+        location: {},
+        rules: [{
+          type: "rule",
+          name: "foo",
+          location: {},
+          expression: {
+            type: "literal",
+            value: "1",
+            ignoreCase: false,
+            location: {},
+          },
+        }],
+        code: expect.anything(),
+      });
     });
   });
 
@@ -931,12 +1027,28 @@ Options:
       expected: "'boo'\n",
     });
 
+    // Start rule
+    await exec({
+      args: ["-t", "2", "-S", "bar"],
+      stdin: `\
+foo='1' { throw new Error('bar') }
+bar = '2'
+`,
+      expected: "'2'\n",
+    });
+
     const grammarFile = path.join(__dirname, "..", "..", "examples", "json.pegjs");
     const testFile = path.join(__dirname, "..", "..", "package.json");
 
     await exec({
       args: ["-T", testFile, grammarFile],
       expected: /name: 'peggy',$/m, // Output is JS, not JSON
+    });
+
+    await exec({
+      args: [grammarFile, "-T", "-"],
+      stdin: '{"foo": null}',
+      expected: "{ foo: null }\n", // Still JS, not JSON
     });
 
     await exec({
@@ -948,9 +1060,9 @@ Options:
 
     await exec({
       args: ["-t", "boo", "-T", "foo"],
-      errorCode: "peggy.invalidArgument",
+      errorCode: "commander.conflictingOption",
       exitCode: 1,
-      error: "The -t/--test and -T/--test-file options are mutually exclusive.",
+      error: "error: option '-T, --test-file <filename>' cannot be used with option '-t, --test <text>'",
     });
 
     await exec({

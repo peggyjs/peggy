@@ -9,20 +9,20 @@ describe("utility class Stack", () => {
   describe("for an empty stack", () => {
     let stack;
 
-    beforeEach(() => { stack = new Stack("rule", "v", "let"); });
+    beforeEach(() => { stack = new Stack("rule", "v", "let", [42]); });
 
     describe("throws an error when attempting", () => {
       it("`pop`", () => {
         expect(() => stack.pop()).to.throw(
           RangeError,
-          "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -1"
+          "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -1.\nBytecode: 42"
         );
       });
 
       it("`top`", () => {
         expect(() => stack.top()).to.throw(
           RangeError,
-          "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -1"
+          "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -1.\nBytecode: 42"
         );
       });
 
@@ -36,15 +36,15 @@ describe("utility class Stack", () => {
       it("`index`", () => {
         expect(() => stack.index(-2)).to.throw(
           RangeError,
-          "Rule 'rule': The variable stack overflow: attempt to get a variable at a negative index -2"
+          "Rule 'rule': The variable stack overflow: attempt to get a variable at a negative index -2.\nBytecode: 42"
         );
         expect(() => stack.index(0)).to.throw(
           RangeError,
-          "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -1"
+          "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -1.\nBytecode: 42"
         );
         expect(() => stack.index(2)).to.throw(
           RangeError,
-          "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -3"
+          "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -3.\nBytecode: 42"
         );
       });
     });
@@ -55,18 +55,18 @@ describe("utility class Stack", () => {
   });
 
   it("throws an error when attempting `pop` more than `push`", () => {
-    const stack = new Stack("rule", "v", "let");
+    const stack = new Stack("rule", "v", "let", [42]);
 
     stack.push("1");
 
     expect(() => stack.pop(3)).to.throw(
       RangeError,
-      "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -2"
+      "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -2.\nBytecode: 42"
     );
   });
 
   it("returns a variable with an index 0 for `result`", () => {
-    const stack = new Stack("rule", "v", "let");
+    const stack = new Stack("rule", "v", "let", []);
 
     stack.push("1");
 
@@ -74,7 +74,7 @@ describe("utility class Stack", () => {
   });
 
   it("`defines` returns a define expression for all used variables", () => {
-    const stack = new Stack("rule", "v", "let");
+    const stack = new Stack("rule", "v", "let", []);
 
     stack.push("1");
     stack.push("2");
@@ -88,7 +88,7 @@ describe("utility class Stack", () => {
     let stack;
 
     beforeEach(() => {
-      stack = new Stack("rule", "v", "let");
+      stack = new Stack("rule", "v", "let", [42]);
       stack.push("1");
     });
 
@@ -152,7 +152,8 @@ describe("utility class Stack", () => {
           Error,
           "Rule 'rule', position 0: "
           + "Branches of a condition can't move the stack pointer differently "
-          + "(before: 0, after then: 0, after else: -1)."
+          + "(before: 0, after then: 0, after else: -1). "
+          + "Bytecode: 42"
         );
       });
       it("decreases in `if` and was not moving in `then`", () => {
@@ -162,7 +163,8 @@ describe("utility class Stack", () => {
           Error,
           "Rule 'rule', position 0: "
           + "Branches of a condition can't move the stack pointer differently "
-          + "(before: 0, after then: -1, after else: 0)."
+          + "(before: 0, after then: -1, after else: 0). "
+          + "Bytecode: 42"
         );
       });
 
@@ -173,7 +175,8 @@ describe("utility class Stack", () => {
           Error,
           "Rule 'rule', position 0: "
           + "Branches of a condition can't move the stack pointer differently "
-          + "(before: 0, after then: 0, after else: 1)."
+          + "(before: 0, after then: 0, after else: 1). "
+          + "Bytecode: 42"
         );
       });
       it("increases in `if` and was not moving in `then`", () => {
@@ -183,7 +186,8 @@ describe("utility class Stack", () => {
           Error,
           "Rule 'rule', position 0: "
           + "Branches of a condition can't move the stack pointer differently "
-          + "(before: 0, after then: 1, after else: 0)."
+          + "(before: 0, after then: 1, after else: 0). "
+          + "Bytecode: 42"
         );
       });
 
@@ -194,7 +198,8 @@ describe("utility class Stack", () => {
           Error,
           "Rule 'rule', position 0: "
           + "Branches of a condition can't move the stack pointer differently "
-          + "(before: 0, after then: -1, after else: 1)."
+          + "(before: 0, after then: -1, after else: 1). "
+          + "Bytecode: 42"
         );
       });
       it("increases in `if` and decreases in `then`", () => {
@@ -204,7 +209,8 @@ describe("utility class Stack", () => {
           Error,
           "Rule 'rule', position 0: "
           + "Branches of a condition can't move the stack pointer differently "
-          + "(before: 0, after then: 1, after else: -1)."
+          + "(before: 0, after then: 1, after else: -1). "
+          + "Bytecode: 42"
         );
       });
     });
@@ -214,7 +220,7 @@ describe("utility class Stack", () => {
     let stack;
 
     beforeEach(() => {
-      stack = new Stack("rule", "v", "let");
+      stack = new Stack("rule", "v", "let", [42]);
       stack.push("1");
     });
 
@@ -247,7 +253,8 @@ describe("utility class Stack", () => {
         Error,
         "Rule 'rule', position 0: "
         + "Body of a loop can't move the stack pointer "
-        + "(before: 0, after: 1)."
+        + "(before: 0, after: 1). "
+        + "Bytecode: 42"
       );
     });
 
@@ -256,7 +263,8 @@ describe("utility class Stack", () => {
         Error,
         "Rule 'rule', position 0: "
         + "Body of a loop can't move the stack pointer "
-        + "(before: 0, after: -1)."
+        + "(before: 0, after: -1). "
+        + "Bytecode: 42"
       );
     });
   });

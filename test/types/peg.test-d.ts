@@ -1,7 +1,6 @@
 import * as peggy from "../..";
 import tsd, { expectType } from "tsd";
-import { SourceNode } from "source-map-generator";
-import formatter from "tsd/dist/lib/formatter";
+import type { SourceNode } from "source-map-generator";
 import { join } from "path";
 import { readFileSync } from "fs";
 
@@ -14,6 +13,35 @@ const src = readFileSync(
   join(__dirname, "..", "..", "examples", "fizzbuzz.peggy"),
   "utf8"
 );
+
+const problems: peggy.Problem[] = [];
+
+function error(
+  stage: peggy.Stage,
+  message: string,
+  location?: peggy.LocationRange,
+  notes?: peggy.DiagnosticNote[]
+): void {
+  problems.push(["error", message, location, notes]);
+}
+
+function info(
+  stage: peggy.Stage,
+  message: string,
+  location?: peggy.LocationRange,
+  notes?: peggy.DiagnosticNote[]
+): void {
+  problems.push(["info", message, location, notes]);
+}
+
+function warning(
+  stage: peggy.Stage,
+  message: string,
+  location?: peggy.LocationRange,
+  notes?: peggy.DiagnosticNote[]
+): void {
+  problems.push(["warning", message, location, notes]);
+}
 
 describe("peg.d.ts", () => {
   it("executes a grammar", () => {
@@ -45,7 +73,12 @@ describe("peg.d.ts", () => {
   });
 
   it("takes a valid tracer", () => {
-    const parser = peggy.generate(src, { trace: true });
+    const parser = peggy.generate(src, {
+      trace: true,
+      error,
+      info,
+      warning,
+    });
     expectType<peggy.Parser>(parser);
 
     parser.parse(" /**/ 1\n", {
@@ -53,7 +86,7 @@ describe("peg.d.ts", () => {
       tracer: {
         trace(event) {
           expectType<peggy.ParserTracerEvent>(event);
-          expectType<"rule.enter" | "rule.match" | "rule.fail">(event.type);
+          expectType<"rule.enter" | "rule.fail" | "rule.match">(event.type);
           expectType<string>(event.rule);
           expectType<peggy.LocationRange>(event.location);
           if (event.type === "rule.match") {
@@ -70,17 +103,32 @@ describe("peg.d.ts", () => {
 
     const p2 = peggy.generate(src, { output: "source", grammarSource: { foo: "src" } });
     expectType<string>(p2);
+
+    const p3 = peggy.generate(src, { output: "ast", grammarSource: { foo: "src" } });
+    expectType<peggy.ast.Grammar>(p3);
   });
 
   it("generates a source map", () => {
     const p1 = peggy.generate(src, { output: "source" });
     expectType<string>(p1);
 
-    const p2 = peggy.generate(src, { output: "source-and-map" });
+    const p2 = peggy.generate(src, {
+      output: "source-and-map",
+      grammarSource: "src.peggy",
+    });
     expectType<SourceNode>(p2);
 
-    const p3 = peggy.generate(src, { output: true as boolean ? "source-and-map" : "source" });
-    expectType<string | SourceNode>(p3);
+    const p3 = peggy.generate(src, {
+      output: true as boolean ? "source-and-map" : "source",
+      grammarSource: "src.peggy",
+    });
+    expectType<SourceNode | string>(p3);
+
+    const p4 = peggy.generate(src, {
+      output: "source-with-inline-map",
+      grammarSource: "src.peggy",
+    });
+    expectType<string>(p4);
   });
 
   it("compiles with source map", () => {
@@ -97,23 +145,36 @@ describe("peg.d.ts", () => {
     const p2 = peggy.compiler.compile(
       ast,
       peggy.compiler.passes,
-      { output: "source-and-map" }
+      { output: "source-and-map", grammarSource: "src.peggy" }
     );
     expectType<SourceNode>(p2);
 
     const p3 = peggy.compiler.compile(
       ast,
       peggy.compiler.passes,
-      { output: true as boolean ? "source-and-map" : "source" }
+      {
+        output: true as boolean ? "source-and-map" : "source",
+        grammarSource: "src.peggy",
+      }
     );
-    expectType<string | SourceNode>(p3);
+    expectType<SourceNode | string>(p3);
+
+    const p4 = peggy.compiler.compile(
+      ast,
+      peggy.compiler.passes,
+      {
+        output: "source-with-inline-map",
+        grammarSource: "src.peggy",
+      }
+    );
+    expectType<string>(p4);
   });
 
   it("creates an AST", () => {
     const grammar = peggy.parser.parse(src);
     expectType<peggy.ast.Grammar>(grammar);
 
-    const visited: Record<string, number> = {};
+    const visited: { [typ: string]: number } = {};
     function add(typ: string): void {
       if (!visited[typ]) {
         visited[typ] = 1;
@@ -193,11 +254,12 @@ describe("peg.d.ts", () => {
         expectType<string>(node.code);
         expectType<peggy.LocationRange>(node.codeLocation);
         expectType<
-          peggy.ast.Sequence |
           peggy.ast.Labeled |
           peggy.ast.Prefixed |
-          peggy.ast.Suffixed |
-          peggy.ast.Primary>(node.expression);
+          peggy.ast.Primary |
+          peggy.ast.Repeated |
+          peggy.ast.Sequence |
+          peggy.ast.Suffixed>(node.expression);
         visit(node.expression);
       },
       sequence(node) {
@@ -218,40 +280,50 @@ describe("peg.d.ts", () => {
         expectType<peggy.LocationRange>(node.labelLocation);
         expectType<
           peggy.ast.Prefixed |
-          peggy.ast.Suffixed |
-          peggy.ast.Primary>(node.expression);
+          peggy.ast.Primary |
+          peggy.ast.Repeated |
+          peggy.ast.Suffixed>(node.expression);
         visit(node.expression);
       },
       text(node) {
         add(node.type);
         expectType<peggy.ast.Prefixed>(node);
-        expectType<"text" | "simple_and" | "simple_not">(node.type);
+        expectType<"simple_and" | "simple_not" | "text">(node.type);
         expect(node.type).toBe("text");
         expectType<peggy.LocationRange>(node.location);
-        expectType<peggy.ast.Suffixed | peggy.ast.Primary>(node.expression);
+        expectType<
+          peggy.ast.Primary |
+          peggy.ast.Repeated |
+          peggy.ast.Suffixed>(node.expression);
         visit(node.expression);
       },
       simple_and(node) {
         add(node.type);
         expectType<peggy.ast.Prefixed>(node);
-        expectType<"text" | "simple_and" | "simple_not">(node.type);
+        expectType<"simple_and" | "simple_not" | "text">(node.type);
         expect(node.type).toBe("simple_and");
         expectType<peggy.LocationRange>(node.location);
-        expectType<peggy.ast.Suffixed | peggy.ast.Primary>(node.expression);
+        expectType<
+          peggy.ast.Primary |
+          peggy.ast.Repeated |
+          peggy.ast.Suffixed>(node.expression);
         visit(node.expression);
       },
       simple_not(node) {
         add(node.type);
         expectType<peggy.ast.Prefixed>(node);
-        expectType<"text" | "simple_and" | "simple_not">(node.type);
+        expectType<"simple_and" | "simple_not" | "text">(node.type);
         expect(node.type).toBe("simple_not");
-        expectType<peggy.ast.Suffixed | peggy.ast.Primary>(node.expression);
+        expectType<
+          peggy.ast.Primary |
+          peggy.ast.Repeated |
+          peggy.ast.Suffixed>(node.expression);
         visit(node.expression);
       },
       optional(node) {
         add(node.type);
         expectType<peggy.ast.Suffixed>(node);
-        expectType<"optional" | "zero_or_more" | "one_or_more">(node.type);
+        expectType<"one_or_more" | "optional" | "zero_or_more">(node.type);
         expect(node.type).toBe("optional");
         expectType<peggy.LocationRange>(node.location);
         expectType<peggy.ast.Primary>(node.expression);
@@ -260,7 +332,7 @@ describe("peg.d.ts", () => {
       zero_or_more(node) {
         add(node.type);
         expectType<peggy.ast.Suffixed>(node);
-        expectType<"optional" | "zero_or_more" | "one_or_more">(node.type);
+        expectType<"one_or_more" | "optional" | "zero_or_more">(node.type);
         expect(node.type).toBe("zero_or_more");
         expectType<peggy.LocationRange>(node.location);
         expectType<peggy.ast.Primary>(node.expression);
@@ -269,9 +341,21 @@ describe("peg.d.ts", () => {
       one_or_more(node) {
         add(node.type);
         expectType<peggy.ast.Suffixed>(node);
-        expectType<"optional" | "zero_or_more" | "one_or_more">(node.type);
+        expectType<"one_or_more" | "optional" | "zero_or_more">(node.type);
         expect(node.type).toBe("one_or_more");
         expectType<peggy.LocationRange>(node.location);
+        expectType<peggy.ast.Primary>(node.expression);
+        visit(node.expression);
+      },
+      repeated(node) {
+        add(node.type);
+        expectType<peggy.ast.Repeated>(node);
+        expectType<"repeated">(node.type);
+        expect(node.type).toBe("repeated");
+        expectType<peggy.LocationRange>(node.location);
+        expectType<peggy.ast.RepeatedBoundary | null>(node.min);
+        expectType<peggy.ast.RepeatedBoundary>(node.max);
+        expectType<peggy.ast.Expression | null>(node.delimiter);
         expectType<peggy.ast.Primary>(node.expression);
         visit(node.expression);
       },
@@ -323,7 +407,7 @@ describe("peg.d.ts", () => {
         expectType<peggy.LocationRange>(node.location);
         expectType<boolean>(node.inverted);
         expectType<boolean>(node.ignoreCase);
-        expectType<(string | string[])[]>(node.parts);
+        expectType<(string[] | string)[]>(node.parts);
       },
       any(node) {
         add(node.type);
@@ -348,6 +432,7 @@ describe("peg.d.ts", () => {
       "named",
       "one_or_more",
       "optional",
+      "repeated",
       "rule",
       "rule_ref",
       "semantic_and",
@@ -369,7 +454,12 @@ describe("peg.d.ts", () => {
     expectType<peggy.ast.Grammar>(ast);
     const parser = peggy.compiler.compile(
       ast,
-      peggy.compiler.passes
+      peggy.compiler.passes,
+      {
+        error,
+        info,
+        warning,
+      }
     );
     expectType<peggy.Parser>(parser);
     expectType<peggy.ast.MatchResult | undefined>(ast.rules[0].match);
@@ -390,7 +480,7 @@ describe("run tsd", () => {
     // expectType<string>(node.type);
     const diagnostics = await tsd();
     if (diagnostics.length > 0) {
-      throw new Error(formatter(diagnostics));
+      throw new Error(JSON.stringify(diagnostics));
     }
   });
 });

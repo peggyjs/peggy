@@ -1,6 +1,6 @@
 // Based on PEG.js Type Definitions by: vvakame <https://github.com/vvakame>, Tobias Kahlert <https://github.com/SrTobi>, C.J. Bell <https://github.com/siegebell>
 
-import { SourceNode } from "source-map-generator";
+import type { SourceNode } from "source-map-generator";
 
 /** Interfaces that describe the abstract syntax tree used by Peggy. */
 declare namespace ast {
@@ -43,6 +43,14 @@ declare namespace ast {
     match?: MatchResult;
   }
 
+  /** A function implementing an action */
+  interface FunctionConst {
+    predicate: boolean;
+    params: string[];
+    body: string;
+    location: LocationRange;
+  }
+
   /** The main Peggy AST class returned by the parser. */
   interface Grammar extends Node<"grammar"> {
     /** Initializer that run once when importing generated parser module. */
@@ -57,7 +65,17 @@ declare namespace ast {
      * map for it.
      */
     code?: SourceNode;
-  }
+
+    /**
+     * Added by the `generateBytecode` pass and contain data for
+     * bytecodes to refer back to via index.
+     */
+     literals?: string[];
+     classes?: CharacterClass[];
+     expectations?: parser.Expectation[];
+     functions?: FunctionConst[];
+     locations?: LocationRange[];
+   }
 
   /**
    * Base interface for all initializer nodes with the code.
@@ -101,7 +119,7 @@ declare namespace ast {
      */
     nameLocation: LocationRange;
     /** Parsing expression of this rule. */
-    expression: Named | Expression;
+    expression: Expression | Named;
 
     /** Added by the `generateBytecode` pass. */
     bytecode?: number[];
@@ -116,22 +134,24 @@ declare namespace ast {
 
   /** Arbitrary expression of the grammar. */
   type Expression
-    = Choice
-    | Action
-    | Sequence
+    = Action
+    | Choice
     | Labeled
     | Prefixed
-    | Suffixed
-    | Primary;
+    | Primary
+    | Repeated
+    | Sequence
+    | Suffixed;
 
   /** One element of the choice node. */
   type Alternative
     = Action
-    | Sequence
     | Labeled
     | Prefixed
-    | Suffixed
-    | Primary;
+    | Primary
+    | Repeated
+    | Sequence
+    | Suffixed;
 
   interface Choice extends Expr<"choice"> {
     /**
@@ -143,11 +163,12 @@ declare namespace ast {
 
   interface Action extends CodeBlockExpr<"action"> {
     expression: (
-        Sequence
-      | Labeled
+        Labeled
       | Prefixed
-      | Suffixed
       | Primary
+      | Repeated
+      | Sequence
+      | Suffixed
     );
   }
 
@@ -155,8 +176,9 @@ declare namespace ast {
   type Element
     = Labeled
     | Prefixed
-    | Suffixed
-    | Primary;
+    | Primary
+    | Repeated
+    | Suffixed;
 
   interface Sequence extends Expr<"sequence"> {
     /** List of expressions each of them should match in order to match the sequence. */
@@ -178,26 +200,70 @@ declare namespace ast {
      */
     labelLocation: LocationRange;
     /** Expression which result will be available in the user code under name `label`. */
-    expression: Prefixed | Suffixed | Primary;
+    expression: Prefixed | Primary | Repeated | Suffixed;
   }
 
   /** Expression with a preceding operator. */
-  interface Prefixed extends Expr<"text" | "simple_and" | "simple_not"> {
-    expression: Suffixed | Primary;
+  interface Prefixed extends Expr<"simple_and" | "simple_not" | "text"> {
+    expression: Primary | Repeated | Suffixed;
   }
 
   /** Expression with a following operator. */
-  interface Suffixed extends Expr<"optional" | "zero_or_more" | "one_or_more"> {
+  interface Suffixed extends Expr<"one_or_more" | "optional" | "zero_or_more"> {
+    expression: Primary;
+  }
+
+  interface Boundary<T> {
+    type: T;
+    location: LocationRange;
+  }
+
+  interface ConstantBoundary extends Boundary<"constant"> {
+    /** Repetition count. Always a positive integer. */
+    value: number;
+  }
+
+  interface VariableBoundary extends Boundary<"variable"> {
+    /** Repetition count - name of the label of the one of preceding expressions. */
+    value: string;
+  }
+
+  interface FunctionBoundary extends Boundary<"function"> {
+    /** The code from the grammar. */
+    value: string;
+    /** Span that covers all code between `{` and `}`. */
+    codeLocation: LocationRange;
+  }
+
+  type RepeatedBoundary
+    = ConstantBoundary
+    | FunctionBoundary
+    | VariableBoundary;
+
+  /** Expression repeated from `min` to `max` times. */
+  interface Repeated extends Expr<"repeated"> {
+    /**
+     * Minimum count of repetitions. If `null` then exact repetition
+     * is used and minimum the same as maximum.
+     */
+    min: RepeatedBoundary | null;
+    /** Maximum count of repetitions. */
+    max: RepeatedBoundary;
+    /**
+     * An expression that should appear between occurrences of the `expression`.
+     * Matched parts of input skipped and do not included to the result array.
+     */
+    delimiter: Expression | null;
     expression: Primary;
   }
 
   type Primary
-    = RuleReference
-    | SemanticPredicate
+    = Any
+    | CharacterClass
     | Group
     | Literal
-    | CharacterClass
-    | Any;
+    | RuleReference
+    | SemanticPredicate;
 
   interface RuleReference extends Expr<"rule_ref"> {
     /** Name of the rule to refer. */
@@ -274,7 +340,7 @@ export interface DiagnosticNote {
 /** Possible compilation stage name. */
 type Stage = keyof Stages;
 /** Severity level of problems that can be registered in compilation session. */
-type Severity = "error" | "warning" | "info";
+type Severity = "error" | "info" | "warning";
 
 type Problem = [
   /** Problem severity. */
@@ -290,21 +356,21 @@ type Problem = [
 /** Thrown if the grammar contains a semantic error. */
 export class GrammarError extends Error {
   /** Location of the error in the source. */
-  location?: LocationRange;
+  public location?: LocationRange;
 
   /** Additional messages with context information. */
-  diagnostics: DiagnosticNote[];
+  public diagnostics: DiagnosticNote[];
 
   /** Compilation stage during which error was generated. */
-  stage: Stage | null;
+  public stage: Stage | null;
 
   /**
    * List of diagnostics containing all errors, warnings and information
    * messages generated during compilation stage `stage`.
    */
-  problems: Problem[];
+  public problems: Problem[];
 
-  constructor(
+  public constructor(
     message: string,
     location?: LocationRange,
     diagnostics?: DiagnosticNote[]
@@ -333,9 +399,60 @@ export class GrammarError extends Error {
    *
    * @returns the formatted error
    */
-  format(sources: SourceText[]): string;
+  public format(sources: SourceText[]): string;
 
-  toString(): string;
+  public toString(): string;
+}
+
+/**
+ * When used as a grammarSource, allows grammars embedded in larger files to
+ * specify their offset.  The start location is the first character in the
+ * grammar.  The first line is often moved to the right by some number of
+ * columns, but subsequent lines all start at the first column.
+ */
+export class GrammarLocation {
+  /**
+   * The original grammarSource.  Should be a string or have a toString()
+   * method.
+   */
+  public source: any;
+
+  /**
+   * The starting offset for the grammar in the larger file.
+   */
+  public start: Location;
+
+  public constructor(source: unknown, start: Location);
+
+  /**
+   * If the range has a grammarSource that is a GrammarLocation, offset the
+   * start of that range by the GrammarLocation.
+   *
+   * @param range The range to extract from.
+   * @returns The offset start if possible, or the original start.
+   */
+  public static offsetStart(range: LocationRange): Location;
+
+  /**
+    * If the range has a grammarSource that is a GrammarLocation, offset the
+    * end of that range by the GrammarLocation.
+    *
+    * @param range The range to extract from.
+    * @returns The offset end if possible, or the original end.
+    */
+  public static offsetEnd(range: LocationRange): Location;
+
+  public toString(): string;
+
+  /**
+   * Return a new Location offset from the given location by the start of the
+   * grammar.
+   *
+   * @param loc The location as if the start of the grammar was the start of
+   *   the file.
+   * @returns The offset location.
+   */
+  public offset(loc: Location): Location;
 }
 
 export namespace parser {
@@ -415,20 +532,21 @@ export namespace parser {
   }
 
   type Expectation
-    = LiteralExpectation
+    = AnyExpectation
     | ClassExpectation
-    | AnyExpectation
     | EndExpectation
+    | LiteralExpectation
     | OtherExpectation;
 
   interface SyntaxErrorConstructor {
+    readonly prototype: SyntaxError;
+
     new (
       message: string,
       expected: Expectation[] | null,
       found: string | null,
       location: LocationRange
     ): SyntaxError;
-    readonly prototype: SyntaxError;
 
     // Static methods
     /**
@@ -443,19 +561,19 @@ export namespace parser {
   /** Thrown if the grammar contains a syntax error. */
   class SyntaxError extends Error {
     /** Location where error was originated. */
-    location: LocationRange;
+    public location: LocationRange;
 
     /**
      * List of possible tokens in the parse position, or `null` if error was
      * created by the `error()` call.
      */
-    expected: Expectation[] | null;
+    public expected: Expectation[] | null;
 
     /**
      * Character in the current parse position, or `null` if error was created
      * by the `error()` call.
      */
-    found: string | null;
+    public found: string | null;
 
     /**
      * Format the error with associated sources.  The `location.source` should have
@@ -475,7 +593,7 @@ export namespace parser {
      *
      * @returns the formatted error
      */
-    format(sources: SourceText[]): string;
+    public format(sources: SourceText[]): string;
   }
 }
 
@@ -608,6 +726,14 @@ export namespace compiler {
        */
       one_or_more?(node: ast.Suffixed, ...args: any[]): any;
       /**
+       * Default behavior: run visitor on `delimiter` if it is defined then
+       * run visitor on `expression` and return it result
+       *
+       * @param node Node, representing repetition of the `expression` specified number of times
+       * @param args Any arguments passed to the `Visitor`
+       */
+      repeated?(node: ast.Repeated, ...args: any[]): any;
+      /**
        * Default behavior: run visitor on `expression` and return it result
        *
        * @param node Node, introducing new scope for the labels
@@ -687,7 +813,7 @@ export namespace compiler {
       <T extends keyof NodeTypes>(
         node: ast.Node<T>,
         ...args: any[]
-      ): ReturnType<F[T] & AnyFunction>;
+      ): ReturnType<AnyFunction & F[T]>;
     }
 
     /**
@@ -703,6 +829,9 @@ export namespace compiler {
    * Plugins can extend or replace the list of passes during configuration.
    */
   interface Stages {
+    /** Any additional stages that can be added in the future. */
+    [key: string]: Pass[];
+
     /**
      * Pack of passes that performing checks on the AST. This bunch of passes
      * executed in the very beginning of the compilation stage.
@@ -715,9 +844,6 @@ export namespace compiler {
     transform: Pass[];
     /** Pack of passes that generates the code. */
     generate: Pass[];
-
-    /** Any additional stages that can be added in the future. */
-    [key: string]: Pass[];
   }
 
   /** List of the compilation stages. */
@@ -765,6 +891,12 @@ export namespace compiler {
     options: SourceBuildOptions<"source">
   ): string;
 
+  function compile(
+    ast: ast.Grammar,
+    stages: Stages,
+    options: SourceBuildOptions<"source-with-inline-map">
+  ): string;
+
   /**
    * Generates a parser source and source map from a specified grammar AST.
    *
@@ -790,7 +922,7 @@ export namespace compiler {
     ast: ast.Grammar,
     stages: Stages,
     options: SourceBuildOptions<SourceOutputs>
-  ): string | SourceNode;
+  ): SourceNode | string;
 }
 
 /** Provides information pointing to a location within a source. */
@@ -814,6 +946,7 @@ export interface LocationRange {
 }
 
 export interface ParserOptions {
+  [key: string]: any;
   /**
    * Object that will be attached to the each `LocationRange` object created by
    * the parser. For example, this can be path to the parsed file or even the
@@ -822,23 +955,22 @@ export interface ParserOptions {
   grammarSource?: any;
   startRule?: string;
   tracer?: ParserTracer;
-  [key: string]: any;
 }
 
 export interface Parser {
-  parse(input: string, options?: ParserOptions): any;
-
   SyntaxError: parser.SyntaxErrorConstructor;
+
+  parse(input: string, options?: ParserOptions): any;
 }
 
 export interface ParserTracer {
   trace(event: ParserTracerEvent): void;
 }
 
-export type ParserTracerEvent =
-  | { type: "rule.enter"; rule: string; location: LocationRange }
-  | { type: "rule.match"; rule: string; result: any; location: LocationRange }
-  | { type: "rule.fail"; rule: string; location: LocationRange };
+export type ParserTracerEvent
+  = { type: "rule.enter"; rule: string; location: LocationRange }
+  | { type: "rule.fail"; rule: string; location: LocationRange }
+  | { type: "rule.match"; rule: string; result: any; location: LocationRange };
 
 /**
  * Function that performs checking, transformation or analysis of the AST.
@@ -991,50 +1123,20 @@ export interface Session {
   ): void;
 }
 
-export interface DiagnosticCallback {
-  /**
-   * Called when compiler reports an error.
-   *
-   * @param stage Stage in which this diagnostic was originated
-   * @param message Main message, which should describe error objectives
-   * @param location If defined, this is location described in the `message`
-   * @param notes Additional messages with context information
-   */
-  error?(
-    stage: Stage,
-    message: string,
-    location?: LocationRange,
-    notes?: DiagnosticNote[]
-  ): void;
-  /**
-   * Called when compiler reports a warning.
-   *
-   * @param stage Stage in which this diagnostic was originated
-   * @param message Main message, which should describe warning objectives
-   * @param location If defined, this is location described in the `message`
-   * @param notes Additional messages with context information
-   */
-  warning?(
-    stage: Stage,
-    message: string,
-    location?: LocationRange,
-    notes?: DiagnosticNote[]
-  ): void;
-  /**
-   * Called when compiler reports an informational message.
-   *
-   * @param stage Stage in which this diagnostic was originated
-   * @param message Main message, which gives information about an event
-   * @param location If defined, this is location described in the `message`
-   * @param notes Additional messages with context information
-   */
-  info?(
-    stage: Stage,
-    message: string,
-    location?: LocationRange,
-    notes?: DiagnosticNote[]
-  ): void;
-}
+/**
+ * Called when compiler reports an error, warning, or info.
+ *
+ * @param stage Stage in which this diagnostic was originated
+ * @param message Main message, which should describe error objectives
+ * @param location If defined, this is location described in the `message`
+ * @param notes Additional messages with context information
+ */
+export type DiagnosticCallback = (
+  stage: Stage,
+  message: string,
+  location?: LocationRange,
+  notes?: DiagnosticNote[]
+) => void;
 
 /**
  * Parser dependencies, is an object which maps variables used to access the
@@ -1066,7 +1168,7 @@ export interface BuildOptionsBase {
    *             It will be deleted in 2.0.
    *             Parser is always generated in the former `"speed"` mode
    */
-  optimize?: "speed" | "size";
+  optimize?: "size" | "speed";
 
   /** Plugins to use */
   plugins?: Plugin[];
@@ -1087,23 +1189,31 @@ export interface ParserBuildOptions extends BuildOptionsBase {
    * If set to `"parser"`, the method will return generated parser object;
    * if set to `"source"`, it will return parser source code as a string;
    * if set to `"source-and-map"`, it will return a `SourceNode` object
-   * which can give a parser source code as a string and a source map;
+   *   which can give a parser source code as a string and a source map;
+   * if set to `"source-with-inline-map"`, it will return the parser source
+   *   along with an embedded source map as a `data:` URI;
    * (default: `"parser"`)
    */
   output?: "parser";
 }
 
 /** Possible kinds of source output generators. */
-export type SourceOutputs = "source" | "source-and-map";
+export type SourceOutputs
+  = "parser"
+  | "source-and-map"
+  | "source-with-inline-map"
+  | "source";
 
 /** Base options for all source-generating formats. */
-interface SourceOptionsBase<Output extends SourceOutputs>
+interface SourceOptionsBase<Output>
   extends BuildOptionsBase {
   /**
    * If set to `"parser"`, the method will return generated parser object;
    * if set to `"source"`, it will return parser source code as a string;
    * if set to `"source-and-map"`, it will return a `SourceNode` object
-   * which can give a parser source code as a string and a source map;
+   *   which can give a parser source code as a string and a source map;
+   * if set to `"source-with-inline-map"`, it will return the parser source
+   *   along with an embedded source map as a `data:` URI;
    * (default: `"parser"`)
    */
   output: Output;
@@ -1161,10 +1271,10 @@ export interface OutputFormatBare<Output extends SourceOutputs = "source">
 
 /** Options for generating source code of the parser. */
 export type SourceBuildOptions<Output extends SourceOutputs = "source">
-  = OutputFormatUmd<Output>
+  = OutputFormatAmdCommonjsEs<Output>
   | OutputFormatBare<Output>
   | OutputFormatGlobals<Output>
-  | OutputFormatAmdCommonjsEs<Output>;
+  | OutputFormatUmd<Output>;
 
 /**
  * Returns a generated parser object.
@@ -1195,6 +1305,28 @@ export function generate(grammar: string, options?: ParserBuildOptions): Parser;
 export function generate(
   grammar: string,
   options: SourceBuildOptions<"source">
+): string;
+
+/**
+ * Returns the generated source code as a string appended with a source map as
+ * a `data:` URI.
+ *
+ * Note, `options.grammarSource` MUST contain a string that is a path relative
+ * to the location the generated source will be written to, as no further path
+ * processing will be performed.
+ *
+ * @param grammar String in the format described by the meta-grammar in the
+ *        `parser.pegjs` file
+ * @param options Options that allow you to customize returned parser object
+ *
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
+ *         an unclosed brace
+ * @throws {GrammarError} If the grammar contains a semantic error, for
+ *         example, duplicated labels
+ */
+export function generate(
+  grammar: string,
+  options: SourceBuildOptions<"source-with-inline-map">
 ): string;
 
 /**
@@ -1238,7 +1370,28 @@ export function generate(
 export function generate(
   grammar: string,
   options: SourceBuildOptions<SourceOutputs>
-): string | SourceNode;
+): SourceNode | string;
+
+/**
+ * Returns the generated AST for the grammar. Unlike result of the
+ * `peggy.compiler.compile(...)` an AST returned by this method is augmented
+ * with data from passes. In other words, the compiler gives you the raw AST,
+ * and this method provides the final AST after all optimizations and
+ * transformations.
+ *
+ * @param grammar String in the format described by the meta-grammar in the
+ *        `parser.pegjs` file
+ * @param options Options that allow you to customize returned AST
+ *
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
+ *         an unclosed brace
+ * @throws {GrammarError} If the grammar contains a semantic error, for example,
+ *         duplicated labels
+ */
+export function generate(
+  grammar: string,
+  options: SourceOptionsBase<"ast">
+): ast.Grammar;
 
 // Export all exported stuff under a global variable PEG in non-module environments
 export as namespace PEG;

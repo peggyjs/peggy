@@ -1,78 +1,33 @@
-<!DOCTYPE html>
-<html>
+---
+title: 'Benchmark'
+permalink: "/development/benchmark.html"
+layout: main-layout
+stylesheets: ["/css/benchmark.css"]
+scripts:
+  [
+    "https://unpkg.com/jquery@1.12.4/dist/jquery.min.js",
+    "https://unpkg.com/jquery.scrollto@2.1.2/jquery.scrollTo.min.js",
+  ]
+---
 
-<head>
-    <meta charset="utf-8">
-    <meta name="copyright" content="Copyright &copy; 2022 The Peggy Authors">
-    <meta name="keywords" content="parser generator, PEG, JavaScript, PEG.js">
-    <meta name="description" content="Peggy is a parser generator for JavaScript based on the parsing expression grammar formalism.">
-    <title>Benchmark &raquo; Peggy &ndash; Parser Generator for JavaScript</title>
-    <link rel="stylesheet" href="../css/common.css">
-    <link rel="stylesheet" href="../css/layout-default.css">
-    <link rel="stylesheet" href="../css/content.css">
-    <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
-    <!--[if IE]>
-    <script>
-        var html5elements = ["aside", "footer", "header", "nav"];
-        for (var i = 0; i < html5elements.length; i++) {
-          document.createElement(html5elements[i]);
-        }
-    </script>
-    <![endif]-->
+<script defer src="/js/benchmark-bundle.min.js"></script>
 
-</head>
+<div id="options">
+  <label for="run-count">Run each test</label>
+  <input type="text" id="run-count" value="10" /> times
+  <input type="checkbox" id="cache" />
+  <label for="cache">Use results cache</label>
+  <input type="button" id="run" value="Run" />
+</div>
 
-<body>
-    <div id='main'>
-        <header id="header">
-            <h1><a href="../index.html">Peggy</a></h1>
-            <h2>Parser Generator for JavaScript</h2>
-        </header>
-
-        <nav id="menu">
-            <a  href="../index.html">Home</a>
-            <a  href="../online.html">Online Version</a>
-            <a  href="../documentation.html">Documentation</a>
-            <a  href="index.html">Development</a>
-        </nav>
-
-        <div id="content">
-
-
-
-                <link rel="stylesheet" href="../css/benchmark.css">
-
-                <div id="options">
-                    <label for="run-count">Run each test</label>
-                    <input type="text" id="run-count" value="10"> times
-                    <input type="checkbox" id="cache">
-                    <label for="cache">Use results cache</label>
-                    <input type="button" id="run" value="Run">
-                </div>
-
-                <table id="results-table">
-                    <tr class="columns">
-                        <th>Test</th>
-                        <th>Input Size</th>
-                        <th>Average Parse Time</th>
-                        <th>Average Parse Speed</th>
-                    </tr>
-                    <tr>
-                        <td class="no-results" colspan="4">No results available yet.</td>
-                    </tr>
-                </table>
-
-                <script src="https://unpkg.com/jquery@1.12.4/dist/jquery.min.js"></script>
-                <script src="https://unpkg.com/jquery.scrollto@2.1.2/jquery.scrollTo.min.js"></script>
-                <script src="../js/benchmark-bundle.min.js"></script>
-        </div>
-
-        <footer id="footer">
-            Copyright &copy; 2022 <a href="https://github.com/peggyjs/peggy/blob/main/AUTHORS">The Peggy Authors</a>
-            &bull;
-            <a href="https://github.com/peggyjs/peggy">Source code</a>
-        </footer>
-    </div>
-</body>
-
-</html>
+<table id="results-table">
+  <tr class="columns">
+    <th>Test</th>
+    <th>Input Size</th>
+    <th>Average Parse Time</th>
+    <th>Average Parse Speed</th>
+  </tr>
+  <tr>
+    <td class="no-results" colspan="4">No results available yet.</td>
+  </tr>
+</table>

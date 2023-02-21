@@ -1,0 +1,19 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "eleventy",
+    "start": "eleventy --serve"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@11ty/eleventy": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

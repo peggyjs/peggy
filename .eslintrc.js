@@ -2,7 +2,7 @@
 
 module.exports = {
   root: true,
-  extends: "@peggyjs",
+  extends: ["@peggyjs", "@peggyjs/eslint-config/typescript"],
   ignorePatterns: [
     "docs/",
     "lib/parser.js", // Generated
@@ -22,15 +22,6 @@ module.exports = {
         sourceType: "module",
         ecmaVersion: 2018,
       },
-      rules: {
-        "comma-dangle": ["error", {
-          arrays: "always-multiline",
-          objects: "always-multiline",
-          imports: "always-multiline",
-          exports: "always-multiline",
-          functions: "never",
-        }],
-      },
     },
     {
       files: ["bin/*.js"],
@@ -40,15 +31,6 @@ module.exports = {
       },
       env: {
         node: true,
-      },
-      rules: {
-        "comma-dangle": ["error", {
-          arrays: "always-multiline",
-          objects: "always-multiline",
-          imports: "always-multiline",
-          exports: "always-multiline",
-          functions: "never",
-        }],
       },
     },
   ],
