@@ -205,9 +205,10 @@ If you specify options using <code>-c &lt;file&gt;</code> or
 <code>--extra-options-file &lt;file&gt;</code>, you will need to ensure you
 are using the correct types.  In particular, you may specify "plugin" as a
 string, or "plugins" as an array of objects that have a <code>use</code>
-method.  Always use the long (two-dash) form of the option.  Options that
-contain dashes should be specified in camel case. You may also specify an
-"input" field instead of using the command line.  For example:
+method.  Always use the long (two-dash) form of the option, without the
+dashes, as the key.  Options that contain internal dashes should be specified
+in camel case. You may also specify an "input" field instead of using the
+command line. For example:
 </p>
 
 <pre><code class="language-javascript">// config.js or config.cjs
@@ -223,18 +224,22 @@ trace: true
 </code></pre>
 
 <p>
-You can test generated parser immediately if you specify the <code>-t/--test</code> or <code>-T/--test-file</code>
-option. This option conflicts with the option <code>-m/--source-map</code> unless <code>-o/--output</code> is
-also specified. This option conflicts with the <code>--ast</code> option.
+You can test generated parser immediately if you specify the
+<code>-t/--test</code> or <code>-T/--test-file</code>
+option. This option conflicts with the
+<code>--ast</code> option, and also conflicts with the
+<code>-m/--source-map</code> option unless <code>-o/--output</code> is also
+specified.
 </p>
 
 <p>The CLI will exit with the code:</p>
 
 <ul>
-<li><code>0</code> if all was success</li>
-<li><code>1</code> if you supply incorrect or conflicting parameters</li>
-<li><code>2</code> if all parameters is correct, you specify the <code>-t/--test</code> or <code>-T/--test-file</code> option
-and specified input does not parsed with the specified grammar</li>
+<li><code>0</code>: if successful</li>
+<li><code>1</code>: if you supply incorrect or conflicting parameters</li>
+<li><code>2</code>: if you specified the
+<code>-t/--test</code> or <code>-T/--test-file</code> option and the specified
+input fails parsing with the specified grammar</li>
 </ul>
 
 <p>Examples:</p>
@@ -280,9 +285,10 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 
 <pre><code class="language-javascript">import * as peggy from "peggy";</code></pre>
 
-<p>For use in browsers, include the Peggy library in your web page or application using
-the <code>&lt;script&gt;</code> tag. If Peggy detects an AMD loader, it will
-define itself as a module, otherwise the API will be available in the
+<p>For use in browsers, include the Peggy library in your web page or
+application using the <code>&lt;script&gt;</code> tag. If Peggy detects an <a
+href="https://requirejs.org/docs/whyamd.html">AMD</a> loader, it will define
+itself as a module, otherwise the API will be available in the
 <code>peg</code> global object.</p>
 
 <p>To generate a parser, call the <code>peggy.generate</code> method and pass your
@@ -311,7 +317,7 @@ parsing time in pathological cases but making the parser slower (default:
 <code>false</code>).</dd>
 
 <dt><code>dependencies</code></dt>
-<dd>Parser dependencies, the value is an object which maps variables used to
+<dd>Parser dependencies. The value is an object which maps variables used to
 access the dependencies in the parser to module IDs used to load them; valid
 only when <code>format</code> is set to <code>"amd"</code>,
 <code>"commonjs"</code>, <code>"es"</code>, or <code>"umd"</code>.
@@ -340,11 +346,13 @@ Format of the generated parser (<code>"amd"</code>, <code>"bare"</code>,
 </dd>
 
 <dt><code>grammarSource</code></dt>
-<dd>any object that represent origin of the input grammar. The CLI will set
+<dd>Any object that represent origin of the input grammar. The CLI will convert
 it to a string with the path to the file; parsers in network applications
 might use the socket and so on. The supplied object will be available at key
 <code>source</code> in the location objects, that returned by the
-<code>location()</code> API function (default: <code>undefined</code>).</dd>
+<code>location()</code> API function (default: <code>undefined</code>).  It is
+recommended that if you do not use a string, the object you supply has a
+useful <code>toString()</code> implementation.</dd>
 
 <dt><code>info</code></dt>
 <dd>Callback for informational messages. See <a href="#error-reporting">Error Reporting</a></dd>
@@ -442,7 +450,13 @@ supported:</p>
 <dd>Name of the rule to start parsing from.</dd>
 
 <dt><code>tracer</code></dt>
-<dd>Tracer to use.</dd>
+<dd>
+  Tracer to use.  A tracer is an object containing a <code>trace()</code> function.
+  <code>trace()</code> takes a single parameter which is an object containing
+  "type" ("rule.enter", "rule.fail", "rule.match"), "rule" (the rule name as a
+  string), "<a href="<a href="#locations">location</a>", and, if the type is
+  "rule.match", "result" (what the rule returned).
+</dd>
 
 <dt><code>...</code> (any others)</dt>
 <dd>Made available in the <code>options</code> variable</dd>
@@ -451,16 +465,16 @@ supported:</p>
 <p>As you can see above, parsers can also support their own custom options.  For example:</p>
 
 <pre><code class="language-javascript">const parser = peggy.generate(`
-{
-// options are available in the per-parse initializer
-console.log(options.validWords);  // outputs "[ 'boo', 'baz', 'boop' ]"
-}
+  {
+  // options are available in the per-parse initializer
+  console.log(options.validWords);  // outputs "[ 'boo', 'baz', 'boop' ]"
+  }
 
-validWord = @word:$[a-z]+ &{ return options.validWords.includes(word) }
+  validWord = @word:$[a-z]+ &{ return options.validWords.includes(word) }
 `);
 
 const result = parser.parse("boo", {
-validWords: [ "boo", "baz", "boop" ]
+  validWords: [ "boo", "baz", "boop" ]
 });
 
 console.log(result);  // outputs "boo"
@@ -477,22 +491,22 @@ like <code>2*(3+4)</code>. A parser generated from this grammar computes their
 values.</p>
 
 <pre><code class="language-peggy">start
-= additive
+  = additive
 
 additive
-= left:multiplicative "+" right:additive { return left + right; }
-/ multiplicative
+  = left:multiplicative "+" right:additive { return left + right; }
+  / multiplicative
 
 multiplicative
-= left:primary "*" right:multiplicative { return left * right; }
-/ primary
+  = left:primary "*" right:multiplicative { return left * right; }
+  / primary
 
 primary
-= integer
-/ "(" additive:additive ")" { return additive; }
+  = integer
+  / "(" additive:additive ")" { return additive; }
 
-integer "integer"
-= digits:[0-9]+ { return parseInt(digits.join(""), 10); }</code></pre>
+integer "simple number"
+  = digits:[0-9]+ { return parseInt(digits.join(""), 10); }</code></pre>
 
 <p>On the top level, the grammar consists of <em>rules</em> (in our example,
 there are five of them). Each rule has a <em>name</em> (e.g.
@@ -533,34 +547,34 @@ parse or to modify the input before the parse.</p>
 initializer</em> and a <em>per-parse initializer</em>:</p>
 
 <pre><code class="language-peggy">{{'{{'}}
-function makeInteger(o) {
-return parseInt(o.join(""), 10);
-}
+  function makeInteger(o) {
+    return parseInt(o.join(""), 10);
+  }
 }}
 
 {
-if (options.multiplier) {
-input = "(" + input + ")*(" + options.multiplier + ")";
-}
+  if (options.multiplier) {
+    input = `(${input})*(${options.multiplier})`;
+  }
 }
 
 start
-= additive
+  = additive
 
 additive
-= left:multiplicative "+" right:additive { return left + right; }
-/ multiplicative
+  = left:multiplicative "+" right:additive { return left + right; }
+  / multiplicative
 
 multiplicative
-= left:primary "*" right:multiplicative { return left * right; }
-/ primary
+  = left:primary "*" right:multiplicative { return left * right; }
+  / primary
 
 primary
-= integer
-/ "(" additive:additive ")" { return additive; }
+  = integer
+  / "(" additive:additive ")" { return additive; }
 
-integer "integer"
-= digits:[0-9]+ { return makeInteger(digits); }</code></pre>
+integer "simple number"
+  = digits:[0-9]+ { return makeInteger(digits); }</code></pre>
 
 <p>The parsing expressions of the rules are used to match the input text to the
 grammar. There are various types of expressions &mdash; matching characters or
@@ -587,8 +601,8 @@ match result when parsing is successful.</p>
 
 <p>One special case of parser expression is a <em>parser action</em> &mdash; a
 piece of JavaScript code inside curly braces (“{” and “}”) that takes match
-results of some of the the preceding expressions and returns a JavaScript value.
-This value is considered match result of the preceding expression (in other
+results of the preceding expression and returns a JavaScript value.
+This value is then considered match result of the preceding expression (in other
 words, the parser action is a match result transformer).</p>
 
 <p>In our arithmetics example, there are many parser actions. Consider the
@@ -700,7 +714,7 @@ the match case-insensitive.</p>
 <dt><code><em>rule</em></code></dt>
 
 <dd>
-<p>Match a parsing expression of a rule recursively and return its match
+<p>Match a parsing expression of a rule (perhaps recursively) and return its match
 result.</p>
 
 <div class="example">
@@ -798,13 +812,14 @@ there is no backtracking.</p>
   Hence</p>
 
   <ul>
-    <li><code>expression |..|</code> is an equivalent of <code>expression |0..|</code>
+    <li><code>expression |..|</code> is equivalent to <code>expression |0..|</code>
     and <code>expression *</code></li>
-    <li><code>expression |1..|</code> is an equivalent of <code>expression +</code></li>
+    <li><code>expression |1..|</code> is equivalent to <code>expression +</code></li>
   </ul>
 
-  <p>Optionally, <code>delimiter</code> expression can be specified. Delimiter must appear
-  between expressions exactly once and it is not included in the final array.</p>
+  <p>Optionally, <code>delimiter</code> expression can be specified. The
+  delimiter is a separate parser expression, its match results are ignored,
+  and it must appear between matched expressions exactly once.</p>
 
   <p><code>count</code>, <code>min</code> and <code>max</code> can be represented as:</p>
 
@@ -989,10 +1004,11 @@ text instead of the match result.</p>
 <dt><code><em>label</em> : <em>expression</em></code></dt>
 
 <dd>
-<p>Match the expression and remember its match result under given label.
-The label must be a JavaScript identifier, but not in the list of reserved words.
-By default this is a list of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_keywords_as_of_ecmascript_2015">JavaScript reserved words</a>,
-but <a href="#plugins-api">plugins</a> can change it.</p>
+<p>Match the expression and remember its match result under given label. The
+label must be a JavaScript identifier, which includes not being in the list of
+reserved words. By default this is a list of <a
+href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words">JavaScript
+reserved words</a>, but <a href="#plugins-api">plugins</a> can change it.</p>
 
 <p>Labeled expressions are useful together with actions, where saved match
 results can be accessed by action's JavaScript code.</p>
@@ -1017,7 +1033,7 @@ results can be accessed by action's JavaScript code.</p>
 <p>Match the expression and if the label exists, remember its match result
 under given label. The label must be a JavaScript identifier if it
 exists, but not in the list of reserved words.
-By default this is a list of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_keywords_as_of_ecmascript_2015">JavaScript reserved words</a>,
+By default this is a list of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words">JavaScript reserved words</a>,
 but <a href="#plugins-api">plugins</a> can change it.</p>
 
 <p>Return the value of this expression from the rule, or "pluck" it.  You
@@ -1181,38 +1197,51 @@ using the <a href="#-expression-2"><code>$</code> operator</a>.</p>
 <p>One of the most frequent questions about Peggy grammars is how to parse a
 delimited list of items.  The cleanest current approach is:</p>
 
-<pre><code class="language-peggy">list = word|.., _ "," _|
-  word = $[a-z]i+
-  _ = [ \t]*</code></pre>
+<pre><code class="language-peggy">list
+  = word|.., _ "," _|
+word
+  = $[a-z]i+
+_
+  = [ \t]*</code></pre>
 
 <p>If you want to allow a trailing delimiter, append it to the end of the rule:</p>
 
-<pre><code class="language-peggy">list = word|.., delimiter| delimiter?
-  delimiter = _ "," _
-  word = $[a-z]i+
-  _ = [ \t]*</code></pre>
+<pre><code class="language-peggy">list
+  = word|.., delimiter| delimiter?
+delimiter
+  = _ "," _
+word
+  = $[a-z]i+
+_
+  = [ \t]*</code></pre>
 
 <p>In the grammars created before the repetition operator was added to the peggy
   (in 2.1.0) you could see that approach, which is equivalent of the new approach
   with the repetition operator, but less efficient on long lists:</p>
 
-<pre><code class="language-peggy">list = head:word tail:(_ "," _ @word)* { return [head, ...tail]; }
-word = $[a-z]i+
-_ = [ \t]*</code></pre>
+<pre><code class="language-peggy">list
+  = head:word tail:(_ "," _ @word)* { return [head, ...tail]; }
+word
+  = $[a-z]i+
+_
+  = [ \t]*</code></pre>
 
 <p>Note that the <code>@</code> in the tail section plucks the word out of the
 parentheses, NOT out of the rule itself.</p>
 
 <h2 id="error-messages">Error Messages</h2>
-<p>As described above, you can annotate your grammar rules with human-readable names that will be used in error messages. For example, this production:</p>
+<p>As described above, you can annotate your grammar rules with human-readable
+names that will be used in error messages. For example, this production:</p>
 
-<pre><code class="language-peggy">integer "integer"
-= digits:[0-9]+</code></pre>
+<pre><code class="language-peggy">integer "simple number"
+  = digits:[0-9]+</code></pre>
 <p>will produce an error message like:</p>
 
-<blockquote>Expected integer but "a" found.</blockquote>
+<blockquote>Expected simple number but "a" found.</blockquote>
 
-<p>when parsing a non-number, referencing the human-readable name "integer." Without the human-readable name, Peggy instead uses a description of the character class that failed to match:</p>
+<p>when parsing a non-number, referencing the human-readable name "simple
+number." Without the human-readable name, Peggy instead uses a description of
+the character class that failed to match:</p>
 
 <blockquote>Expected [0-9] but "a" found.</blockquote>
 
@@ -1245,46 +1274,46 @@ parentheses, NOT out of the rule itself.</p>
 
 <pre><code class="language-javascript">let source = ...;
 try {
-peggy.generate(text, { grammarSource: source, ... }); // throws SyntaxError or GrammarError
-parser.parse(input, { grammarSource: source2, ... }); // throws SyntaxError
+  peggy.generate(text, { grammarSource: source, ... }); // throws SyntaxError or GrammarError
+  parser.parse(input, { grammarSource: source2, ... }); // throws SyntaxError
 } catch (e) {
-if (typeof e.format === "function") {
-console.log(e.format([
-{ source, text },
-{ source: source2, text: input },
-...
-]));
-} else {
-throw e;
-}
+  if (typeof e.format === "function") {
+    console.log(e.format([
+      { source, text },
+      { source: source2, text: input },
+      ...
+    ]));
+  } else {
+    throw e;
+  }
 }</code></pre>
 
 <p>Messages generated by <code>format()</code> look like this</p>
 
 <pre><code class="language-console">Error: Possible infinite loop when parsing (left recursion: start -> proxy -> end -> start)
 --> .\recursion.pegjs:1:1
-|
+  |
 1 | start = proxy;
-| ^^^^^
+  | ^^^^^
 note: Step 1: call of the rule "proxy" without input consumption
 --> .\recursion.pegjs:1:9
-|
+  |
 1 | start = proxy;
-|         ^^^^^
+  |         ^^^^^
 note: Step 2: call of the rule "end" without input consumption
 --> .\recursion.pegjs:2:11
-|
+  |
 2 | proxy = a:end { return a; };
-|           ^^^
+  |           ^^^
 note: Step 3: call itself without input consumption - left recursion
 --> .\recursion.pegjs:3:8
-|
+  |
 3 | end = !start
-|        ^^^^^</code></pre>
+  |        ^^^^^</code></pre>
 
 <p>A plugin may register additional passes that can generate <code>GrammarError</code>s to report about
 problems, but they shouldn't do that by throwing an instance of <code>GrammarError</code>. They should
-use a <a href="#session-api">session API</a> instead.</p>
+use the <a href="#session-api">session API</a> instead.</p>
 
 <h2 id="locations">Locations</h2>
 
@@ -1293,9 +1322,9 @@ such as offset in the parsed string, line and column information. You can get th
 information by calling <code>location()</code> function, which returns you the following object:</p>
 
 <pre><code class="language-javascript">{
-source: options.grammarSource,
-start: { offset: 23, line: 5, column: 6 },
-end: { offset: 25, line: 5, column: 8 }
+  source: options.grammarSource,
+  start: { offset: 23, line: 5, column: 6 },
+  end: { offset: 25, line: 5, column: 8 }
 }
 </code></pre>
 
@@ -1325,9 +1354,9 @@ the predicate is evaluated.</p>
 <p>For the per-parse initializer, the location is the start of the input, i.e.</p>
 
 <pre><code class="language-javascript">{
-source: options.grammarSource,
-start: { offset: 0, line: 1, column: 1 },
-end: { offset: 0, line: 1, column: 1 }
+  source: options.grammarSource,
+  start: { offset: 0, line: 1, column: 1 },
+  end: { offset: 0, line: 1, column: 1 }
 }
 </code></pre>
 
@@ -1338,21 +1367,22 @@ end: { offset: 0, line: 1, column: 1 }
 the input.</p>
 
 <p>Line and column are somewhat expensive to compute, so if you just need the
-offset, there's also a function <code>offset()</code> that returns just the start offset,
-and a function <code>range()</code> that returns the object:</p>
+offset, there's also a function <code>offset()</code> that returns just the
+start offset, and a function <code>range()</code> that returns the object:</p>
 
-<pre><code class="language-javascript">
-{
-source: options.grammarSource,
-start: 23,
-end: 25
-}
-</code></pre>
+<pre><code class="language-javascript">{
+  source: options.grammarSource,
+  start: 23,
+  end: 25
+}</code></pre>
 
-<p>(i.e. difference from the <code>location()</code> result only in type of <code>start</code> and <code>end</code>
-properties, which contain just an offset instead of the <code>Location</code> object.)</p>
+<p>(i.e. difference from the <code>location()</code> result only in type of
+<code>start</code> and <code>end</code> properties, which contain just an
+offset instead of the <code>Location</code>
+object.)</p>
 
-<p>All notes about values for <code>location()</code> object is also applicable to the <code>range()</code>
+<p>All of the notes about values for <code>location()</code> object are also
+applicable to the <code>range()</code>
 and <code>offset()</code> calls.</p>
 
 <p>Currently, Peggy only works with the <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic Multilingual Plane (BMP)</a> of Unicode.
@@ -1360,13 +1390,17 @@ This means that all offsets are measured in UTF-16 code units. If you
 try to parse characters outside this Plane (for example, emoji, or any
 surrogate pairs), you may get an offset inside a code point.</p>
 
-<p>Changing this behavior may be a breaking change and will not to be done before
-Peggy 2.0.  You can join to the discussion for this topic on the <a href="https://github.com/peggyjs/peggy/discussions/15">GitHub Discussions page</a>.</p>
+<p>Changing this behavior might be a breaking change, so it will likely cause
+a major version number increase if it happens.  You can join to the discussion
+for this topic on the <a
+href="https://github.com/peggyjs/peggy/discussions/15">GitHub Discussions
+page</a>.</p>
 
 <h2 id="plugins-api">Plugins API</h2>
 
-<p>A plugin is an object with the <code>use(config, options)</code> method. That method will be
-called for all plugins in the <code>options.plugins</code> array, supplied to the <code>generate()</code>
+<p>A plugin is an object with the <code>use(config, options)</code> method.
+That method will be called for all plugins in the <code>options.plugins</code>
+array, supplied to the <code>generate()</code>
 method.</p>
 
 <p><code>use</code> accepts these parameters:</p>
@@ -1392,8 +1426,8 @@ the AST, add or remove nodes or their properties</li>
 <li><code>generate</code> — passes used for actual code generating</li>
 </ul>
 
-<p>A plugin that implement a pass usually should push it to the end of the correct
-array. Pass is a simple function with signature <code>pass(ast, options, session)</code>:</p>
+<p>A plugin that implements a pass should usually push it to the end of the correct
+array. Each pass is a function with the signature <code>pass(ast, options, session)</code>:</p>
 
 <ul>
 <li><code>ast</code> — the AST created by the <code>config.parser.parse()</code> method</li>
@@ -1411,7 +1445,7 @@ warnings and informational messages</li>
 label names. This list can be modified by plugins. That property is not required
 to be sorted or not contain duplicates, but it is recommend to remove duplicates.</p>
 
-<p>Default list contains <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_keywords_as_of_ecmascript_2015">JavaScript reserved words</a>, and can be found
+<p>Default list contains <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words">JavaScript reserved words</a>, and can be found
 in the <code>peggy.RESERVED_WORDS</code> property.</p>
 </dd>
 </dl>
@@ -1424,7 +1458,7 @@ a plugin would look for its own options under a <code>&lt;plugin_name&gt;</code>
 <h3 id="session-api">Session API</h3>
 
 <p>Each compilation request is represented by a <code>Session</code> instance. An object of this class
-is created by the compiler and passed to an each pass as a 3rd parameter. The session
+is created by the compiler and given to each pass as a 3rd parameter. The session
 object gives access to the various compiler services. At the present time there is only
 one such service: reporting of diagnostics.</p>
 
@@ -1480,16 +1514,17 @@ significant changes in the grammar, for example, replacing proxy rules.</dd>
 following environments:</p>
 
 <ul>
-<li>Node.js 12+</li>
-<li>Internet Explorer 9+</li>
-<li>Edge</li>
-<li>Firefox</li>
-<li>Chrome</li>
-<li>Safari</li>
-<li>Opera</li>
+  <li>Node.js 14+</li>
+  <li>Edge</li>
+  <li>Firefox</li>
+  <li>Chrome</li>
+  <li>Safari</li>
+  <li>Opera</li>
 </ul>
 
-
+The generated parser is intended to run in older environments when the format
+chosen is "globals" or "umd".  Extensive testing is NOT performed in these
+environments, but issues filed regarding the generated code will be fixed.
 
 <script>
 function validateGrammar({target}) {

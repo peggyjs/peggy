@@ -3,28 +3,63 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+3.0.0
+-----
 
-Released: TBD
+Released: 2023-02-21
 
 ### Major Changes
 
 - [#280](https://github.com/peggyjs/peggy/issues/280) Add inline examples to
   the documentation, from @hildjj
-- [#240](https://github.com/peggyjs/peggy/issues/240) Generate SourceNodes for bytecode
-- [#338](https://github.com/peggyjs/peggy/pull/338) BREAKING CHANGE. Update dependencies, causing minimum supported version of node.js to move to 14.  Generated grammar source should still work on older node versions and some older browsers, but testing is currently manual for those.
-- [#291]: Add support for repetition operator `expression|min .. max, delimiter|`, from @Mingun
+- [#240](https://github.com/peggyjs/peggy/issues/240) Generate SourceNodes for
+  bytecode, from @hildjj
+- [#338](https://github.com/peggyjs/peggy/pull/338) BREAKING CHANGE. Update
+  dependencies, causing minimum supported version of node.js to move to 14.
+  Generated grammar source should still work on older node versions and some
+  older browsers, but testing is currently manual for those. from @hildjj
+- [#291](https://github.com/peggyjs/peggy/pull/291): Add support for
+  repetition operator `expression|min .. max, delimiter|`, from @Mingun
+- [#xxx]: BREAKING CHANGE. Updated the list of JavaScript reserved words.
+  This will break existing grammars that use any of the new words in their
+  rule or label names. from @hildjj
 
-Important information for plug-ins' authors: PR [#291] added 4 new opcodes to the bytecode:
+Important information for plug-in authors: PR [#291] added 4 new opcodes to the bytecode:
 - `IF_LT`
 - `IF_GE`
 - `IF_LT_DYNAMIC`
 - `IF_GE_DYNAMIC`
 
-and added a new AST node and a visitor method `repeated`. Do not forgot to update your plug-ins.
+and added a new AST node and a visitor method `repeated`. Do not forget to update your plug-ins.
 
-[#291]: https://github.com/peggyjs/peggy/pull/291
+Important information for grammar authors: the following words, which used to
+be valid identifiers for rules and labels, are now treated as JavaScript
+reserved words, and will cause errors at compile time if you are using them:
+
+- abstract
+- arguments
+- as
+- async
+- boolean
+- byte
+- char
+- double
+- eval
+- final
+- float
+- from
+- get
+- goto
+- int
+- long
+- native
+- of
+- set
+- short
+- synchronized
+- throws
+- transient
+- volatile
 
 ### Minor Changes
 
