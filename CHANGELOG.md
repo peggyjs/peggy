@@ -3,33 +3,66 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+3.0.0
+-----
 
-Released: TBD
+Released: 2023-02-21
 
 ### Major Changes
 
 - [#280](https://github.com/peggyjs/peggy/issues/280) Add inline examples to
   the documentation, from @hildjj
-- [#240](https://github.com/peggyjs/peggy/issues/240) Generate SourceNodes for bytecode
-- [#338](https://github.com/peggyjs/peggy/pull/338) BREAKING CHANGE. Update dependencies, causing minimum supported version of node.js to move to 14.  Generated grammar source should still work on older node versions and some older browsers, but testing is currently manual for those.
-- [#291]: Add support for repetition operator `expression|min .. max, delimiter|`, from @Mingun
+- [#240](https://github.com/peggyjs/peggy/issues/240) Generate SourceNodes for
+  bytecode, from @hildjj
+- [#338](https://github.com/peggyjs/peggy/pull/338) BREAKING CHANGE. Update
+  dependencies, causing minimum supported version of node.js to move to 14.
+  Generated grammar source should still work on older node versions and some
+  older browsers, but testing is currently manual for those. from @hildjj
+- [#291](https://github.com/peggyjs/peggy/pull/291): Add support for
+  repetition operator `expression|min .. max, delimiter|`, from @Mingun
+- [#339](https://github.com/peggyjs/peggy/pull/339): BREAKING CHANGE. Updated
+  the list of JavaScript reserved words. This will break existing grammars
+  that use any of the new words in their rule or label names. from @hildjj
 
-Important information for plug-ins' authors: PR [#291] added 4 new opcodes to the bytecode:
+Important information for plug-in authors: PR [#291] added 4 new opcodes to the bytecode:
 - `IF_LT`
 - `IF_GE`
 - `IF_LT_DYNAMIC`
 - `IF_GE_DYNAMIC`
 
-and added a new AST node and a visitor method `repeated`. Do not forgot to update your plug-ins.
+and added a new AST node and a visitor method `repeated`. Do not forget to update your plug-ins.
 
-[#291]: https://github.com/peggyjs/peggy/pull/291
+Important information for grammar authors: the following words, which used to
+be valid identifiers for rules and labels, are now treated as JavaScript
+reserved words, and will cause errors at compile time if you are using them:
+
+- abstract
+- arguments
+- as
+- async
+- boolean
+- byte
+- char
+- double
+- eval
+- final
+- float
+- from
+- get
+- goto
+- int
+- long
+- native
+- of
+- set
+- short
+- synchronized
+- throws
+- transient
+- volatile
 
 ### Minor Changes
 
-- [#274](https://github.com/peggyjs/peggy/issues/274) Use commander's new
-  `.conflicts()` to check for mutually-exclusive CLI options, from @hildjj
 - [#274](https://github.com/peggyjs/peggy/issues/274) `"*"` is now a valid `allowedStartRule`, which means all rules are allowed, from @hildjj
 - [#229](https://github.com/peggyjs/peggy/issues/229) new CLI option
   `-S <rule>` or `--start-rule <rule>` to specify the start rule when testing,
@@ -47,12 +80,17 @@ and added a new AST node and a visitor method `repeated`. Do not forgot to updat
   (can be useful for plugin writers), from @Mingun
 - [#294](https://github.com/peggyjs/peggy/pull/294) Website: show errors in the
   editors, from @Mingun
+- [#297](https://github.com/peggyjs/peggy/pull/297) Website: add Discord widget,
+  from @hildjj
 - [#299](https://github.com/peggyjs/peggy/issues/299) Add example grammar for a
   [SemVer.org](https://semver.org) semantic version string, from @dselman
 - [[#307](https://github.com/peggyjs/peggy/issues/307)] Allow grammars to have
   relative offsets into their source files (e.g. if embedded in another doc),
   from @hildjj.
-- [#308](https://github.com/peggyjs/peggy/pull/308) Add support for reading test data from stdin using `-T -`, from @hildjj.
+- [#308](https://github.com/peggyjs/peggy/pull/308) Add support for reading test
+  data from stdin using `-T -`, from @hildjj.
+- [#313](https://github.com/peggyjs/peggy/pull/313) Create the website using
+  eleventy, from @camcherry
 
 ### Bug Fixes
 

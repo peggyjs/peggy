@@ -322,6 +322,8 @@ Options:
                                    parser will be allowed to start parsing
                                    from.  (Can be specified multiple times)
                                    (default: the first rule in the grammar)
+  --ast                            Output a grammar AST instead of a parser
+                                   code (default: false)
   --cache                          Make generated parser cache results
                                    (default: false)
   -d, --dependency <dependency>    Comma-separated list of dependencies, either
@@ -360,8 +362,6 @@ Options:
                                    This option conflicts with the \`-t/--test\`
                                    and \`-T/--test-file\` options unless
                                    \`-o/--output\` is also specified
-  --ast                            Output a grammar AST instead of a parser
-                                   code (default: false)
   -S, --start-rule <rule>          When testing, use the given rule as the
                                    start rule.  If this rule is not in the
                                    allowed start rules, it will be added.
