@@ -897,7 +897,9 @@ describe("Peggy grammar parser", () => {
   // Canonical IdentifierStart is "a".
   it("parses IdentifierStart", () => {
     expect("start = a").to.parseAs(ruleRefGrammar("a"));
-    expect("start = $").to.parseAs(ruleRefGrammar("$"));
+    expect("start = $").to.failToParse();
+    expect("$start = a").to.failToParse();
+    expect("start = a$b").to.parseAs(ruleRefGrammar("a$b"));
     expect("start = _").to.parseAs(ruleRefGrammar("_"));
     expect("start = \\u0061").to.parseAs(ruleRefGrammar("a"));
   });
