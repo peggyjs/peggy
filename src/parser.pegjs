@@ -323,12 +323,12 @@ IdentifierName "identifier"
 
 IdentifierStart
   = UnicodeLetter
-  / "$"
   / "_"
   / "\\" @UnicodeEscapeSequence
 
 IdentifierPart
   = IdentifierStart
+  / "$"
   / UnicodeCombiningMark
   / UnicodeDigit
   / UnicodeConnectorPunctuation
