@@ -235,12 +235,10 @@ describe("Peggy API", () => {
         ];
         for (const label of nonReserved) {
           it(label, () => {
-            expect(() => {
-              peg.generate([
-                "start = " + label + ":end",
-                "end = 'a'",
-              ].join("\n"), { output: "source" });
-            }).to.not.throw(peg.parser.SyntaxError);
+            peg.generate([
+              "start = " + label + ":end",
+              "end = 'a'",
+            ].join("\n"), { output: "source" });
           });
         }
       });
@@ -248,12 +246,10 @@ describe("Peggy API", () => {
       describe("does not throw an exception on reserved JS words used as a rule name", () => {
         for (const rule of peg.RESERVED_WORDS) {
           it(rule, () => {
-            expect(() => {
-              peg.generate([
-                "start = " + rule,
-                rule + " = 'a'",
-              ].join("\n"), { output: "source" });
-            }).to.not.throw(peg.parser.SyntaxError);
+            peg.generate([
+              "start = " + rule,
+              rule + " = 'a'",
+            ].join("\n"), { output: "source" });
           });
         }
       });
