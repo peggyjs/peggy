@@ -12,44 +12,44 @@ stylesheets: ["css/documentation.css"]
 <h2 id="table-of-contents">Table of Contents</h2>
 
 <ul>
-<li>
-<a href="#installation">Installation</a>
-<ul>
-<li><a href="#installation-node-js">Node.js</a></li>
-<li><a href="#installation-browser">Browser</a></li>
-</ul>
-</li>
-<li>
-<a href="#generating-a-parser">Generating a Parser</a>
-<ul>
-<li><a href="#generating-a-parser-command-line">Command Line</a></li>
-<li>
-<a href="#generating-a-parser-javascript-api">JavaScript API</a>
-<ul>
-  <li><a href="#error-reporting">Error Reporting</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#using-the-parser">Using the Parser</a></li>
-<li>
-<a href="#grammar-syntax-and-semantics">Grammar Syntax and Semantics</a>
-<ul>
-<li><a href="#grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</a></li>
-<li><a href="#action-execution-environment">Action Execution Environment</a></li>
-<li><a href="#parsing-lists">Parsing Lists</a></li>
-</ul>
-</li>
-<li><a href="#identifiers">Peggy Identifiers</a></li>
-<li><a href="#error-messages">Error Messages</a></li>
-<li><a href="#locations">Locations</a></li>
-<li>
-<a href="#plugins-api">Plugins API</a>
-<ul>
-<li><a href="#session-api">Session API</a></li>
-</ul>
-</li>
-<li><a href="#compatibility">Compatibility</a></li>
+  <li>
+    <a href="#installation">Installation</a>
+    <ul>
+      <li><a href="#installation-node-js">Node.js</a></li>
+      <li><a href="#installation-browser">Browser</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="#generating-a-parser">Generating a Parser</a>
+    <ul>
+      <li><a href="#generating-a-parser-command-line">Command Line</a></li>
+      <li>
+        <a href="#generating-a-parser-javascript-api">JavaScript API</a>
+        <ul>
+          <li><a href="#error-reporting">Error Reporting</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#using-the-parser">Using the Parser</a></li>
+  <li>
+    <a href="#grammar-syntax-and-semantics">Grammar Syntax and Semantics</a>
+    <ul>
+      <li><a href="#grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</a></li>
+      <li><a href="#action-execution-environment">Action Execution Environment</a></li>
+      <li><a href="#parsing-lists">Parsing Lists</a></li>
+    </ul>
+  </li>
+  <li><a href="#identifiers">Peggy Identifiers</a></li>
+  <li><a href="#error-messages">Error Messages</a></li>
+  <li><a href="#locations">Locations</a></li>
+  <li>
+    <a href="#plugins-api">Plugins API</a>
+    <ul>
+      <li><a href="#session-api">Session API</a></li>
+    </ul>
+  </li>
+  <li><a href="#compatibility">Compatibility</a></li>
 </ul>
 
 <h2 id="installation">Installation</h2>
@@ -65,25 +65,25 @@ stylesheets: ["css/documentation.css"]
 <pre><code class="language-console">$ npm install peggy</code></pre>
 
 <p>If you need both the <code>peggy</code> command and the JavaScript API,
-install Peggy both ways.</p>
+  install Peggy both ways.</p>
 
 <h3 id="installation-browser">Browser</h3>
 
 <p>The easiest way to use Peggy from the browser is to pull the latest version
-from a CDN. Either of these should work:</p>
+  from a CDN. Either of these should work:</p>
 
 <pre><code class="language-html">&lt;script src="https://unpkg.com/peggy">&lt;/script></code></pre>
 
 <pre><code class="language-html">&lt;script src="https://cdn.jsdelivr.net/npm/peggy">&lt;/script></code></pre>
 
 <p>Both of those CDNs support pinning a version number rather than always
-taking the latest. Not only is that good practice, it will save several
-redirects, improving performance. See their documentation for more
-information:</p>
+  taking the latest. Not only is that good practice, it will save several
+  redirects, improving performance. See their documentation for more
+  information:</p>
 
 <ul>
-<li><a href="https://unpkg.com/">unpkg</a></li>
-<li><a href="https://www.jsdelivr.com/">jsDelivr</a></li>
+  <li><a href="https://unpkg.com/">unpkg</a></li>
+  <li><a href="https://www.jsdelivr.com/">jsDelivr</a></li>
 </ul>
 
 <p>When your document is done loading, there will be a global <code>peggy</code> object.</p>
@@ -91,126 +91,129 @@ information:</p>
 <h2 id="generating-a-parser">Generating a Parser</h2>
 
 <p>Peggy generates parser from a grammar that describes expected input and can
-specify what the parser returns (using semantic actions on matched parts of the
-input). Generated parser itself is a JavaScript object with a simple API.</p>
+  specify what the parser returns (using semantic actions on matched parts of the
+  input). Generated parser itself is a JavaScript object with a simple API.</p>
 
 <h3 id="generating-a-parser-command-line">Command Line</h3>
 
 <p>To generate a parser from your grammar, use the <code>peggy</code>
-command:</p>
+  command:</p>
 
 <pre><code class="language-console">$ peggy arithmetics.pegjs</code></pre>
 
 <p>This writes parser source code into a file with the same name as the grammar
-file but with “.js” extension. You can also specify the output file
-explicitly:</p>
+  file but with “.js” extension. You can also specify the output file
+  explicitly:</p>
 
 <pre><code class="language-console">$ peggy -o arithmetics-parser.js arithmetics.pegjs</code></pre>
 
 <p>If you omit both input and output file, standard input and standard output
-are used.</p>
+  are used.</p>
 
 <p>By default, the generated parser is in the Node.js module format. You can
-override this using the <code>--format</code> option.</p>
+  override this using the <code>--format</code> option.</p>
 
 <p>You can tweak the generated parser with several options:</p>
 
 <dl>
-<dt><code>--allowed-start-rules &lt;rules&gt;</code></dt>
-<dd>Comma-separated list of rules the parser will be allowed to start parsing
-from (default: only the first rule in the grammar).</dd>
+  <dt><code>--allowed-start-rules &lt;rules&gt;</code></dt>
+  <dd>Comma-separated list of rules the parser will be allowed to start parsing
+    from (default: only the first rule in the grammar).</dd>
 
-<dt><code>--ast</code></dt>
-<dd>Outputting an internal AST representation of the grammar after
-all optimizations instead of the parser source code. Useful for plugin authors
-to see how their plugin changes the AST. This option cannot be mixed with the
-<code>-t/--test</code>, <code>-T/--test-file</code> and <code>-m/--source-map</code>
-options.</dd>
+  <dt><code>--ast</code></dt>
+  <dd>Outputting an internal AST representation of the grammar after
+    all optimizations instead of the parser source code. Useful for plugin authors
+    to see how their plugin changes the AST. This option cannot be mixed with the
+    <code>-t/--test</code>, <code>-T/--test-file</code> and <code>-m/--source-map</code>
+    options.
+  </dd>
 
-<dt><code>--cache</code></dt>
-<dd>Makes the parser cache results, avoiding exponential parsing time in
-pathological cases but making the parser slower.</dd>
+  <dt><code>--cache</code></dt>
+  <dd>Makes the parser cache results, avoiding exponential parsing time in
+    pathological cases but making the parser slower.</dd>
 
-<dt><code>-d</code>, <code>--dependency &lt;[name:]module&gt;</code></dt>
-<dd>Makes the parser require a specified dependency (can be specified
-multiple times).  A variable name for the import/require/etc. may be given,
-followed by a colon.  If no name is given, the module name will also be used
-for the variable name.</dd>
+  <dt><code>-d</code>, <code>--dependency &lt;[name:]module&gt;</code></dt>
+  <dd>Makes the parser require a specified dependency (can be specified
+    multiple times). A variable name for the import/require/etc. may be given,
+    followed by a colon. If no name is given, the module name will also be used
+    for the variable name.</dd>
 
-<dt><code>-D</code>, <code>--dependencies &lt;json&gt;</code></dt>
-<dd>Dependencies, in JSON object format with variable:module pairs. (Can be
-specified multiple times).</dd>
+  <dt><code>-D</code>, <code>--dependencies &lt;json&gt;</code></dt>
+  <dd>Dependencies, in JSON object format with variable:module pairs. (Can be
+    specified multiple times).</dd>
 
-<dt><code>-e</code>, <code>--export-var &lt;variable&gt;</code></dt>
-<dd>Name of a global variable into which the parser object is assigned to when
-no module loader is detected.</dd>
+  <dt><code>-e</code>, <code>--export-var &lt;variable&gt;</code></dt>
+  <dd>Name of a global variable into which the parser object is assigned to when
+    no module loader is detected.</dd>
 
-<dt><code>--extra-options &lt;options&gt;</code></dt>
-<dd>Additional options (in JSON format, as an object) to pass to
-<code>peg.generate</code>.</dd>
+  <dt><code>--extra-options &lt;options&gt;</code></dt>
+  <dd>Additional options (in JSON format, as an object) to pass to
+    <code>peg.generate</code>.
+  </dd>
 
-<dt><code>-c</code>, <code>--extra-options-file &lt;file&gt;</code></dt>
-<dd>File with additional options (in JSON format, as an object) to pass to
-<code>peg.generate</code>.</dd>
+  <dt><code>-c</code>, <code>--extra-options-file &lt;file&gt;</code></dt>
+  <dd>File with additional options (in JSON format, as an object) to pass to
+    <code>peg.generate</code>.
+  </dd>
 
-<dt><code>--format &lt;format&gt;</code></dt>
-<dd>Format of the generated parser: <code>amd</code>, <code>commonjs</code>,
-<code>globals</code>, <code>umd</code>, <code>es</code> (default: <code>commonjs</code>).</dd>
+  <dt><code>--format &lt;format&gt;</code></dt>
+  <dd>Format of the generated parser: <code>amd</code>, <code>commonjs</code>,
+    <code>globals</code>, <code>umd</code>, <code>es</code> (default: <code>commonjs</code>).
+  </dd>
 
-<dt><code>-o</code>, <code>--output &lt;file&gt;</code></dt>
-<dd>File to send output to.  Defaults to input file name with
-extension changed to <code>.js</code>, or stdout if no input file is given.</dd>
+  <dt><code>-o</code>, <code>--output &lt;file&gt;</code></dt>
+  <dd>File to send output to. Defaults to input file name with
+    extension changed to <code>.js</code>, or stdout if no input file is given.</dd>
 
-<dt><code>--plugin</code></dt>
-<dd>Makes Peggy use a specified plugin (can be specified multiple
-times).</dd>
+  <dt><code>--plugin</code></dt>
+  <dd>Makes Peggy use a specified plugin (can be specified multiple
+    times).</dd>
 
-<dt><code>-m</code>, <code>--source-map &lt;file&gt;</code></dt>
-<dd>Generate a source map. If name is not specified, the source map will be
-named "&lt;input_file&gt;.map" if input is a file and "source.map" if input
-is a standard input. If the special filename <code>inline</code> is given,
-the sourcemap will be embedded in the output file as a data URI.  If the
-filename is prefixed with <code>hidden:</code>, no mapping URL will be
-included so that the mapping can be specified with an HTTP SourceMap:
-header. This option conflicts with the <code>-t/--test</code> and
-<code>-T/--test-file</code> options unless <code>-o/--output</code> is also
-specified</dd>
+  <dt><code>-m</code>, <code>--source-map &lt;file&gt;</code></dt>
+  <dd>Generate a source map. If name is not specified, the source map will be
+    named "&lt;input_file&gt;.map" if input is a file and "source.map" if input
+    is a standard input. If the special filename <code>inline</code> is given,
+    the sourcemap will be embedded in the output file as a data URI. If the
+    filename is prefixed with <code>hidden:</code>, no mapping URL will be
+    included so that the mapping can be specified with an HTTP SourceMap:
+    header. This option conflicts with the <code>-t/--test</code> and
+    <code>-T/--test-file</code> options unless <code>-o/--output</code> is also
+    specified
+  </dd>
 
-<dt><code>-S</code>, <code>--start-rule &lt;rule&gt;</code></dt>
-<dd>When testing, use this rule as the start rule.  Automatically added to
-the allowedStartRules.</dd>
+  <dt><code>-S</code>, <code>--start-rule &lt;rule&gt;</code></dt>
+  <dd>When testing, use this rule as the start rule. Automatically added to
+    the allowedStartRules.</dd>
 
-<dt><code>-t</code>, <code>--test &lt;text&gt;</code></dt>
-<dd>Test the parser with the given text, outputting the result of running
-the parser against this input.
-If the input to be tested is not parsed, the CLI will exit with code 2.</dd>
+  <dt><code>-t</code>, <code>--test &lt;text&gt;</code></dt>
+  <dd>Test the parser with the given text, outputting the result of running
+    the parser against this input.
+    If the input to be tested is not parsed, the CLI will exit with code 2.</dd>
 
-<dt><code>-T</code>, <code>--test-file &lt;text&gt;</code></dt>
-<dd>Test the parser with the contents of the given file, outputting the
-result of running the parser against this input.
-If the input to be tested is not parsed, the CLI will exit with code 2.</dd>
+  <dt><code>-T</code>, <code>--test-file &lt;text&gt;</code></dt>
+  <dd>Test the parser with the contents of the given file, outputting the
+    result of running the parser against this input.
+    If the input to be tested is not parsed, the CLI will exit with code 2.</dd>
 
-<dt><code>--trace</code></dt>
-<dd>Makes the parser trace its progress.</dd>
+  <dt><code>--trace</code></dt>
+  <dd>Makes the parser trace its progress.</dd>
 
-<dt><code>-v</code>, <code>--version</code></dt>
-<dd>Output the version number.</dd>
+  <dt><code>-v</code>, <code>--version</code></dt>
+  <dd>Output the version number.</dd>
 
-<dt><code>-h</code>, <code>--help</code></dt>
-<dd>Display help for the command.</dd>
+  <dt><code>-h</code>, <code>--help</code></dt>
+  <dd>Display help for the command.</dd>
 
 </dl>
 
-<p>
-If you specify options using <code>-c &lt;file&gt;</code> or
-<code>--extra-options-file &lt;file&gt;</code>, you will need to ensure you
-are using the correct types.  In particular, you may specify "plugin" as a
-string, or "plugins" as an array of objects that have a <code>use</code>
-method.  Always use the long (two-dash) form of the option, without the
-dashes, as the key.  Options that contain internal dashes should be specified
-in camel case. You may also specify an "input" field instead of using the
-command line. For example:
-</p>
+<p>If you specify options using <code>-c &lt;file&gt;</code> or
+  <code>--extra-options-file &lt;file&gt;</code>, you will need to ensure you
+  are using the correct types. In particular, you may specify "plugin" as a
+  string, or "plugins" as an array of objects that have a <code>use</code>
+  method. Always use the long (two-dash) form of the option, without the
+  dashes, as the key. Options that contain internal dashes should be specified
+  in camel case. You may also specify an "input" field instead of using the
+  command line. For example:</p>
 
 <pre><code class="language-javascript">// config.js or config.cjs
 module.exports = {
@@ -224,23 +227,22 @@ module.exports = {
 };
 </code></pre>
 
-<p>
-You can test generated parser immediately if you specify the
-<code>-t/--test</code> or <code>-T/--test-file</code>
-option. This option conflicts with the
-<code>--ast</code> option, and also conflicts with the
-<code>-m/--source-map</code> option unless <code>-o/--output</code> is also
-specified.
-</p>
+<p>You can test generated parser immediately if you specify the
+  <code>-t/--test</code> or <code>-T/--test-file</code>
+  option. This option conflicts with the
+  <code>--ast</code> option, and also conflicts with the
+  <code>-m/--source-map</code> option unless <code>-o/--output</code> is also
+  specified.</p>
 
 <p>The CLI will exit with the code:</p>
 
 <ul>
-<li><code>0</code>: if successful</li>
-<li><code>1</code>: if you supply incorrect or conflicting parameters</li>
-<li><code>2</code>: if you specified the
-<code>-t/--test</code> or <code>-T/--test-file</code> option and the specified
-input fails parsing with the specified grammar</li>
+  <li><code>0</code>: if successful</li>
+  <li><code>1</code>: if you supply incorrect or conflicting parameters</li>
+  <li><code>2</code>: if you specified the
+    <code>-t/--test</code> or <code>-T/--test-file</code> option and the specified
+    input fails parsing with the specified grammar
+  </li>
 </ul>
 
 <p>Examples:</p>
@@ -287,156 +289,162 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 <pre><code class="language-javascript">import * as peggy from "peggy";</code></pre>
 
 <p>For use in browsers, include the Peggy library in your web page or
-application using the <code>&lt;script&gt;</code> tag. If Peggy detects an <a
-href="https://requirejs.org/docs/whyamd.html">AMD</a> loader, it will define
-itself as a module, otherwise the API will be available in the
-<code>peg</code> global object.</p>
+  application using the <code>&lt;script&gt;</code> tag. If Peggy detects an
+  <a href="https://requirejs.org/docs/whyamd.html">AMD</a> loader, it will define
+  itself as a module, otherwise the API will be available in the
+  <code>peg</code> global object.</p>
 
 <p>To generate a parser, call the <code>peggy.generate</code> method and pass your
-grammar as a parameter:</p>
+  grammar as a parameter:</p>
 
 <pre><code class="language-javascript">const parser = peggy.generate("start = ('a' / 'b')+");</code></pre>
 
 <p>The method will return generated parser object or its source code as a string
-(depending on the value of the <code>output</code> option — see below). It will
-throw an exception if the grammar is invalid. The exception will contain a
-<code>message</code> property with more details about the error.</p>
+  (depending on the value of the <code>output</code> option — see below). It will
+  throw an exception if the grammar is invalid. The exception will contain a
+  <code>message</code> property with more details about the error.</p>
 
 <p>You can tweak the generated parser by passing a second parameter with an
-options object to <code>peg.generate</code>. The following options are
-supported:</p>
+  options object to <code>peg.generate</code>. The following options are
+  supported:</p>
 
 <dl>
-<dt><code>allowedStartRules</code></dt>
-<dd>Rules the parser will be allowed to start parsing from (default: the
-first rule in the grammar).  If any of the rules specified is "*", any of
-the rules in the grammar can be used as start rules.</dd>
+  <dt><code>allowedStartRules</code></dt>
+  <dd>Rules the parser will be allowed to start parsing from (default: the
+    first rule in the grammar). If any of the rules specified is "*", any of
+    the rules in the grammar can be used as start rules.</dd>
 
-<dt><code>cache</code></dt>
-<dd>If <code>true</code>, makes the parser cache results, avoiding exponential
-parsing time in pathological cases but making the parser slower (default:
-<code>false</code>).</dd>
+  <dt><code>cache</code></dt>
+  <dd>If <code>true</code>, makes the parser cache results, avoiding exponential
+    parsing time in pathological cases but making the parser slower (default:
+    <code>false</code>).
+  </dd>
 
-<dt><code>dependencies</code></dt>
-<dd>Parser dependencies. The value is an object which maps variables used to
-access the dependencies in the parser to module IDs used to load them; valid
-only when <code>format</code> is set to <code>"amd"</code>,
-<code>"commonjs"</code>, <code>"es"</code>, or <code>"umd"</code>.
-Dependencies variables will be available in both the <em>global
-initializer</em> and the <em>per-parse initializer</em>. Unless the parser is
-to be generated in different formats, it is recommended to rather import
-dependencies from within the <em>global initializer</em> (default:
-<code>{}</code>).</dd>
+  <dt><code>dependencies</code></dt>
+  <dd>Parser dependencies. The value is an object which maps variables used to
+    access the dependencies in the parser to module IDs used to load them; valid
+    only when <code>format</code> is set to <code>"amd"</code>,
+    <code>"commonjs"</code>, <code>"es"</code>, or <code>"umd"</code>.
+    Dependencies variables will be available in both the <em>global
+    initializer</em> and the <em>per-parse initializer</em>. Unless the parser
+    is to be generated in different formats, it is recommended to rather
+    import dependencies from within the <em>global initializer</em> (default:
+    <code>{}</code>).
+  </dd>
 
-<dt><code>error</code></dt>
-<dd>Callback for errors. See <a href="#error-reporting">Error Reporting</a></dd>
+  <dt><code>error</code></dt>
+  <dd>Callback for errors. See <a href="#error-reporting">Error Reporting</a></dd>
 
-<dt><code>exportVar</code></dt>
-<dd>Name of a global variable into which the parser object is assigned to when
-no module loader is detected; valid only when <code>format</code> is set to
-<code>"globals"</code> or <code>"umd"</code> (default:
-<code>null</code>).</dd>
+  <dt><code>exportVar</code></dt>
+  <dd>Name of a global variable into which the parser object is assigned to when
+    no module loader is detected; valid only when <code>format</code> is set to
+    <code>"globals"</code> or <code>"umd"</code> (default:
+    <code>null</code>).
+  </dd>
 
-<dt><code>format</code></dt>
-<dd>
-Format of the generated parser (<code>"amd"</code>, <code>"bare"</code>,
-<code>"commonjs"</code>, <code>"es"</code>, <code>"globals"</code>, or
-<code>"umd"</code>); valid only when <code>output</code> is set to
-<code>"source"</code>, <code>"source-and-map"</code>, or
-<code>"source-with-inline-map"</code>. (default: <code>"bare"</code>).
-</dd>
+  <dt><code>format</code></dt>
+  <dd>
+    Format of the generated parser (<code>"amd"</code>, <code>"bare"</code>,
+    <code>"commonjs"</code>, <code>"es"</code>, <code>"globals"</code>, or
+    <code>"umd"</code>); valid only when <code>output</code> is set to
+    <code>"source"</code>, <code>"source-and-map"</code>, or
+    <code>"source-with-inline-map"</code>. (default: <code>"bare"</code>).
+  </dd>
 
-<dt><code>grammarSource</code></dt>
-<dd>Any object that represent origin of the input grammar. The CLI will convert
-it to a string with the path to the file; parsers in network applications
-might use the socket and so on. The supplied object will be available at key
-<code>source</code> in the location objects, that returned by the
-<code>location()</code> API function (default: <code>undefined</code>).  It is
-recommended that if you do not use a string, the object you supply has a
-useful <code>toString()</code> implementation.</dd>
+  <dt><code>grammarSource</code></dt>
+  <dd>Any object that represent origin of the input grammar. The CLI will convert
+    it to a string with the path to the file; parsers in network applications
+    might use the socket and so on. The supplied object will be available at key
+    <code>source</code> in the location objects, that returned by the
+    <code>location()</code> API function (default: <code>undefined</code>). It
+    is recommended that if you do not use a string, the object you supply has
+    a useful <code>toString()</code> implementation.
+  </dd>
 
-<dt><code>info</code></dt>
-<dd>Callback for informational messages. See <a href="#error-reporting">Error Reporting</a></dd>
+  <dt><code>info</code></dt>
+  <dd>Callback for informational messages. See <a href="#error-reporting">Error Reporting</a></dd>
 
-<dt><code>output</code></dt>
-<dd><p>A string, one of:</p>
-<ul>
-<li><code>"parser"</code> - return generated parser object.</li>
-<li><code>"source"</code> - return parser source code as a string.</li>
-<li><code>"source-and-map"</code> - return a
-<a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a>
-object; you can get source code by calling <code>toString()</code>
-method or source code and mapping by calling
-<code>toStringWithSourceMap()</code> method, see the
-<a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a>
-documentation.
-</li>
-<li><code>"source-with-inline-map"</code> - return the parser source along
-with an embedded source map as a <code>data:</code> URI.  This option
-leads to a larger output string, but is the easiest to integrate with
-developer tooling.</li>
-<li><code>"ast"</code> - return the internal AST of the grammar as a JSON
-  string. Useful for plugin authors to explore internals of Peggy and
-  for automation.</li>
-</ul>
-<p>(default: <code>"parser"</code>)</p>
-<blockquote>
-<p><strong>Note</strong>: You should also set <code>grammarSource</code>
-to a not-empty string if you set this value to
-<code>"source-and-map"</code> or
-<code>"source-with-inline-map"</code>.  The path should be relative to
-the location where the generated parser code will be stored.  For
-example, if you are generating <code>lib/parser.js</code> from
-<code>src/parser.peggy</code>, then your options should be:
-<code>{ grammarSource: "../src/parser.peggy" }</code></p>
-</blockquote>
-</dd>
+  <dt><code>output</code></dt>
+  <dd>
+    <p>A string, one of:</p>
+    <ul>
+      <li><code>"parser"</code> - return generated parser object.</li>
+      <li><code>"source"</code> - return parser source code as a string.</li>
+      <li><code>"source-and-map"</code> - return a
+        <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a>
+        object; you can get source code by calling <code>toString()</code>
+        method or source code and mapping by calling
+        <code>toStringWithSourceMap()</code> method, see the
+        <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a>
+        documentation.
+      </li>
+      <li><code>"source-with-inline-map"</code> - return the parser source along
+        with an embedded source map as a <code>data:</code> URI. This option
+        leads to a larger output string, but is the easiest to integrate with
+        developer tooling.</li>
+      <li><code>"ast"</code> - return the internal AST of the grammar as a JSON
+        string. Useful for plugin authors to explore internals of Peggy and
+        for automation.</li>
+    </ul>
+    <p>(default: <code>"parser"</code>)</p>
+    <blockquote>
+      <p><strong>Note</strong>: You should also set <code>grammarSource</code>
+        to a not-empty string if you set this value to
+        <code>"source-and-map"</code> or
+        <code>"source-with-inline-map"</code>. The path should be relative to
+        the location where the generated parser code will be stored. For
+        example, if you are generating <code>lib/parser.js</code> from
+        <code>src/parser.peggy</code>, then your options should be:
+        <code>{ grammarSource: "../src/parser.peggy" }</code>
+      </p>
+    </blockquote>
+  </dd>
 
-<dt><code>plugins</code></dt>
-<dd>Plugins to use. See the <a href="#plugins-api">Plugins API</a> section.</dd>
+  <dt><code>plugins</code></dt>
+  <dd>Plugins to use. See the <a href="#plugins-api">Plugins API</a> section.</dd>
 
-<dt><code>trace</code></dt>
-<dd>Makes the parser trace its progress (default: <code>false</code>).</dd>
+  <dt><code>trace</code></dt>
+  <dd>Makes the parser trace its progress (default: <code>false</code>).</dd>
 
-<dt><code>warning</code></dt>
-<dd>Callback for warnings. See <a href="#error-reporting">Error Reporting</a></dd>
+  <dt><code>warning</code></dt>
+  <dd>Callback for warnings. See <a href="#error-reporting">Error Reporting</a></dd>
 </dl>
 
 <h4 id="error-reporting">Error Reporting</h4>
 
 <p>While generating the parser, the compiler may throw a <code>GrammarError</code> which collects
-all of the issues that were seen.</p>
+  all of the issues that were seen.</p>
 
 <p>There is also another way to collect problems as fast as they are reported —
-register one or more of these callbacks:</p>
+  register one or more of these callbacks:</p>
 
 <ul>
-<li><code>error(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
-<li><code>warning(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
-<li><code>info(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
+  <li><code>error(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
+  <li><code>warning(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
+  <li><code>info(stage: Stage, message: string, location?: LocationRange, notes?: DiagnosticNote[]): void</code></li>
 </ul>
 
 <p>All parameters are the same as the parameters of the <a href="#session-api">reporting API</a> except the first.
-The <code>stage</code> represent one of possible stages during which execution a diagnostic was generated.
-This is a string enumeration, that currently has one of three values:</p>
+  The <code>stage</code> represent one of possible stages during which execution a diagnostic was generated.
+  This is a string enumeration, that currently has one of three values:</p>
 
 <ul>
-<li><code>check</code></li>
-<li><code>transform</code></li>
-<li><code>generate</code></li>
+  <li><code>check</code></li>
+  <li><code>transform</code></li>
+  <li><code>generate</code></li>
 </ul>
 
 <h2 id="using-the-parser">Using the Parser</h2>
 
 <p>To use the generated parser, call its <code>parse</code>
-method and pass an input string as a parameter. The method will return a parse
-result (the exact value depends on the grammar used to generate the parser) or
-throw an exception if the input is invalid. The exception will contain
-<code>location</code>, <code>expected</code>, <code>found</code>,
-<code>message</code>, and <code>diagnostic</code> properties with more details about the error.  The error
-will have a <code>format(SourceText[])</code> function, to which you pass an array
-of objects that look like <code>{ source: grammarSource, text: string }</code>; this
-will return a nicely-formatted error suitable for human consumption.</p>
+  method and pass an input string as a parameter. The method will return a parse
+  result (the exact value depends on the grammar used to generate the parser) or
+  throw an exception if the input is invalid. The exception will contain
+  <code>location</code>, <code>expected</code>, <code>found</code>,
+  <code>message</code>, and <code>diagnostic</code> properties with more details about the error. The error
+  will have a <code>format(SourceText[])</code> function, to which you pass an array
+  of objects that look like <code>{ source: grammarSource, text: string }</code>; this
+  will return a nicely-formatted error suitable for human consumption.</p>
 
 <pre><code class="language-javascript">parser.parse("abba"); // returns ["a", "b", "b", "a"]
 
@@ -447,20 +455,20 @@ object to the <code>parse</code> method. The following options are
 supported:</p>
 
 <dl>
-<dt><code>startRule</code></dt>
-<dd>Name of the rule to start parsing from.</dd>
+  <dt><code>startRule</code></dt>
+  <dd>Name of the rule to start parsing from.</dd>
 
-<dt><code>tracer</code></dt>
-<dd>
-  Tracer to use.  A tracer is an object containing a <code>trace()</code> function.
-  <code>trace()</code> takes a single parameter which is an object containing
-  "type" ("rule.enter", "rule.fail", "rule.match"), "rule" (the rule name as a
-  string), "<a href="<a href="#locations">location</a>", and, if the type is
-  "rule.match", "result" (what the rule returned).
-</dd>
+  <dt><code>tracer</code></dt>
+  <dd>
+    Tracer to use. A tracer is an object containing a <code>trace()</code> function.
+    <code>trace()</code> takes a single parameter which is an object containing
+    "type" ("rule.enter", "rule.fail", "rule.match"), "rule" (the rule name as a
+    string), "<a href="<a href=" #locations">location</a>", and, if the type is
+    "rule.match", "result" (what the rule returned).
+  </dd>
 
-<dt><code>...</code> (any others)</dt>
-<dd>Made available in the <code>options</code> variable</dd>
+  <dt><code>...</code> (any others)</dt>
+  <dd>Made available in the <code>options</code> variable</dd>
 </dl>
 
 <p>As you can see above, parsers can also support their own custom options.  For example:</p>
@@ -484,12 +492,12 @@ console.log(result);  // outputs "boo"
 <h2 id="grammar-syntax-and-semantics">Grammar Syntax and Semantics</h2>
 
 <p>The grammar syntax is similar to JavaScript in that it is not line-oriented
-and ignores whitespace between tokens. You can also use JavaScript-style
-comments (<code>// ...</code> and <code>/* ... */</code>).</p>
+  and ignores whitespace between tokens. You can also use JavaScript-style
+  comments (<code>// ...</code> and <code>/* ... */</code>).</p>
 
 <p>Let's look at example grammar that recognizes simple arithmetic expressions
-like <code>2*(3+4)</code>. A parser generated from this grammar computes their
-values.</p>
+  like <code>2*(3+4)</code>. A parser generated from this grammar computes their
+  values.</p>
 
 <pre><code class="language-peggy">start
   = additive
@@ -510,42 +518,45 @@ integer "simple number"
   = digits:[0-9]+ { return parseInt(digits.join(""), 10); }</code></pre>
 
 <p>On the top level, the grammar consists of <em>rules</em> (in our example,
-there are five of them). Each rule has a <em>name</em> (e.g.
-<code>integer</code>) that identifies the rule, and a <em>parsing
-expression</em> (e.g. <code>digits:[0-9]+ { return parseInt(digits.join(""),
-10); }</code>) that defines a pattern to match against the input text and
-possibly contains some JavaScript code that determines what happens when the
-pattern matches successfully. A rule can also contain <em>human-readable
-name</em> that is used in error messages (in our example, only the
-<code>integer</code> rule has a human-readable name). The parsing starts at the
-first rule, which is also called the <em>start rule</em>.</p>
+  there are five of them). Each rule has a <em>name</em> (e.g.
+  <code>integer</code>) that identifies the rule, and a <em>parsing
+  expression</em> (e.g. <code>digits:[0-9]+ { return parseInt(digits.join(""), 10); }</code>)
+  that defines a pattern to match against the input text and
+  possibly contains some JavaScript code that determines what happens when the
+  pattern matches successfully. A rule can also contain <em>human-readable
+  name</em> that is used in error messages (in our example, only the
+  <code>integer</code> rule has a human-readable name). The parsing starts at the
+  first rule, which is also called the <em>start rule</em>.</p>
 
 <p>A rule name must be a Peggy <a href="#identifiers">identifier</a>. It is
-followed by an equality sign (“=”) and a parsing expression. If the rule has a
-human-readable name, it is written as a JavaScript string between the rule
-name and the equality sign. Rules need to be separated only by whitespace
-(their beginning is easily recognizable), but a semicolon (“;”) after the
-parsing expression is allowed.</p>
+  followed by an equality sign (“=”) and a parsing expression. If the rule has a
+  human-readable name, it is written as a JavaScript string between the rule
+  name and the equality sign. Rules need to be separated only by whitespace
+  (their beginning is easily recognizable), but a semicolon (“;”) after the
+  parsing expression is allowed.</p>
 
 <p>The first rule can be preceded by a <em>global initializer</em> and/or a
-<em>per-parse initializer</em>, in that order. Both are pieces of JavaScript
-code in double curly braces (“{{'{{'}}” and “}}”) and single curly braces (“{” and
-“}”) respectively. All variables and functions defined in both
-<em>initializers</em> are accessible in rule actions and semantic predicates.
-Curly braces in both <em>initializers</em> code must be balanced.</p>
+  <em>per-parse initializer</em>, in that order. Both are pieces of JavaScript
+  code in double curly braces (“{{'{{'}}” and “}}”) and single curly braces (“{” and
+  “}”) respectively. All variables and functions defined in both
+  <em>initializers</em> are accessible in rule actions and semantic predicates.
+  Curly braces in both <em>initializers</em> code must be balanced.</p>
+
 <p>The <em>global initializer</em> is executed once and only once, when the
-generated parser is loaded (through a <code>require</code> or an
-<code>import</code> statement for instance). It is the ideal location to
-require, to import, to declare constants, or to declare utility functions to be used in rule actions
-and semantic predicates.</p>
+  generated parser is loaded (through a <code>require</code> or an
+  <code>import</code> statement for instance). It is the ideal location to
+  require, to import, to declare constants, or to declare utility functions to be used in rule actions
+  and semantic predicates.</p>
+
 <p>The <em>per-parse initializer</em> is called before the generated parser
-starts parsing. The code inside the <em>per-parse initializer</em> can access
-the input string and the options passed to the parser using the
-<code>input</code> variable and the <code>options</code> variable respectively.
-It is the ideal location to create data structures that are unique to each
-parse or to modify the input before the parse.</p>
+  starts parsing. The code inside the <em>per-parse initializer</em> can access
+  the input string and the options passed to the parser using the
+  <code>input</code> variable and the <code>options</code> variable respectively.
+  It is the ideal location to create data structures that are unique to each
+  parse or to modify the input before the parse.</p>
+
 <p>Let's look at the example grammar from above using a <em>global
-initializer</em> and a <em>per-parse initializer</em>:</p>
+  initializer</em> and a <em>per-parse initializer</em>:</p>
 
 <pre><code class="language-peggy">{{'{{'}}
   function makeInteger(o) {
@@ -578,619 +589,643 @@ integer "simple number"
   = digits:[0-9]+ { return makeInteger(digits); }</code></pre>
 
 <p>The parsing expressions of the rules are used to match the input text to the
-grammar. There are various types of expressions &mdash; matching characters or
-character classes, indicating optional parts and repetition, etc. Expressions
-can also contain references to other rules. See <a
-href="#grammar-syntax-and-semantics-parsing-expression-types">detailed
-description below</a>.</p>
+  grammar. There are various types of expressions &mdash; matching characters or
+  character classes, indicating optional parts and repetition, etc. Expressions
+  can also contain references to other rules. See
+  <a href="#grammar-syntax-and-semantics-parsing-expression-types">detailed
+  description below</a>.</p>
 
 <p>If an expression successfully matches a part of the text when running the
-generated parser, it produces a <em>match result</em>, which is a JavaScript
-value. For example:</p>
+  generated parser, it produces a <em>match result</em>, which is a JavaScript
+  value. For example:</p>
 
 <ul>
-<li>An expression matching a literal string produces a JavaScript string
-containing matched text.</li>
+  <li>An expression matching a literal string produces a JavaScript string
+    containing matched text.</li>
 
-<li>An expression matching repeated occurrence of some subexpression produces
-a JavaScript array with all the matches.</li>
+  <li>An expression matching repeated occurrence of some subexpression produces
+    a JavaScript array with all the matches.</li>
 </ul>
 
 <p>The match results propagate through the rules when the rule names are used in
-expressions, up to the start rule. The generated parser returns start rule's
-match result when parsing is successful.</p>
+  expressions, up to the start rule. The generated parser returns start rule's
+  match result when parsing is successful.</p>
 
 <p>One special case of parser expression is a <em>parser action</em> &mdash; a
-piece of JavaScript code inside curly braces (“{” and “}”) that takes match
-results of the preceding expression and returns a JavaScript value.
-This value is then considered match result of the preceding expression (in other
-words, the parser action is a match result transformer).</p>
+  piece of JavaScript code inside curly braces (“{” and “}”) that takes match
+  results of the preceding expression and returns a JavaScript value.
+  This value is then considered match result of the preceding expression (in other
+  words, the parser action is a match result transformer).</p>
 
 <p>In our arithmetics example, there are many parser actions. Consider the
-action in expression <code>digits:[0-9]+ { return parseInt(digits.join(""), 10);
-}</code>. It takes the match result of the expression [0-9]+, which is an array
-of strings containing digits, as its parameter. It joins the digits together to
-form a number and converts it to a JavaScript <code>number</code> object.</p>
+  action in expression <code>digits:[0-9]+ { return parseInt(digits.join(""), 10); }</code>.
+  It takes the match result of the expression [0-9]+, which is an array
+  of strings containing digits, as its parameter. It joins the digits together to
+  form a number and converts it to a JavaScript <code>number</code> object.</p>
 
 <h3 id="grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</h3>
 
 <p>There are several types of parsing expressions, some of them containing
-subexpressions and thus forming a recursive structure.  Each example below is
-a part of a <a href="js/examples.peggy">full grammar</a>, which produces an
-object that contains <code>match</code> and <code>rest</code>.
-<code>match</code> is the part of the input that matched the example,
-<code>rest</code> is any remaining input after the match.</p>
+  subexpressions and thus forming a recursive structure. Each example below is
+  a part of a <a href="js/examples.peggy">full grammar</a>, which produces an
+  object that contains <code>match</code> and <code>rest</code>.
+  <code>match</code> is the part of the input that matched the example,
+  <code>rest</code> is any remaining input after the match.</p>
 
 <dl>
-<dt><code>"<em>literal</em>"<br>'<em>literal</em>'</code></dt>
+  <dt><code>"<em>literal</em>"<br>'<em>literal</em>'</code></dt>
 
-<dd>
-<p>Match exact literal string and return it. The string syntax is the same
-as in JavaScript. Appending <code>i</code> right after the literal makes the
-match case-insensitive.</p>
+  <dd>
+    <p>Match exact literal string and return it. The string syntax is the same
+      as in JavaScript. Appending <code>i</code> right after the literal makes the
+      match case-insensitive.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>literal = "foo"</code></div>
-<div><em>Matches:</em> <code>"foo"</code></div>
-<div><em>Does not match:</em> <code>"Foo"</code>, <code>"fOo"</code>, <code>"bar"</code>, <code>"fo"</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="foo" class="exampleInput" name="literal">
-<div class="result"></div>
-</div>
-</div>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>literal = "foo"</code></div>
+        <div><em>Matches:</em> <code>"foo"</code></div>
+        <div><em>Does not match:</em> <code>"Foo"</code>, <code>"fOo"</code>, <code>"bar"</code>, <code>"fo"</code>
+        </div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="foo" class="exampleInput" name="literal">
+        <div class="result"></div>
+      </div>
+    </div>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>literal_i = "foo"i</code></div>
-<div><em>Matches:</em> <code>"foo"</code>, <code>"Foo"</code>, <code>"fOo"</code></div>
-<div><em>Does not match:</em> <code>"bar"</code>, <code>"fo"</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="FOO" class="exampleInput" name="literal_i">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>literal_i = "foo"i</code></div>
+        <div><em>Matches:</em> <code>"foo"</code>, <code>"Foo"</code>, <code>"fOo"</code></div>
+        <div><em>Does not match:</em> <code>"bar"</code>, <code>"fo"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="FOO" class="exampleInput" name="literal_i">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dt><code>.</code> (U+002E: FULL STOP, or "period")</dt>
+  <dt><code>.</code> (U+002E: FULL STOP, or "period")</dt>
 
-<dd>
-<p>Match exactly one character and return it as a string.</p>
-<div class="example">
-<div>
-<div><em>Example:</em> <code>any = .</code></div>
-<div><em>Matches:</em> <code>"f"</code>, <code>"."</code>, <code>" "</code></div>
-<div><em>Does not match:</em> <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="f" class="exampleInput" name="any">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+  <dd>
+    <p>Match exactly one character and return it as a string.</p>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>any = .</code></div>
+        <div><em>Matches:</em> <code>"f"</code>, <code>"."</code>, <code>" "</code></div>
+        <div><em>Does not match:</em> <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="f" class="exampleInput" name="any">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dt><code>[<em>characters</em>]</code></dt>
+  <dt><code>[<em>characters</em>]</code></dt>
 
-<dd>
-<p>Match one character from a set and return it as a string. The characters
-in the list can be escaped in exactly the same way as in JavaScript string.
-The list of characters can also contain ranges (e.g. <code>[a-z]</code>
-means “all lowercase letters”). Preceding the characters with <code>^</code>
-inverts the matched set (e.g. <code>[^a-z]</code> means “all character but
-lowercase letters”). Appending <code>i</code> right after the literal makes
-the match case-insensitive.</p>
+  <dd>
+    <p>Match one character from a set and return it as a string. The characters
+      in the list can be escaped in exactly the same way as in JavaScript string.
+      The list of characters can also contain ranges (e.g. <code>[a-z]</code>
+      means “all lowercase letters”). Preceding the characters with <code>^</code>
+      inverts the matched set (e.g. <code>[^a-z]</code> means “all character but
+      lowercase letters”). Appending <code>i</code> right after the literal makes
+      the match case-insensitive.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>class = [a-z]</code></div>
-<div><em>Matches:</em> <code>"f"</code></div>
-<div><em>Does not match:</em> <code>"A"</code>, <code>"-"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="f" class="exampleInput" name="class">
-<div class="result"></div>
-</div>
-</div>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>class = [a-z]</code></div>
+        <div><em>Matches:</em> <code>"f"</code></div>
+        <div><em>Does not match:</em> <code>"A"</code>, <code>"-"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="f" class="exampleInput" name="class">
+        <div class="result"></div>
+      </div>
+    </div>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>class_i = [^a-z]i</code></div>
-<div><em>Matches:</em> <code>"="</code>, <code>" "</code></div>
-<div><em>Does not match:</em> <code>"F"</code>, <code>"f"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="=" class="exampleInput" name="class_i">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>class_i = [^a-z]i</code></div>
+        <div><em>Matches:</em> <code>"="</code>, <code>" "</code></div>
+        <div><em>Does not match:</em> <code>"F"</code>, <code>"f"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="=" class="exampleInput" name="class_i">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dt><code><em>rule</em></code></dt>
+  <dt><code><em>rule</em></code></dt>
 
-<dd>
-<p>Match a parsing expression of a rule (perhaps recursively) and return its match
-result.</p>
+  <dd>
+    <p>Match a parsing expression of a rule (perhaps recursively) and return its match
+      result.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>rule = child; child = "foo"</code></div>
-<div><em>Matches:</em> <code>"foo"</code></div>
-<div><em>Does not match:</em> <code>"Foo"</code>, <code>"fOo"</code>, <code>"bar"</code>, <code>"fo"</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="foo" class="exampleInput" name="rule">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>rule = child; child = "foo"</code></div>
+        <div><em>Matches:</em> <code>"foo"</code></div>
+        <div><em>Does not match:</em> <code>"Foo"</code>, <code>"fOo"</code>, <code>"bar"</code>, <code>"fo"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="foo" class="exampleInput" name="rule">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dt><code>( <em>expression</em> )</code></dt>
+  <dt><code>( <em>expression</em> )</code></dt>
 
-<dd>
-<p>Match a subexpression and return its match result.</p>
+  <dd>
+    <p>Match a subexpression and return its match result.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>paren = ("1" { return 2; })+</code></div>
-<div><em>Matches:</em> <code>"11"</code></div>
-<div><em>Does not match:</em> <code>"2"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="11" class="exampleInput" name="paren">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>paren = ("1" { return 2; })+</code></div>
+        <div><em>Matches:</em> <code>"11"</code></div>
+        <div><em>Does not match:</em> <code>"2"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="11" class="exampleInput" name="paren">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dt><code><em>expression</em> *</code></dt>
+  <dt><code><em>expression</em> *</code></dt>
 
-<dd>
-<p>Match zero or more repetitions of the expression and return their match
-results in an array. The matching is greedy, i.e. the parser tries to match
-the expression as many times as possible. Unlike in regular expressions,
-there is no backtracking.</p>
+  <dd>
+    <p>Match zero or more repetitions of the expression and return their match
+      results in an array. The matching is greedy, i.e. the parser tries to match
+      the expression as many times as possible. Unlike in regular expressions,
+      there is no backtracking.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>star = "a"*</code></div>
-<div><em>Matches:</em> <code>"a"</code>, <code>"aaa"</code></div>
-<div><em>Does not match:</em> (always matches)</div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="aa" class="exampleInput" name="star">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>star = "a"*</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"aaa"</code></div>
+        <div><em>Does not match:</em> (always matches)</div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aa" class="exampleInput" name="star">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dt><code><em>expression</em> +</code></dt>
+  <dt><code><em>expression</em> +</code></dt>
 
-<dd>
-<p>Match one or more repetitions of the expression and return their match
-results in an array. The matching is greedy, i.e. the parser tries to match
-the expression as many times as possible. Unlike in regular expressions,
-there is no backtracking.</p>
+  <dd>
+    <p>Match one or more repetitions of the expression and return their match
+      results in an array. The matching is greedy, i.e. the parser tries to match
+      the expression as many times as possible. Unlike in regular expressions,
+      there is no backtracking.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>plus = "a"+</code></div>
-<div><em>Matches:</em> <code>"a"</code>, <code>"aaa"</code></div>
-<div><em>Does not match:</em> <code>"b"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="aa" class="exampleInput" name="plus">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>plus = "a"+</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"aaa"</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aa" class="exampleInput" name="plus">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dt><code><em>expression</em> |count|
-      <br><em>expression</em> |min..max|
-      <br><em>expression</em> |count, delimiter|
-      <br><em>expression</em> |min..max, delimiter|</code></dt>
+  <dt><code><em>expression</em> |count|
+          <br><em>expression</em> |min..max|
+          <br><em>expression</em> |count, delimiter|
+          <br><em>expression</em> |min..max, delimiter|</code></dt>
 
-<dd>
-  <p>Match exact <code>count</code> repetitions of <code>expression</code>.
-  If the match succeeds, return their match results in an array.</p>
+  <dd>
+    <p>Match exact <code>count</code> repetitions of <code>expression</code>.
+      If the match succeeds, return their match results in an array.</p>
 
-  <p><em>-or-</em></p>
+    <p><em>-or-</em></p>
 
-  <p>Match expression at least <code>min</code> but not more then <code>max</code> times.
-  If the match succeeds, return their match results in an array. Both <code>min</code>
-  and <code>max</code> may be omitted. If <code>min</code> is omitted, then it is assumed
-  to be <code>0</code>. If <code>max</code> is omitted, then it is assumed to be infinity.
-  Hence</p>
+    <p>Match expression at least <code>min</code> but not more then <code>max</code> times.
+      If the match succeeds, return their match results in an array. Both <code>min</code>
+      and <code>max</code> may be omitted. If <code>min</code> is omitted, then it is assumed
+      to be <code>0</code>. If <code>max</code> is omitted, then it is assumed to be infinity.
+      Hence</p>
 
-  <ul>
-    <li><code>expression |..|</code> is equivalent to <code>expression |0..|</code>
-    and <code>expression *</code></li>
-    <li><code>expression |1..|</code> is equivalent to <code>expression +</code></li>
-  </ul>
+    <ul>
+      <li><code>expression |..|</code> is equivalent to <code>expression |0..|</code>
+      and <code>expression *</code></li>
+      <li><code>expression |1..|</code> is equivalent to <code>expression +</code></li>
+    </ul>
 
-  <p>Optionally, <code>delimiter</code> expression can be specified. The
-  delimiter is a separate parser expression, its match results are ignored,
-  and it must appear between matched expressions exactly once.</p>
+    <p>Optionally, <code>delimiter</code> expression can be specified. The
+      delimiter is a separate parser expression, its match results are ignored,
+      and it must appear between matched expressions exactly once.</p>
 
-  <p><code>count</code>, <code>min</code> and <code>max</code> can be represented as:</p>
+    <p><code>count</code>, <code>min</code> and <code>max</code> can be
+      represented as:</p>
 
-  <ul>
-    <li>positive integer:
-      <pre><code class="language-peggy">start = "a"|2|;</code></pre>
-    </li>
-    <li>name of the preceding label:
-      <pre><code class="language-peggy">start = count:n1 "a"|count|;
+    <ul>
+      <li>positive integer:
+        <pre><code class="language-peggy">start = "a"|2|;</code></pre>
+      </li>
+      <li>name of the preceding label:
+        <pre><code class="language-peggy">start = count:n1 "a"|count|;
 n1 = n:$[0-9] { return parseInt(n); };</code></pre>
-    </li>
-    <li>code block:
-      <pre><code class="language-peggy">start = "a"|{ return options.count; }|;</code></pre>
-    </li>
-    Any non-number values, returned by the code block, will be interpreted as <code>0</code>.
-  </ul>
+      </li>
+      <li>code block:
+        <pre><code class="language-peggy">start = "a"|{ return options.count; }|;</code></pre>
+      </li>
+      Any non-number values, returned by the code block, will be interpreted as <code>0</code>.
+    </ul>
 
-  <div class="example">
-    <div>
-      <div><em>Example:</em> <code>repetition = "a"|2..3, ","|</code></div>
-      <div><em>Matches:</em> <code>"a,a"</code>, <code>"a,a,a"</code></div>
-      <div><em>Does not match:</em> <code>"a"</code>, <code>"b,b"</code>,
-            <code>"a,a,a,"</code>, <code>"a,a,a,a"</code></div>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>repetition = "a"|2..3, ","|</code></div>
+        <div><em>Matches:</em> <code>"a,a"</code>, <code>"a,a,a"</code></div>
+        <div><em>Does not match:</em> <code>"a"</code>, <code>"b,b"</code>,
+          <code>"a,a,a,"</code>, <code>"a,a,a,a"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="a,a" class="exampleInput" name="repetition">
+        <div class="result"></div>
+      </div>
     </div>
-    <div class="try">
-      <em>Try it:</em>
-      <input type="text" value="a,a" class="exampleInput" name="repetition">
-      <div class="result"></div>
+  </dd>
+
+  <dt><code><em>expression</em> ?</code></dt>
+
+  <dd>
+    <p>Try to match the expression. If the match succeeds, return its match
+      result, otherwise return <code>null</code>. Unlike in regular expressions,
+      there is no backtracking.</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>maybe = "a"?</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>""</code></div>
+        <div><em>Does not match:</em> (always matches)</div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aa" class="exampleInput" name="maybe">
+        <div class="result"></div>
+      </div>
     </div>
-  </div>
-</dd>
 
-<dt><code><em>expression</em> ?</code></dt>
+  </dd>
 
-<dd>
-<p>Try to match the expression. If the match succeeds, return its match
-result, otherwise return <code>null</code>. Unlike in regular expressions,
-there is no backtracking.</p>
+  <dt><code>&amp; <em>expression</em></code></dt>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>maybe = "a"?</code></div>
-<div><em>Matches:</em> <code>"a"</code>, <code>""</code></div>
-<div><em>Does not match:</em> (always matches)</div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="aa" class="exampleInput" name="maybe">
-<div class="result"></div>
-</div>
-</div>
+  <dd>
+    <p>This is a positive assertion. No input is consumed.</p>
+    <p>Try to match the expression. If the match succeeds, just return
+      <code>undefined</code> and do not consume any input, otherwise consider the
+      match failed.
+    </p>
 
-</dd>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>posAssertion = "a" &"b"</code></div>
+        <div><em>Matches:</em> <code>"ab"</code></div>
+        <div><em>Does not match:</em> <code>"ac"</code>, <code>"a"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="ab" class="exampleInput" name="posAssertion">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dt><code>&amp; <em>expression</em></code></dt>
+  <dt><code>! <em>expression</em></code></dt>
 
-<dd>
-<p>This is a positive assertion.  No input is consumed.</p>
-<p>Try to match the expression. If the match succeeds, just return
-<code>undefined</code> and do not consume any input, otherwise consider the
-match failed.</p>
+  <dd>
+    <p>This is a negative assertion. No input is consumed.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>posAssertion = "a" &"b"</code></div>
-<div><em>Matches:</em> <code>"ab"</code></div>
-<div><em>Does not match:</em> <code>"ac"</code>, <code>"a"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="ab" class="exampleInput" name="posAssertion">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <p>Try to match the expression. If the match does
+      not succeed, just return <code>undefined</code> and do not consume any
+      input, otherwise consider the match failed.</p>
 
-<dt><code>! <em>expression</em></code></dt>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>negAssertion = "a" !"b"</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"ac"</code></div>
+        <div><em>Does not match:</em> <code>"ab"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="ac" class="exampleInput" name="negAssertion">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dd>
-<p>This is a negative assertion.  No input is consumed.</p>
+  <dt id="-predicate-"><code>&amp; { <em>predicate</em> }</code></dt>
 
-<p>Try to match the expression. If the match does
-not succeed, just return <code>undefined</code> and do not consume any
-input, otherwise consider the match failed.</p>
+  <dd>
+    <p>This is a positive assertion. No input is consumed.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>negAssertion = "a" !"b"</code></div>
-<div><em>Matches:</em> <code>"a"</code>, <code>"ac"</code></div>
-<div><em>Does not match:</em> <code>"ab"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="ac" class="exampleInput" name="negAssertion">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <p>The predicate should be JavaScript code, and it's executed as a
+      function. Curly braces in the predicate must be balanced.</p>
 
-<dt id="-predicate-"><code>&amp; { <em>predicate</em> }</code></dt>
+    <p>The predicate should <code>return</code> a boolean value. If the result
+      is truthy, it's match result is <code>undefined</code>, otherwise the
+      match is considered failed. Failure to include the <code>return</code>
+      keyword is a common mistake.</p>
 
-<dd>
-<p>This is a positive assertion. No input is consumed.</p>
+    <p>The predicate has access to all variables and functions in the
+      <a href="#action-execution-environment">Action Execution Environment</a>.
+    </p>
 
-<p>The predicate should be JavaScript code, and it's executed as a
-function. Curly braces in the predicate must be balanced.</p>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <br><code>posPredicate = [0-9]+ &amp;{return parseInt(match, 10) &lt; 100}</code></div>
+        <div><em>Matches:</em> <code>"0"</code>, <code>"99"</code></div>
+        <div><em>Does not match:</em> <code>"100"</code>, <code>"-1"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="56" class="exampleInput" name="posPredicate">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<p>The predicate should <code>return</code> a boolean value. If the result
-is truthy, it's match result is <code>undefined</code>, otherwise the
-match is considered failed.  Failure to include the <code>return</code>
-keyword is a common mistake.</p>
+  <dt id="--predicate-"><code>! { <em>predicate</em> }</code></dt>
 
-<p>The predicate has access to all variables and functions in the
-<a href="#action-execution-environment">Action Execution Environment</a>.</p>
+  <dd>
+    <p>This is a negative assertion. No input is consumed.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <br><code>posPredicate = [0-9]+ &amp;{return parseInt(match, 10) &lt; 100}</code></div>
-<div><em>Matches:</em> <code>"0"</code>, <code>"99"</code></div>
-<div><em>Does not match:</em> <code>"100"</code>, <code>"-1"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="56" class="exampleInput" name="posPredicate">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <p>The predicate should be JavaScript code, and it's executed as a
+      function. Curly braces in the predicate must be balanced.</p>
 
-<dt id="--predicate-"><code>! { <em>predicate</em> }</code></dt>
+    <p>The predicate should <code>return</code> a boolean value. If the result is
+      falsy, it's match result is <code>undefined</code>, otherwise the match is
+      considered failed.</p>
 
-<dd>
-<p>This is a negative assertion. No input is consumed.</p>
+    <p>The predicate has access to all variables and functions in the
+      <a href="#action-execution-environment">Action Execution Environment</a>.
+    </p>
 
-<p>The predicate should be JavaScript code, and it's executed as a
-function. Curly braces in the predicate must be balanced.</p>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <br><code>negPredicate = $[0-9]+ !{ return parseInt(match, 10) &lt; 100 }</code></div>
+        <div><em>Matches:</em> <code>"100"</code>, <code>"156"</code></div>
+        <div><em>Does not match:</em> <code>"56"</code>, <code>"-1"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="156" class="exampleInput" name="negPredicate">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<p>The predicate should <code>return</code> a boolean value. If the result is
-falsy, it's match result is <code>undefined</code>, otherwise the match is
-considered failed.</p>
+  <dt id="-expression-2"><code>$ <em>expression</em></code></dt>
 
-<p>The predicate has access to all variables and functions in the
-<a href="#action-execution-environment">Action Execution Environment</a>.</p>
+  <dd>
+    <p>Try to match the expression. If the match succeeds, return the matched
+      text instead of the match result.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <br><code>negPredicate = $[0-9]+ !{ return parseInt(match, 10) &lt; 100 }</code></div>
-<div><em>Matches:</em> <code>"100"</code>, <code>"156"</code></div>
-<div><em>Does not match:</em> <code>"56"</code>, <code>"-1"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="156" class="exampleInput" name="negPredicate">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <p>If you need to return the matched text in an action, use the
+      <a href="#action-execution-environment"><code>text()</code> function</a>.
+    </p>
 
-<dt id="-expression-2"><code>$ <em>expression</em></code></dt>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>dollar = $"a"+</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"aa"</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aaa" class="exampleInput" name="dollar">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dd>
-<p>Try to match the expression. If the match succeeds, return the matched
-text instead of the match result.</p>
+  <dt><code><em>label</em> : <em>expression</em></code></dt>
 
-<p>If you need to return the matched text in an action, use the
-<a href="#action-execution-environment"><code>text()</code> function</a>.</p>
+  <dd>
+    <p>Match the expression and remember its match result under given label. The
+      label must be a Peggy <a href="#identifiers">identifier</a>.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>dollar = $"a"+</code></div>
-<div><em>Matches:</em> <code>"a"</code>, <code>"aa"</code></div>
-<div><em>Does not match:</em> <code>"b"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="aaa" class="exampleInput" name="dollar">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <p>Labeled expressions are useful together with actions, where saved match
+      results can be accessed by action's JavaScript code.</p>
 
-<dt><code><em>label</em> : <em>expression</em></code></dt>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>label = foo:"bar"i { return {foo}; }</code></div>
+        <div><em>Matches:</em> <code>"bar"</code>, <code>"BAR"</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="BAR" class="exampleInput" name="label">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dd>
-<p>Match the expression and remember its match result under given label. The
-label must be a Peggy <a href="#identifiers">identifier</a>.</p>
+  <dt><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
 
-<p>Labeled expressions are useful together with actions, where saved match
-results can be accessed by action's JavaScript code.</p>
+  <dd>
+    <p>Match the expression and if the label exists, remember its match result
+      under given label. The label must be a Peggy <a href="#identifiers">identifier</a>.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>label = foo:"bar"i { return {foo}; }</code></div>
-<div><em>Matches:</em> <code>"bar"</code>, <code>"BAR"</code></div>
-<div><em>Does not match:</em> <code>"b"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="BAR" class="exampleInput" name="label">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <p>Return the value of this expression from the rule, or "pluck" it. You
+      may not have an action for this rule. The expression must not be a
+      semantic predicate (<a href="#-predicate-"><code>&{ predicate }</code></a> or
+      <a href="#--predicate-"><code>!{ predicate }</code></a>). There may be multiple
+      pluck expressions in a given rule, in which case an array of the plucked
+      expressions is returned from the rule.
+    </p>
 
-<dt><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
+    <p>Pluck expressions are useful for writing terse grammars, or returning
+      parts of an expression that is wrapped in parentheses.</p>
 
-<dd>
-<p>Match the expression and if the label exists, remember its match result
-under given label. The label must be a Peggy <a href="#identifiers">identifier</a>.</p>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>pluck_1 = @$"a"+ " "+ @$"b"+</code></div>
+        <div><em>Matches:</em> <code>"aaa "</code>, <code>"a  "</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aaa   " class="exampleInput" name="pluck_1">
+        <div class="result"></div>
+      </div>
+    </div>
 
-<p>Return the value of this expression from the rule, or "pluck" it.  You
-may not have an action for this rule.  The expression must not be a
-semantic predicate (<a href="#-predicate-"><code>&{ predicate }</code></a> or
-<a href="#--predicate-"><code>!{ predicate }</code></a>).  There may be multiple
-pluck expressions in a given rule, in which case an array of the plucked
-expressions is returned from the rule.</p>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>pluck_2 = @$"a"+ " "+ @two:$"b"+</code></div>
+        <div><em>Matches:</em> <code>"aaa b"</code>, <code>"a  bbb"</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="aaa   bbb" class="exampleInput" name="pluck_2">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<p>Pluck expressions are useful for writing terse grammars, or returning
-parts of an expression that is wrapped in parentheses.</p>
+  <dt><code><em>expression<sub>1</sub></em> <em>expression<sub>2</sub></em> ...  <em>expression<sub>n</sub></em></code>
+  </dt>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>pluck_1 = @$"a"+ " "+ @$"b"+</code></div>
-<div><em>Matches:</em> <code>"aaa "</code>, <code>"a  "</code></div>
-<div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="aaa   " class="exampleInput" name="pluck_1">
-<div class="result"></div>
-</div>
-</div>
+  <dd>
+    <p>Match a sequence of expressions and return their match results in an array.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>pluck_2 = @$"a"+ " "+ @two:$"b"+</code></div>
-<div><em>Matches:</em> <code>"aaa b"</code>, <code>"a  bbb"</code></div>
-<div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="aaa   bbb" class="exampleInput" name="pluck_2">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>sequence = "a" "b" "c"</code></div>
+        <div><em>Matches:</em> <code>"abc"</code></div>
+        <div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="abc" class="exampleInput" name="sequence">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<dt><code><em>expression<sub>1</sub></em> <em>expression<sub>2</sub></em> ...  <em>expression<sub>n</sub></em></code></dt>
+  <dt><code><em>expression</em> { <em>action</em> }</code></dt>
 
-<dd>
-<p>Match a sequence of expressions and return their match results in an array.</p>
+  <dd>
+    <p>If the expression matches successfully, run the action, otherwise
+      consider the match failed.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>sequence = "a" "b" "c"</code></div>
-<div><em>Matches:</em> <code>"abc"</code></div>
-<div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="abc" class="exampleInput" name="sequence">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <p>The action should be JavaScript code, and it's executed as a
+      function. Curly braces in the action must be balanced.</p>
 
-<dt><code><em>expression</em> { <em>action</em> }</code></dt>
+    <p>The action should <code>return</code> some value, which will be used as the
+      match result of the expression.</p>
 
-<dd>
-<p>If the expression matches successfully, run the action, otherwise
-consider the match failed.</p>
+    <p>The action has access to all variables and functions in the
+      <a href="#action-execution-environment">Action Execution Environment</a>.
+    </p>
 
-<p>The action should be JavaScript code, and it's executed as a
-function. Curly braces in the action must be balanced.</p>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>action = " "+ "a" { return location(); }</code></div>
+        <div><em>Matches:</em> <code>"  a"</code></div>
+        <div><em>Does not match:</em> <code>"a"</code>, <code>" "</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="  a" class="exampleInput" name="action">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 
-<p>The action should <code>return</code> some value, which will be used as the
-match result of the expression.</p>
+  <dt>
+    <code><em>expression<sub>1</sub></em> / <em>expression<sub>2</sub></em> / ... / <em>expression<sub>n</sub></em></code>
+  </dt>
 
-<p>The action has access to all variables and functions in the
-<a href="#action-execution-environment">Action Execution Environment</a>.</p>
+  <dd>
+    <p>Try to match the first expression, if it does not succeed, try the second
+      one, etc. Return the match result of the first successfully matched
+      expression. If no expression matches, consider the match failed.</p>
 
-<div class="example">
-<div>
-<div><em>Example:</em> <code>action = " "+ "a" { return location(); }</code></div>
-<div><em>Matches:</em> <code>"  a"</code></div>
-<div><em>Does not match:</em> <code>"a"</code>, <code>" "</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="  a" class="exampleInput" name="action">
-<div class="result"></div>
-</div>
-</div>
-</dd>
-
-<dt><code><em>expression<sub>1</sub></em> / <em>expression<sub>2</sub></em> / ... / <em>expression<sub>n</sub></em></code></dt>
-
-<dd>
-<p>Try to match the first expression, if it does not succeed, try the second
-one, etc. Return the match result of the first successfully matched
-expression. If no expression matches, consider the match failed.</p>
-
-<div class="example">
-<div>
-<div><em>Example:</em> <code>alt = "a" / "b" / "c"</code></div>
-<div><em>Matches:</em> <code>"a"</code>, <code>"b"</code>, <code>"c"</code></div>
-<div><em>Does not match:</em> <code>"d"</code>, <code>""</code></div>
-</div>
-<div class="try">
-<em>Try it:</em>
-<input type="text" value="a" class="exampleInput" name="alt">
-<div class="result"></div>
-</div>
-</div>
-</dd>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>alt = "a" / "b" / "c"</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"b"</code>, <code>"c"</code></div>
+        <div><em>Does not match:</em> <code>"d"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="a" class="exampleInput" name="alt">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
 </dl>
 
 <h3 id="action-execution-environment">Action Execution Environment</h3>
 
 <p>Actions and predicates have these variables and functions
-available to them.</p>
+  available to them.</p>
 
 <ul>
-<li><p>All variables and functions defined in the initializer or the top-level
-initializer at the beginning of the grammar are available.</p>
-</li>
-<li><p>Note, that all functions and variables, described below, are unavailable
-in the global initializer.</p>
-</li>
-<li><p>Labels from preceding expressions are available as local variables,
-which will have the match result of the labelled expressions.</p>
-<p>A label is only available after its labelled expression is matched:</p>
-<pre><code class="language-peggy">rule = A:('a' B:'b' { /* B is available, A is not */ } )</code></pre>
-<p>A label in a sub-expression is only valid within the
-sub-expression:</p>
-<pre><code class="language-peggy">rule = A:'a' (B:'b') (C:'b' { /* A and C are available, B is not */ })</code></pre>
-</li>
-<li><p><code>input</code> is a parsed string that was passed to the <code>parse()</code> method.</p>
-</li>
-<li><p><code>options</code> is a variable that contains the parser options.
-That is the same object that was passed to the <code>parse()</code> method.</p>
-</li>
-<li><p><code>error(message, where)</code> will report an error and throw an exception.
-<code>where</code> is optional; the default is the value of <code>location()</code>.</p>
-</li>
-<li><p><code>expected(message, where)</code> is similar to <code>error</code>, but reports</p>
-<blockquote>
-<p>Expected <em>message</em> but &quot;<em>other</em>&quot; found.</p>
-</blockquote>
-<p>where <code>other</code> is, by default, the character in the <code>location().start.offset</code> position.</p>
-</li>
-<li><p><code>location()</code> returns an object with the information about the parse position.
-Refer to <a href="#locations">the corresponding section</a> for the details.</p>
-</li>
-<li><p><code>range()</code> is similar to <code>location()</code>, but returns an object with offsets only.
-Refer to <a href="#locations">the &quot;Locations&quot; section</a> for the details.</p>
-</li>
-<li><p><code>offset()</code> returns only the start offset, i.e. <code>location().start.offset</code>.
-Refer to <a href="#locations">the &quot;Locations&quot; section</a> for the details.</p>
-</li>
-<li><p><code>text()</code> returns the source text between <code>start</code> and <code>end</code> (which will be <code>&quot;&quot;</code> for
-predicates). Instead of using that function as a return value for the rule consider
-using the <a href="#-expression-2"><code>$</code> operator</a>.</p>
-</li>
+  <li>
+    <p>All variables and functions defined in the initializer or the top-level
+      initializer at the beginning of the grammar are available.</p>
+  </li>
+  <li>
+    <p>Note, that all functions and variables, described below, are unavailable
+      in the global initializer.</p>
+  </li>
+  <li>
+    <p>Labels from preceding expressions are available as local variables,
+      which will have the match result of the labelled expressions.</p>
+    <p>A label is only available after its labelled expression is matched:</p>
+    <pre><code class="language-peggy">rule = A:('a' B:'b' { /* B is available, A is not */ } )</code></pre>
+    <p>A label in a sub-expression is only valid within the
+      sub-expression:</p>
+    <pre><code class="language-peggy">rule = A:'a' (B:'b') (C:'b' { /* A and C are available, B is not */ })</code></pre>
+  </li>
+  <li>
+    <p><code>input</code> is a parsed string that was passed to the <code>parse()</code> method.</p>
+  </li>
+  <li>
+    <p><code>options</code> is a variable that contains the parser options.
+      That is the same object that was passed to the <code>parse()</code> method.</p>
+  </li>
+  <li>
+    <p><code>error(message, where)</code> will report an error and throw an exception.
+      <code>where</code> is optional; the default is the value of <code>location()</code>.
+    </p>
+  </li>
+  <li>
+    <p><code>expected(message, where)</code> is similar to <code>error</code>, but reports</p>
+    <blockquote>
+      <p>Expected <em>message</em> but &quot;<em>other</em>&quot; found.</p>
+    </blockquote>
+    <p>where <code>other</code> is, by default, the character in the <code>location().start.offset</code> position.</p>
+  </li>
+  <li>
+    <p><code>location()</code> returns an object with the information about the parse position.
+      Refer to <a href="#locations">the corresponding section</a> for the details.</p>
+  </li>
+  <li>
+    <p><code>range()</code> is similar to <code>location()</code>, but returns an object with offsets only.
+      Refer to <a href="#locations">the &quot;Locations&quot; section</a> for the details.</p>
+  </li>
+  <li>
+    <p><code>offset()</code> returns only the start offset, i.e. <code>location().start.offset</code>.
+      Refer to <a href="#locations">the &quot;Locations&quot; section</a> for the details.</p>
+  </li>
+  <li>
+    <p><code>text()</code> returns the source text between <code>start</code> and <code>end</code> (which will be
+      <code>&quot;&quot;</code> for
+      predicates). Instead of using that function as a return value for the rule consider
+      using the <a href="#-expression-2"><code>$</code> operator</a>.</p>
+  </li>
 </ul>
 
 <h3 id="parsing-lists">Parsing Lists</h3>
 
 <p>One of the most frequent questions about Peggy grammars is how to parse a
-delimited list of items.  The cleanest current approach is:</p>
+  delimited list of items.  The cleanest current approach is:</p>
 
 <pre><code class="language-peggy">list
   = word|.., _ "," _|
@@ -1222,24 +1257,26 @@ _
   = [ \t]*</code></pre>
 
 <p>Note that the <code>@</code> in the tail section plucks the word out of the
-parentheses, NOT out of the rule itself.</p>
+  parentheses, NOT out of the rule itself.</p>
 
 <h2 id="identifiers">Peggy Identifiers</h2>
 
 <p>Peggy Identifiers are used as rule names, rule references, and label names.
-They are used as JavaScript identifiers in the code that Peggy generates, and
-as such, must conform to the limitations of the Peggy grammar as well as those
-of the JavaScript grammar.</p>
+  They are used as JavaScript identifiers in the code that Peggy generates, and
+  as such, must conform to the limitations of the Peggy grammar as well as those
+  of the JavaScript grammar.</p>
 
 <p>Peggy identifiers are almost any valid JavaScript
-<a href="https://262.ecma-international.org/13.0/#prod-IdentifierName">IdentifierName</a> in the
-<a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic
-Multilingual Plane</a>.  However, identifiers MUST NOT start with a "$" character
-to avoid interactions with Peggy's <code>$</code> operator.
-Any word that might be a
-<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words">JavaScript reserved word</a>
-in any context is also disallowed.  Plugins can modify the list of reserved
-words at compile time.</p>
+  <a href="https://262.ecma-international.org/13.0/#prod-IdentifierName">IdentifierName</a> in the
+  <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic
+    Multilingual Plane</a>. However, identifiers MUST NOT start with a "$" character
+  to avoid interactions with Peggy's <code>$</code> operator.
+  Any word that might be a
+  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words">JavaScript
+    reserved word</a>
+  in any context is also disallowed. Plugins can modify the list of reserved
+  words at compile time.
+</p>
 
 <p>Valid identifiers:</p>
 <ul>
@@ -1259,7 +1296,7 @@ words at compile time.</p>
 
 <h2 id="error-messages">Error Messages</h2>
 <p>As described above, you can annotate your grammar rules with human-readable
-names that will be used in error messages. For example, this production:</p>
+  names that will be used in error messages. For example, this production:</p>
 
 <pre><code class="language-peggy">integer "simple number"
   = digits:[0-9]+</code></pre>
@@ -1268,8 +1305,8 @@ names that will be used in error messages. For example, this production:</p>
 <blockquote>Expected simple number but "a" found.</blockquote>
 
 <p>when parsing a non-number, referencing the human-readable name "simple
-number." Without the human-readable name, Peggy instead uses a description of
-the character class that failed to match:</p>
+  number." Without the human-readable name, Peggy instead uses a description of
+  the character class that failed to match:</p>
 
 <blockquote>Expected [0-9] but "a" found.</blockquote>
 
@@ -1294,8 +1331,15 @@ the character class that failed to match:</p>
 <p>There are two classes of errors in Peggy:</p>
 
 <ul>
-<li><code>SyntaxError</code>: Syntax errors, found during parsing the input. This kind of errors can be thrown both during <em>grammar</em> parsing and during <em>input</em> parsing. Although name is the same, errors of each generated parser (including Peggy parser itself) has its own unique class.</li>
-<li><code>GrammarError</code>: Grammar errors, found during construction of the parser. These errors can be thrown only in the parser generation phase. This error signals a logical mistake in the grammar, such as having two rules with the same name in one grammar, etc.</li>
+  <li><code>SyntaxError</code>: Syntax errors, found during parsing the input.
+    This kind of errors can be thrown both during <em>grammar</em> parsing and
+    during <em>input</em> parsing. Although name is the same, errors of each
+    generated parser (including Peggy parser itself) has its own unique
+    class.</li>
+  <li><code>GrammarError</code>: Grammar errors, found during construction of
+    the parser. These errors can be thrown only in the parser generation phase.
+    This error signals a logical mistake in the grammar, such as having two
+    rules with the same name in one grammar, etc.</li>
 </ul>
 
 <p>Both of these errors have the <code>format()</code> method that takes an array of mappings from source to grammar text:</p>
@@ -1339,15 +1383,17 @@ note: Step 3: call itself without input consumption - left recursion
 3 | end = !start
   |        ^^^^^</code></pre>
 
-<p>A plugin may register additional passes that can generate <code>GrammarError</code>s to report about
-problems, but they shouldn't do that by throwing an instance of <code>GrammarError</code>. They should
-use the <a href="#session-api">session API</a> instead.</p>
+<p>A plugin may register additional passes that can generate
+  <code>GrammarError</code>s to report about problems, but they shouldn't do
+  that by throwing an instance of <code>GrammarError</code>. They should use the
+  <a href="#session-api">session API</a> instead.</p>
 
 <h2 id="locations">Locations</h2>
 
-<p>During the parsing you can access to the information of the current parse location,
-such as offset in the parsed string, line and column information. You can get this
-information by calling <code>location()</code> function, which returns you the following object:</p>
+<p>During the parsing you can access to the information of the current parse
+  location, such as offset in the parsed string, line and column information.
+  You can get this information by calling <code>location()</code> function,
+  which returns you the following object:</p>
 
 <pre><code class="language-javascript">{
   source: options.grammarSource,
@@ -1357,11 +1403,11 @@ information by calling <code>location()</code> function, which returns you the f
 </code></pre>
 
 <p><code>source</code> is an any object that was supplied in the <code>grammarSource</code> option in
-the <code>parse()</code> call. That object can be used to hold reference to the origin of
-the grammar, for example, it can be a filename. It is recommended that this
-object have a <code>toString()</code> implementation that returns meaningful string,
-because that string will be used when getting formatted error representation
-with <a href="#error-messages"><code>e.format()</code></a>.</p>
+  the <code>parse()</code> call. That object can be used to hold reference to the origin of
+  the grammar, for example, it can be a filename. It is recommended that this
+  object have a <code>toString()</code> implementation that returns meaningful string,
+  because that string will be used when getting formatted error representation
+  with <a href="#error-messages"><code>e.format()</code></a>.</p>
 
 <p>For certain special cases, you can use an instance of the
   <code>GrammarLocation</code> class as the <code>grammarSource</code>.
@@ -1370,14 +1416,14 @@ with <a href="#error-messages"><code>e.format()</code></a>.</p>
   document.</p>
 
 <p>If <code>source</code> is <code>null</code> or <code>undefined</code> it doesn't appear in the formatted messages.
-The default value for <code>source</code> is <code>undefined</code>.</p>
+  The default value for <code>source</code> is <code>undefined</code>.</p>
 
 <p>For actions, <code>start</code> refers to the position at the beginning of the preceding
-expression, and <code>end</code> refers to the position after the end of the preceding
-expression.</p>
+  expression, and <code>end</code> refers to the position after the end of the preceding
+  expression.</p>
 
 <p>For semantic predicates, <code>start</code> and <code>end</code> are equal, denoting the location where
-the predicate is evaluated.</p>
+  the predicate is evaluated.</p>
 
 <p>For the per-parse initializer, the location is the start of the input, i.e.</p>
 
@@ -1392,11 +1438,11 @@ the predicate is evaluated.</p>
 <code>line</code> and <code>column</code> are 1-based indices.</p>
 
 <p>The line number is incremented each time the parser finds an end of line sequence in
-the input.</p>
+  the input.</p>
 
 <p>Line and column are somewhat expensive to compute, so if you just need the
-offset, there's also a function <code>offset()</code> that returns just the
-start offset, and a function <code>range()</code> that returns the object:</p>
+  offset, there's also a function <code>offset()</code> that returns just the
+  start offset, and a function <code>range()</code> that returns the object:</p>
 
 <pre><code class="language-javascript">{
   source: options.grammarSource,
@@ -1405,31 +1451,30 @@ start offset, and a function <code>range()</code> that returns the object:</p>
 }</code></pre>
 
 <p>(i.e. difference from the <code>location()</code> result only in type of
-<code>start</code> and <code>end</code> properties, which contain just an
-offset instead of the <code>Location</code>
-object.)</p>
+  <code>start</code> and <code>end</code> properties, which contain just an
+  offset instead of the <code>Location</code>
+  object.)</p>
 
 <p>All of the notes about values for <code>location()</code> object are also
-applicable to the <code>range()</code>
-and <code>offset()</code> calls.</p>
+  applicable to the <code>range()</code> and <code>offset()</code> calls.</p>
 
-<p>Currently, Peggy only works with the <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic Multilingual Plane (BMP)</a> of Unicode.
-This means that all offsets are measured in UTF-16 code units. If you
-try to parse characters outside this Plane (for example, emoji, or any
-surrogate pairs), you may get an offset inside a code point.</p>
+<p>Currently, Peggy only works with the
+  <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic
+  Multilingual Plane (BMP)</a> of Unicode.
+  This means that all offsets are measured in UTF-16 code units. If you
+  try to parse characters outside this Plane (for example, emoji, or any
+  surrogate pairs), you may get an offset inside a code point.</p>
 
 <p>Changing this behavior might be a breaking change, so it will likely cause
-a major version number increase if it happens.  You can join to the discussion
-for this topic on the <a
-href="https://github.com/peggyjs/peggy/discussions/15">GitHub Discussions
-page</a>.</p>
+  a major version number increase if it happens. You can join to the discussion
+  for this topic on the <a href="https://github.com/peggyjs/peggy/discussions/15">GitHub Discussions
+    page</a>.</p>
 
 <h2 id="plugins-api">Plugins API</h2>
 
 <p>A plugin is an object with the <code>use(config, options)</code> method.
-That method will be called for all plugins in the <code>options.plugins</code>
-array, supplied to the <code>generate()</code>
-method.</p>
+  That method will be called for all plugins in the <code>options.plugins</code>
+  array, supplied to the <code>generate()</code> method.</p>
 
 <p><code>use</code> accepts these parameters:</p>
 
@@ -1437,108 +1482,121 @@ method.</p>
 <p>Object with the following properties:</p>
 
 <dl>
-<dt><code>parser</code></dt>
-<dd><code>Parser</code> object, by default the <code>peggy.parser</code> instance. That object
-will be used to parse the grammar. Plugin can replace this object</dd>
+  <dt><code>parser</code></dt>
+  <dd><code>Parser</code> object, by default the <code>peggy.parser</code> instance. That object
+    will be used to parse the grammar. Plugin can replace this object</dd>
 
-<dt><code>passes</code></dt>
-<dd>
-<p>Mapping <code>{ [stage: string]: Pass[] }</code> that represents compilation
-stages that would applied to the AST, returned by the <code>parser</code> object. That
-mapping will contain at least the following keys:</p>
+  <dt><code>passes</code></dt>
+  <dd>
+    <p>Mapping <code>{ [stage: string]: Pass[] }</code> that represents compilation
+      stages that would applied to the AST, returned by the <code>parser</code> object. That
+      mapping will contain at least the following keys:</p>
 
-<ul>
-<li><code>check</code> — passes that check AST for correctness. They shouldn't change the AST</li>
-<li><code>transform</code> — passes that performs various optimizations. They can change
-the AST, add or remove nodes or their properties</li>
-<li><code>generate</code> — passes used for actual code generating</li>
-</ul>
+    <ul>
+      <li><code>check</code> — passes that check AST for correctness. They shouldn't change the AST</li>
+      <li><code>transform</code> — passes that performs various optimizations. They can change
+        the AST, add or remove nodes or their properties</li>
+      <li><code>generate</code> — passes used for actual code generating</li>
+    </ul>
 
-<p>A plugin that implements a pass should usually push it to the end of the correct
-array. Each pass is a function with the signature <code>pass(ast, options, session)</code>:</p>
+    <p>A plugin that implements a pass should usually push it to the end of the correct
+      array. Each pass is a function with the signature <code>pass(ast, options, session)</code>:</p>
 
-<ul>
-<li><code>ast</code> — the AST created by the <code>config.parser.parse()</code> method</li>
-<li><code>options</code> — compilation options passed to the <code>peggy.compiler.compile()</code> method.
-If parser generation is started because <code>generate()</code> function was called that
-is also an options, passed to the <code>generate()</code> method</li>
-<li><code>session</code> — a <a href="#session-api"><code>Session</code></a> object that allows raising errors,
-warnings and informational messages</li>
-</ul>
-</dd>
+    <ul>
+      <li><code>ast</code> — the AST created by the
+        <code>config.parser.parse()</code> method
+      </li>
+      <li><code>options</code> — compilation options passed to the
+        <code>peggy.compiler.compile()</code> method. If parser generation is
+        started because <code>generate()</code> function was called that is also an
+        options, passed to the <code>generate()</code> method
+      </li>
+      <li><code>session</code> — a <a href="#session-api"><code>Session</code></a>
+        object that allows raising errors, warnings and informational messages</li>
+    </ul>
+  </dd>
 
-<dt><code>reservedWords</code></dt>
-<dd>
-<p>String array with a list of words that shouldn't be used as
-label names. This list can be modified by plugins. That property is not required
-to be sorted or not contain duplicates, but it is recommend to remove duplicates.</p>
+  <dt><code>reservedWords</code></dt>
+  <dd>
+    <p>String array with a list of words that shouldn't be used as label
+      names. This list can be modified by plugins. That property is not required
+      to be sorted or not contain duplicates, but it is recommend to remove
+      duplicates.</p>
 
-<p>Default list contains <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words">JavaScript reserved words</a>, and can be found
-in the <code>peggy.RESERVED_WORDS</code> property.</p>
-</dd>
+    <p>Default list contains <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words">JavaScript
+      reserved words</a>, and can be found in the <code>peggy.RESERVED_WORDS</code>
+      property.</p>
+  </dd>
 </dl>
 
 <h3><code>options</code></h3>
-<dd>Build options passed to the <code>generate()</code> method. A best practice for
-a plugin would look for its own options under a <code>&lt;plugin_name&gt;</code> key.</dd>
+
+<p>Build options passed to the <code>generate()</code> method. A best practice
+  for a plugin would look for its own options under a
+  <code>&lt;plugin_name&gt;</code> key.</p>
 
 
 <h3 id="session-api">Session API</h3>
 
-<p>Each compilation request is represented by a <code>Session</code> instance. An object of this class
-is created by the compiler and given to each pass as a 3rd parameter. The session
-object gives access to the various compiler services. At the present time there is only
-one such service: reporting of diagnostics.</p>
+<p>Each compilation request is represented by a <code>Session</code> instance.
+  An object of this class is created by the compiler and given to each pass as a
+  3rd parameter. The session object gives access to the various compiler
+  services. At the present time there is only one such service: reporting of
+  diagnostics.</p>
 
-<p>All diagnostics are divided into three groups: errors, warnings and informational
-messages. For each of them the <code>Session</code> object has a method, described below.</p>
+<p>All diagnostics are divided into three groups: errors, warnings and
+  informational messages. For each of them the <code>Session</code> object has a
+  method, described below.</p>
 
 <p>All reporting methods have an identical signature:</p>
 
 <pre><code class="language-typescript">(message: string, location?: LocationRange, notes?: DiagnosticNote[]) =&gt; void;</code></pre>
 
 <ul>
-<li><code>message</code>: a main diagnostic message</li>
-<li><code>location</code>: an optional location information if diagnostic is related to the grammar
-source code</li>
-<li><code>notes</code>: an array with additional details about diagnostic, pointing to the
-different places in the grammar. For example, each note could be a location of
-a duplicated rule definition</li>
+  <li><code>message</code>: a main diagnostic message</li>
+  <li><code>location</code>: an optional location information if diagnostic is related to the grammar
+    source code</li>
+  <li><code>notes</code>: an array with additional details about diagnostic, pointing to the
+    different places in the grammar. For example, each note could be a location of
+    a duplicated rule definition</li>
 </ul>
 
 <dl>
-<dt><code>error(...)</code></dt>
-<dd>
-<p>Reports an error. Compilation process is subdivided into pieces called <em>stages</em> and
-each stage consist of one or more <em>passes</em>. Within the one stage all errors, reported
-by different passes, are collected without interrupting the parsing process.</p>
+  <dt><code>error(...)</code></dt>
+  <dd>
+    <p>Reports an error. Compilation process is subdivided into pieces called <em>stages</em> and
+      each stage consist of one or more <em>passes</em>. Within the one stage all errors, reported
+      by different passes, are collected without interrupting the parsing process.</p>
 
-<p>When all passes in the stage are completed, the stage is checked for errors. If one
-was registered, a <code>GrammarError</code> with all found problems in the <code>problems</code> property
-is thrown. If there are no errors, then the next stage is processed.</p>
+    <p>When all passes in the stage are completed, the stage is checked for errors. If one
+      was registered, a <code>GrammarError</code> with all found problems in the <code>problems</code> property
+      is thrown. If there are no errors, then the next stage is processed.</p>
 
-<p>After processing all three stages (<code>check</code>, <code>transform</code> and <code>generate</code>) the compilation
-process is finished.</p>
+    <p>After processing all three stages (<code>check</code>, <code>transform</code> and <code>generate</code>) the
+      compilation
+      process is finished.</p>
 
-<p>The process, described above, means that passes should be careful about what they do.
-For example, if you place your pass into the <code>check</code> stage there is no guarantee that
-all rules exists, because checking for existing rules is also performed during the
-<code>check</code> stage. On the contrary, passes in the <code>transform</code> and <code>generate</code> stages can be
-sure that all rules exists, because that precondition was checked on the <code>check</code> stage.</p>
-</dd>
+    <p>The process, described above, means that passes should be careful about what they do.
+      For example, if you place your pass into the <code>check</code> stage there is no guarantee that
+      all rules exists, because checking for existing rules is also performed during the
+      <code>check</code> stage. On the contrary, passes in the <code>transform</code> and <code>generate</code> stages
+      can be
+      sure that all rules exists, because that precondition was checked on the <code>check</code> stage.
+    </p>
+  </dd>
 
-<dt><code>warning(...)</code></dt>
-<dd>Reports a warning. Warnings are similar to errors, but they do not interrupt a compilation.</dd>
+  <dt><code>warning(...)</code></dt>
+  <dd>Reports a warning. Warnings are similar to errors, but they do not interrupt a compilation.</dd>
 
-<dt><code>info(...)</code></dt>
-<dd>Report an informational message. This method can be used to inform user about
-significant changes in the grammar, for example, replacing proxy rules.</dd>
+  <dt><code>info(...)</code></dt>
+  <dd>Report an informational message. This method can be used to inform user about
+    significant changes in the grammar, for example, replacing proxy rules.</dd>
 </dl>
 
 <h2 id="compatibility">Compatibility</h2>
 
 <p>Both the parser generator and generated parsers should run well in the
-following environments:</p>
+  following environments:</p>
 
 <ul>
   <li>Node.js 14+</li>
@@ -1549,9 +1607,9 @@ following environments:</p>
   <li>Opera</li>
 </ul>
 
-The generated parser is intended to run in older environments when the format
-chosen is "globals" or "umd".  Extensive testing is NOT performed in these
-environments, but issues filed regarding the generated code will be fixed.
+<p>The generated parser is intended to run in older environments when the format
+  chosen is "globals" or "umd". Extensive testing is NOT performed in these
+  environments, but issues filed regarding the generated code will be fixed.</p>
 
 <script>
 function validateGrammar({target}) {
