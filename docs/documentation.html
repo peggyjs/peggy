@@ -1046,7 +1046,9 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
 
   <dd>
     <p>Match the expression and if the label exists, remember its match result
-      under given label. The label must be a Peggy <a href="#identifiers">identifier</a>.</p>
+    under given label. The label must be a Peggy
+    <a href="#identifiers">identifier</a>, and must be valid as a function parameter
+      in the language that is being generated (by default, JavaScript).</p>
 
     <p>Return the value of this expression from the rule, or "pluck" it. You
       may not have an action for this rule. The expression must not be a
@@ -1262,20 +1264,25 @@ _
 <h2 id="identifiers">Peggy Identifiers</h2>
 
 <p>Peggy Identifiers are used as rule names, rule references, and label names.
-  They are used as JavaScript identifiers in the code that Peggy generates, and
-  as such, must conform to the limitations of the Peggy grammar as well as those
-  of the JavaScript grammar.</p>
+  They are used as identifiers in the code that Peggy generates (by default,
+  JavaScript), and as such, must conform to the limitations of the Peggy grammar
+  as well as those of the target language.</p>
 
-<p>Peggy identifiers are almost any valid JavaScript
-  <a href="https://262.ecma-international.org/13.0/#prod-IdentifierName">IdentifierName</a> in the
+<p>Like all Peggy grammar constructs, identifiers MUST contain only codepoints in the
   <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic
-    Multilingual Plane</a>. However, identifiers MUST NOT start with a "$" character
-  to avoid interactions with Peggy's <code>$</code> operator.
-  Any word that might be a
+    Multilingual Plane</a>.  They must begin with a codepoint whose Unicode
+    General Category property is Lu, Ll, Lt, Lm, Lo, or Nl (letters),
+    "_" (underscore), or a Unicode escape in the form <code>\uXXXX</code>.
+    Subsequent codepoints can be any of those that are valid as an initial
+    codepoint, "$", codepoints whose General Category property is Mn or Mc
+    (combining characters), Nd (numbers), Pc (connector punctuation),
+    "\u200C" (zero width non-joiner), or "\u200D (zero width joiner)"</p>
+
+<p>Labels have a further restriction, which is that they must be valid as
+  a function parameter in the language being generated.  For JavaScript, this
+  means that they cannot be on the limited set of
   <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words">JavaScript
-    reserved word</a>
-  in any context is also disallowed. Plugins can modify the list of reserved
-  words at compile time.
+  reserved words</a>. Plugins can modify the list of reserved words at compile time.
 </p>
 
 <p>Valid identifiers:</p>
@@ -1458,11 +1465,11 @@ note: Step 3: call itself without input consumption - left recursion
 <p>All of the notes about values for <code>location()</code> object are also
   applicable to the <code>range()</code> and <code>offset()</code> calls.</p>
 
-<p>Currently, Peggy only works with the
+<p>Currently, Peggy grammars may only contain codepoints from the
   <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic
   Multilingual Plane (BMP)</a> of Unicode.
   This means that all offsets are measured in UTF-16 code units. If you
-  try to parse characters outside this Plane (for example, emoji, or any
+  include characters outside this Plane (for example, emoji, or any
   surrogate pairs), you may get an offset inside a code point.</p>
 
 <p>Changing this behavior might be a breaking change, so it will likely cause
