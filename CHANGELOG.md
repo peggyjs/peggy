@@ -14,6 +14,11 @@ Released: TBD
 
 ### Bug Fixes
 
+- [[#359](https://github.com/peggyjs/peggy/issues/359)] Do not treat as many
+  words as reserved.  Clarify the documentation about identifiers.  Ensure
+  that it is more clear that the target language being generated determines
+  what words are reserved.  Clarify that reserved word checking is only
+  done for labels.  From @nene.
 - [#347](https://github.com/peggyjs/peggy/issues/347) Disallow '$' as an initial
   character in identifiers.  This is not a breaking change because no grammar
   could have successfully used these in the past.  From @hildjj.
