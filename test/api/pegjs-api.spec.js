@@ -245,7 +245,7 @@ describe("Peggy API", () => {
         }
       });
 
-      describe("does not throws an exception on reserved JS words used as a rule name", () => {
+      describe("does not throw an exception on reserved JS words used as a rule name", () => {
         for (const rule of peg.RESERVED_WORDS) {
           it(rule, () => {
             expect(() => {
