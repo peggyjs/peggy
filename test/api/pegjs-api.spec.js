@@ -206,6 +206,45 @@ describe("Peggy API", () => {
         }
       });
 
+      describe("does not throw an exception on special non-reserved JS words used as a label", () => {
+        const nonReserved = [
+          // Reserved in old ECMAScript versions
+          "abstract",
+          "boolean",
+          "byte",
+          "char",
+          "double",
+          "final",
+          "float",
+          "goto",
+          "int",
+          "long",
+          "native",
+          "short",
+          "synchronized",
+          "throws",
+          "transient",
+          "volatile",
+          // Never reserved, but used in special language constructs
+          "as",
+          "async",
+          "from",
+          "get",
+          "of",
+          "set",
+        ];
+        for (const label of nonReserved) {
+          it(label, () => {
+            expect(() => {
+              peg.generate([
+                "start = " + label + ":end",
+                "end = 'a'",
+              ].join("\n"), { output: "source" });
+            }).to.not.throw(peg.parser.SyntaxError);
+          });
+        }
+      });
+
       describe("does not throws an exception on reserved JS words used as a rule name", () => {
         for (const rule of peg.RESERVED_WORDS) {
           it(rule, () => {
