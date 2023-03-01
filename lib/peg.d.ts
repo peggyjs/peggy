@@ -1186,6 +1186,12 @@ export interface BuildOptionsBase {
 
 export interface ParserBuildOptions extends BuildOptionsBase {
   /**
+   * Extensions may need to the caller to pass in otherwise-unknown options.
+   * ts-pegjs has an example in its README.md.
+   */
+  [extensionOpts: string]: any;
+
+  /**
    * If set to `"parser"`, the method will return generated parser object;
    * if set to `"source"`, it will return parser source code as a string;
    * if set to `"source-and-map"`, it will return a `SourceNode` object
