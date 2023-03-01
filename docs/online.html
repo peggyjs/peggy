@@ -21,27 +21,28 @@ scripts: [
 
 {% include 'components/header.html' %}
 
-        <div id="loader"> <div id="loader-inner">Loading...</div> </div>
+<div id="loader">
+  <div id="loader-inner">Loading...</div>
+</div>
 
-        <div id="content">
-
-            <table id="columns">
-    <tr>
-        <td>
-            <table class="column online" id="left-column">
-                <tr>
-                    <td class="content-height">
-                        <h2 class="suggestion top">
-                            <span class="step-number">1</span>
-                            <div class="step-title">Write your Peggy grammar</div>
-                        </h2>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="textarea-wrapper">
-                            <textarea class="code" id="grammar" autocomplete="off" autocorrect="off"
-                                autocapitalize="off" spellcheck="false" disabled>// Simple Arithmetics Grammar
+<div id="content">
+<table id="columns">
+  <tr>
+    <td>
+      <table class="column online" id="left-column">
+        <tr>
+          <td class="content-height">
+            <h2 class="suggestion top">
+              <span class="step-number">1</span>
+              <div class="step-title">Write your Peggy grammar</div>
+            </h2>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="textarea-wrapper">
+              <textarea class="code" id="grammar" autocomplete="off" autocorrect="off" autocapitalize="off"
+                spellcheck="false" disabled>// Simple Arithmetics Grammar
 // ==========================
 //
 // Accepts expressions like "2 * (3 + 4)" and computes their value.
@@ -71,67 +72,67 @@ Integer "integer"
 
 _ "whitespace"
   = [ \t\n\r]*</textarea>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="content-height">
-                        <div id="build-message" class="message progress">Loading...</div>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>
-            <table class="column" id="right-column">
-                <tr>
-                    <td class="content-height">
-                        <h2 class="suggestion top">
-                            <span class="step-number">2</span>
-                            <div class="step-title">Test the generated parser with some input</div>
-                        </h2>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="textarea-wrapper">
-                            <textarea class="code" id="input" autocomplete="off" autocorrect="off" autocapitalize="off"
-                                spellcheck="false" disabled>2 * (3 + 4)</textarea>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="content-height">
-                        <div id="parse-message" class="message disabled">Parser not available.</div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="content-height">
-                        <h2 id="output-header">Output</h2>
-                        <pre id="output" class="disabled">Output not available.</pre>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="content-height">
-                        <h2 class="suggestion">
-                            <span class="step-number">3</span>
-                            <div class="step-title">Download the parser code</div>
-                        </h2>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="content-height">
-                        <input type="submit" id="parser-download" value="Download parser" disabled>
-                        <div id="settings">
-                            <label for="parser-var">Parser variable:</label>
-                            <input type="text" id="parser-var" value="module.exports" disabled>
-                            <div id="options">
-                                <input type="checkbox" id="option-cache" disabled>
-                                <label for="option-cache">Use results cache</label>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="content-height">
+            <div id="build-message" class="message progress">Loading...</div>
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <table class="column" id="right-column">
+        <tr>
+          <td class="content-height">
+            <h2 class="suggestion top">
+              <span class="step-number">2</span>
+              <div class="step-title">Test the generated parser with some input</div>
+            </h2>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="textarea-wrapper">
+              <textarea class="code" id="input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                disabled>2 * (3 + 4)</textarea>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="content-height">
+            <div id="parse-message" class="message disabled">Parser not available.</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="content-height">
+            <h2 id="output-header">Output</h2>
+            <pre id="output" class="disabled">Output not available.</pre>
+          </td>
+        </tr>
+        <tr>
+          <td class="content-height">
+            <h2 class="suggestion">
+              <span class="step-number">3</span>
+              <div class="step-title">Download the parser code</div>
+            </h2>
+          </td>
+        </tr>
+        <tr>
+          <td class="content-height">
+            <input type="submit" id="parser-download" value="Download parser" disabled>
+            <div id="settings">
+              <label for="parser-var">Parser variable:</label>
+              <input type="text" id="parser-var" value="module.exports" disabled>
+              <div id="options">
+                <input type="checkbox" id="option-cache" disabled>
+                <label for="option-cache">Use results cache</label>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 </table>
