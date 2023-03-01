@@ -57,6 +57,9 @@ describe("peg.d.ts", () => {
 
     res = parser.parse("buzz\n11\nfizz\n", { start: 10 });
     expect(res).toStrictEqual(["buzz", 11, "fizz"]);
+
+    res = peggy.generate("foo='a'", { unknown: { more: 12 } });
+    expectType<peggy.Parser>(parser);
   });
 
   it("types SyntaxError correctly", () => {
