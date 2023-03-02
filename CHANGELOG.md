@@ -17,6 +17,8 @@ Released: TBD
 - [#347](https://github.com/peggyjs/peggy/issues/347) Disallow '$' as an initial
   character in identifiers.  This is not a breaking change because no grammar
   could have successfully used these in the past.  From @hildjj.
+- [#364](https://github.com/peggyjs/peggy/issues/364) Fix passing an incorrect
+  external label to the expression inside the `repeated` node.  From @Mingun.
 
 3.0.0
 -----
