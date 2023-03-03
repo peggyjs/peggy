@@ -28,6 +28,8 @@ Released: TBD
   could have successfully used these in the past.  From @hildjj.
 - [#364](https://github.com/peggyjs/peggy/issues/364) Fix passing an incorrect
   external label to the expression inside the `repeated` node.  From @Mingun.
+- [#346](https://github.com/peggyjs/peggy/issues/346)] Allow extra semicolons
+  between rules.  From @hildjj.
 
 3.0.0
 -----
