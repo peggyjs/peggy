@@ -282,7 +282,7 @@ describe("Peggy grammar parser", () => {
     expect("\na = 'abcd';\n").to.parseAs(
       { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA] }
     );
-    expect("\na = 'abcd';\nb = 'efgh';\nc = 'ijkl';\n").to.parseAs(
+    expect("\na = 'abcd'; /* comment */; // comment\n;\nb = 'efgh';\nc = 'ijkl';\n").to.parseAs(
       { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA, ruleB, ruleC] }
     );
     expect("\n{ code };\na = 'abcd';\n").to.parseAs(
