@@ -540,7 +540,7 @@ _
 // Automatic Semicolon Insertion
 
 EOS
-  = __ ";"
+  = (__ ";")+
   / _ SingleLineComment? LineTerminatorSequence
   / __ EOF
 
