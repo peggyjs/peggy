@@ -258,6 +258,8 @@ describe("compiler pass |reportInfiniteRepetition|", () => {
 
     expect(pass).to.reportError("start = (!{ })*");
 
+    expect(pass).to.reportError("start = 'a'|..,([ \t]*)+'.'|");
+
     expect(pass).to.reportError([
       "start = a*",
       "a = ''",

@@ -12,13 +12,13 @@ Released: TBD
 
 ### Minor Changes
 
-- [#329](https://github.com/peggyjs/peggy/issues/329)] Allow plugin options in
+- [#329](https://github.com/peggyjs/peggy/issues/329) Allow plugin options in
   generate.  This change loosens type checking strictness to allow for options
   unknown to Peggy, but used by plugins such as ts-pegjs.  From @hildjj.
 
 ### Bug Fixes
 
-- [#359](https://github.com/peggyjs/peggy/issues/359)] Do not treat as many
+- [#359](https://github.com/peggyjs/peggy/issues/359) Do not treat as many
   words as reserved.  Clarify the documentation about identifiers.  Ensure
   that it is more clear that the target language being generated determines
   what words are reserved.  Clarify that reserved word checking is only
@@ -28,8 +28,10 @@ Released: TBD
   could have successfully used these in the past.  From @hildjj.
 - [#364](https://github.com/peggyjs/peggy/issues/364) Fix passing an incorrect
   external label to the expression inside the `repeated` node.  From @Mingun.
-- [#346](https://github.com/peggyjs/peggy/issues/346)] Allow extra semicolons
+- [#346](https://github.com/peggyjs/peggy/issues/346) Allow extra semicolons
   between rules.  From @hildjj.
+- [#357](https://github.com/peggyjs/peggy/issues/357) Fix infinite recursion
+  possibility in repetition delimeters.  From @hildjj.
 
 3.0.0
 -----
