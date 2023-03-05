@@ -1112,6 +1112,24 @@ describe("generated parser behavior", () => {
 
             expect(parser).to.parse("aa", 42);
           });
+
+          // Regression tests for https://github.com/peggyjs/peggy/issues/364
+          it("correctly pass external references to labels to repeated expression", () => {
+            let parser = peg.generate("start = ref:'a' ('b' &{ return ref === 'a'; })|..|", options);
+            expect(parser).to.parse("abb", ["a", [["b", undefined], ["b", undefined]]]);
+
+            parser = peg.generate("start = ref:'a' ('b' &{ return ref === 'a'; })|2..|", options);
+            expect(parser).to.parse("abb", ["a", [["b", undefined], ["b", undefined]]]);
+
+            parser = peg.generate("start = ref:'a' ('b' &{ return ref === 'a'; })|..3|", options);
+            expect(parser).to.parse("abb", ["a", [["b", undefined], ["b", undefined]]]);
+
+            parser = peg.generate("start = ref:'a' ('b' &{ return ref === 'a'; })|2..3|", options);
+            expect(parser).to.parse("abb", ["a", [["b", undefined], ["b", undefined]]]);
+
+            parser = peg.generate("start = ref:'a' ('b' &{ return ref === 'a'; })|2|", options);
+            expect(parser).to.parse("abb", ["a", [["b", undefined], ["b", undefined]]]);
+          });
         });
 
         describe("with variable boundaries", () => {
@@ -1478,6 +1496,21 @@ describe("generated parser behavior", () => {
               expect(parser).to.parse("aa", 1, { exact: 2 });
             });
           });
+
+          // Regression tests for https://github.com/peggyjs/peggy/issues/364
+          it("correctly pass external references to labels to boundary expression", () => {
+            let parser = peg.generate("start = ref:'a' 'b'|{ return ref === 'a' ? 2 : 0; }..|", options);
+            expect(parser).to.parse("abb", ["a", ["b", "b"]]);
+
+            parser = peg.generate("start = ref:'a' 'b'|..{ return ref === 'a' ? 3 : 0; }|", options);
+            expect(parser).to.parse("abb", ["a", ["b", "b"]]);
+
+            parser = peg.generate("start = ref:'a' 'b'|{ return ref === 'a' ? 2 : 0; }..{ return ref === 'a' ? 3 : 0; }|", options);
+            expect(parser).to.parse("abb", ["a", ["b", "b"]]);
+
+            parser = peg.generate("start = ref:'a' 'b'|{ return ref === 'a' ? 2 : 0; }|", options);
+            expect(parser).to.parse("abb", ["a", ["b", "b"]]);
+          });
         });
       });
 
@@ -1572,6 +1605,27 @@ describe("generated parser behavior", () => {
             expect(parser).to.failToParse("a");
             expect(parser).to.failToParse("a~a");
             expect(parser).to.failToParse("a~a~a");
+          });
+
+          // Regression tests for https://github.com/peggyjs/peggy/issues/364
+          it("correctly pass external references to labels to repeated expression", () => {
+            let parser = peg.generate("start = ref:'a' ('b' &{ return ref === 'a'; })|.., ' '|", options);
+            expect(parser).to.parse("ab b", ["a", [["b", undefined], ["b", undefined]]]);
+
+            parser = peg.generate("start = ref:'a' ('b' &{ return ref === 'a'; })|2.., ' '|", options);
+            expect(parser).to.parse("ab b", ["a", [["b", undefined], ["b", undefined]]]);
+
+            parser = peg.generate("start = ref:'a' ('b' &{ return ref === 'a'; })|..3, ' '|", options);
+            expect(parser).to.parse("ab b", ["a", [["b", undefined], ["b", undefined]]]);
+
+            parser = peg.generate("start = ref:'a' ('b' &{ return ref === 'a'; })|2..3, ' '|", options);
+            expect(parser).to.parse("ab b", ["a", [["b", undefined], ["b", undefined]]]);
+
+            parser = peg.generate("start = ref:'a' ('b' &{ return ref === 'a'; })|2, ' '|", options);
+            expect(parser).to.parse("ab b", ["a", [["b", undefined], ["b", undefined]]]);
+
+            parser = peg.generate("start = ref:'a' 'b'|{ return ref === 'a' ? 2 : 0; }, ' '|", options);
+            expect(parser).to.parse("ab b", ["a", ["b", "b"]]);
           });
         });
 
@@ -1967,6 +2021,21 @@ describe("generated parser behavior", () => {
             expect(parser).to.failToParse("a");
             expect(parser).to.failToParse("a~a");
             expect(parser).to.failToParse("a~a~a");
+          });
+
+          // Regression tests for https://github.com/peggyjs/peggy/issues/364
+          it("correctly pass external references to labels to boundary expression", () => {
+            let parser = peg.generate("start = ref:'a' 'b'|{ return ref === 'a' ? 2 : 0; }.., ' '|", options);
+            expect(parser).to.parse("ab b", ["a", ["b", "b"]]);
+
+            parser = peg.generate("start = ref:'a' 'b'|..{ return ref === 'a' ? 3 : 0; }, ' '|", options);
+            expect(parser).to.parse("ab b", ["a", ["b", "b"]]);
+
+            parser = peg.generate("start = ref:'a' 'b'|{ return ref === 'a' ? 2 : 0; }..{ return ref === 'a' ? 3 : 0; }, ' '|", options);
+            expect(parser).to.parse("ab b", ["a", ["b", "b"]]);
+
+            parser = peg.generate("start = ref:'a' 'b'|{ return ref === 'a' ? 2 : 0; }, ' '|", options);
+            expect(parser).to.parse("ab b", ["a", ["b", "b"]]);
           });
         });
       });

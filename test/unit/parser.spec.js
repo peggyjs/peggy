@@ -282,7 +282,7 @@ describe("Peggy grammar parser", () => {
     expect("\na = 'abcd';\n").to.parseAs(
       { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA] }
     );
-    expect("\na = 'abcd';\nb = 'efgh';\nc = 'ijkl';\n").to.parseAs(
+    expect("\na = 'abcd'; /* comment */; // comment\n;\nb = 'efgh';\nc = 'ijkl';\n").to.parseAs(
       { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA, ruleB, ruleC] }
     );
     expect("\n{ code };\na = 'abcd';\n").to.parseAs(
@@ -897,7 +897,9 @@ describe("Peggy grammar parser", () => {
   // Canonical IdentifierStart is "a".
   it("parses IdentifierStart", () => {
     expect("start = a").to.parseAs(ruleRefGrammar("a"));
-    expect("start = $").to.parseAs(ruleRefGrammar("$"));
+    expect("start = $").to.failToParse();
+    expect("$start = a").to.failToParse();
+    expect("start = a$b").to.parseAs(ruleRefGrammar("a$b"));
     expect("start = _").to.parseAs(ruleRefGrammar("_"));
     expect("start = \\u0061").to.parseAs(ruleRefGrammar("a"));
   });
