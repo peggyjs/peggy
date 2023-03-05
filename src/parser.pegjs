@@ -78,13 +78,14 @@ Initializer
 
 Rule
   = name:IdentifierName __
+    templateParams:(@GenericsArgumentsDeclaration __)?
     displayName:(@StringLiteral __)?
     "=" __
     expression:Expression EOS
     {
-      return {
+      const result =  {
         type: "rule",
-        name: name[0],
+        name: name[0], 
         nameLocation: name[1],
         expression: displayName !== null
           ? {
@@ -96,7 +97,20 @@ Rule
           : expression,
         location: location()
       };
+      if(templateParams){
+        result.templateParams = templateParams;
+      } 
+      return result;
     }
+
+GenericsArgumentsDeclaration
+ = "<" __
+      head:IdentifierName __
+      tail:("," __ @IdentifierName __ )*
+   ">" { 
+    return { type: "template_params", declarations:[head[0],...tail.map(tail=>tail[0])] , location: location() };  
+   }
+
 
 Expression
   = ChoiceExpression
@@ -261,9 +275,23 @@ PrimaryExpression
     }
 
 RuleReferenceExpression
-  = name:IdentifierName !(__ (StringLiteral __)? "=") {
-      return { type: "rule_ref", name: name[0], location: location() };
+  = name:IdentifierName 
+    templateArgs:(__ @templateArgs )?
+    !(__ (StringLiteral __)? "=") {
+      const result = { type: "rule_ref", name: name[0],  location: location() };
+      if(templateArgs){
+        result.templateArgs = templateArgs;
+      }
+      return result;
     }
+
+templateArgs
+ = "<" __
+    head:RuleReferenceExpression __
+    tail:("," __ @RuleReferenceExpression)* 
+   ">" {
+    return [head,...tail]
+   }
 
 SemanticPredicateExpression
   = operator:SemanticPredicateOperator __ code:CodeBlock {

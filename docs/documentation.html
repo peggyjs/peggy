@@ -36,6 +36,7 @@ stylesheets: ["css/documentation.css"]
     <a href="#grammar-syntax-and-semantics">Grammar Syntax and Semantics</a>
     <ul>
       <li><a href="#grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</a></li>
+      <li><a href="#grammar-syntax-and-semantics-templates">Templated rules</a></li>
       <li><a href="#action-execution-environment">Action Execution Environment</a></li>
       <li><a href="#parsing-lists">Parsing Lists</a></li>
     </ul>
@@ -622,6 +623,38 @@ integer "simple number"
   It takes the match result of the expression [0-9]+, which is an array
   of strings containing digits, as its parameter. It joins the digits together to
   form a number and converts it to a JavaScript <code>number</code> object.</p>
+
+<h3 id="grammar-syntax-and-semantics-templates">Templates</h3>
+<p>
+  Rules can become <em>templated</em>, meaning you can define a rule as a template,
+  and create an instance of this template. <br/>
+  
+  To define a rule as a template, 
+  just decide of parameters and add them like this : <br/>
+  <code>
+    TemplatedRule&lt;Parameter&gt; = /* an expression that can depend of Parameter */ 
+  </code>
+  <br/>
+  Example:<br/>
+  <code>
+    SeparatedList&lt;Item,Separator&gt; = (head:Item tail:(Separator @Item)* )?
+  </code>
+  <br/>
+  Then you can use it by giving it arguments:<br/>
+  <code>
+    CSV = SeparatedList&lt;StringLiteral,CommaToken&gt;
+  </code>
+
+  <br/>
+
+  Note: some limitations : 
+  <ul>
+    <li>Templates arguments are required to be template references, and not expressions</li>
+    <li>Template do not "inline" for now when they instantiate, they create additional rules</li>
+    <li>No type constraints on template parameters, and no variadic parameters</li>
+  </ul>
+
+</p>
 
 <h3 id="grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</h3>
 
