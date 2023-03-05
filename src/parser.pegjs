@@ -323,12 +323,12 @@ IdentifierName "identifier"
 
 IdentifierStart
   = UnicodeLetter
-  / "$"
   / "_"
   / "\\" @UnicodeEscapeSequence
 
 IdentifierPart
   = IdentifierStart
+  / "$"
   / UnicodeCombiningMark
   / UnicodeDigit
   / UnicodeConnectorPunctuation
@@ -540,7 +540,7 @@ _
 // Automatic Semicolon Insertion
 
 EOS
-  = __ ";"
+  = (__ ";")+
   / _ SingleLineComment? LineTerminatorSequence
   / __ EOF
 

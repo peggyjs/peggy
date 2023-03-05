@@ -3,6 +3,37 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
+3.0.1
+-----
+
+Released: 2022-03-05
+
+### Minor Changes
+
+- [#329](https://github.com/peggyjs/peggy/issues/329) Allow plugin options in
+  generate.  This change loosens type checking strictness to allow for options
+  unknown to Peggy, but used by plugins such as ts-pegjs.  From @hildjj.
+
+### Bug Fixes
+
+- [#329](https://github.com/peggyjs/peggy/issues/329) Allow type definition for ParserBuildOptions to include plugin options.  From @hildjj.
+- [#346](https://github.com/peggyjs/peggy/issues/346) Allow extra semicolons
+  between rules.  From @hildjj.
+- [#347](https://github.com/peggyjs/peggy/issues/347) Disallow '$' as an initial
+  character in identifiers.  This is not a breaking change because no grammar
+  could have successfully used these in the past.  From @hildjj.
+- [#354](https://github.com/peggyjs/peggy/pull/354) Various minor nits in the
+  docs, including indentation and ensuring that the CNAME file is correct.
+- [#357](https://github.com/peggyjs/peggy/issues/357) Fix infinite recursion
+  possibility in repetition delimeters.  From @hildjj and @Mingun.
+- [#359](https://github.com/peggyjs/peggy/issues/359) Do not treat as many
+  words as reserved.  Clarify the documentation about identifiers.  Ensure
+  that it is more clear that the target language being generated determines
+  what words are reserved.  Clarify that reserved word checking is only
+  done for labels.  From @nene.
+- [#364](https://github.com/peggyjs/peggy/issues/364) Fix passing an incorrect
+  external label to the expression inside the `repeated` node.  From @Mingun.
+
 3.0.0
 -----
 
@@ -84,7 +115,7 @@ reserved words, and will cause errors at compile time if you are using them:
   from @hildjj
 - [#299](https://github.com/peggyjs/peggy/issues/299) Add example grammar for a
   [SemVer.org](https://semver.org) semantic version string, from @dselman
-- [[#307](https://github.com/peggyjs/peggy/issues/307)] Allow grammars to have
+- [#307](https://github.com/peggyjs/peggy/issues/307) Allow grammars to have
   relative offsets into their source files (e.g. if embedded in another doc),
   from @hildjj.
 - [#308](https://github.com/peggyjs/peggy/pull/308) Add support for reading test
