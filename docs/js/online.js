@@ -30,6 +30,14 @@ $(document).ready(function() {
     return problems;
   });
 
+  function inspect(obj, opts) {
+    if (typeof util === 'object') {
+      return util.inspect(obj, opts);
+    }
+    console.warn("node-util-inspect not supported on this browser")
+    console.log(obj)
+    return String(obj) + "     // See browser console"
+  }
   function convertLocation(location) {
     return CodeMirror.Pos(location.line - 1, location.column - 1);
   }
@@ -165,7 +173,7 @@ $(document).ready(function() {
           newInput.length,
           timeAfter - timeBefore
         ));
-      $("#output").removeClass("disabled").text(util.inspect(output, {
+      $("#output").removeClass("disabled").text(inspect(output, {
         depth: Infinity,
         color: false,
         maxArrayLength: Infinity,
