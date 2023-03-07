@@ -1132,4 +1132,19 @@ Error: Expected "1" but end of input found.
       expected: "[ 'zazzy' ]\n",
     });
   });
+
+  it("handles grammar errors", async() => {
+    await exec({
+      stdin: "foo=unknownRule",
+      errorCode: "peggy.cli",
+      exitCode: 1,
+      error: `\
+Error parsing grammar
+error: Rule "unknownRule" is not defined
+ --> stdin:1:5
+  |
+1 | foo=unknownRule
+  |     ^^^^^^^^^^^`,
+    });
+  });
 });

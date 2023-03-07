@@ -14,6 +14,9 @@ Released: TBD
 
 ### Bug Fixes
 
+- [#374](https://github.com/peggyjs/peggy/issues/374) CLI throws exception
+  on grammar errors. From @hildjj
+
 3.0.1
 -----
 
