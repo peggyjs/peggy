@@ -655,18 +655,22 @@ class PeggyCLI extends Command {
         await this.test(mappedSource);
       }
     } catch (error) {
+      const sources = [{
+        source: this.argv.grammarSource,
+        text: input,
+      }];
+      if (this.testGrammarSource) {
+        sources.push({
+          source: this.testGrammarSource,
+          text: this.testText,
+        });
+      }
       // Will either exit or throw.
       this.error(errorText, {
         error,
         exitCode,
         code: "peggy.cli",
-        sources: [{
-          source: this.argv.grammarSource,
-          text: input,
-        }, {
-          source: this.testGrammarSource,
-          text: this.testText,
-        }],
+        sources,
       });
     }
     return 0;
