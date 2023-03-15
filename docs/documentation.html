@@ -351,14 +351,19 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
     <code>"source-with-inline-map"</code>. (default: <code>"bare"</code>).
   </dd>
 
-  <dt><code>grammarSource</code></dt>
-  <dd>Any object that represent origin of the input grammar. The CLI will convert
-    it to a string with the path to the file; parsers in network applications
-    might use the socket and so on. The supplied object will be available at key
-    <code>source</code> in the location objects, that returned by the
-    <code>location()</code> API function (default: <code>undefined</code>). It
-    is recommended that if you do not use a string, the object you supply has
-    a useful <code>toString()</code> implementation.
+  <dt id="grammar-source"><code>grammarSource</code></dt>
+  <dd>
+    A string or object representing the "origin" of the input string being
+    parsed. The <code>location()</code> API returns the supplied
+    <code>grammarSource</code> in the <code>source</code> key. As an example, if
+    you pass in <code>grammarSource</code> as "main.js", then errors with
+    locations include <code>{ source: 'main.js', ... }</code>.
+    <br><br>
+    If you pass an object, the location API returns the entire object in the
+    <code>source</code> key. If you format an error containing a location with
+    <a href="#error-messages"><code>format()</code></a>, the formatter
+    stringifies the object. If you pass an object, we recommend you add
+    <code>toString()</code> method to the object to improve error messages.
   </dd>
 
   <dt><code>info</code></dt>
@@ -1409,13 +1414,9 @@ note: Step 3: call itself without input consumption - left recursion
 }
 </code></pre>
 
-<p><code>source</code> is an any object that was supplied in the <code>grammarSource</code> option in
-  the <code>parse()</code> call. That object can be used to hold reference to the origin of
-  the grammar, for example, it can be a filename. It is recommended that this
-  object have a <code>toString()</code> implementation that returns meaningful string,
-  because that string will be used when getting formatted error representation
-  with <a href="#error-messages"><code>e.format()</code></a>.</p>
-
+<p><code>source</code> is the a string or object that was supplied in the
+  <a href="#grammar-source"><code>grammarSource</code></a> parser option.</p>
+  
 <p>For certain special cases, you can use an instance of the
   <code>GrammarLocation</code> class as the <code>grammarSource</code>.
   <code>GrammarLocation</code> allows you to specify the offset of the grammar
