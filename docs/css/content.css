@@ -124,13 +124,14 @@
 #content #output-header {
   margin: 1.25em 0 0 0; border: none; padding: .25em 1.2em .25em 1.2em;
   font-size: 80%;
-  color: white; background-color: silver;
+  color: black;
+  background-color: #f0f0f0;
 }
 #content #output {
   overflow: auto;
   max-height: 20em;
   margin: 0; padding: .5em 1em; border: 2px solid silver; border-top: none;
-  background-color: #f0f0f0;
+  background-color: silver;
 }
 #content #output.disabled { color: gray; }
 
