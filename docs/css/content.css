@@ -1,6 +1,6 @@
 #content h1 { margin: 0 0 .75em 0; font-size: 200%; }
 #content h2 {
-  margin: 1.5em 0 .75em 0; border-bottom: 2pt dotted silver;
+  margin: 1.5em 0 .75em 0; border-bottom: 2pt dotted #c0c0c0;
   font-size: 150%;
 }
 #content h3 { margin: 1.5em 0 .5em 0; font-size: 125%; }
@@ -10,7 +10,7 @@
 #content aside.info { margin: 1em 0 1em 2em; color: gray; }
 #content pre {
   overflow: auto;
-  padding: .5em 1em; border-left: 5px solid silver;
+  padding: .5em 1em; border-left: 5px solid #c0c0c0;
   background-color: #f0f0f0;
 }
 #content table { border-spacing: 0; }
@@ -130,8 +130,8 @@
 #content #output {
   overflow: auto;
   max-height: 20em;
-  margin: 0; padding: .5em 1em; border: 2px solid silver; border-top: none;
-  background-color: silver;
+  margin: 0; padding: .5em 1em; border: 2px solid #c0c0c0; border-top: none;
+  background-color: #c0c0c0;
 }
 #content #output.disabled { color: gray; }
 
