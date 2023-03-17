@@ -14,6 +14,7 @@ Released: TBD
 
 ### Bug Fixes
 
+- [#371](https://github.com/peggyjs/peggy/issues/371) Error using online Peggy - Can't find variable: util
 - [#374](https://github.com/peggyjs/peggy/issues/374) CLI throws exception
   on grammar errors. From @hildjj
 
