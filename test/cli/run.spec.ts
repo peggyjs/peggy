@@ -320,8 +320,10 @@ Options:
   -v, --version                    output the version number
   --allowed-start-rules <rules>    Comma-separated list of rules the generated
                                    parser will be allowed to start parsing
-                                   from.  (Can be specified multiple times)
-                                   (default: the first rule in the grammar)
+                                   from.  Use '*' if you want any rule to be
+                                   allowed as a start rule.  (Can be specified
+                                   multiple times) (default: the first rule in
+                                   the grammar)
   --ast                            Output a grammar AST instead of a parser
                                    code (default: false)
   --cache                          Make generated parser cache results

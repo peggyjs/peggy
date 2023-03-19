@@ -19,6 +19,8 @@ Released: TBD
   on grammar errors. From @hildjj
 - [#381](https://github.com/peggyjs/peggy/issues/381) Repetitions with code blocks
   for min or max not handling non-integer returns correctly.  From @hildjj.
+- [#386](https://github.com/peggyjs/peggy/issues/381) Ensure '*' as
+  allowed-start-rule is documented for CLI.
 
 3.0.1
 -----
