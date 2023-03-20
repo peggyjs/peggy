@@ -61,7 +61,7 @@ describe("plugin API", () => {
     it("receives options", () => {
       const plugin = {
         use(config, options) {
-          // eslint-disable-next-line no-use-before-define -- Mutal recursion
+          // eslint-disable-next-line no-use-before-define -- Mutual recursion
           expect(options).to.equal(generateOptions);
         },
       };
