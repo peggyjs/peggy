@@ -74,7 +74,8 @@ describe("generated parser behavior", () => {
     Assertion.addMethod("failToParse", function(input, props, options) {
       options = options !== undefined ? options : {};
 
-      let passed, result;
+      let passed = undefined;
+      let result = undefined;
 
       try {
         result = withConsoleStub(() => utils.flag(this, "object")
@@ -2894,10 +2895,10 @@ describe("generated parser behavior", () => {
 
         // The "sum" rule
         expect(parser).to.parse("42*43",                   42 * 43);
-        expect(parser).to.parse("42*43+44*45",             42 * 43 + 44 * 45);
-        expect(parser).to.parse("42*43+44*45+46*47+48*49", 42 * 43 + 44 * 45 + 46 * 47 + 48 * 49);
-        expect(parser).to.parse("42*43-44*45",             42 * 43 - 44 * 45);
-        expect(parser).to.parse("42*43-44*45-46*47-48*49", 42 * 43 - 44 * 45 - 46 * 47 - 48 * 49);
+        expect(parser).to.parse("42*43+44*45",             (42 * 43) + (44 * 45));
+        expect(parser).to.parse("42*43+44*45+46*47+48*49", (42 * 43) + (44 * 45) + (46 * 47) + (48 * 49));
+        expect(parser).to.parse("42*43-44*45",             (42 * 43) - (44 * 45));
+        expect(parser).to.parse("42*43-44*45-46*47-48*49", (42 * 43) - (44 * 45) - (46 * 47) - (48 * 49));
 
         // The "expr" rule
         expect(parser).to.parse("42+43", 42 + 43);
