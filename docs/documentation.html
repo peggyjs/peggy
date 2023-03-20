@@ -118,7 +118,8 @@ stylesheets: ["css/documentation.css"]
 <dl>
   <dt><code>--allowed-start-rules &lt;rules&gt;</code></dt>
   <dd>Comma-separated list of rules the parser will be allowed to start parsing
-    from (default: only the first rule in the grammar).</dd>
+    from.  Use '*' if you want any rule to be allowed as a start rule.
+    (default: only the first rule in the grammar).</dd>
 
   <dt><code>--ast</code></dt>
   <dd>Outputting an internal AST representation of the grammar after

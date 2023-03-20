@@ -106,7 +106,7 @@ class PeggyCLI extends Command {
       .addOption(
         new Option(
           "--allowed-start-rules <rules>",
-          "Comma-separated list of rules the generated parser will be allowed to start parsing from.  (Can be specified multiple times)"
+          "Comma-separated list of rules the generated parser will be allowed to start parsing from.  Use '*' if you want any rule to be allowed as a start rule.  (Can be specified multiple times)"
         )
           .default([], "the first rule in the grammar")
           .argParser(commaArg)
