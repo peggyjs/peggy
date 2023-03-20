@@ -1512,6 +1512,40 @@ describe("generated parser behavior", () => {
             expect(parser).to.parse("abb", ["a", ["b", "b"]]);
           });
         });
+
+        // Regression tests for https://github.com/peggyjs/peggy/issues/381
+        it("with functions returning non-integers", () => {
+          // Like |0|
+          let parser = peg.generate("start = 'a'|{ return 'a' }|", options);
+          expect(parser).to.parse("", []);
+          expect(parser).to.failToParse("aaa", {
+            expected: [{ type: "end" }],
+          });
+
+          // Like |0..2|
+          parser = peg.generate("start = 'a'|{ return 'a' }..2|", options);
+          expect(parser).to.parse("", []);
+          expect(parser).to.parse("a", ["a"]);
+          expect(parser).to.parse("aa", ["a", "a"]);
+          expect(parser).to.failToParse("aaa", {
+            expected: [{ type: "end" }],
+          });
+
+          // Like |..0|
+          parser = peg.generate("start = 'a'|..{ return 'a' }|", options);
+          expect(parser).to.parse("", []);
+          expect(parser).to.failToParse("a", {
+            expected: [{ type: "end" }],
+          });
+
+          // Like |1..2|
+          parser = peg.generate("start = 'a'|{return '1.8e0' }..{ return 2.8 }|", options);
+          expect(parser).to.parse("a", ["a"]);
+          expect(parser).to.parse("aa", ["a", "a"]);
+          expect(parser).to.failToParse("aaa", {
+            expected: [{ type: "end" }],
+          });
+        });
       });
 
       describe("with delimiter", () => {

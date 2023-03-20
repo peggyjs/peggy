@@ -14,9 +14,11 @@ Released: TBD
 
 ### Bug Fixes
 
-- [#371](https://github.com/peggyjs/peggy/issues/371) Error using online Peggy - Can't find variable: util
+- [#371](https://github.com/peggyjs/peggy/issues/371) Error using online Peggy - "Can't find variable: util".  From @hildjj.
 - [#374](https://github.com/peggyjs/peggy/issues/374) CLI throws exception
   on grammar errors. From @hildjj
+- [#381](https://github.com/peggyjs/peggy/issues/381) Repetitions with code blocks
+  for min or max not handling non-integer returns correctly.  From @hildjj.
 
 3.0.1
 -----
