@@ -199,16 +199,6 @@ class PeggyCLI extends Command {
           .hideHelp()
           .default(false)
       )
-      .addOption(
-        new Option("-O, --optimize <style>")
-          .hideHelp()
-          .argParser(() => {
-            this.print(this.std.err, "Option --optimize is deprecated from 1.2.0 and has no effect anymore.");
-            this.print(this.std.err, "It will be deleted in 2.0.");
-            this.print(this.std.err, "Parser will be generated in the former \"speed\" mode.");
-            return "speed";
-          })
-      )
       .action((inputFile, opts) => { // On parse()
         this.inputFile = inputFile;
         this.argv = opts;

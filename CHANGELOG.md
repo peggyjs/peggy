@@ -12,6 +12,9 @@ Released: TBD
 
 ### Minor Changes
 
+- [#392](https://github.com/peggyjs/peggy/issues/392) Removed the --optimize
+  command line argument, which has been invalid since v1.2.  From @hildjj.
+
 ### Bug Fixes
 
 - [#371](https://github.com/peggyjs/peggy/issues/371) Error using online Peggy - "Can't find variable: util".  From @hildjj.
