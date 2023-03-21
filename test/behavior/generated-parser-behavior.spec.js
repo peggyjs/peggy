@@ -20,10 +20,6 @@ describe("generated parser behavior", () => {
     const optionsVariants = [
       { cache: false, trace: false },
       { cache: false, trace: true },
-      { cache: false, trace: false },
-      { cache: false, trace: true },
-      { cache: true,  trace: false },
-      { cache: true,  trace: true },
       { cache: true,  trace: false },
       { cache: true,  trace: true },
     ];
