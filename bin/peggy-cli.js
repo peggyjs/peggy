@@ -328,9 +328,9 @@ class PeggyCLI extends Command {
         this.verbose('INPUT: "%s"', this.inputFile);
         this.verbose('OUTPUT: "%s"', this.outputFile);
         if (this.progOptions.verbose) {
-          this.argv.info = (pass, msg) => this.print(this.std.err, `INFO(${pass}): ${msg}`);
+          this.argv.info = (pass, msg) => PeggyCLI.print(this.std.err, `INFO(${pass}): ${msg}`);
         }
-        this.argv.warning = (pass, msg) => this.print(this.std.err, `WARN(${pass}): ${msg}`);
+        this.argv.warning = (pass, msg) => PeggyCLI.print(this.std.err, `WARN(${pass}): ${msg}`);
       });
   }
 
@@ -373,7 +373,7 @@ class PeggyCLI extends Command {
     super.error(message, opts);
   }
 
-  print(stream, ...args) {
+  static print(stream, ...args) {
     stream.write(util.formatWithOptions({
       colors: stream.isTTY,
       depth: Infinity,
@@ -387,12 +387,12 @@ class PeggyCLI extends Command {
     if (!this.progOptions.verbose) {
       return false;
     }
-    this.print(this.std.err, ...args);
+    PeggyCLI.print(this.std.err, ...args);
     return true;
   }
 
   addExtraOptionsJSON(json, source) {
-    let extraOptions;
+    let extraOptions = undefined;
 
     try {
       extraOptions = JSON.parse(json);
@@ -477,7 +477,7 @@ class PeggyCLI extends Command {
       // it is unaware of the source map location
       const json = sourceMap.map.toJSON();
       json.sources = json.sources.map(
-        src => (src === null) ? null : path.relative(mapDir, src)
+        src => ((src === null) ? null : path.relative(mapDir, src))
       );
 
       if (inline) {
@@ -600,12 +600,12 @@ class PeggyCLI extends Command {
         opts.startRule = this.progOptions.startRule;
       }
       const results = exec.parse(this.testText, opts);
-      this.print(this.std.out, "%O", results);
+      PeggyCLI.print(this.std.out, "%O", results);
     }
   }
 
   async main() {
-    let inputStream;
+    let inputStream = undefined;
 
     if (this.inputFile === "-") {
       this.std.in.resume();

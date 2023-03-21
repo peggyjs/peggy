@@ -148,6 +148,7 @@ describe("Peggy grammar parser", () => {
       delete node.nameLocation;
       delete node.labelLocation;
 
+      // eslint-disable-next-line no-use-before-define -- Mutual recursion
       strip(node.expression);
     }
 
@@ -158,6 +159,7 @@ describe("Peggy grammar parser", () => {
         delete node.nameLocation;
         delete node.labelLocation;
 
+        // eslint-disable-next-line no-use-before-define -- Mutual recursion
         node[property].forEach(strip);
       };
     }
@@ -239,7 +241,8 @@ describe("Peggy grammar parser", () => {
     });
 
     Assertion.addMethod("failToParse", function(props) {
-      let passed, result;
+      let passed = undefined;
+      let result = undefined;
 
       try {
         result = parser.parse(utils.flag(this, "object"));

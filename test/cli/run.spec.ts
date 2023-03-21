@@ -299,7 +299,7 @@ describe("MockStream", () => {
 
     // This should be promisify<string>, but TS can't figure out how to
     // use the correct overload.
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- Workaround
     const write = promisify<string, void>(s.write.bind(s));
     await write("ab");
     await write("c");

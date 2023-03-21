@@ -172,6 +172,7 @@ describe("Peggy API", () => {
           const source = peg.generate(grammar, { output: "source" });
 
           expect(source).to.be.a("string");
+          // eslint-disable-next-line no-eval -- Required
           expect(eval(source).parse("a")).to.equal("a");
         });
       });
@@ -239,6 +240,7 @@ describe("Peggy API", () => {
               "start = " + label + ":end { return " + label + "; }",
               "end = 'a'",
             ].join("\n"), { output: "source" });
+            // eslint-disable-next-line no-eval -- Required
             expect(eval(source).parse("a")).to.equal("a");
           });
         }
@@ -251,6 +253,7 @@ describe("Peggy API", () => {
               "start = " + rule,
               rule + " = 'a'",
             ].join("\n"), { output: "source" });
+            // eslint-disable-next-line no-eval -- Required
             expect(eval(source).parse("a")).to.equal("a");
           });
         }

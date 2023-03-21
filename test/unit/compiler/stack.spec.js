@@ -7,7 +7,7 @@ const expect = chai.expect;
 
 describe("utility class Stack", () => {
   describe("for an empty stack", () => {
-    let stack;
+    let stack = undefined;
 
     beforeEach(() => { stack = new Stack("rule", "v", "let", [42]); });
 
@@ -85,7 +85,7 @@ describe("utility class Stack", () => {
   });
 
   describe("`checkedIf` method", () => {
-    let stack;
+    let stack = undefined;
 
     beforeEach(() => {
       stack = new Stack("rule", "v", "let", [42]);
@@ -217,7 +217,7 @@ describe("utility class Stack", () => {
   });
 
   describe("`checkedLoop` method", () => {
-    let stack;
+    let stack = undefined;
 
     beforeEach(() => {
       stack = new Stack("rule", "v", "let", [42]);
