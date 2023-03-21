@@ -706,28 +706,6 @@ Options:
     });
   });
 
-  it("doesn't fail with optimize", async() => {
-    await exec({
-      args: ["--optimize", "anything"],
-      stdin: 'foo = "1"',
-      expected: /deprecated/,
-    });
-
-    await exec({
-      args: ["-O", "anything"],
-      stdin: 'foo = "1"',
-      expected: /deprecated/,
-    });
-
-    await exec({
-      args: ["-O"],
-      stdin: 'foo = "1"',
-      errorCode: "commander.optionMissingArgument",
-      exitCode: 1,
-      error: "-O, --optimize <style>' argument missing",
-    });
-  });
-
   it("outputs to a file", async() => {
     const test_output = path.resolve(__dirname, "test_output.js");
 
