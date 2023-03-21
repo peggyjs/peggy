@@ -3,8 +3,19 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-3.0.2
+Unreleased
 ----------
+
+Released: TBD
+
+### Major Changes
+
+### Minor Changes
+
+### Bug Fixes
+
+3.0.2
+-----
 
 Released: 2023-03-21
 
@@ -25,7 +36,7 @@ Released: 2023-03-21
 - [#384](https://github.com/peggyjs/peggy/issues/384) Improve the error.format()
   documentation.  From @AndrewRayCode.
 - [#386](https://github.com/peggyjs/peggy/issues/386) Ensure '*' as
-  allowed-start-rule is documented for CLI.
+  allowed-start-rule is documented for CLI.  From @hildjj.
 
 3.0.1
 -----
