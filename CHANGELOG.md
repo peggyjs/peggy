@@ -3,12 +3,10 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
+3.0.2
 ----------
 
-Released: TBD
-
-### Major Changes
+Released: 2023-03-21
 
 ### Minor Changes
 
@@ -22,7 +20,11 @@ Released: TBD
   on grammar errors. From @hildjj
 - [#381](https://github.com/peggyjs/peggy/issues/381) Repetitions with code blocks
   for min or max not handling non-integer returns correctly.  From @hildjj.
-- [#386](https://github.com/peggyjs/peggy/issues/381) Ensure '*' as
+- [#382](https://github.com/peggyjs/peggy/pull/382) Update grammarSource
+  documentation.  From @AndrewRayCode.
+- [#384](https://github.com/peggyjs/peggy/issues/384) Improve the error.format()
+  documentation.  From @AndrewRayCode.
+- [#386](https://github.com/peggyjs/peggy/issues/386) Ensure '*' as
   allowed-start-rule is documented for CLI.
 
 3.0.1
