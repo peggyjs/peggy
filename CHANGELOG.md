@@ -3,6 +3,30 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
+3.0.2
+----------
+
+Released: 2023-03-21
+
+### Minor Changes
+
+- [#392](https://github.com/peggyjs/peggy/issues/392) Removed the --optimize
+  command line argument, which has been invalid since v1.2.  From @hildjj.
+
+### Bug Fixes
+
+- [#371](https://github.com/peggyjs/peggy/issues/371) Error using online Peggy - "Can't find variable: util".  From @hildjj.
+- [#374](https://github.com/peggyjs/peggy/issues/374) CLI throws exception
+  on grammar errors. From @hildjj
+- [#381](https://github.com/peggyjs/peggy/issues/381) Repetitions with code blocks
+  for min or max not handling non-integer returns correctly.  From @hildjj.
+- [#382](https://github.com/peggyjs/peggy/pull/382) Update grammarSource
+  documentation.  From @AndrewRayCode.
+- [#384](https://github.com/peggyjs/peggy/issues/384) Improve the error.format()
+  documentation.  From @AndrewRayCode.
+- [#386](https://github.com/peggyjs/peggy/issues/386) Ensure '*' as
+  allowed-start-rule is documented for CLI.
+
 3.0.1
 -----
 

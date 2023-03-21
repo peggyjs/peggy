@@ -24,7 +24,8 @@ module.exports = function(chai, utils) {
   Assertion.addMethod("reportError", function(grammar, props) {
     const ast = parser.parse(grammar);
 
-    let passed, result;
+    let passed = undefined;
+    let result = undefined;
 
     try {
       utils.flag(this, "object")(ast, {}, new Session({

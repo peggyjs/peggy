@@ -299,7 +299,7 @@ describe("MockStream", () => {
 
     // This should be promisify<string>, but TS can't figure out how to
     // use the correct overload.
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- Workaround
     const write = promisify<string, void>(s.write.bind(s));
     await write("ab");
     await write("c");
@@ -320,8 +320,10 @@ Options:
   -v, --version                    output the version number
   --allowed-start-rules <rules>    Comma-separated list of rules the generated
                                    parser will be allowed to start parsing
-                                   from.  (Can be specified multiple times)
-                                   (default: the first rule in the grammar)
+                                   from.  Use '*' if you want any rule to be
+                                   allowed as a start rule.  (Can be specified
+                                   multiple times) (default: the first rule in
+                                   the grammar)
   --ast                            Output a grammar AST instead of a parser
                                    code (default: false)
   --cache                          Make generated parser cache results
@@ -701,28 +703,6 @@ Options:
         }],
         code: expect.anything(),
       });
-    });
-  });
-
-  it("doesn't fail with optimize", async() => {
-    await exec({
-      args: ["--optimize", "anything"],
-      stdin: 'foo = "1"',
-      expected: /deprecated/,
-    });
-
-    await exec({
-      args: ["-O", "anything"],
-      stdin: 'foo = "1"',
-      expected: /deprecated/,
-    });
-
-    await exec({
-      args: ["-O"],
-      stdin: 'foo = "1"',
-      errorCode: "commander.optionMissingArgument",
-      exitCode: 1,
-      error: "-O, --optimize <style>' argument missing",
     });
   });
 
@@ -1130,6 +1110,21 @@ Error: Expected "1" but end of input found.
     await exec({
       args: ["-t", "1", grammar],
       expected: "[ 'zazzy' ]\n",
+    });
+  });
+
+  it("handles grammar errors", async() => {
+    await exec({
+      stdin: "foo=unknownRule",
+      errorCode: "peggy.cli",
+      exitCode: 1,
+      error: `\
+Error parsing grammar
+error: Rule "unknownRule" is not defined
+ --> stdin:1:5
+  |
+1 | foo=unknownRule
+  |     ^^^^^^^^^^^`,
     });
   });
 });
