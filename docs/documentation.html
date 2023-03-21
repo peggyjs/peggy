@@ -1355,17 +1355,17 @@ _
     rules with the same name in one grammar, etc.</li>
 </ul>
 
-<p>Both of these errors have the <code>format()</code> method that takes an array of mappings from source to grammar text:</p>
+<p>By default, stringifying these errors produces an error string without location information. These errors also have a <code>format()</code> method that produces an error string with location information. If you provide an array of mappings from the <a href="#grammar-source"><code>grammarSource</code></a> to the input string being processed, then the formatted error string includes ASCII arrows and underlines highlighting the error(s) in the source.</p>
 
 <pre><code class="language-javascript">let source = ...;
 try {
-  peggy.generate(text, { grammarSource: source, ... }); // throws SyntaxError or GrammarError
-  parser.parse(input, { grammarSource: source2, ... }); // throws SyntaxError
+  peggy.generate( , { grammarSource: 'recursion.pegjs', ... }); // throws SyntaxError or GrammarError
+  parser.parse(input, { grammarSource: 'input.js', ... }); // throws SyntaxError
 } catch (e) {
   if (typeof e.format === "function") {
     console.log(e.format([
-      { source, text },
-      { source: source2, text: input },
+      { source: 'main.pegjs', text },
+      { source: 'input.js', text: input },
       ...
     ]));
   } else {
@@ -1394,7 +1394,13 @@ note: Step 3: call itself without input consumption - left recursion
  --> .\recursion.pegjs:3:8
   |
 3 | end = !start
-  |        ^^^^^</code></pre>
+  |        ^^^^^
+  Error: Expected ";" or "{" but "x" found.
+--> input.js:1:16
+  |
+1 | function main()x {}
+  |                ^
+</code></pre>
 
 <p>A plugin may register additional passes that can generate
   <code>GrammarError</code>s to report about problems, but they shouldn't do
