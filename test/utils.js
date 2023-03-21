@@ -13,11 +13,11 @@ class Call {
 }
 
 function dummy() {
-  const stub = (...args) => {
+  function stub(...args) {
     stub.callCount++;
     stub.called = true;
     stub.calls.push(new Call(args));
-  };
+  }
   stub.called = false;
   stub.callCount = 0;
   stub.calls = [];

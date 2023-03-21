@@ -165,12 +165,13 @@ $(document).ready(function() {
           newInput.length,
           timeAfter - timeBefore
         ));
-      $("#output").removeClass("disabled").text(util.inspect(output, {
+      $("#output").removeClass("disabled").html(util.inspect(output, {
         depth: Infinity,
         color: false,
         maxArrayLength: Infinity,
         maxStringLength: Infinity,
         compact: false,
+        stylize: util.stylizeWithHTML,
       }));
 
       var result = true;

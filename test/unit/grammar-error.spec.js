@@ -138,6 +138,26 @@ error: message
           [],
         ]);
 
+        it("null source text", () => {
+          expect(e.format([{ source: null, text: null }])).to.equal(`\
+error: message
+ at foo.peggy:1:1
+ at foo.peggy:1:6: Subinfo
+
+warning: Warning message
+ at foo.peggy:1:6
+ at foo.peggy:1:6: Warning Subinfo`);
+
+          expect(e.format([{ source: null, text: undefined }])).to.equal(`\
+error: message
+ at foo.peggy:1:1
+ at foo.peggy:1:6: Subinfo
+
+warning: Warning message
+ at foo.peggy:1:6
+ at foo.peggy:1:6: Warning Subinfo`);
+        });
+
         it("with source", () => {
           expect(e.format([source])).to.equal(`\
 error: message

@@ -106,7 +106,7 @@ class PeggyCLI extends Command {
       .addOption(
         new Option(
           "--allowed-start-rules <rules>",
-          "Comma-separated list of rules the generated parser will be allowed to start parsing from.  (Can be specified multiple times)"
+          "Comma-separated list of rules the generated parser will be allowed to start parsing from.  Use '*' if you want any rule to be allowed as a start rule.  (Can be specified multiple times)"
         )
           .default([], "the first rule in the grammar")
           .argParser(commaArg)
@@ -198,16 +198,6 @@ class PeggyCLI extends Command {
         new Option("--verbose", "Enable verbose logging")
           .hideHelp()
           .default(false)
-      )
-      .addOption(
-        new Option("-O, --optimize <style>")
-          .hideHelp()
-          .argParser(() => {
-            this.print(this.std.err, "Option --optimize is deprecated from 1.2.0 and has no effect anymore.");
-            this.print(this.std.err, "It will be deleted in 2.0.");
-            this.print(this.std.err, "Parser will be generated in the former \"speed\" mode.");
-            return "speed";
-          })
       )
       .action((inputFile, opts) => { // On parse()
         this.inputFile = inputFile;
@@ -338,9 +328,9 @@ class PeggyCLI extends Command {
         this.verbose('INPUT: "%s"', this.inputFile);
         this.verbose('OUTPUT: "%s"', this.outputFile);
         if (this.progOptions.verbose) {
-          this.argv.info = (pass, msg) => this.print(this.std.err, `INFO(${pass}): ${msg}`);
+          this.argv.info = (pass, msg) => PeggyCLI.print(this.std.err, `INFO(${pass}): ${msg}`);
         }
-        this.argv.warning = (pass, msg) => this.print(this.std.err, `WARN(${pass}): ${msg}`);
+        this.argv.warning = (pass, msg) => PeggyCLI.print(this.std.err, `WARN(${pass}): ${msg}`);
       });
   }
 
@@ -383,7 +373,7 @@ class PeggyCLI extends Command {
     super.error(message, opts);
   }
 
-  print(stream, ...args) {
+  static print(stream, ...args) {
     stream.write(util.formatWithOptions({
       colors: stream.isTTY,
       depth: Infinity,
@@ -397,12 +387,12 @@ class PeggyCLI extends Command {
     if (!this.progOptions.verbose) {
       return false;
     }
-    this.print(this.std.err, ...args);
+    PeggyCLI.print(this.std.err, ...args);
     return true;
   }
 
   addExtraOptionsJSON(json, source) {
-    let extraOptions;
+    let extraOptions = undefined;
 
     try {
       extraOptions = JSON.parse(json);
@@ -487,7 +477,7 @@ class PeggyCLI extends Command {
       // it is unaware of the source map location
       const json = sourceMap.map.toJSON();
       json.sources = json.sources.map(
-        src => (src === null) ? null : path.relative(mapDir, src)
+        src => ((src === null) ? null : path.relative(mapDir, src))
       );
 
       if (inline) {
@@ -610,12 +600,12 @@ class PeggyCLI extends Command {
         opts.startRule = this.progOptions.startRule;
       }
       const results = exec.parse(this.testText, opts);
-      this.print(this.std.out, "%O", results);
+      PeggyCLI.print(this.std.out, "%O", results);
     }
   }
 
   async main() {
-    let inputStream;
+    let inputStream = undefined;
 
     if (this.inputFile === "-") {
       this.std.in.resume();
@@ -655,18 +645,22 @@ class PeggyCLI extends Command {
         await this.test(mappedSource);
       }
     } catch (error) {
+      const sources = [{
+        source: this.argv.grammarSource,
+        text: input,
+      }];
+      if (this.testGrammarSource) {
+        sources.push({
+          source: this.testGrammarSource,
+          text: this.testText,
+        });
+      }
       // Will either exit or throw.
       this.error(errorText, {
         error,
         exitCode,
         code: "peggy.cli",
-        sources: [{
-          source: this.argv.grammarSource,
-          text: input,
-        }, {
-          source: this.testGrammarSource,
-          text: this.testText,
-        }],
+        sources,
       });
     }
     return 0;

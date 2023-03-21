@@ -20,10 +20,6 @@ describe("generated parser behavior", () => {
     const optionsVariants = [
       { cache: false, trace: false },
       { cache: false, trace: true },
-      { cache: false, trace: false },
-      { cache: false, trace: true },
-      { cache: true,  trace: false },
-      { cache: true,  trace: true },
       { cache: true,  trace: false },
       { cache: true,  trace: true },
     ];
@@ -74,7 +70,8 @@ describe("generated parser behavior", () => {
     Assertion.addMethod("failToParse", function(input, props, options) {
       options = options !== undefined ? options : {};
 
-      let passed, result;
+      let passed = undefined;
+      let result = undefined;
 
       try {
         result = withConsoleStub(() => utils.flag(this, "object")
@@ -1512,6 +1509,40 @@ describe("generated parser behavior", () => {
             expect(parser).to.parse("abb", ["a", ["b", "b"]]);
           });
         });
+
+        // Regression tests for https://github.com/peggyjs/peggy/issues/381
+        it("with functions returning non-integers", () => {
+          // Like |0|
+          let parser = peg.generate("start = 'a'|{ return 'a' }|", options);
+          expect(parser).to.parse("", []);
+          expect(parser).to.failToParse("aaa", {
+            expected: [{ type: "end" }],
+          });
+
+          // Like |0..2|
+          parser = peg.generate("start = 'a'|{ return 'a' }..2|", options);
+          expect(parser).to.parse("", []);
+          expect(parser).to.parse("a", ["a"]);
+          expect(parser).to.parse("aa", ["a", "a"]);
+          expect(parser).to.failToParse("aaa", {
+            expected: [{ type: "end" }],
+          });
+
+          // Like |..0|
+          parser = peg.generate("start = 'a'|..{ return 'a' }|", options);
+          expect(parser).to.parse("", []);
+          expect(parser).to.failToParse("a", {
+            expected: [{ type: "end" }],
+          });
+
+          // Like |1..2|
+          parser = peg.generate("start = 'a'|{return '1.8e0' }..{ return 2.8 }|", options);
+          expect(parser).to.parse("a", ["a"]);
+          expect(parser).to.parse("aa", ["a", "a"]);
+          expect(parser).to.failToParse("aaa", {
+            expected: [{ type: "end" }],
+          });
+        });
       });
 
       describe("with delimiter", () => {
@@ -2860,10 +2891,10 @@ describe("generated parser behavior", () => {
 
         // The "sum" rule
         expect(parser).to.parse("42*43",                   42 * 43);
-        expect(parser).to.parse("42*43+44*45",             42 * 43 + 44 * 45);
-        expect(parser).to.parse("42*43+44*45+46*47+48*49", 42 * 43 + 44 * 45 + 46 * 47 + 48 * 49);
-        expect(parser).to.parse("42*43-44*45",             42 * 43 - 44 * 45);
-        expect(parser).to.parse("42*43-44*45-46*47-48*49", 42 * 43 - 44 * 45 - 46 * 47 - 48 * 49);
+        expect(parser).to.parse("42*43+44*45",             (42 * 43) + (44 * 45));
+        expect(parser).to.parse("42*43+44*45+46*47+48*49", (42 * 43) + (44 * 45) + (46 * 47) + (48 * 49));
+        expect(parser).to.parse("42*43-44*45",             (42 * 43) - (44 * 45));
+        expect(parser).to.parse("42*43-44*45-46*47-48*49", (42 * 43) - (44 * 45) - (46 * 47) - (48 * 49));
 
         // The "expr" rule
         expect(parser).to.parse("42+43", 42 + 43);
