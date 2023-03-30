@@ -3,12 +3,11 @@
 const {
   Command, CommanderError, InvalidArgumentError, Option,
 } = require("commander");
-const { Module } = require("module");
+const Module = require("module");
 const fs = require("fs");
 const path = require("path");
 const peggy = require("../lib/peg.js");
 const util = require("util");
-const vm = require("vm");
 
 exports.CommanderError = CommanderError;
 exports.InvalidArgumentError = InvalidArgumentError;
@@ -589,39 +588,12 @@ class PeggyCLI extends Command {
       const filename = this.outputJS
         ? path.resolve(this.outputJS)
         : path.join(process.cwd(), "stdout.js"); // Synthetic
-      const dirname = path.dirname(filename);
-      const m = new Module(filename, module);
-      // This is the function that will be called by `require()` in the parser.
-      m.require = Module.createRequire(filename);
-      const script = new vm.Script(source, { filename });
-      const exec = script.runInNewContext({
-        // Anything that is normally in the global scope that we think
-        // might be needed.  Limit to what is available in lowest-supported
-        // engine version.
 
-        // See: https://github.com/nodejs/node/blob/master/lib/internal/bootstrap/node.js
-        // for more things to add.
-        module: m,
-        exports: m.exports,
-        require: m.require,
-        __dirname: dirname,
-        __filename: filename,
-
-        Buffer,
-        TextDecoder: (typeof TextDecoder === "undefined") ? undefined : TextDecoder,
-        TextEncoder: (typeof TextEncoder === "undefined") ? undefined : TextEncoder,
-        URL,
-        URLSearchParams,
-        atob: Buffer.atob,
-        btoa: Buffer.btoa,
-        clearImmediate,
-        clearInterval,
-        clearTimeout,
-        console,
-        process,
-        setImmediate,
-        setInterval,
-        setTimeout,
+      const fromMem = require("./fromMem.js");
+      const exec = await fromMem(source, {
+        filename,
+        format: this.argv.format,
+        globalExport: this.argv.exportVar,
       });
 
       const opts = {
