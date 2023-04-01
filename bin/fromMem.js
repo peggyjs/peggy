@@ -1,8 +1,7 @@
 "use strict";
 
 // Import or require module text from memory, rather than disk.  Runs
-// in a light sandbox that is likely easily escapable, but protects against
-// slight oopsies like polluting the global namespace.
+// in a node vm, very similar to how node loads modules.
 //
 // Ideas taken from the "module-from-string" and "eval" modules, neither of
 // which were situated correctly to be used as-is.
@@ -11,8 +10,6 @@ const vm = require("vm");
 const { Module } = require("module");
 const path = require("path");
 const url = require("url");
-
-const IMPORTS = "___PEGGY___IMPORTS___";
 
 // These already exist in a new, blank VM.  Date, JSON, NaN, etc.
 const vmGlobals = new vm
@@ -63,11 +60,7 @@ globalContext.console = console;
 function requireString(code, dirname, options) {
   const m = new Module(options.filename, module); // Current module is parent.
   // This is the function that will be called by `require()` in the parser.
-  m.require = (
-    // In node 12+, createRequire is documented.
-    // In node 10, createRequireFromPath is the least-undocumented approach.
-    Module.createRequire || Module.createRequireFromPath
-  )(options.filename);
+  m.require = Module.createRequire(options.filename);
   const script = new vm.Script(code, { filename: options.filename });
   return script.runInNewContext({
     module: m,
@@ -108,7 +101,15 @@ async function importString(code, dirname, options) {
   if (!vm.SourceTextModule) {
     throw new Error("Start node with --experimental-vm-modules for this to work");
   }
-  options.context[IMPORTS] = {};
+
+  const [maj, min] = process.version
+    .match(/v(\d+)\.(\d+)\.(\d+)/)
+    .slice(1)
+    .map(x => parseInt(x, 10));
+  if ((maj < 20) || ((maj === 20) && (min < 8))) {
+    throw new Error("Requires node.js 20.8+ or 21.");
+  }
+
   const mod = new vm.SourceTextModule(code, {
     identifier: options.filename,
     context: vm.createContext(options.context),
@@ -123,24 +124,14 @@ async function importString(code, dirname, options) {
   await mod.link(async(specifier, referencingModule) => {
     const resolvedSpecifier = resolveIfNeeded(dirname, specifier);
     const targetModule = await import(resolvedSpecifier);
+    const exports = Object.keys(targetModule);
 
-    // All of the below is to create a Module wrapper around the imported code
-    options.context[IMPORTS][specifier] = targetModule;
-
-    const stringifiedSpecifier = JSON.stringify(specifier);
-    const exportedNames = Object.keys(targetModule);
-    let targetModuleContent = "";
-    if (exportedNames.includes("default")) {
-      targetModuleContent += `export default ${IMPORTS}[${stringifiedSpecifier}].default;\n`;
-    }
-    const nonDefault = exportedNames.filter(n => n !== "default");
-    if (nonDefault.length > 0) {
-      targetModuleContent += `export const {${nonDefault.join(", ")}} = ${IMPORTS}[${stringifiedSpecifier}];`;
-    }
-
-    // @ts-expect-error: experimental
-    return new vm.SourceTextModule(targetModuleContent, {
-      identifier: resolvedSpecifier,
+    // DO NOT change function to () =>, or `this` will be wrong.
+    return new vm.SyntheticModule(exports, function() {
+      for (const e of exports) {
+        this.setExport(e, targetModule[e]);
+      }
+    }, {
       context: referencingModule.context,
     });
   });
@@ -160,7 +151,7 @@ async function importString(code, dirname, options) {
 module.exports = async function fromMem(code, options) {
   options = {
     format: "commonjs",
-    filename: __filename,
+    filename: `${__filename}-string`,
     context: {},
     includeGlobals: true,
     globalExport: null,
@@ -173,6 +164,9 @@ module.exports = async function fromMem(code, options) {
       ...options.context,
     };
   }
+  options.context.global = options.context;
+  options.context.globalThis = options.context;
+
   options.filename = path.resolve(options.filename);
   const dirname = path.dirname(options.filename);
 
@@ -181,13 +175,10 @@ module.exports = async function fromMem(code, options) {
     case "commonjs":
     case "umd":
       return requireString(code, dirname, options);
-    case "globals": {
-      const mod = requireString(code, dirname, options);
-      return mod[options.globalExport];
-    }
     case "es":
       // Returns promise
       return importString(code, dirname, options);
+    // I don't care enough about amd and globals to figure out how to load them.
     default:
       throw new Error(`Unsupported output format: "${options.format}"`);
   }

@@ -1173,6 +1173,35 @@ Error: Expected "1" but end of input found.
     });
   });
 
+  it("handles tests that import other modules", async() => {
+    if ((await import("vm")).SourceTextModule) {
+      const grammar = path.join(__dirname, "fixtures", "imp.peggy");
+      try {
+        await exec({
+          args: ["--format", "es", "-t", "1", grammar],
+          expected: "[ [ 'zazzy' ], [ 'zazzy' ], true ]\n",
+        });
+      } catch (e) {
+        expect((e as Error).message).toMatch("Requires node.js 20.8+ or 21");
+      }
+      await exec({
+        args: ["--format", "amd", "-t", "1", grammar],
+        error: /Unsupported output format/,
+      });
+      await exec({
+        args: ["--format", "globals", "-t", "1", grammar],
+        error: /Unsupported output format/,
+      });
+      await exec({
+        args: ["--format", "bare", "-t", "1"],
+        stdin: "foo = '1'\n",
+        expected: "'1'\n",
+      });
+    } else {
+      throw new Error("Use --experimental-vm-modules");
+    }
+  });
+
   it("handles grammar errors", async() => {
     await exec({
       stdin: "foo=unknownRule",

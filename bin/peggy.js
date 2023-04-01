@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-vm-modules --no-warnings
+#!/usr/bin/env -S node --experimental-vm-modules --no-warnings
 
 "use strict";
 
