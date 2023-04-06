@@ -32,9 +32,9 @@ dollar = match:$"a"+ rest:rest { return {match, rest}; }
 
 label = match:(foo:"bar"i { return {foo}; }) rest:rest { return {match, rest}; }
 
-pluck_1 = match:(@$"a"+ " "+) rest:rest { return {match, rest}; }
+pluck_1 = match:(@$"a"+ " "+ @$"b"+) rest:rest { return {match, rest}; }
 
-pluck_2 = match:(@$"a"+ " "+ @two:$"b"+) rest:rest { return {match, rest}; }
+pluck_2 = match:(@$"a"+ " "+ @two:$"b"+ &{ return two.length < 3 }) rest:rest { return {match, rest}; }
 
 sequence = match:("a" "b" "c") rest:rest { return {match, rest}; }
 
