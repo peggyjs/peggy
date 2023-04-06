@@ -12,6 +12,8 @@ rule = match:child rest:rest { return {match, rest}; }; child = "foo"
 
 paren = match:("1" { return 2; })+ rest:rest { return {match, rest}; }
 
+paren_pluck = match:(@[0-9] ",")+ rest:rest { return {match, rest}; }
+
 star = match:"a"* rest:rest { return {match, rest}; }
 
 plus = match:"a"+ rest:rest { return {match, rest}; }
