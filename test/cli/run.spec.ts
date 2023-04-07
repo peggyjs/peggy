@@ -100,6 +100,8 @@ interface Options {
   errorCode?: number | string;
   exitCode?: number;
   expected?: any;
+  onstdout?(s: string, cli: PeggyCLI): void;
+  onstderr?(s: string, cli: PeggyCLI): void;
 }
 
 /**
@@ -138,6 +140,16 @@ async function exec(opts: Options = {}): Promise<string> {
         "peggy",
         ...(opts.args || []),
       ]);
+
+    if (opts.onstdout) {
+      const oso = opts.onstdout; // Snapshot
+      out.on("data", buf => oso(buf, cli));
+    }
+
+    if (opts.onstderr) {
+      const ose = opts.onstderr; // Snapshot
+      err.on("data", buf => ose(buf, cli));
+    }
 
     cli.main().then(resolve, reject);
   });
@@ -271,6 +283,7 @@ async function checkSourceMap(
   expect(() => {
     // Make sure the file isn't there before we start
     fs.statSync(sourceMap);
+    console.log(`Delete file: "${sourceMap}"`);
   }).toThrow();
 
   await exec({
@@ -346,9 +359,11 @@ Options:
                                    "amd", "bare", "commonjs", "es", "globals",
                                    "umd", default: "commonjs")
   -o, --output <file>              Output file for generated parser. Use '-'
-                                   for stdout (the default, unless a test is
-                                   specified, in which case no parser is output
-                                   without this option)
+                                   for stdout (the default is a file next to
+                                   the input file with the extension change to
+                                   '.js', unless a test is specified, in which
+                                   case no parser is output without this
+                                   option)
   --plugin <module>                Comma-separated list of plugins. (can be
                                    specified multiple times)
   -m, --source-map [mapfile]       Generate a source map. If name is not
@@ -380,6 +395,9 @@ Options:
                                    will read from stdin.
   --trace                          Enable tracing in generated parser (default:
                                    false)
+  -w,--watch                       Watch the input file for changes, generating
+                                   the output once at the start, and again
+                                   whenever the file changes.
   -h, --help                       display help for command
 `;
 
@@ -1125,6 +1143,90 @@ error: Rule "unknownRule" is not defined
   |
 1 | foo=unknownRule
   |     ^^^^^^^^^^^`,
+    });
+  });
+
+  describe("--watch option", () => {
+    it("rejects stdin for watching", async() => {
+      await exec({
+        args: ["-w"],
+        errorCode: "peggy.invalidArgument",
+      });
+
+      await exec({
+        args: ["--watch", "-"],
+        errorCode: "peggy.invalidArgument",
+      });
+    });
+
+    it("errors when stopWatching is invalid", async() => {
+      const cli = new PeggyCLI();
+      await expect(cli.stopWatching()).rejects.toThrow();
+    });
+
+    it("handles grammar errors but keeps going", async() => {
+      const bad = path.join(__dirname, "fixtures", "bad.js");
+
+      let count = 0;
+      await exec({
+        args: ["-w", bad],
+        exitCode: 0,
+        onstderr(s, cli) {
+          // This is brittle.  Stderr gets the "file added" message, then
+          // the error, then a newline.
+          if (++count === 4) {
+            cli.stopWatching();
+          }
+        },
+      });
+    });
+
+    it("watches", async() => {
+      const grammar = path.join(__dirname, "fixtures", "simple.peggy");
+      let count = 0;
+      await exec({
+        args: ["-w", grammar],
+        exitCode: 0,
+        expected: /Wrote:/,
+        onstdout(s, cli) {
+          if (++count === 3) {
+            cli.stopWatching();
+          }
+        },
+      });
+    });
+
+    it("watches with tests", async() => {
+      const grammar = path.join(__dirname, "fixtures", "simple.peggy");
+      let count = 0;
+      await exec({
+        args: ["-w", "-t", "1", grammar],
+        exitCode: 0,
+        onstdout(s, cli) {
+          if (++count === 2) {
+            cli.stopWatching();
+          }
+        },
+      });
+    });
+
+    it("handles watcher errors", async() => {
+      const grammar = path.join(__dirname, "fixtures", "simple.peggy");
+      let count = 0;
+      await exec({
+        args: ["-w", grammar],
+        error: "Fake error",
+        onstdout(s, cli) {
+          if (++count === 3) {
+            cli.watcher?.watcher.emit("error", new Error("Fake error"));
+          }
+        },
+      });
+    });
+
+    afterAll(() => {
+      const out = path.join(__dirname, "fixtures", "simple.js");
+      fs.unlinkSync(out);
     });
   });
 });
