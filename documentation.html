@@ -785,7 +785,12 @@ integer "simple number"
   <dt><code>( <em>expression</em> )</code></dt>
 
   <dd>
-    <p>Match a subexpression and return its match result.</p>
+    <p>Match a subexpression and return its match result.  Parentheses create
+    a new local context for the <a href="#action-execution-environment">Action
+    Execution Environment</a> as well as plucks with the <code>@</code>
+    operator.  Note that the action block in the following example returns
+    <code>2</code> from the parenthesized expression, NOT from the rule -- the
+    rule returns an array of <code>2</code>'s due to the <code>+</code> operator.</p>
 
     <div class="example">
       <div>
@@ -796,6 +801,22 @@ integer "simple number"
       <div class="try">
         <em>Try it:</em>
         <input type="text" value="11" class="exampleInput" name="paren">
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <p>Similarly, in the next example, the pluck operator applies to the
+    return value of the parentheses, not the rule:</p>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>paren_pluck = (@[0-9] ",")+</code></div>
+        <div><em>Matches:</em> <code>"1,"</code>, <code>"2,3,"</code></div>
+        <div><em>Does not match:</em> <code>"2"</code>, <code>","</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="1,2,3," class="exampleInput" name="paren_pluck">
         <div class="result"></div>
       </div>
     </div>
@@ -1084,9 +1105,11 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
 
   <dd>
     <p>Match the expression and if the label exists, remember its match result
-    under given label. The label must be a Peggy
-    <a href="#identifiers">identifier</a>, and must be valid as a function parameter
-      in the language that is being generated (by default, JavaScript).</p>
+      under given label. The label must be a Peggy
+      <a href="#identifiers">identifier</a>, and must be valid as a function
+      parameter in the language that is being generated (by default,
+      JavaScript).  Labels are only useful for later reference in a semantic
+      predicate at this time.</p>
 
     <p>Return the value of this expression from the rule, or "pluck" it. You
       may not have an action for this rule. The expression must not be a
@@ -1102,7 +1125,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
     <div class="example">
       <div>
         <div><em>Example:</em> <code>pluck_1 = @$"a"+ " "+ @$"b"+</code></div>
-        <div><em>Matches:</em> <code>"aaa "</code>, <code>"a  "</code></div>
+        <div><em>Matches:</em> <code>"aaa bb"</code>, <code>"a  "</code></div>
         <div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
       </div>
       <div class="try">
@@ -1114,13 +1137,13 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
 
     <div class="example">
       <div>
-        <div><em>Example:</em> <code>pluck_2 = @$"a"+ " "+ @two:$"b"+</code></div>
-        <div><em>Matches:</em> <code>"aaa b"</code>, <code>"a  bbb"</code></div>
-        <div><em>Does not match:</em> <code>"b"</code>, <code>" "</code></div>
+        <div><em>Example:</em> <code>pluck_2 = @$"a"+ " "+ @two:$"b"+ &{ return two.length < 3 } </code></div>
+        <div><em>Matches:</em> <code>"aaa b"</code>, <code>"a  bb"</code></div>
+        <div><em>Does not match:</em> <code>"a bbbb"</code>, <code>"b"</code>, <code>" "</code></div>
       </div>
       <div class="try">
         <em>Try it:</em>
-        <input type="text" value="aaa   bbb" class="exampleInput" name="pluck_2">
+        <input type="text" value="aaa   bb" class="exampleInput" name="pluck_2">
         <div class="result"></div>
       </div>
     </div>
@@ -1455,7 +1478,7 @@ note: Step 3: call itself without input consumption - left recursion
 
 <p><code>source</code> is the a string or object that was supplied in the
   <a href="#grammar-source"><code>grammarSource</code></a> parser option.</p>
-  
+
 <p>For certain special cases, you can use an instance of the
   <code>GrammarLocation</code> class as the <code>grammarSource</code>.
   <code>GrammarLocation</code> allows you to specify the offset of the grammar
