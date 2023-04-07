@@ -12,6 +12,8 @@ rule = match:child rest:rest { return {match, rest}; }; child = "foo"
 
 paren = match:("1" { return 2; })+ rest:rest { return {match, rest}; }
 
+paren_pluck = match:(@[0-9] ",")+ rest:rest { return {match, rest}; }
+
 star = match:"a"* rest:rest { return {match, rest}; }
 
 plus = match:"a"+ rest:rest { return {match, rest}; }
@@ -32,9 +34,9 @@ dollar = match:$"a"+ rest:rest { return {match, rest}; }
 
 label = match:(foo:"bar"i { return {foo}; }) rest:rest { return {match, rest}; }
 
-pluck_1 = match:(@$"a"+ " "+) rest:rest { return {match, rest}; }
+pluck_1 = match:(@$"a"+ " "+ @$"b"+) rest:rest { return {match, rest}; }
 
-pluck_2 = match:(@$"a"+ " "+ @two:$"b"+) rest:rest { return {match, rest}; }
+pluck_2 = match:(@$"a"+ " "+ @two:$"b"+ &{ return two.length < 3 }) rest:rest { return {match, rest}; }
 
 sequence = match:("a" "b" "c") rest:rest { return {match, rest}; }
 
