@@ -12,6 +12,9 @@ Released: TBD
 
 ### Minor Changes
 
+- [#404](https://github.com/peggyjs/peggy/issues/404) Add support for -w/--watch
+  to the command line interface.  From @hildjj.
+
 ### Bug Fixes
 
 3.0.2

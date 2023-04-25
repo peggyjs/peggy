@@ -11,7 +11,7 @@
   "author": "Joe Hildebrand <joe-github@cursive.net>",
   "license": "MIT",
   "devDependencies": {
-    "puppeteer": "^19.7.5"
+    "puppeteer": "^19.8.5"
   },
   "engines": {
     "node": ">=14"

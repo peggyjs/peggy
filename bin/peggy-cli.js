@@ -64,6 +64,16 @@ function readFile(name) {
  * @property {stream.Writable} [err] StdErr.
  */
 
+/**
+ * @typedef {object} ErrorOptions
+ * @property {string} [code="peggy.invalidArgument"] Code for exception if
+ *   throwing.
+ * @property {number} [exitCode=1] Exit code if exiting.
+ * @property {peggy.SourceText[]} [sources=[]] Source text for formatting compile errors.
+ * @property {Error} [error] Error to extract message from.
+ * @property {string} [message] Error message, only used internally.
+ */
+
 // Command line processing
 class PeggyCLI extends Command {
   /**
@@ -98,6 +108,10 @@ class PeggyCLI extends Command {
     this.testText = null;
     /** @type {string?} */
     this.outputJS = null;
+    /** @type {string?} */
+    this.lastError = null;
+    /** @type {import('./watcher.js')?} */
+    this.watcher = null;
 
     this
       .version(peggy.VERSION, "-v, --version")
@@ -170,7 +184,7 @@ class PeggyCLI extends Command {
           .choices(MODULE_FORMATS)
           .default("commonjs")
       )
-      .option("-o, --output <file>", "Output file for generated parser. Use '-' for stdout (the default, unless a test is specified, in which case no parser is output without this option)")
+      .option("-o, --output <file>", "Output file for generated parser. Use '-' for stdout (the default is a file next to the input file with the extension change to '.js', unless a test is specified, in which case no parser is output without this option)")
       .option(
         "--plugin <module>",
         "Comma-separated list of plugins. (can be specified multiple times)",
@@ -193,6 +207,7 @@ class PeggyCLI extends Command {
         "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2. A filename of '-' will read from stdin."
       ).conflicts("test"))
       .option("--trace", "Enable tracing in generated parser", false)
+      .option("-w,--watch", "Watch the input file for changes, generating the output once at the start, and again whenever the file changes.")
       .addOption(
         // Not interesting yet.  If it becomes so, unhide the help.
         new Option("--verbose", "Enable verbose logging")
@@ -274,9 +289,14 @@ class PeggyCLI extends Command {
         this.outputFile = this.progOptions.output;
         this.outputJS = this.progOptions.output;
 
+        if ((this.inputFile === "-") && this.argv.watch) {
+          this.argv.watch = false; // Make error throw.
+          this.error("Can't watch stdin");
+        }
+
         if (!this.outputFile) {
           if (this.inputFile !== "-") {
-            this.outputJS = this.inputFile.substr(
+            this.outputJS = this.inputFile.slice(
               0,
               this.inputFile.length - path.extname(this.inputFile).length
             ) + ".js";
@@ -341,12 +361,7 @@ class PeggyCLI extends Command {
    * message provided.
    *
    * @param {string} message The message to print.
-   * @param {object} [opts] Options
-   * @param {string} [opts.code="peggy.invalidArgument"] Code for exception if
-   *   throwing.
-   * @param {number} [opts.exitCode=1] Exit code if exiting.
-   * @param {peggy.SourceText[]} [opts.sources=[]] Source text for formatting compile errors.
-   * @param {Error} [opts.error] Error to extract message from.
+   * @param {ErrorOptions} [opts] Options
    */
   error(message, opts = {}) {
     opts = {
@@ -370,7 +385,11 @@ class PeggyCLI extends Command {
       message = `Error ${message}`;
     }
 
-    super.error(message, opts);
+    if (this.argv.watch) {
+      this.lastError = message;
+    } else {
+      super.error(message, opts);
+    }
   }
 
   static print(stream, ...args) {
@@ -604,7 +623,12 @@ class PeggyCLI extends Command {
     }
   }
 
-  async main() {
+  /**
+   * Process the command line once.
+   *
+   * @returns {Promise<number>}
+   */
+  async run() {
     let inputStream = undefined;
 
     if (this.inputFile === "-") {
@@ -664,6 +688,54 @@ class PeggyCLI extends Command {
       });
     }
     return 0;
+  }
+
+  /**
+   * Stops watching input file.
+   */
+  async stopWatching() {
+    if (!this.watcher) {
+      throw new Error("Not watching");
+    }
+    await this.watcher.close();
+    this.watcher = null;
+  }
+
+  /**
+   * Entry point.  If in watch mode, does `run` in a loop, catching errors,
+   * otherwise does `run` once.
+   *
+   * @returns {Promise<number>}
+   */
+  main() {
+    if (this.argv.watch) {
+      const Watcher = require("./watcher.js"); // Lazy: usually not needed.
+      const hasTest = this.progOptions.test || this.progOptions.testFile;
+
+      this.watcher = new Watcher(this.inputFile);
+
+      const that = this;
+      this.watcher.on("change", async() => {
+        PeggyCLI.print(this.std.err, `"${that.inputFile}" changed...`);
+        this.lastError = null;
+        await that.run();
+
+        if (that.lastError) {
+          PeggyCLI.print(this.std.err, that.lastError);
+        } else if (!hasTest) {
+          PeggyCLI.print(this.std.err, `Wrote: "${that.outputFile}"`);
+        }
+      });
+
+      return new Promise((resolve, reject) => {
+        this.watcher.on("error", er => {
+          reject(er);
+        });
+        this.watcher.on("close", () => resolve(0));
+      });
+    } else {
+      return this.run();
+    }
   }
 
   // For some reason, after running through rollup, typescript can't see
