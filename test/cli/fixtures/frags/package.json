@@ -1,0 +1,8 @@
+{
+  "name": "frags",
+  "version": "0.0.0",
+  "description": "Fragments of peggy grammars, in an npm package",
+  "private": true,
+  "author": "Joe Hildebrand <joe-github@cursive.net>",
+  "license": "MIT"
+}

@@ -23,7 +23,7 @@
   },
   "scripts": {
     "clean": "rimraf build browser bin/*.map && mkdir browser",
-    "parser": "node bin/peggy.js -o lib/parser.js --format commonjs src/parser.pegjs",
+    "parser": "node bin/peggy.js -o lib/parser.js --format commonjs src/parser.pegjs && node bin/peggy.js -o lib/compiler/passes/js-imports.js --format commonjs src/js-imports.peggy src/parser.pegjs",
     "examples": "node bin/peggy.js -c docs/js/options.js docs/js/examples.peggy",
     "set_version": "node ./tools/set_version",
     "lint": "eslint . --ext js,ts,mjs",

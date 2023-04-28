@@ -17,7 +17,7 @@ describe("watches files", () => {
         resolve();
       });
     });
-    w.watcher.emit("error", new Error("Fake error"));
+    w.watchers[0].emit("error", new Error("Fake error"));
     return p;
   });
 
@@ -27,14 +27,41 @@ describe("watches files", () => {
     const base = path.basename(fn);
     const w = new Watcher(fn);
     w.on("change", () => count++);
-    w.watcher.emit("change", "rename", base + "_ANOTHER");
-    w.watcher.emit("change", "rename", base);
+    w.watchers[0].emit("change", "rename", base + "_ANOTHER");
+    w.watchers[0].emit("change", "rename", base);
     setTimeout(() => {
-      w.watcher.emit("change", "rename", base);
+      w.watchers[0].emit("change", "rename", base);
     }, Watcher.interval * 0.25);
     setTimeout(() => {
       expect(count).toBe(1);
+      w.watchers[0].emit("change", "rename", base);
+    }, Watcher.interval * 1.5);
+    setTimeout(() => {
+      expect(count).toBe(2);
       w.close().then(done);
-    }, Watcher.interval * 1.25);
+    }, Watcher.interval * 2);
+  });
+
+  it("closes after an error", done => {
+    let count = 0;
+    const fn = __filename;
+    const base = path.basename(fn);
+    const w = new Watcher(fn);
+    w.on("change", () => count++);
+    w.on("error", () => {
+      // Ignored
+    });
+    const firstWatcher = w.watchers[0];
+    // Emits error, then closes.  w.timeout = ERROR
+    firstWatcher.emit("error", new Error("Fake error"));
+    setTimeout(() => {
+      // Simulate an out-of-order file change while multiple watchers are
+      // closing.
+      firstWatcher.emit("change", "rename", base);
+    }, Watcher.interval * 0.25);
+    setTimeout(() => {
+      expect(count).toBe(0);
+      done();
+    }, Watcher.interval * 0.5);
   });
 });

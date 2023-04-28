@@ -80,9 +80,9 @@ declare namespace ast {
   /** The main Peggy AST class returned by the parser. */
   interface Grammar extends Node<"grammar"> {
     /** Initializer that run once when importing generated parser module. */
-    topLevelInitializer?: TopLevelInitializer;
+    topLevelInitializer?: TopLevelInitializer | TopLevelInitializer[];
     /** Initializer that run each time when `parser.parse()` method in invoked. */
-    initializer?: Initializer;
+    initializer?: Initializer | Initializer[];
     /** List of all rules in that grammar. */
     rules: Rule[];
 
@@ -133,7 +133,10 @@ declare namespace ast {
    */
   interface TopLevelInitializer extends CodeBlock<"top_level_initializer"> {}
 
-  /** Code that runs on each `parse()` call of the generated parser. */
+  /**
+   * Code that runs on each `parse()` call of the generated parser.
+   * May be split into multiple chunks if there are multiple input files.
+   */
   interface Initializer extends CodeBlock<"initializer"> {}
 
   interface Rule extends Expr<"rule"> {
@@ -664,7 +667,11 @@ export namespace compiler {
        *        run of the `parse()` method of the generated parser
        * @param args Any arguments passed to the `Visitor`
        */
-      initializer?(node: ast.Initializer, ...args: any[]): any;
+      initializer?(
+        node: ast.Initializer,
+        ...args: any[]
+      ): any;
+
       /**
        * Default behavior: run visitor on `expression` and return it result
        *

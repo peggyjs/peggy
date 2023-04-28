@@ -197,10 +197,14 @@ describe("peg.d.ts", () => {
         expectExact<peggy.ast.Grammar>()(node)();
         expectExact<"grammar">()(node.type)();
         expectExact<peggy.LocationRange>()(node.location)();
-        expectExact<peggy.ast.TopLevelInitializer | undefined>()(
-          node.topLevelInitializer
-        )();
-        expectExact<peggy.ast.Initializer | undefined>()(node.initializer)();
+        expectExact<
+          | peggy.ast.TopLevelInitializer
+          | peggy.ast.TopLevelInitializer[]
+          | undefined>()(node.topLevelInitializer)();
+        expectExact<
+          | peggy.ast.Initializer
+          | peggy.ast.Initializer[]
+          | undefined>()(node.initializer)();
         expectExact<peggy.ast.Rule[]>()(node.rules)();
         expectExact<string[] | undefined>()(node.literals)();
         expectExact<peggy.ast.GrammarCharacterClass[] | undefined>()(
@@ -217,10 +221,22 @@ describe("peg.d.ts", () => {
         )();
 
         if (node.topLevelInitializer) {
-          visit(node.topLevelInitializer);
+          if (Array.isArray(node.topLevelInitializer)) {
+            for (const tli of node.topLevelInitializer) {
+              visit(tli);
+            }
+          } else {
+            visit(node.topLevelInitializer);
+          }
         }
         if (node.initializer) {
-          visit(node.initializer);
+          if (Array.isArray(node.initializer)) {
+            for (const init of node.initializer) {
+              visit(init);
+            }
+          } else {
+            visit(node.initializer);
+          }
         }
         node.rules.forEach(visit);
       },
