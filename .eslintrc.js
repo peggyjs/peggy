@@ -15,6 +15,9 @@ module.exports = {
     "*.min.js",
     "build",
   ],
+  parserOptions: {
+    project: "tsconfig.json",
+  },
   overrides: [
     {
       files: ["rollup.config.js", "*.mjs"],
