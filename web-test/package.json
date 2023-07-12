@@ -14,6 +14,6 @@
     "puppeteer": "^20.8.1"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

@@ -10,8 +10,14 @@ Released: TBD
 
 ### Major Changes
 
+- [#420](https://github.com/peggyjs/peggy/pull/420) BREAKING: Node v16+ is now
+  required for running the CLI or using Peggy as a library.  Generated code
+  still targets older runtimes.
+
 ### Minor Changes
 
+- [#420](https://github.com/peggyjs/peggy/pull/420) Updated dependencies to
+  avoid audit warnings.  From @hildjj.
 - [#404](https://github.com/peggyjs/peggy/issues/404) Add support for -w/--watch
   to the command line interface.  From @hildjj.
 
