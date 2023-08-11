@@ -704,7 +704,7 @@ integer "simple number"
       The list of characters can also contain ranges (e.g. <code>[a-z]</code>
       means “all lowercase letters”). Preceding the characters with <code>^</code>
       inverts the matched set (e.g. <code>[^a-z]</code> means “all character but
-      lowercase letters”). Appending <code>i</code> right after the literal makes
+      lowercase letters”). Appending <code>i</code> right after the class makes
       the match case-insensitive.</p>
 
     <div class="example">
@@ -722,13 +722,13 @@ integer "simple number"
 
     <div class="example">
       <div>
-        <div><em>Example:</em> <code>class_i = [^a-z]i</code></div>
+        <div><em>Example:</em> <code>not_class_i = [^a-z]i</code></div>
         <div><em>Matches:</em> <code>"="</code>, <code>" "</code></div>
         <div><em>Does not match:</em> <code>"F"</code>, <code>"f"</code>, <code>""</code></div>
       </div>
       <div class="try">
         <em>Try it:</em>
-        <input type="text" value="=" class="exampleInput" name="class_i">
+        <input type="text" value="=" class="exampleInput" name="not_class_i">
         <div class="result"></div>
       </div>
     </div>
@@ -759,7 +759,7 @@ integer "simple number"
   <dd>
     <p>Match a subexpression and return its match result.  Parentheses create
     a new local context for the <a href="#action-execution-environment">Action
-    Execution Environment</a> as well as plucks with the <code>@</code>
+    Execution Environment</a> as well as <a href="#pluck">plucks</a> with the <code>@</code>
     operator.  Note that the action block in the following example returns
     <code>2</code> from the parenthesized expression, NOT from the rule -- the
     rule returns an array of <code>2</code>'s due to the <code>+</code> operator.</p>
@@ -777,7 +777,7 @@ integer "simple number"
       </div>
     </div>
 
-    <p>Similarly, in the next example, the pluck operator applies to the
+    <p>Similarly, in the next example, the <a href="#pluck">pluck</a> operator applies to the
     return value of the parentheses, not the rule:</p>
 
     <div class="example">
@@ -859,6 +859,7 @@ integer "simple number"
       <li><code>expression |..|</code> is equivalent to <code>expression |0..|</code>
       and <code>expression *</code></li>
       <li><code>expression |1..|</code> is equivalent to <code>expression +</code></li>
+      <li><code>expression |..1|</code> is equivalent to <code>expression ?</code></li>
     </ul>
 
     <p>Optionally, <code>delimiter</code> expression can be specified. The
@@ -1032,8 +1033,9 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
     <p>Try to match the expression. If the match succeeds, return the matched
       text instead of the match result.</p>
 
-    <p>If you need to return the matched text in an action, use the
-      <a href="#action-execution-environment"><code>text()</code> function</a>.
+    <p>If you need to return the matched text in an action, you can use the
+      <a href="#action-execution-environment"><code>text()</code></a> function, but
+      returning a labeled <code>$</code> expression is sometimes more clear..
     </p>
 
     <div class="example">
@@ -1073,7 +1075,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
     </div>
   </dd>
 
-  <dt><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
+  <dt id="pluck"><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
 
   <dd>
     <p>Match the expression and if the label exists, remember its match result
@@ -1291,7 +1293,7 @@ word
 _
   = [ \t]*</code></pre>
 
-<p>Note that the <code>@</code> in the tail section plucks the word out of the
+<p>Note that the <code>@</code> in the tail section <a href="#pluck">plucks</a> the word out of the
   parentheses, NOT out of the rule itself.</p>
 
 <h2 id="identifiers">Peggy Identifiers</h2>
