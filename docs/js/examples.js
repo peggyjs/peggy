@@ -173,7 +173,7 @@ function peg$parse(input, options) {
   var peg$FAILED = {};
   var peg$source = options.grammarSource;
 
-  var peg$startRuleFunctions = { literal: peg$parseliteral, literal_i: peg$parseliteral_i, any: peg$parseany, class: peg$parseclass, class_i: peg$parseclass_i, rule: peg$parserule, child: peg$parsechild, paren: peg$parseparen, paren_pluck: peg$parseparen_pluck, star: peg$parsestar, plus: peg$parseplus, repetition: peg$parserepetition, maybe: peg$parsemaybe, posAssertion: peg$parseposAssertion, negAssertion: peg$parsenegAssertion, posPredicate: peg$parseposPredicate, negPredicate: peg$parsenegPredicate, dollar: peg$parsedollar, label: peg$parselabel, pluck_1: peg$parsepluck_1, pluck_2: peg$parsepluck_2, sequence: peg$parsesequence, action: peg$parseaction, alt: peg$parsealt, rest: peg$parserest };
+  var peg$startRuleFunctions = { literal: peg$parseliteral, literal_i: peg$parseliteral_i, any: peg$parseany, class: peg$parseclass, not_class_i: peg$parsenot_class_i, rule: peg$parserule, child: peg$parsechild, paren: peg$parseparen, paren_pluck: peg$parseparen_pluck, star: peg$parsestar, plus: peg$parseplus, repetition: peg$parserepetition, maybe: peg$parsemaybe, posAssertion: peg$parseposAssertion, negAssertion: peg$parsenegAssertion, posPredicate: peg$parseposPredicate, negPredicate: peg$parsenegPredicate, dollar: peg$parsedollar, label: peg$parselabel, pluck_1: peg$parsepluck_1, pluck_2: peg$parsepluck_2, sequence: peg$parsesequence, action: peg$parseaction, alt: peg$parsealt, rest: peg$parserest };
   var peg$startRuleFunction = peg$parseliteral;
 
   var peg$c0 = "foo";
@@ -485,7 +485,7 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parseclass_i() {
+  function peg$parsenot_class_i() {
     var s0, s1, s2;
 
     s0 = peg$currPos;

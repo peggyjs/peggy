@@ -54,20 +54,35 @@ stylesheets: ["css/documentation.css"]
 
 <h2 id="installation">Installation</h2>
 
+<p>Note: When you pre-generate a grammar using the
+  <a href="#generating-a-parser-command-line">Peggy Command Line Interface</a>,
+  no runtime is required, and Peggy can be a development-only dependency.</p>
+
 <h3 id="installation-node-js">Node.js</h3>
 
-<p>To use the <code>peggy</code> command, install Peggy globally:</p>
+<p>To use the <code>peggy</code> command:</p>
 
-<pre><code class="language-console">$ npm install -g peggy</code></pre>
+<pre><code class="language-console">$ npm install --save-dev peggy</code></pre>
+<pre><code class="language-console">$ npx peggy --help</code></pre>
 
-<p>To use the JavaScript API, install Peggy locally:</p>
+In your <code>package.json</code> file, you can do something like:
 
-<pre><code class="language-console">$ npm install peggy</code></pre>
-
-<p>If you need both the <code>peggy</code> command and the JavaScript API,
-  install Peggy both ways.</p>
+<pre><code class="language-json">
+{
+  "scripts": {
+    "parser": "peggy -o lib/parser.js --format es src/parser.peggy"
+  }
+}
+</code></pre>
 
 <h3 id="installation-browser">Browser</h3>
+
+<p>NOTE: For most uses of Peggy, use the command line version at build time,
+  outputting the generated parser to a static JavaScript file that you can
+  import later as needed.  The API is most useful for tooling that needs to
+  process user-edited grammar source, such as the <a href="online.html">online
+  Peggy editor</a>.  Generating the parser at runtime can be much slower than
+  executing pre-generated code.</p>
 
 <p>The easiest way to use Peggy from the browser is to pull the latest version
   from a CDN. Either of these should work:</p>
@@ -90,9 +105,10 @@ stylesheets: ["css/documentation.css"]
 
 <h2 id="generating-a-parser">Generating a Parser</h2>
 
-<p>Peggy generates parser from a grammar that describes expected input and can
-  specify what the parser returns (using semantic actions on matched parts of the
-  input). Generated parser itself is a JavaScript object with a simple API.</p>
+<p>Peggy generates a parser from a grammar that describes the expected input
+  and can specify what the parser returns (using semantic actions on matched
+  parts of the input). The generated parser itself is a JavaScript object with a
+  <a href="#using-the-parser">small API</a>.</p>
 
 <h3 id="generating-a-parser-command-line">Command Line</h3>
 
@@ -110,7 +126,7 @@ stylesheets: ["css/documentation.css"]
 <p>If you omit both input and output file, standard input and standard output
   are used.</p>
 
-<p>By default, the generated parser is in the Node.js module format. You can
+<p>By default, the generated parser is in the commonjs module format. You can
   override this using the <code>--format</code> option.</p>
 
 <p>You can tweak the generated parser with several options:</p>
@@ -285,11 +301,18 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 
 <h3 id="generating-a-parser-javascript-api">JavaScript API</h3>
 
+<p>Note again: this is an advanced usage of Peggy.  Most of the core use cases
+  of Peggy should prefer to generate a grammar at build time using the CLI.</p>
+
 <p>In Node.js, require the Peggy parser generator module:</p>
 
 <pre><code class="language-javascript">const peggy = require("peggy");</code></pre>
 
 <p>or:</p>
+
+<pre><code class="language-javascript">import peggy from "peggy";</code></pre>
+
+<p>With some configurations of Typescript, you might need:</p>
 
 <pre><code class="language-javascript">import * as peggy from "peggy";</code></pre>
 
@@ -304,7 +327,7 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 
 <pre><code class="language-javascript">const parser = peggy.generate("start = ('a' / 'b')+");</code></pre>
 
-<p>The method will return generated parser object or its source code as a string
+<p>The method will return a generated parser object or its source code as a string
   (depending on the value of the <code>output</code> option — see below). It will
   throw an exception if the grammar is invalid. The exception will contain a
   <code>message</code> property with more details about the error.</p>
@@ -378,8 +401,10 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
   <dd>
     <p>A string, one of:</p>
     <ul>
-      <li><code>"parser"</code> - return generated parser object.</li>
       <li><code>"source"</code> - return parser source code as a string.</li>
+      <li><code>"parser"</code> - return a generated <a href="#using-the-parser">parser object</a>.  This is
+        just the "source" output that has had `eval` run on it.  As such, some
+        formats, such as "es" may not work.</li>
       <li><code>"source-and-map"</code> - return a
         <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a>
         object; you can get source code by calling <code>toString()</code>
@@ -446,7 +471,8 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 
 <h2 id="using-the-parser">Using the Parser</h2>
 
-<p>To use the generated parser, call its <code>parse</code>
+<p>To use the generated parser, import it using your selected module approach
+  if needed, then call its <code>parse</code>
   method and pass an input string as a parameter. The method will return a parse
   result (the exact value depends on the grammar used to generate the parser) or
   throw an exception if the input is invalid. The exception will contain
@@ -704,7 +730,7 @@ integer "simple number"
       The list of characters can also contain ranges (e.g. <code>[a-z]</code>
       means “all lowercase letters”). Preceding the characters with <code>^</code>
       inverts the matched set (e.g. <code>[^a-z]</code> means “all character but
-      lowercase letters”). Appending <code>i</code> right after the literal makes
+      lowercase letters”). Appending <code>i</code> right after the class makes
       the match case-insensitive.</p>
 
     <div class="example">
@@ -722,13 +748,13 @@ integer "simple number"
 
     <div class="example">
       <div>
-        <div><em>Example:</em> <code>class_i = [^a-z]i</code></div>
+        <div><em>Example:</em> <code>not_class_i = [^a-z]i</code></div>
         <div><em>Matches:</em> <code>"="</code>, <code>" "</code></div>
         <div><em>Does not match:</em> <code>"F"</code>, <code>"f"</code>, <code>""</code></div>
       </div>
       <div class="try">
         <em>Try it:</em>
-        <input type="text" value="=" class="exampleInput" name="class_i">
+        <input type="text" value="=" class="exampleInput" name="not_class_i">
         <div class="result"></div>
       </div>
     </div>
@@ -759,7 +785,7 @@ integer "simple number"
   <dd>
     <p>Match a subexpression and return its match result.  Parentheses create
     a new local context for the <a href="#action-execution-environment">Action
-    Execution Environment</a> as well as plucks with the <code>@</code>
+    Execution Environment</a> as well as <a href="#pluck">plucks</a> with the <code>@</code>
     operator.  Note that the action block in the following example returns
     <code>2</code> from the parenthesized expression, NOT from the rule -- the
     rule returns an array of <code>2</code>'s due to the <code>+</code> operator.</p>
@@ -777,7 +803,7 @@ integer "simple number"
       </div>
     </div>
 
-    <p>Similarly, in the next example, the pluck operator applies to the
+    <p>Similarly, in the next example, the <a href="#pluck">pluck</a> operator applies to the
     return value of the parentheses, not the rule:</p>
 
     <div class="example">
@@ -859,6 +885,7 @@ integer "simple number"
       <li><code>expression |..|</code> is equivalent to <code>expression |0..|</code>
       and <code>expression *</code></li>
       <li><code>expression |1..|</code> is equivalent to <code>expression +</code></li>
+      <li><code>expression |..1|</code> is equivalent to <code>expression ?</code></li>
     </ul>
 
     <p>Optionally, <code>delimiter</code> expression can be specified. The
@@ -1032,8 +1059,9 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
     <p>Try to match the expression. If the match succeeds, return the matched
       text instead of the match result.</p>
 
-    <p>If you need to return the matched text in an action, use the
-      <a href="#action-execution-environment"><code>text()</code> function</a>.
+    <p>If you need to return the matched text in an action, you can use the
+      <a href="#action-execution-environment"><code>text()</code></a> function, but
+      returning a labeled <code>$</code> expression is sometimes more clear..
     </p>
 
     <div class="example">
@@ -1073,7 +1101,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
     </div>
   </dd>
 
-  <dt><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
+  <dt id="pluck"><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
 
   <dd>
     <p>Match the expression and if the label exists, remember its match result
@@ -1102,7 +1130,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
       </div>
       <div class="try">
         <em>Try it:</em>
-        <input type="text" value="aaa   " class="exampleInput" name="pluck_1">
+        <input type="text" value="aaa   bb" class="exampleInput" name="pluck_1">
         <div class="result"></div>
       </div>
     </div>
@@ -1291,7 +1319,7 @@ word
 _
   = [ \t]*</code></pre>
 
-<p>Note that the <code>@</code> in the tail section plucks the word out of the
+<p>Note that the <code>@</code> in the tail section <a href="#pluck">plucks</a> the word out of the
   parentheses, NOT out of the rule itself.</p>
 
 <h2 id="identifiers">Peggy Identifiers</h2>

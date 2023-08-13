@@ -20,8 +20,12 @@ Released: TBD
   avoid audit warnings.  From @hildjj.
 - [#404](https://github.com/peggyjs/peggy/issues/404) Add support for -w/--watch
   to the command line interface.  From @hildjj.
+- [#415](https://github.com/peggyjs/peggy/issues/415) Added `browser` key to package.json, pointing to Webpack output.
 
 ### Bug Fixes
+
+- [#405](https://github.com/peggyjs/peggy/pull/405) Doc example doesn't correspond to code example.  From @hildjj
+- [#415](https://github.com/peggyjs/peggy/issues/415) Make docs match reality with `import`.
 
 3.0.2
 -----
