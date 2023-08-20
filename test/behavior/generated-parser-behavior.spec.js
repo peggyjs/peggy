@@ -2677,13 +2677,13 @@ describe("generated parser behavior", () => {
         });
 
         it("reports expectations correctly with multiple alternatives", () => {
-          const parser = peg.generate("start = 'a' / 'b' / 'c'", options);
+          const parser = peg.generate("start = 'aa' / 'bb' / 'cc'", options);
 
           expect(parser).to.failToParse("d", {
             expected: [
-              { type: "literal", text: "a", ignoreCase: false },
-              { type: "literal", text: "b", ignoreCase: false },
-              { type: "literal", text: "c", ignoreCase: false },
+              { type: "literal", text: "aa", ignoreCase: false },
+              { type: "literal", text: "bb", ignoreCase: false },
+              { type: "literal", text: "cc", ignoreCase: false },
             ],
           });
         });
@@ -2721,10 +2721,10 @@ describe("generated parser behavior", () => {
         });
 
         it("builds message correctly with multiple alternatives", () => {
-          const parser = peg.generate("start = 'a' / 'b' / 'c'", options);
+          const parser = peg.generate("start = 'aa' / 'bb' / 'cc'", options);
 
           expect(parser).to.failToParse("d", {
-            message: "Expected \"a\", \"b\", or \"c\" but \"d\" found.",
+            message: "Expected \"aa\", \"bb\", or \"cc\" but \"d\" found.",
           });
         });
 
@@ -2753,10 +2753,10 @@ describe("generated parser behavior", () => {
         });
 
         it("sorts expectations", () => {
-          const parser = peg.generate("start = 'c' / 'b' / 'a'", options);
+          const parser = peg.generate("start = 'cc' / 'bb' / 'aa'", options);
 
           expect(parser).to.failToParse("d", {
-            message: "Expected \"a\", \"b\", or \"c\" but \"d\" found.",
+            message: "Expected \"aa\", \"bb\", or \"cc\" but \"d\" found.",
           });
         });
       });

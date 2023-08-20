@@ -382,10 +382,6 @@ Options:
   -S, --start-rule <rule>          When testing, use the given rule as the
                                    start rule.  If this rule is not in the
                                    allowed start rules, it will be added.
-  --mergeCharacterClasses          Perform various optimizations on choice,
-                                   literal and class nodes to improve the
-                                   performance of the generated parser.
-                                   (default: false)
   -t, --test <text>                Test the parser with the given text,
                                    outputting the result of running the parser
                                    instead of the parser itself. If the input
