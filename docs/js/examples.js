@@ -188,6 +188,7 @@ function peg$parse(input, options) {
   var peg$r0 = /^[a-z]/;
   var peg$r1 = /^[^a-z]/i;
   var peg$r2 = /^[0-9]/;
+  var peg$r3 = /^[a-c]/;
 
   var peg$e0 = peg$literalExpectation("foo", false);
   var peg$e1 = peg$literalExpectation("foo", true);
@@ -202,7 +203,8 @@ function peg$parse(input, options) {
   var peg$e10 = peg$literalExpectation("bar", true);
   var peg$e11 = peg$literalExpectation(" ", false);
   var peg$e12 = peg$literalExpectation("c", false);
-  var peg$e13 = peg$otherExpectation("The rest of the input");
+  var peg$e13 = peg$classExpectation([["a", "c"]], false, false);
+  var peg$e14 = peg$otherExpectation("The rest of the input");
 
   var peg$f0 = function(match, rest) { return {match, rest}; };
   var peg$f1 = function(match, rest) { return {match, rest}; };
@@ -1440,30 +1442,12 @@ function peg$parse(input, options) {
     var s0, s1, s2;
 
     s0 = peg$currPos;
-    if (input.charCodeAt(peg$currPos) === 97) {
-      s1 = peg$c3;
+    if (peg$r3.test(input.charAt(peg$currPos))) {
+      s1 = input.charAt(peg$currPos);
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$e8); }
-    }
-    if (s1 === peg$FAILED) {
-      if (input.charCodeAt(peg$currPos) === 98) {
-        s1 = peg$c4;
-        peg$currPos++;
-      } else {
-        s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$e9); }
-      }
-      if (s1 === peg$FAILED) {
-        if (input.charCodeAt(peg$currPos) === 99) {
-          s1 = peg$c7;
-          peg$currPos++;
-        } else {
-          s1 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$e12); }
-        }
-      }
+      if (peg$silentFails === 0) { peg$fail(peg$e13); }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parserest();
@@ -1503,7 +1487,7 @@ function peg$parse(input, options) {
     s0 = input.substring(s0, peg$currPos);
     peg$silentFails--;
     s1 = peg$FAILED;
-    if (peg$silentFails === 0) { peg$fail(peg$e13); }
+    if (peg$silentFails === 0) { peg$fail(peg$e14); }
 
     return s0;
   }
