@@ -166,5 +166,40 @@ describe("plugin API", () => {
       expect(parser.parse("x", { startRule: "b" })).to.equal("x");
       expect(parser.parse("x", { startRule: "c" })).to.equal("x");
     });
+
+    it("can munge the bytecode", () => {
+      // This test demonstrates that plugins can munge the bytecode, but
+      // is also here to ensure full coverage in generate-js.js.
+      // With the current bytecode generator, compileInputChunkCondition
+      // always ensures that skipAccept will be set on any ACCEPT_N with
+      // a length greater than one. This means that the line that would
+      // normally handle that gets no coverage.
+      //
+      // We fix that here by inserting an effective no-op (PUSH_CUR_POS, POP)
+      // which will prevent compileInputChunkCondition from recognizing the
+      // MATCH_STRING_IC .. ACCEPT_N pattern.
+      const plugin = {
+        use(config) {
+          function munge(ast) {
+            expect(ast.rules.length).to.equal(1);
+            const bc = ast.rules[0].bytecode;
+            expect(bc[0]).to.equal(19 /* MATCH_STRING_IC */);
+            bc.splice(4, 0, 5 /* PUSH_CUR_POS */, 6 /* POP */);
+            bc[2] += 2;
+          }
+
+          config.passes.generate.splice(1, 0, munge);
+        },
+      };
+      const parser = peg.generate("start = 'abc'i", { plugins: [plugin], output: "source" });
+      // Lint complained about a long regex, so split and join.
+      const matcher = new RegExp([
+        /if \(input\.substr\(peg\$currPos, 3\)/,
+        /.toLowerCase\(\) === peg\$c0\) \{/,
+        /\s*s0 = peg\$currPos;/, // Inserted by the munged bytecode
+        /\s*s0 = input\.substr/,
+      ].map(r => r.source).join(""));
+      expect(parser.search(matcher)).to.be.greaterThan(0);
+    });
   });
 });
