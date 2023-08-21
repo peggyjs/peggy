@@ -12,23 +12,63 @@ describe("compiler pass |mergeCharacterClasses|", () => {
   it("Merges single character literals, class, and ref_rules", () => {
     expect(pass).to.changeAST(
       [
-        "one = three / 'a' / 'd' / [efh] / [c-g]",
-        "two = three / 'P' / [Q-T]",
+        "one = three / $('a' / 'd') / [c-f] / [efh] / [c-h] / [c-g]",
+        "two = 'P' / 'P' / three / 'P' / [Q-T]",
         "three = $('x' / [u-w])",
+        "four = 'a' / [aaa] / 'a'",
       ].join("\n"),
       {
         rules: [
           {
             name: "one",
-            expression: { type: "class", parts: ["a", ["c", "h"], ["u", "x"]], ignoreCase: false, inverted: false },
+            expression: {
+              type: "class",
+              parts: ["a", ["c", "h"], ["u", "x"]],
+              ignoreCase: false,
+              inverted: false,
+              location: {
+                start: { line: 1, column: 7 },
+                end: { line: 1, column: 59 },
+              },
+            },
           },
           {
             name: "two",
-            expression: { type: "class", parts: [["P", "T"], ["u", "x"]], ignoreCase: false, inverted: false },
+            expression: {
+              type: "class",
+              parts: [["P", "T"], ["u", "x"]],
+              ignoreCase: false,
+              inverted: false,
+              location: {
+                start: { line: 2, column: 7 },
+                end: { line: 2, column: 38 },
+              },
+            },
           },
           {
             name: "three",
-            expression: { type: "class", parts: [["u", "x"]], ignoreCase: false, inverted: false },
+            expression: {
+              type: "class",
+              parts: [["u", "x"]],
+              ignoreCase: false,
+              inverted: false,
+              location: {
+                start: { line: 3, column: 11 },
+                end: { line: 3, column: 22 },
+              },
+            },
+          },
+          {
+            name: "four",
+            expression: {
+              type: "literal",
+              value: "a",
+              ignoreCase: false,
+              location: {
+                start: { line: 4, column: 8 },
+                end: { line: 4, column: 25 },
+              },
+            },
           },
         ],
       },
@@ -73,6 +113,28 @@ describe("compiler pass |mergeCharacterClasses|", () => {
               alternatives: [
                 { type: "action" },
                 { type: "class", parts: [["u", "w"]], ignoreCase: false, inverted: false },
+              ],
+            },
+          },
+        ],
+      },
+      { mergeCharacterClasses: true }
+    );
+  });
+  it("Handles undefined rule_refs", () => {
+    expect(pass).to.changeAST(
+      [
+        "start = unknown / 'a' / [c-g]",
+      ].join("\n"),
+      {
+        rules: [
+          {
+            name: "start",
+            expression: {
+              type: "choice",
+              alternatives: [
+                { type: "rule_ref", name: "unknown" },
+                { type: "class", parts: ["a", ["c", "g"]], ignoreCase: false, inverted: false },
               ],
             },
           },
