@@ -182,17 +182,22 @@ describe("plugin API", () => {
       const plugin = {
         use(config) {
           function munge(ast) {
-            expect(ast.rules.length).to.equal(1);
-            const bc = ast.rules[0].bytecode;
+            expect(ast.rules.length).to.equal(2);
+            let bc = ast.rules[0].bytecode;
             expect(bc[0]).to.equal(op.MATCH_STRING_IC);
             bc.splice(4, 0, op.PUSH_CURR_POS, op.POP);
             bc[2] += 2;
+            bc = ast.rules[1].bytecode;
+            expect(bc[0]).to.equal(op.MATCH_STRING);
+            expect(bc[4]).to.equal(op.ACCEPT_STRING);
+            bc[4] = op.ACCEPT_N;
+            bc[5] = 1;
           }
 
           config.passes.generate.splice(1, 0, munge);
         },
       };
-      const parser = peg.generate("start = 'abc'i", { plugins: [plugin], output: "source" });
+      const parser = peg.generate("one = 'abc'i; two = 'a'", { plugins: [plugin], output: "source" });
       // Lint complained about a long regex, so split and join.
       const matcher = new RegExp([
         /if \(input\.substr\(peg\$currPos, 3\)/,
