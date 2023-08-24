@@ -3,6 +3,7 @@
 const chai = require("chai");
 const { SourceNode } = require("source-map");
 const peg = require("../../lib/peg");
+const op = require("../../lib/compiler/opcodes");
 
 const expect = chai.expect;
 
@@ -183,8 +184,8 @@ describe("plugin API", () => {
           function munge(ast) {
             expect(ast.rules.length).to.equal(1);
             const bc = ast.rules[0].bytecode;
-            expect(bc[0]).to.equal(19 /* MATCH_STRING_IC */);
-            bc.splice(4, 0, 5 /* PUSH_CUR_POS */, 6 /* POP */);
+            expect(bc[0]).to.equal(op.MATCH_STRING_IC);
+            bc.splice(4, 0, op.PUSH_CURR_POS, op.POP);
             bc[2] += 2;
           }
 
