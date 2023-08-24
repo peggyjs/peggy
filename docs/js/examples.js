@@ -422,8 +422,8 @@ function peg$parse(input, options) {
     var s0, s1, s2;
 
     s0 = peg$currPos;
-    if (input.substr(peg$currPos, 3).toLowerCase() === peg$c0) {
-      s1 = input.substr(peg$currPos, 3);
+    s1 = input.substr(peg$currPos, 3);
+    if (s1.toLowerCase() === peg$c0) {
       peg$currPos += 3;
     } else {
       s1 = peg$FAILED;
@@ -468,8 +468,8 @@ function peg$parse(input, options) {
     var s0, s1, s2;
 
     s0 = peg$currPos;
-    if (peg$r0.test(input.charAt(peg$currPos))) {
-      s1 = input.charAt(peg$currPos);
+    s1 = input.charAt(peg$currPos);
+    if (peg$r0.test(s1)) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
@@ -491,8 +491,8 @@ function peg$parse(input, options) {
     var s0, s1, s2;
 
     s0 = peg$currPos;
-    if (peg$r1.test(input.charAt(peg$currPos))) {
-      s1 = input.charAt(peg$currPos);
+    s1 = input.charAt(peg$currPos);
+    if (peg$r1.test(s1)) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
@@ -597,8 +597,8 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
     s1 = [];
     s2 = peg$currPos;
-    if (peg$r2.test(input.charAt(peg$currPos))) {
-      s3 = input.charAt(peg$currPos);
+    s3 = input.charAt(peg$currPos);
+    if (peg$r2.test(s3)) {
       peg$currPos++;
     } else {
       s3 = peg$FAILED;
@@ -626,8 +626,8 @@ function peg$parse(input, options) {
       while (s2 !== peg$FAILED) {
         s1.push(s2);
         s2 = peg$currPos;
-        if (peg$r2.test(input.charAt(peg$currPos))) {
-          s3 = input.charAt(peg$currPos);
+        s3 = input.charAt(peg$currPos);
+        if (peg$r2.test(s3)) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
@@ -912,8 +912,8 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
     s1 = peg$currPos;
     s2 = [];
-    if (peg$r2.test(input.charAt(peg$currPos))) {
-      s3 = input.charAt(peg$currPos);
+    s3 = input.charAt(peg$currPos);
+    if (peg$r2.test(s3)) {
       peg$currPos++;
     } else {
       s3 = peg$FAILED;
@@ -922,8 +922,8 @@ function peg$parse(input, options) {
     if (s3 !== peg$FAILED) {
       while (s3 !== peg$FAILED) {
         s2.push(s3);
-        if (peg$r2.test(input.charAt(peg$currPos))) {
-          s3 = input.charAt(peg$currPos);
+        s3 = input.charAt(peg$currPos);
+        if (peg$r2.test(s3)) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
@@ -968,8 +968,8 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
     s1 = peg$currPos;
     s2 = [];
-    if (peg$r2.test(input.charAt(peg$currPos))) {
-      s3 = input.charAt(peg$currPos);
+    s3 = input.charAt(peg$currPos);
+    if (peg$r2.test(s3)) {
       peg$currPos++;
     } else {
       s3 = peg$FAILED;
@@ -978,8 +978,8 @@ function peg$parse(input, options) {
     if (s3 !== peg$FAILED) {
       while (s3 !== peg$FAILED) {
         s2.push(s3);
-        if (peg$r2.test(input.charAt(peg$currPos))) {
-          s3 = input.charAt(peg$currPos);
+        s3 = input.charAt(peg$currPos);
+        if (peg$r2.test(s3)) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
@@ -1067,8 +1067,8 @@ function peg$parse(input, options) {
 
     s0 = peg$currPos;
     s1 = peg$currPos;
-    if (input.substr(peg$currPos, 3).toLowerCase() === peg$c5) {
-      s2 = input.substr(peg$currPos, 3);
+    s2 = input.substr(peg$currPos, 3);
+    if (s2.toLowerCase() === peg$c5) {
       peg$currPos += 3;
     } else {
       s2 = peg$FAILED;
@@ -1442,8 +1442,8 @@ function peg$parse(input, options) {
     var s0, s1, s2;
 
     s0 = peg$currPos;
-    if (peg$r3.test(input.charAt(peg$currPos))) {
-      s1 = input.charAt(peg$currPos);
+    s1 = input.charAt(peg$currPos);
+    if (peg$r3.test(s1)) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
