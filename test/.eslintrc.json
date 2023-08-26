@@ -1,7 +1,7 @@
 {
   "env": {
     "commonjs": true,
-    "mocha": true
+    "jest": true
   },
   "parserOptions": {
     "project": "test/tsconfig.json"
