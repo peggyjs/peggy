@@ -53,8 +53,8 @@ describe("compiler pass |mergeCharacterClasses|", () => {
               ignoreCase: false,
               inverted: false,
               location: {
-                start: { line: 3, column: 11 },
-                end: { line: 3, column: 22 },
+                start: { line: 3, column: 9 },
+                end: { line: 3, column: 23 },
               },
             },
           },
@@ -67,6 +67,72 @@ describe("compiler pass |mergeCharacterClasses|", () => {
               location: {
                 start: { line: 4, column: 8 },
                 end: { line: 4, column: 25 },
+              },
+            },
+          },
+        ],
+      },
+      { mergeCharacterClasses: true }
+    );
+  });
+  it("Merges case-independent single character literals, class, and ref_rules", () => {
+    expect(pass).to.changeAST(
+      [
+        "one = three / $('a'i / 'd'i) / [c-f]i / [efh]i / [c-h]i / [c-g]i",
+        "two = 'P'i / 'P'i / three / 'P'i / [Q-T]i",
+        "three = $('x'i / [u-w]i)",
+        "four = 'a'i / [aaa]i / 'a'i",
+      ].join("\n"),
+      {
+        rules: [
+          {
+            name: "one",
+            expression: {
+              type: "class",
+              parts: ["a", ["c", "h"], ["u", "x"]],
+              ignoreCase: true,
+              inverted: false,
+              location: {
+                start: { line: 1, column: 7 },
+                end: { line: 1, column: 65 },
+              },
+            },
+          },
+          {
+            name: "two",
+            expression: {
+              type: "class",
+              parts: [["P", "T"], ["u", "x"]],
+              ignoreCase: true,
+              inverted: false,
+              location: {
+                start: { line: 2, column: 7 },
+                end: { line: 2, column: 42 },
+              },
+            },
+          },
+          {
+            name: "three",
+            expression: {
+              type: "class",
+              parts: [["u", "x"]],
+              ignoreCase: true,
+              inverted: false,
+              location: {
+                start: { line: 3, column: 9 },
+                end: { line: 3, column: 25 },
+              },
+            },
+          },
+          {
+            name: "four",
+            expression: {
+              type: "literal",
+              value: "a",
+              ignoreCase: true,
+              location: {
+                start: { line: 4, column: 8 },
+                end: { line: 4, column: 28 },
               },
             },
           },
