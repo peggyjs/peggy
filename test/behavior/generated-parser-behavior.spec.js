@@ -2679,7 +2679,7 @@ describe("generated parser behavior", () => {
         it("reports expectations correctly with multiple alternatives", () => {
           const parser = peg.generate("start = 'aa' / 'bb' / 'cc'", options);
 
-          expect(parser).to.failToParse("d", {
+          expect(parser).to.failToParse("dd", {
             expected: [
               { type: "literal", text: "aa", ignoreCase: false },
               { type: "literal", text: "bb", ignoreCase: false },
@@ -2723,7 +2723,7 @@ describe("generated parser behavior", () => {
         it("builds message correctly with multiple alternatives", () => {
           const parser = peg.generate("start = 'aa' / 'bb' / 'cc'", options);
 
-          expect(parser).to.failToParse("d", {
+          expect(parser).to.failToParse("dd", {
             message: "Expected \"aa\", \"bb\", or \"cc\" but \"d\" found.",
           });
         });
