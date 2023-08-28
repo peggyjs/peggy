@@ -466,14 +466,6 @@ export namespace parser {
    */
   function parse(grammar: string, options?: Options): ast.Grammar;
 
-  type OutputType =
-    | "ast"
-    | "parser"
-    | "source-and-map"
-    | "source-with-inline-map"
-    | "source"
-    ;
-
   /** Options, accepted by the parser of PEG grammar. */
   interface Options {
     /**
@@ -489,9 +481,6 @@ export namespace parser {
     reservedWords: string[];
     /** The only acceptable rule is `"Grammar"`, all other values leads to the exception */
     startRule?: "Grammar";
-
-    /** The kind of output to produce */
-    output?: OutputType;
   }
 
   /** Specific sequence of symbols is expected in the parsed source. */
