@@ -21,24 +21,6 @@
 //
 // [1] http://www.ecma-international.org/publications/standards/Ecma-262.htm
 
-{{
-  const OPS_TO_PREFIXED_TYPES = {
-    "$": "text",
-    "&": "simple_and",
-    "!": "simple_not"
-  };
-
-  const OPS_TO_SUFFIXED_TYPES = {
-    "?": "optional",
-    "*": "zero_or_more",
-    "+": "one_or_more"
-  };
-
-  const OPS_TO_SEMANTIC_PREDICATE_TYPES = {
-    "&": "semantic_and",
-    "!": "semantic_not"
-  };
-}}
 {
   // Cannot use Set here because of native IE support.
   const reservedWords = options.reservedWords || [];
@@ -177,7 +159,7 @@ LabelColon
 PrefixedExpression
   = operator:PrefixedOperator __ expression:SuffixedExpression {
       return {
-        type: OPS_TO_PREFIXED_TYPES[operator],
+        type: operator,
         expression,
         location: location()
       };
@@ -185,14 +167,15 @@ PrefixedExpression
   / SuffixedExpression
 
 PrefixedOperator
-  = "$"
-  / "&"
-  / "!"
+  = "$":"text"
+  / "&":"simple_and"
+  / "!":"simple_not"
+
 
 SuffixedExpression
   = expression:PrimaryExpression __ operator:SuffixedOperator {
       return {
-        type: OPS_TO_SUFFIXED_TYPES[operator],
+        type: operator,
         expression,
         location: location()
       };
@@ -201,9 +184,9 @@ SuffixedExpression
   / PrimaryExpression
 
 SuffixedOperator
-  = "?"
-  / "*"
-  / "+"
+  = "?":"optional"
+  / "*":"zero_or_more"
+  / "+":"one_or_more"
 
 RepeatedExpression
   = expression:PrimaryExpression __ "|" __ boundaries:Boundaries __ delimiter:("," __ @Expression __)? "|" {
@@ -268,7 +251,7 @@ RuleReferenceExpression
 SemanticPredicateExpression
   = operator:SemanticPredicateOperator __ code:CodeBlock {
       return {
-        type: OPS_TO_SEMANTIC_PREDICATE_TYPES[operator],
+        type: operator,
         code: code[0],
         codeLocation: code[1],
         location: location()
@@ -276,8 +259,8 @@ SemanticPredicateExpression
     }
 
 SemanticPredicateOperator
-  = "&"
-  / "!"
+  = "&":"semantic_and"
+  / "!":"semantic_not"
 
 // ---- Lexical Grammar -----
 
@@ -428,12 +411,12 @@ SingleEscapeCharacter
   = "'"
   / '"'
   / "\\"
-  / "b"  { return "\b"; }
-  / "f"  { return "\f"; }
-  / "n"  { return "\n"; }
-  / "r"  { return "\r"; }
-  / "t"  { return "\t"; }
-  / "v"  { return "\v"; }
+  / "b":"\b"
+  / "f":"\f"
+  / "n":"\n"
+  / "r":"\r"
+  / "t":"\t"
+  / "v":"\v"
 
 NonEscapeCharacter
   = $(!(EscapeCharacter / LineTerminator) SourceCharacter)
