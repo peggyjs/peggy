@@ -333,7 +333,7 @@ describe("Peggy grammar parser", () => {
 
   // Canonical Expression is "'abcd'", mapped to "'dcba"
   it("parses Mapped Literal", () => {
-    expect("start = 'ABCD'i:'dcba'").to.parseAs(
+    expect("start = 'ABCD'i%'dcba'").to.parseAs(
       oneRuleGrammar(mappedAbcd)
     );
   });

@@ -30,8 +30,8 @@ describe("compiler pass |generateBytecode|", () => {
     it("generates correct bytecode", () => {
       expect(pass).to.changeAST([
         "a = 'a'",
-        "b = 'b':'BB'",
-        "c = 'c'i:'CC'",
+        "b = 'b'%'BB'",
+        "c = 'c'i%'CC'",
       ].join("\n"), {
         literals: ["a", "b", "BB", "c", "CC"],
         rules: [
@@ -45,8 +45,8 @@ describe("compiler pass |generateBytecode|", () => {
     it("defines correct constants", () => {
       expect(pass).to.changeAST([
         "a = 'a'",
-        "b = 'b':'BB'",
-        "c = 'c'i:'CC'",
+        "b = 'b'%'BB'",
+        "c = 'c'i%'CC'",
       ].join("\n"), constsDetails(
         ["a", "b", "BB", "c", "CC"],
         [],

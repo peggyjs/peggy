@@ -167,9 +167,9 @@ PrefixedExpression
   / SuffixedExpression
 
 PrefixedOperator
-  = "$":"text"
-  / "&":"simple_and"
-  / "!":"simple_not"
+  = "$"%"text"
+  / "&"%"simple_and"
+  / "!"%"simple_not"
 
 
 SuffixedExpression
@@ -184,9 +184,9 @@ SuffixedExpression
   / PrimaryExpression
 
 SuffixedOperator
-  = "?":"optional"
-  / "*":"zero_or_more"
-  / "+":"one_or_more"
+  = "?"%"optional"
+  / "*"%"zero_or_more"
+  / "+"%"one_or_more"
 
 RepeatedExpression
   = expression:PrimaryExpression __ "|" __ boundaries:Boundaries __ delimiter:("," __ @Expression __)? "|" {
@@ -259,8 +259,8 @@ SemanticPredicateExpression
     }
 
 SemanticPredicateOperator
-  = "&":"semantic_and"
-  / "!":"semantic_not"
+  = "&"%"semantic_and"
+  / "!"%"semantic_not"
 
 // ---- Lexical Grammar -----
 
@@ -337,7 +337,7 @@ UnicodeConnectorPunctuation
   = Pc
 
 LiteralMatcher "literal"
-  = value:StringLiteral ignoreCase:"i"? mappedValue:(":" @StringLiteral)? {
+  = value:StringLiteral ignoreCase:"i"? mappedValue:("%" @StringLiteral)? {
       return {
         type: "literal",
         value,
@@ -411,12 +411,12 @@ SingleEscapeCharacter
   = "'"
   / '"'
   / "\\"
-  / "b":"\b"
-  / "f":"\f"
-  / "n":"\n"
-  / "r":"\r"
-  / "t":"\t"
-  / "v":"\v"
+  / "b"%"\b"
+  / "f"%"\f"
+  / "n"%"\n"
+  / "r"%"\r"
+  / "t"%"\t"
+  / "v"%"\v"
 
 NonEscapeCharacter
   = $(!(EscapeCharacter / LineTerminator) SourceCharacter)

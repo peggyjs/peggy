@@ -123,11 +123,11 @@ char
         '"'
       / "\\"
       / "/"
-      / "b":"\b"
-      / "f":"\f"
-      / "n":"\n"
-      / "r":"\r"
-      / "t":"\t"
+      / "b"%"\b"
+      / "f"%"\f"
+      / "n"%"\n"
+      / "r"%"\r"
+      / "t"%"\t"
       / "u" digits:$(HEXDIG HEXDIG HEXDIG HEXDIG) {
           return String.fromCharCode(parseInt(digits, 16));
         }

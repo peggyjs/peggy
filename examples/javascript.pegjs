@@ -303,12 +303,12 @@ SingleEscapeCharacter
   = "'"
   / '"'
   / "\\"
-  / "b":"\b"
-  / "f":"\f"
-  / "n":"\n"
-  / "r":"\r"
-  / "t":"\t"
-  / "v":"\v"
+  / "b"%"\b"
+  / "f"%"\f"
+  / "n"%"\n"
+  / "r"%"\r"
+  / "t"%"\t"
+  / "v"%"\v"
 
 NonEscapeCharacter
   = !(EscapeCharacter / LineTerminator) SourceCharacter { return text(); }

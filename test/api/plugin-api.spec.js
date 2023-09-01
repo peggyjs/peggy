@@ -85,7 +85,7 @@ describe("plugin API", () => {
             "      {",
             "        type: 'rule',",
             "        name: 'start',",
-            "        expression: { type: 'literal',  value: text(), ignoreCase: false }",
+            "        expression: { type: 'literal',  value: text(), ignoreCase: false, mappedValue: null }",
             "      }",
             "    ]",
             "  };",
