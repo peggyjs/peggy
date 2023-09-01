@@ -337,7 +337,7 @@ UnicodeConnectorPunctuation
   = Pc
 
 LiteralMatcher "literal"
-  = value:StringLiteral ignoreCase:"i"? mappedValue:("%" @StringLiteral)? {
+  = value:StringLiteral ignoreCase:"i"? mappedValue:("%" @MapValue)? {
       return {
         type: "literal",
         value,
@@ -347,6 +347,10 @@ LiteralMatcher "literal"
       };
       
     }
+
+MapValue
+  = StringLiteral
+  / "[" __ @(@StringLiteral __)* "]"
 
 StringLiteral "string"
   = '"' chars:DoubleStringCharacter* '"' { return chars.join(""); }

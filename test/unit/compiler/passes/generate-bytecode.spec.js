@@ -32,12 +32,16 @@ describe("compiler pass |generateBytecode|", () => {
         "a = 'a'",
         "b = 'b'%'BB'",
         "c = 'c'i%'CC'",
+        "d = 'd'%[]",
+        "e = 'e'%['EE' 'FF']",
       ].join("\n"), {
-        literals: ["a", "b", "BB", "c", "CC"],
+        literals: ["a", "b", "BB", "c", "CC", "d", [], "e", ["EE", "FF"]],
         rules: [
           { bytecode: [18, 0, 2, 2, 22, 0, 23, 0] },
           { bytecode: [18, 1, 3, 2, 41, 2, 1, 23, 1] },
           { bytecode: [19, 3, 3, 2, 41, 4, 1, 23, 2] },
+          { bytecode: [18, 5, 3, 2, 41, 6, 1, 23, 3] },
+          { bytecode: [18, 7, 3, 2, 41, 8, 1, 23, 4] },
         ],
       });
     });
@@ -47,13 +51,17 @@ describe("compiler pass |generateBytecode|", () => {
         "a = 'a'",
         "b = 'b'%'BB'",
         "c = 'c'i%'CC'",
+        "d = 'd'%[]",
+        "e = 'e'%['EE' 'FF']",
       ].join("\n"), constsDetails(
-        ["a", "b", "BB", "c", "CC"],
+        ["a", "b", "BB", "c", "CC", "d", [], "e", ["EE", "FF"]],
         [],
         [
           { type: "literal", value: "a", ignoreCase: false },
           { type: "literal", value: "b", ignoreCase: false },
           { type: "literal", value: "c", ignoreCase: true },
+          { type: "literal", value: "d", ignoreCase: false },
+          { type: "literal", value: "e", ignoreCase: false },
         ],
         []
       ));
