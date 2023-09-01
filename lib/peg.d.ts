@@ -281,6 +281,8 @@ declare namespace ast {
   interface Literal extends Expr<"literal"> {
     /** Sequence of symbols to match. */
     value: string;
+    /** Value to output instead, if present */
+    mappedValue?: string;
     /** If `true`, symbols matches even if they case do not match case in the `value`. */
     ignoreCase: boolean;
   }

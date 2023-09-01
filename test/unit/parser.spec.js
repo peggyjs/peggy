@@ -6,10 +6,11 @@ const parser = require("../../lib/parser");
 const expect = chai.expect;
 
 describe("Peggy grammar parser", () => {
-  const literalAbcd       = { type: "literal",      value: "abcd", ignoreCase: false };
-  const literalEfgh       = { type: "literal",      value: "efgh", ignoreCase: false };
-  const literalIjkl       = { type: "literal",      value: "ijkl", ignoreCase: false };
-  const literalMnop       = { type: "literal",      value: "mnop", ignoreCase: false };
+  const literalAbcd       = { type: "literal",      value: "abcd", ignoreCase: false, mappedValue: null };
+  const literalEfgh       = { type: "literal",      value: "efgh", ignoreCase: false, mappedValue: null };
+  const literalIjkl       = { type: "literal",      value: "ijkl", ignoreCase: false, mappedValue: null };
+  const literalMnop       = { type: "literal",      value: "mnop", ignoreCase: false, mappedValue: null };
+  const mappedAbcd        = { type: "literal",      value: "ABCD", ignoreCase: true, mappedValue: "dcba" };
   const semanticAnd       = { type: "semantic_and", code: " code " };
   const semanticNot       = { type: "semantic_not", code: " code " };
   const optional          = { type: "optional",     expression: literalAbcd };
@@ -78,9 +79,9 @@ describe("Peggy grammar parser", () => {
     );
   }
 
-  function literalGrammar(value, ignoreCase) {
+  function literalGrammar(value, ignoreCase, mappedValue = null) {
     return oneRuleGrammar(
-      { type: "literal", value, ignoreCase }
+      { type: "literal", value, ignoreCase, mappedValue }
     );
   }
 
@@ -327,6 +328,13 @@ describe("Peggy grammar parser", () => {
   it("parses Expression", () => {
     expect("start = 'abcd' / 'efgh' / 'ijkl'").to.parseAs(
       oneRuleGrammar(choice)
+    );
+  });
+
+  // Canonical Expression is "'abcd'", mapped to "'dcba"
+  it("parses Mapped Literal", () => {
+    expect("start = 'ABCD'i:'dcba'").to.parseAs(
+      oneRuleGrammar(mappedAbcd)
     );
   });
 
@@ -1187,6 +1195,7 @@ c = @'ijkl'
                     type: "literal",
                     value: "abcd",
                     ignoreCase: false,
+                    mappedValue: null,
                     location: {
                       source: undefined,
                       start: { offset: 57, line: 8, column: 11 },
@@ -1275,6 +1284,7 @@ c = @'ijkl'
                 type: "literal",
                 value: "efgh",
                 ignoreCase: false,
+                mappedValue: null,
                 location: {
                   source: undefined,
                   start: { offset: 134, line: 9, column: 12 },
@@ -1322,6 +1332,7 @@ c = @'ijkl'
                 type: "literal",
                 value: "ijkl",
                 ignoreCase: false,
+                mappedValue: null,
                 location: {
                   source: undefined,
                   start: { offset: 146, line: 10, column: 6 },

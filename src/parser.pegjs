@@ -354,13 +354,15 @@ UnicodeConnectorPunctuation
   = Pc
 
 LiteralMatcher "literal"
-  = value:StringLiteral ignoreCase:"i"? {
+  = value:StringLiteral ignoreCase:"i"? mappedValue:(":" @StringLiteral)? {
       return {
         type: "literal",
         value,
         ignoreCase: ignoreCase !== null,
+        mappedValue,
         location: location()
       };
+      
     }
 
 StringLiteral "string"
