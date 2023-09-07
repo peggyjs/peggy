@@ -16,6 +16,7 @@ Released: TBD
 
 ### Minor Changes
 
+- [#425](https://github.com/peggyjs/peggy/pull/425) Add a pass to simplify single-character choices
 - [#420](https://github.com/peggyjs/peggy/pull/420) Updated dependencies to
   avoid audit warnings.  From @hildjj.
 - [#404](https://github.com/peggyjs/peggy/issues/404) Add support for -w/--watch
