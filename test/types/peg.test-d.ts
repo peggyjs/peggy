@@ -176,7 +176,6 @@ describe("peg.d.ts", () => {
   it("creates an AST", () => {
     const grammar = peggy.parser.parse(src);
     expectType<peggy.ast.Grammar>(grammar);
-
     const visited: { [typ: string]: number } = {};
     function add(typ: string): void {
       if (!visited[typ]) {
@@ -197,6 +196,17 @@ describe("peg.d.ts", () => {
         );
         expectType<peggy.ast.Initializer | undefined>(node.initializer);
         expectType<peggy.ast.Rule[]>(node.rules);
+        expectType<string[] | undefined>(node.literals);
+        expectType<peggy.ast.GrammarCharacterClass[] | undefined>(node.classes);
+        expectType<peggy.ast.GrammarExpectation[] | undefined>(
+          node.expectations
+        );
+        expectType<peggy.ast.FunctionConst[] | undefined>(
+          node.functions
+        );
+        expectType<peggy.LocationRange[] | undefined>(
+          node.locations
+        );
 
         if (node.topLevelInitializer) {
           visit(node.topLevelInitializer);

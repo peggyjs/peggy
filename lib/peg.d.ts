@@ -55,17 +55,17 @@ declare namespace ast {
    * Type of the classes field on a Grammar node. Not quite the same as
    * CharacterClass (`parts` was renamed to `value`).
    */
-  interface CharacterRange {
+  interface GrammarCharacterClass {
     value: (string[] | string)[];
     inverted: boolean;
     ignoreCase: boolean;
   }
 
-  type Expectation =
+  type GrammarExpectation =
     | { type: "any" }
     | { type: "literal"; value: string; ignoreCase: boolean }
     | { type: "rule"; value: string }
-    | CharacterRange & { type: "class" }
+    | GrammarCharacterClass & { type: "class" }
     ;
 
   /** The main Peggy AST class returned by the parser. */
@@ -88,8 +88,8 @@ declare namespace ast {
      * bytecodes to refer back to via index.
      */
      literals?: string[];
-     classes?: CharacterRange[];
-     expectations?: Expectation[];
+     classes?: GrammarCharacterClass[];
+     expectations?: GrammarExpectation[];
      functions?: FunctionConst[];
      locations?: LocationRange[];
    }
