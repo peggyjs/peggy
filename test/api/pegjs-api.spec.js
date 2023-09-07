@@ -356,7 +356,7 @@ describe("Peggy API", () => {
           it("labelled rule name", () => check("RULE_2 'named'", source, "RULE_2", "peg$parseRULE_2() {"));
           it("literal expression", () => check("'a'", source, null, "input.charCodeAt(peg$currPos) === 97"));
           it("multichar literal", () => check("'def'", source, null, "input.substr(peg$currPos, 3) === peg$c3"));
-          it("chars expression", () => check("[abc]", source, null, "peg$r0.test(input.charAt(peg$currPos))"));
+          it("chars expression", () => check("[abc]", source, null, /s\d = input\.charAt\(peg\$currPos\);\s*if \(peg\$r0\.test\(s\d\)\)/));
           it("rule expression", () => check("RULE_2", source, null, "peg$parseRULE_2();"));
           it("choice expression", () => check(
             "RULE_1 / RULE_2",

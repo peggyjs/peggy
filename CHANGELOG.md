@@ -16,6 +16,8 @@ Released: TBD
 
 ### Minor Changes
 
+- [#427](https://github.com/peggyjs/peggy/pull/427) Avoid double extraction of
+  substrings in various MATCH_ bytecodes
 - [#425](https://github.com/peggyjs/peggy/pull/425) Add a pass to simplify single-character choices
 - [#420](https://github.com/peggyjs/peggy/pull/420) Updated dependencies to
   avoid audit warnings.  From @hildjj.
