@@ -9,12 +9,13 @@
     "module": "commonjs",                           /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */
     "outDir": "./build/ts/",                        /* Redirect output structure to the directory. */
     "removeComments": true,                         /* Do not emit comments to output. */
-    "rootDir": "./",                                /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
+    "rootDirs": ["./", "../bin"],                  /* Specify the root directories of input files. Use to control the output directory structure with --outDir. */
     "skipLibCheck": true,                           /* Skip type checking of declaration files. */
     "sourceMap": true,                              /* Generates corresponding '.map' file. */
     "strict": true,                                 /* Enable all strict type-checking options. */
-    "target": "es5"                                 /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */
+    "target": "es5",                                /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */
     // "lib": [],                                   /* Specify library files to be included in the compilation. */
+    "noEmit": true
 
   /* over time we will enable these */
     // "jsx": "preserve",                           /* Specify JSX code generation: 'preserve', 'react-native', 'react', 'react-jsx' or 'react-jsxdev'. */
