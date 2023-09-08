@@ -16,7 +16,7 @@ module.exports = {
     "**/*.test-d.ts",
   ],
   "transform": {
-    "^.+\\.ts$": "ts-jest",
+    "^.+\\.ts$": ["ts-jest", { "tsconfig":"tsconfig-build.json" }],
   },
   "testTimeout": 20000,
 };
