@@ -449,6 +449,17 @@ describe("peg.d.ts", () => {
       },
     });
 
+    // Extract the visitor object
+    type VisitorArg
+    = typeof visit extends peggy.compiler.visitor.Visitor<infer U>
+      ? U : never;
+
+    // Extract the functions that don't return `any`
+    type DefinedKeys = keyof {
+      [K in keyof VisitorArg as VisitorArg[K] extends (...args: any) => any
+        ? unknown extends ReturnType<VisitorArg[K]> ? never : K : never]: true
+    };
+
     visit(grammar);
 
     const astKeys = [
@@ -475,12 +486,11 @@ describe("peg.d.ts", () => {
       "text",
       "top_level_initializer",
       "zero_or_more",
-    ] as const;
+    ] satisfies AstTypes[];
 
     expect(Object.keys(visited).sort()).toStrictEqual(astKeys);
-    for (const key of astKeys) {
-      expectType<AstTypes>(key);
-    }
+    expectType<AstTypes[]>(astKeys);
+    expectType<DefinedKeys[]>(astKeys);
   });
 
   it("compiles", () => {
