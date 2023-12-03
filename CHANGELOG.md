@@ -16,6 +16,7 @@ Released: TBD
 
 ### Minor Changes
 
+- [#446](https://github.com/peggyjs/peggy/pull/446) Add a right-associative `ExponentiationExpression` rule (operator `**`) to `javascript.pegjs` example grammar.
 - [#427](https://github.com/peggyjs/peggy/pull/427) Avoid double extraction of
   substrings in various MATCH_ bytecodes
 - [#425](https://github.com/peggyjs/peggy/pull/425) Add a pass to simplify single-character choices
