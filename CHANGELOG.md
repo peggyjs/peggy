@@ -16,6 +16,7 @@ Released: TBD
 
 ### Minor Changes
 
+- [#448](https://github.com/peggyjs/peggy/issues/448) Implement `for...of` rule and reserve `let` in `javascript.pegjs` example
 - [#446](https://github.com/peggyjs/peggy/pull/446) Add a right-associative `ExponentiationExpression` rule (operator `**`) to `javascript.pegjs` example grammar.
 - [#427](https://github.com/peggyjs/peggy/pull/427) Avoid double extraction of
   substrings in various MATCH_ bytecodes

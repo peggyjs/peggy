@@ -186,6 +186,7 @@ Keyword
   / InstanceofToken
   / InToken
   / NewToken
+  / OfToken
   / ReturnToken
   / SwitchToken
   / ThisToken
@@ -204,6 +205,7 @@ FutureReservedWord
   / ExportToken
   / ExtendsToken
   / ImportToken
+  / LetToken
   / SuperToken
 
 Literal
@@ -452,8 +454,10 @@ IfToken         = "if"         !IdentifierPart
 ImportToken     = "import"     !IdentifierPart
 InstanceofToken = "instanceof" !IdentifierPart
 InToken         = "in"         !IdentifierPart
+LetToken        = "let"        !IdentifierPart
 NewToken        = "new"        !IdentifierPart
 NullToken       = "null"       !IdentifierPart
+OfToken         = "of"         !IdentifierPart
 ReturnToken     = "return"     !IdentifierPart
 SetToken        = "set"        !IdentifierPart
 SuperToken      = "super"      !IdentifierPart
@@ -1141,6 +1145,40 @@ IterationStatement
     {
       return {
         type: "ForInStatement",
+        left: {
+          type: "VariableDeclaration",
+          declarations: declarations,
+          kind: "var"
+        },
+        right: right,
+        body: body
+      };
+    }
+  / ForToken __
+    "(" __
+    left:LeftHandSideExpression __
+    OfToken __
+    right:Expression __
+    ")" __
+    body:Statement
+    {
+      return {
+        type: "ForOfStatement",
+        left: left,
+        right: right,
+        body: body
+      };
+    }
+  / ForToken __
+    "(" __
+    VarToken __ declarations:VariableDeclarationListNoIn __
+    OfToken __
+    right:Expression __
+    ")" __
+    body:Statement
+    {
+      return {
+        type: "ForOfStatement",
         left: {
           type: "VariableDeclaration",
           declarations: declarations,
