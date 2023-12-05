@@ -16,6 +16,7 @@ Released: TBD
 
 ### Minor Changes
 
+- [#438](https://github.com/peggyjs/peggy/pull/438) Make test build deterministic
 - [#436](https://github.com/peggyjs/peggy/pull/436) Get rid of tsd
 - [#430](https://github.com/peggyjs/peggy/pull/430) Make generate-js.js ts clean
 - [#446](https://github.com/peggyjs/peggy/pull/446) Add a right-associative `ExponentiationExpression` rule (operator `**`) to `javascript.pegjs` example grammar.
