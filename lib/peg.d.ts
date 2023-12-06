@@ -51,6 +51,23 @@ declare namespace ast {
     location: LocationRange;
   }
 
+  /**
+   * Type of the classes field on a Grammar node. Not quite the same as
+   * CharacterClass (`parts` was renamed to `value`).
+   */
+  interface GrammarCharacterClass {
+    value: (string[] | string)[];
+    inverted: boolean;
+    ignoreCase: boolean;
+  }
+
+  type GrammarExpectation =
+    | { type: "any" }
+    | { type: "literal"; value: string; ignoreCase: boolean }
+    | { type: "rule"; value: string }
+    | GrammarCharacterClass & { type: "class" }
+    ;
+
   /** The main Peggy AST class returned by the parser. */
   interface Grammar extends Node<"grammar"> {
     /** Initializer that run once when importing generated parser module. */
@@ -71,8 +88,8 @@ declare namespace ast {
      * bytecodes to refer back to via index.
      */
      literals?: string[];
-     classes?: CharacterClass[];
-     expectations?: parser.Expectation[];
+     classes?: GrammarCharacterClass[];
+     expectations?: GrammarExpectation[];
      functions?: FunctionConst[];
      locations?: LocationRange[];
    }
