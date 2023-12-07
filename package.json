@@ -27,7 +27,7 @@
     "examples": "node bin/peggy.js -c docs/js/options.js docs/js/examples.peggy",
     "set_version": "node ./tools/set_version",
     "lint": "eslint . --ext js,ts,mjs",
-    "ts": "tsc --build tsconfig.json",
+    "ts": "tsc --build tsconfig.json test/tsconfig.json",
     "docs": "cd docs && npm run build",
     "test": "jest",
     "test:web": "cd web-test && npm test",
@@ -76,16 +76,12 @@
     "source-map": "^0.8.0-beta.0",
     "terser": "^5.19.2",
     "ts-jest": "^29.1.1",
-    "tsd": "^0.28.1",
     "tslib": "^2.6.1",
     "typescript": "^5.1.6"
   },
   "dependencies": {
     "commander": "^11.0.0",
     "source-map-generator": "0.8.0"
-  },
-  "tsd": {
-    "directory": "test/types"
   },
   "engines": {
     "node": ">=16"
