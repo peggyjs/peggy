@@ -4,6 +4,6 @@
     "mocha": true
   },
   "parserOptions": {
-    "project": "test/tsconfig.json"
+    "project": ["test/tsconfig.json", "test/tsconfig-cli.json"]
   }
 }

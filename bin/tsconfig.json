@@ -1,0 +1,7 @@
+{
+  "extends": "../tsconfig-base.json",
+  "include": ["**/*.js"],
+  "compilerOptions": {
+    "outDir": "../build/ts-cli"
+  },
+}

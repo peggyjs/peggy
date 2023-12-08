@@ -2,7 +2,9 @@
   "compilerOptions": {
     "allowJs": true,                                /* Allow javascript files to be compiled. */
     "checkJs": false,                               /* Report errors in .js files. */
-    "declaration": false,                           /* Generates corresponding '.d.ts' file. */
+    "composite": true,
+    "declaration": true,                            /* Generates corresponding '.d.ts' file. */
+    "declarationDir": "./build/tsd",
     "declarationMap": false,                        /* Generates a sourcemap for each corresponding '.d.ts' file. */
     "esModuleInterop": true,                        /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
     "forceConsistentCasingInFileNames": true,       /* Disallow inconsistently-cased references to the same file. */
@@ -14,7 +16,7 @@
     "sourceMap": true,                              /* Generates corresponding '.map' file. */
     "strict": true,                                 /* Enable all strict type-checking options. */
     "target": "es5",                                /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */
-    // "lib": [],                                 /* Specify library files to be included in the compilation. */
+    "lib": ["ES2015"],                              /* Specify library files to be included in the compilation. */
 
   /* over time we will enable these */
     // "jsx": "preserve",                           /* Specify JSX code generation: 'preserve', 'react-native', 'react', 'react-jsx' or 'react-jsxdev'. */

@@ -1,8 +1,9 @@
 {
-  "extends": "./tsconfig-build.json",
-  "compilerOptions": {
-    "types": [],
-    "noEmit": true
-  },
-  "exclude": ["./test/**/*"],
+  "files": [],
+  "include": [],
+  "references": [
+    { "path":"./benchmark/tsconfig.json" },
+    { "path":"./lib/tsconfig.json" },
+    { "path":"./test/tsconfig.json" }
+  ]
 }
