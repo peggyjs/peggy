@@ -184,13 +184,11 @@ describe("peg.d.ts", () => {
   it("creates an AST", () => {
     const grammar = peggy.parser.parse(src);
     expectExact<peggy.ast.Grammar>()(grammar)();
-    const visited: { [typ: string]: number } = {};
-    function add(typ: string): void {
-      if (!visited[typ]) {
-        visited[typ] = 1;
-      } else {
-        visited[typ]++;
-      }
+    type AstTypes = peggy.ast.AllNodes["type"];
+    const visited: { [typ in AstTypes]?: number } = {};
+    function add(typ: AstTypes): void {
+      const v = visited[typ] || 0;
+      visited[typ] = v + 1;
     }
 
     const visit = peggy.compiler.visitor.build({
@@ -444,9 +442,14 @@ describe("peg.d.ts", () => {
       },
     });
 
+    // Extract the keys from the visitor object
+    type DefinedKeys
+      = typeof visit extends peggy.compiler.visitor.Visitor<infer U>
+      ? keyof U : never;
+
     visit(grammar);
 
-    expect(Object.keys(visited).sort()).toStrictEqual([
+    const astKeys = [
       "action",
       "any",
       "choice",
@@ -470,7 +473,11 @@ describe("peg.d.ts", () => {
       "text",
       "top_level_initializer",
       "zero_or_more",
-    ]);
+    ] satisfies AstTypes[] satisfies DefinedKeys[];
+
+    expect(Object.keys(visited).sort()).toStrictEqual(astKeys);
+    expectExact<AstTypes[]>()(astKeys)();
+    expectExact<DefinedKeys[]>()(astKeys)();
   });
 
   it("compiles", () => {

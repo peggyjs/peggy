@@ -68,6 +68,15 @@ declare namespace ast {
     | GrammarCharacterClass & { type: "class" }
     ;
 
+  type AllNodes =
+    | Expression
+    | Grammar
+    | Initializer
+    | Named
+    | Rule
+    | TopLevelInitializer
+    ;
+
   /** The main Peggy AST class returned by the parser. */
   interface Grammar extends Node<"grammar"> {
     /** Initializer that run once when importing generated parser module. */
