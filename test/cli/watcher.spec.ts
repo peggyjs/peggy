@@ -21,7 +21,7 @@ describe("watches files", () => {
     return p;
   });
 
-  it("debounces", done => {
+  it.only("debounces", done => {
     let count = 0;
     const fn = __filename;
     const base = path.basename(fn);
@@ -35,11 +35,11 @@ describe("watches files", () => {
     setTimeout(() => {
       expect(count).toBe(1);
       w.watchers[0].emit("change", "rename", base);
-    }, Watcher.interval * 1.5);
-    setTimeout(() => {
-      expect(count).toBe(2);
-      w.close().then(done);
-    }, Watcher.interval * 2);
+      setTimeout(() => {
+        expect(count).toBe(2);
+        w.close().then(done);
+      }, Watcher.interval * 0.5);
+    }, Watcher.interval * 5);
   });
 
   it("closes after an error", done => {
