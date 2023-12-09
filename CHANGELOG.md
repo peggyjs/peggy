@@ -16,6 +16,7 @@ Released: TBD
 
 ### Minor Changes
 
+- [#451](https://github.com/peggyjs/peggy/pull/451) Make stack.js ts clean
 - [#439](https://github.com/peggyjs/peggy/pull/439) Make peg$computePosDetails a little faster
 - [#437](https://github.com/peggyjs/peggy/pull/437) Better type checking for visitor
 - [#435](https://github.com/peggyjs/peggy/pull/435) Setup tsconfig to detect use of library functions from es6 or later
