@@ -319,9 +319,11 @@ function peg$parse(input, options) {
     if (details) {
       return details;
     } else {
-      p = pos - 1;
-      while (!peg$posDetailsCache[p]) {
-        p--;
+      if (pos >= peg$posDetailsCache.length) {
+        p = peg$posDetailsCache.length - 1;
+      } else {
+        p = pos;
+        while (!peg$posDetailsCache[--p]) {}
       }
 
       details = peg$posDetailsCache[p];
