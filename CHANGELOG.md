@@ -16,6 +16,7 @@ Released: TBD
 
 ### Minor Changes
 
+- [#435](https://github.com/peggyjs/peggy/pull/435) Setup tsconfig to detect use of library functions from es6 or later
 - [#438](https://github.com/peggyjs/peggy/pull/438) Make test build deterministic
 - [#436](https://github.com/peggyjs/peggy/pull/436) Get rid of tsd
 - [#430](https://github.com/peggyjs/peggy/pull/430) Make generate-js.js ts clean

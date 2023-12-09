@@ -27,7 +27,7 @@
     "examples": "node bin/peggy.js -c docs/js/options.js docs/js/examples.peggy",
     "set_version": "node ./tools/set_version",
     "lint": "eslint . --ext js,ts,mjs",
-    "ts": "tsc --build tsconfig.json test/tsconfig.json",
+    "ts": "tsc --build tsconfig.json",
     "docs": "cd docs && npm run build",
     "test": "jest",
     "test:web": "cd web-test && npm test",
