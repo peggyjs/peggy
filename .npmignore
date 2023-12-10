@@ -20,6 +20,7 @@ rollup.config.mjs
 src
 test
 tools
-tsconfig.json
+tsconfig*.json
 web-test/
 yarn.lock
+peggy.code-workspace

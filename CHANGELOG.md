@@ -16,6 +16,7 @@ Released: TBD
 
 ### Minor Changes
 
+- [#432](https://github.com/peggyjs/peggy/pull/432) Add peggy.code-workspace
 - [#451](https://github.com/peggyjs/peggy/pull/451) Make stack.js ts clean
 - [#439](https://github.com/peggyjs/peggy/pull/439) Make peg$computePosDetails a little faster
 - [#437](https://github.com/peggyjs/peggy/pull/437) Better type checking for visitor

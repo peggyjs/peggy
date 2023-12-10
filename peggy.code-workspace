@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"eslint.format.enable": true,
+		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
+	},
+	"extensions": {
+		"recommendations": [
+			"dbaeumer.vscode-eslint",
+			"peggyjs.peggy-language"
+		]
+	}
+}
