@@ -16,6 +16,7 @@ Released: TBD
 
 ### Minor Changes
 
+- [#452](https://github.com/peggyjs/peggy/pull/432) Fixes to prepare generate-bytecode.js for ts-check
 - [#432](https://github.com/peggyjs/peggy/pull/432) Add peggy.code-workspace
 - [#451](https://github.com/peggyjs/peggy/pull/451) Make stack.js ts clean
 - [#439](https://github.com/peggyjs/peggy/pull/439) Make peg$computePosDetails a little faster
