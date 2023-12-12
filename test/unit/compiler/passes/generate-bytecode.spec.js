@@ -398,9 +398,7 @@ describe("compiler pass |generateBytecode|", () => {
     it("generates correct bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
         5,                           // PUSH_CURR_POS
-        28,                          // SILENT_FAILS_ON
         18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
-        29,                          // SILENT_FAILS_OFF
         15, 3, 3,                    // IF_NOT_ERROR
         6,                           //   * POP
         7,                           //     POP_CURR_POS
@@ -427,9 +425,7 @@ describe("compiler pass |generateBytecode|", () => {
     it("generates correct bytecode", () => {
       expect(pass).to.changeAST(grammar, bytecodeDetails([
         5,                           // PUSH_CURR_POS
-        28,                          // SILENT_FAILS_ON
         18, 0, 2, 2, 22, 0, 23, 0,   // <expression>
-        29,                          // SILENT_FAILS_OFF
         14, 3, 3,                    // IF_ERROR
         6,                           //   * POP
         6,                           //     POP

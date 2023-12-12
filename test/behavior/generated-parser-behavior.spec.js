@@ -2177,12 +2177,13 @@ describe("generated parser behavior", () => {
           expect(parser).to.failToParse("b");
         });
 
-        it("discards any expectations recorded when matching the expression", () => {
+        it("keeps any expectations recorded when matching the expression", () => {
           const parser = peg.generate("start = 'a' / &'b' / 'c'", options);
 
           expect(parser).to.failToParse("d", {
             expected: [
               { type: "literal", text: "a", ignoreCase: false },
+              { type: "literal", text: "b", ignoreCase: false },
               { type: "literal", text: "c", ignoreCase: false },
             ],
           });
