@@ -126,6 +126,18 @@ In your <code>package.json</code> file, you can do something like:
 <p>If you omit both input and output file, standard input and standard output
   are used.</p>
 
+<p>If you specify multiple input files, they will be folded together in the
+order specified before generating a parser.  If generating the "es" format,
+<code>import</code> statements in the top-level initializers from each of the
+inputs will be moved to the top of the generated code in reverse order of the
+inputs, and all other top-level initializers will be inserted directly after
+those imports, also in reverse order of the inputs.  Note that because the
+input JavaScript is parsed using a grammar very close to the ECMAscript
+grammar, if import statements are found, all comments before the first
+non-import statement will move with the import statement, which may be a
+little surprising.  This approach can be used to keep libraries of often-used
+grammar rules in separate files.</p>
+
 <p>By default, the generated parser is in the commonjs module format. You can
   override this using the <code>--format</code> option.</p>
 
@@ -301,6 +313,8 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 
 <h3 id="generating-a-parser-javascript-api">JavaScript API</h3>
 
+<h4 id="importing">Importing</h4>
+
 <p>Note again: this is an advanced usage of Peggy.  Most of the core use cases
   of Peggy should prefer to generate a grammar at build time using the CLI.</p>
 
@@ -322,6 +336,11 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
   itself as a module, otherwise the API will be available in the
   <code>peg</code> global object.</p>
 
+<p>In deno, you can import through a CDN like this:</p>
+<pre><code class="language-javascript">import peggy from "https://esm.sh/peggy"; // Note: add @version in production</code></pre>
+
+<h4 id="generating-api">Generating a parser with the API</h4>
+
 <p>To generate a parser, call the <code>peggy.generate</code> method and pass your
   grammar as a parameter:</p>
 
@@ -331,6 +350,19 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
   (depending on the value of the <code>output</code> option — see below). It will
   throw an exception if the grammar is invalid. The exception will contain a
   <code>message</code> property with more details about the error.</p>
+
+<p>If your grammar is split across multiple files, instead of passing a string
+   as the first parameter of <code>peggy.generate</code>, pass an array
+   containing objects with <code>"source"</code> and <code>"text"</code> keys:</p>
+
+<pre><code class="language-javascript">const parser = peggy.generate([
+  { source: "file1.peggy", text: "numbers = number|.., ','|" },
+  { source: "lib.peggy", text: "number = n:$[0-9]+ { return parseInt(n, 10) }" },
+]);</code></pre>
+
+<p>Note that this is the same format the
+  <a href="#error-format"><code>GrammarError.format()</code></a> function
+  expects.</p>
 
 <p>You can tweak the generated parser by passing a second parameter with an
   options object to <code>peg.generate</code>. The following options are
@@ -389,7 +421,7 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
     <br><br>
     If you pass an object, the location API returns the entire object in the
     <code>source</code> key. If you format an error containing a location with
-    <a href="#error-messages"><code>format()</code></a>, the formatter
+    <a href="#error-format"><code>format()</code></a>, the formatter
     stringifies the object. If you pass an object, we recommend you add
     a <code>toString()</code> method to the object to improve error messages.
   </dd>
@@ -478,7 +510,7 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
   throw an exception if the input is invalid. The exception will contain
   <code>location</code>, <code>expected</code>, <code>found</code>,
   <code>message</code>, and <code>diagnostic</code> properties with more details about the error. The error
-  will have a <code>format(SourceText[])</code> function, to which you pass an array
+  will have a <a href="#error-format"><code>format(SourceText[])</code></a> function, to which you pass an array
   of objects that look like <code>{ source: grammarSource, text: string }</code>; this
   will return a nicely-formatted error suitable for human consumption.</p>
 
@@ -1410,7 +1442,13 @@ _
     rules with the same name in one grammar, etc.</li>
 </ul>
 
-<p>By default, stringifying these errors produces an error string without location information. These errors also have a <code>format()</code> method that produces an error string with location information. If you provide an array of mappings from the <a href="#grammar-source"><code>grammarSource</code></a> to the input string being processed, then the formatted error string includes ASCII arrows and underlines highlighting the error(s) in the source.</p>
+<p id="error-format">By default, stringifying these errors produces an error
+  string without location information. These errors also have a
+  <a href="#error-format"><code>format()</code></a> method that produces an error string with location
+  information. If you provide an array of mappings from the
+  <a href="#grammar-source"><code>grammarSource</code></a> to the input string
+  being processed, then the formatted error string includes ASCII arrows and
+  underlines highlighting the error(s) in the source.</p>
 
 <pre><code class="language-javascript">let source = ...;
 try {
