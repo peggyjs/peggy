@@ -2183,6 +2183,7 @@ describe("generated parser behavior", () => {
           expect(parser).to.failToParse("d", {
             expected: [
               { type: "literal", text: "a", ignoreCase: false },
+              { type: "literal", text: "b", ignoreCase: false },
               { type: "literal", text: "c", ignoreCase: false },
             ],
           });
