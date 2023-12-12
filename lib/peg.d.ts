@@ -252,6 +252,8 @@ declare namespace ast {
   interface VariableBoundary extends Boundary<"variable"> {
     /** Repetition count - name of the label of the one of preceding expressions. */
     value: string;
+    /** Stack offset, added by generateBytecode. */
+    sp?: number;
   }
 
   interface FunctionBoundary extends Boundary<"function"> {
@@ -259,6 +261,8 @@ declare namespace ast {
     value: string;
     /** Span that covers all code between `{` and `}`. */
     codeLocation: LocationRange;
+    /** Stack offset, added by generateBytecode. */
+    sp?: number;
   }
 
   type RepeatedBoundary
