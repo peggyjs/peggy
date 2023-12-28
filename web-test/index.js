@@ -22,11 +22,9 @@ function startServer() {
       stdio: ["inherit", "inherit", "pipe"],
     });
     eleventy.stderr.setEncoding("utf8");
-    eleventy.stderr.once("data", data => {
+    eleventy.stderr.on("data", data => {
       const match = data.match(/http:\/\/localhost:\d+\//);
-      if (!match) {
-        reject(new Error(`Invalid URL: "${data}"`));
-      } else {
+      if (match) {
         const url = new URL("/development/test.html", match[0]);
         resolve(url);
       }

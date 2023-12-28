@@ -6,6 +6,7 @@ module.exports = {
   ignorePatterns: [
     "docs/",
     "lib/parser.js", // Generated
+    "lib/compiler/passes/js-imports.js", // Generated
     "examples/*.js", // Testing examples
     "test/vendor/",
     "test/cli/fixtures/bad.js", // Intentionally-invalid

@@ -323,11 +323,15 @@ describe("MockStream", () => {
 describe("Command Line Interface", () => {
   it("has help", async() => {
     const HELP = `\
-Usage: peggy [options] [input_file]
+Usage: peggy [options] [input_file...]
 
 Arguments:
-  input_file                       Grammar file to read.  Use "-" to read
-                                   stdin. (default: "-")
+  input_file                       Grammar file(s) to read.  Use "-" to read
+                                   stdin.  If multiple files are given, they
+                                   are combined in the given order to produce a
+                                   single output.  Use
+                                   npm:"<packageName>/file.peggy" to import
+                                   from an npm dependency. (default: ["-"])
 
 Options:
   -v, --version                    output the version number
@@ -624,7 +628,7 @@ Options:
       stdin: "foo = '1'",
       errorCode: "peggy.cli",
       exitCode: 1,
-      error: "Error reading input stream",
+      error: "Error reading input \"____ERROR____FILE_DOES_NOT_EXIST\"",
     });
 
     await exec({
@@ -835,6 +839,48 @@ Options:
     })).resolves.toMatch("DefaultTracer: peg$DefaultTracer");
   });
 
+  it("handles multiple files", async() => {
+    const input1 = path.join(__dirname, "fixtures", "imports1.peggy");
+    const input2 = path.join(__dirname, "fixtures", "imports2.peggy");
+    const out = path.join(__dirname, "fixtures", "imports1.js");
+
+    await expect(exec({
+      args: [input1, input2],
+      exitCode: 0,
+    })).resolves.toBe("");
+
+    fs.unlinkSync(out);
+  });
+
+  it("handles npm: sources", async() => {
+    let input1 = path.join(__dirname, "fixtures", "useFrags", "identifier.peggy");
+    let out = path.join(__dirname, "fixtures", "useFrags", "identifier.js");
+    await expect(exec({
+      args: ["--format", "es", input1, "npm:frags/unicode.peggy"],
+      exitCode: 0,
+    })).resolves.toBe("");
+
+    fs.unlinkSync(out);
+
+    input1 = path.join(__dirname, "fixtures", "useFrags", "fs.peggy");
+    out = path.join(__dirname, "fixtures", "useFrags", "fs.js");
+    await expect(exec({
+      args: ["--format", "es", input1, "npm:frags/path.peggy"],
+      exitCode: 0,
+    })).resolves.toBe("");
+
+    fs.unlinkSync(out);
+
+    out = path.join(__dirname, "..", "..", "path.js");
+    await expect(exec({
+      args: ["--format", "es", "npm:frags/path.peggy"],
+
+      exitCode: 0,
+    })).resolves.toBe("");
+
+    fs.unlinkSync(out);
+  });
+
   describe("handles source map", () => {
     describe("with default name without --output", () => {
       const sourceMap = path.resolve(__dirname, "..", "..", "source.map");
@@ -1008,13 +1054,6 @@ Options:
       errorCode: "peggy.cli",
       exitCode: 1,
       error: /no such file or directory, open '[^']*--trace'/,
-    });
-
-    await exec({
-      args: ["--", "--trace", "--format"],
-      errorCode: "commander.excessArguments",
-      exitCode: 1,
-      error: "too many arguments.",
     });
   });
 
@@ -1218,7 +1257,7 @@ error: Rule "unknownRule" is not defined
         error: "Fake error",
         onstdout(s, cli) {
           if (++count === 3) {
-            cli.watcher?.watcher.emit("error", new Error("Fake error"));
+            cli.watcher?.watchers[0].emit("error", new Error("Fake error"));
           }
         },
       });

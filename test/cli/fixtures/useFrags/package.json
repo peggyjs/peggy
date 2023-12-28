@@ -1,0 +1,15 @@
+{
+  "name": "usefrags",
+  "version": "0.0.0",
+  "description": "Use fragments from another npm package",
+  "type": "module",
+  "private": "true",
+  "scripts": {
+    "build": "../../../../bin/peggy.js --format es identifier.peggy npm:frags/unicode.peggy && ../../../../bin/peggy.js --format es fs.peggy npm:frags/path.peggy"
+  },
+  "author": "Joe Hildebrand <joe-github@cursive.net>",
+  "license": "MIT",
+  "dependencies": {
+    "frags": "file:../frags"
+  }
+}

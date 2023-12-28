@@ -13,6 +13,14 @@ Released: TBD
 - [#420](https://github.com/peggyjs/peggy/pull/420) BREAKING: Node v16+ is now
   required for running the CLI or using Peggy as a library.  Generated code
   still targets older runtimes.
+- [#417](https://github.com/peggyjs/peggy/pull/417) BREAKING: change to AST to
+  allow topLevelInitializer and initializer to be arrays, in support of
+  multi-file inputs.  This will require plugin updates.  The CLI and API now
+  take multiple files as input, where the first file is your main library, and
+  subsequent files consist of a library of other rules.  The CLI can take file
+  names of the form `npm:<package-name>/<filename>` to load library rules from
+  an NPM package that is installed relative to the previous non-npm file name,
+  or to the current working directory if this is the first file name.
 
 ### Minor Changes
 
@@ -31,9 +39,9 @@ Released: TBD
   substrings in various MATCH_ bytecodes
 - [#425](https://github.com/peggyjs/peggy/pull/425) Add a pass to simplify single-character choices
 - [#420](https://github.com/peggyjs/peggy/pull/420) Updated dependencies to
-  avoid audit warnings.  From @hildjj.
+  avoid audit warnings.
 - [#404](https://github.com/peggyjs/peggy/issues/404) Add support for -w/--watch
-  to the command line interface.  From @hildjj.
+  to the command line interface.
 - [#415](https://github.com/peggyjs/peggy/issues/415) Added `browser` key to package.json, pointing to Webpack output.
 
 ### Bug Fixes

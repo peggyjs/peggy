@@ -6,6 +6,8 @@ const { EventEmitter } = require("events");
 
 // This may have to be tweaked based on experience.
 const DEBOUNCE_MS = 100;
+const CLOSING = Symbol("CLOSING");
+const ERROR = Symbol("ERROR");
 
 /**
  * Relatively feature-free file watcher that deals with some of the
@@ -18,51 +20,70 @@ const DEBOUNCE_MS = 100;
  */
 class Watcher extends EventEmitter {
   /**
-   * Creates an instance of Watcher.
+   * Creates an instance of Watcher.  This only works for files in a small
+   * number of directories.
    *
-   * @param {string} filename The file to watch.  Should be a plain file,
-   *   not a directory, pipe, etc.
+   * @param {string[]} filenames The files to watch.  Should be one or more
+   *   strings, each of which is the name of a plain file, not a directory,
+   *   pipe, etc.
    */
-  constructor(filename) {
+  constructor(...filenames) {
     super();
 
-    const rfile = path.resolve(filename);
-    const { dir, base } = path.parse(rfile);
-    let timeout = null;
+    const resolved = new Set(filenames.map(fn => path.resolve(fn)));
+    const dirs = new Set([...resolved].map(fn => path.dirname(fn)));
 
-    // eslint-disable-next-line func-style -- Needs this.
-    const changed = (typ, fn) => {
-      if (fn === base) {
-        if (!timeout) {
-          fs.stat(rfile, (er, stats) => {
-            if (!er && stats.isFile()) {
-              this.emit("change", stats);
-            }
-          });
-        } else {
-          clearTimeout(timeout);
+    this.timeout = null;
+    this.watchers = [];
+
+    for (const dir of dirs) {
+      // eslint-disable-next-line func-style -- Needs "this"
+      const changed = (_typ, fn) => {
+        if (typeof this.timeout === "symbol") {
+          return;
         }
+        const filename = path.join(dir, fn);
+        // Might be a different file changing in one of the target dirs
+        if (resolved.has(filename)) {
+          if (!this.timeout) {
+            fs.stat(filename, (er, stats) => {
+              if (!er && stats.isFile()) {
+                this.emit("change", filename, stats);
+              }
+            });
+          } else {
+            clearTimeout(this.timeout);
+          }
 
-        // De-bounce
-        timeout = setTimeout(() => {
-          timeout = null;
-        }, Watcher.interval);
-      }
-    };
-    const closed = () => this.emit("close");
+          // De-bounce, across all files
+          this.timeout = setTimeout(() => {
+            this.timeout = null;
+          }, Watcher.interval);
+        }
+      };
 
-    this.watcher = fs.watch(dir);
-    this.watcher.on("error", er => {
-      this.watcher.off("close", closed);
-      this.watcher.once("close", () => this.emit("error", er));
-      this.watcher.close();
-      this.watcher = null;
-    });
-    this.watcher.on("close", closed);
-    this.watcher.on("change", changed);
+      const w = fs.watch(dir);
+      w.on("error", er => {
+        const t = this.timeout;
+        this.timeout = ERROR;
+        if (t && (typeof t !== "symbol")) {
+          clearTimeout(t);
+        }
+        this.emit("error", er);
+        this.close();
+      });
+      w.on("change", changed);
+      this.watchers.push(w);
+    }
 
     // Fire initial time if file exists.
-    setImmediate(() => changed("rename", base));
+    setImmediate(() => {
+      if (this.watchers.length > 0) {
+        // First watcher will correspond to the directory of the first filename.
+        const w = this.watchers[0];
+        w.emit("change", "initial", path.basename([...resolved][0]));
+      }
+    });
   }
 
   /**
@@ -71,16 +92,31 @@ class Watcher extends EventEmitter {
    * @returns {Promise<void>} Always resolves.
    */
   close() {
-    return new Promise(resolve => {
-      if (this.watcher) {
-        this.watcher.once("close", resolve);
-        this.watcher.close();
-      } else {
-        resolve();
+    // Stop any more events from firing, immediately
+    const t = this.timeout;
+
+    if (t) {
+      if (typeof t !== "symbol") {
+        this.timeout = CLOSING;
+        clearTimeout(t);
       }
-      this.watcher = null;
+    }
+
+    const p = [];
+    for (const w of this.watchers) {
+      p.push(new Promise(resolve => {
+        w.once("close", resolve);
+      }));
+      w.close();
+    }
+    return Promise.all(p).then(() => {
+      this.watchers = [];
+      if (t !== ERROR) {
+        this.emit("close");
+      }
     });
   }
 }
+
 Watcher.interval = DEBOUNCE_MS;
 module.exports = Watcher;
