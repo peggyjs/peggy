@@ -1,6 +1,6 @@
 
 import commonjs    from "@rollup/plugin-commonjs";
-import glob        from "glob";
+import { glob }    from "glob";
 import ignore      from "rollup-plugin-ignore";
 import json        from "@rollup/plugin-json";
 import multiEntry  from "@rollup/plugin-multi-entry";

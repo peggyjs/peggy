@@ -235,12 +235,12 @@ function peg$parse(input, options) {
   var peg$f26 = function() { return location(); };
   var peg$f27 = function(match, rest) { return {match, rest}; };
   var peg$f28 = function(match, rest) { return {match, rest}; };
-  var peg$currPos = 0;
-  var peg$savedPos = 0;
+  var peg$currPos = options.peg$currPos | 0;
+  var peg$savedPos = peg$currPos;
   var peg$posDetailsCache = [{ line: 1, column: 1 }];
-  var peg$maxFailPos = 0;
+  var peg$maxFailPos = peg$currPos;
   var peg$maxFailExpected = [];
-  var peg$silentFails = 0;
+  var peg$silentFails = options.peg$silentFails | 0;
 
   var peg$result;
 
@@ -395,6 +395,33 @@ function peg$parse(input, options) {
       found,
       location
     );
+  }
+
+  var peg$assign = Object.assign || function(t) {
+    var i, s;
+    for (i = 1; i < arguments.length; i++) {
+      s = arguments[i];
+      for (var p in s) {
+        if (Object.prototype.hasOwnProperty.call(s, p)) {
+          t[p] = s[p];
+        }
+      }
+    }
+    return t;
+  };
+  
+  function peg$callLibrary(lib, startRule) {
+    const opts = peg$assign({}, options, {
+      startRule: startRule,
+      peg$currPos: peg$currPos,
+      peg$silentFails: peg$silentFails,
+      peg$library: true
+    });
+    const res = lib.parse(input, opts);
+    peg$currPos = res.peg$currPos;
+    peg$maxFailPos = res.peg$maxFailPos;
+    peg$maxFailExpected = res.peg$maxFailExpected;
+    return (res.peg$result === res.peg$FAILED) ? peg$FAILED : res.peg$result;
   }
 
   function peg$parseliteral() {
@@ -1496,6 +1523,15 @@ function peg$parse(input, options) {
 
   peg$result = peg$startRuleFunction();
 
+  if (options.peg$library) {
+    return /** @type {any} */ ({
+      peg$result,
+      peg$currPos,
+      peg$FAILED,
+      peg$maxFailExpected,
+      peg$maxFailPos
+    });
+  }
   if (peg$result !== peg$FAILED && peg$currPos === input.length) {
     return peg$result;
   } else {
@@ -1514,6 +1550,7 @@ function peg$parse(input, options) {
 }
 
   root.peggyExamples = {
+    StartRules: ["literal", "literal_i", "any", "class", "not_class_i", "rule", "child", "paren", "paren_pluck", "star", "plus", "repetition", "maybe", "posAssertion", "negAssertion", "posPredicate", "negPredicate", "dollar", "label", "pluck_1", "pluck_2", "sequence", "action", "alt", "rest"],
     SyntaxError: peg$SyntaxError,
     parse: peg$parse
   };

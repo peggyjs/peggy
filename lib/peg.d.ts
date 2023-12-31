@@ -992,11 +992,38 @@ export interface ParserOptions {
   grammarSource?: any;
   startRule?: string;
   tracer?: ParserTracer;
+
+  // Internal use only:
+  /**
+   * If true, run in library mode.  Return an object with results and offsets,
+   * and don't fail if there is leftover input.
+   */
+  peg$library?: boolean;
+  /**
+   * Offset, in JS characters (UTF-16 code units) to start parsing input from.
+   */
+  peg$currPos?: number;
+  /**
+   * Initial silent mode.  0 = report failures, > 0 = silence failures
+   */
+  peg$silentFails?: number;
+}
+
+export interface LibraryResults {
+  peg$result: any;
+  peg$currPos: number;
+  peg$FAILED: object;
+  peg$maxFailExpected: number;
+  peg$maxFailPo: number;
 }
 
 export interface Parser {
   SyntaxError: parser.SyntaxErrorConstructor;
 
+  parse(
+    input: string,
+    options: Omit<ParserOptions, "peg$library"> & { peg$library: true }
+  ): LibraryResults;
   parse(input: string, options?: ParserOptions): any;
 }
 
