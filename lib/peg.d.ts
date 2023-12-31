@@ -1336,6 +1336,8 @@ export type SourceBuildOptions<Output extends SourceOutputs = "source">
   | OutputFormatGlobals<Output>
   | OutputFormatUmd<Output>;
 
+export type GrammarInput = SourceText[] | string;
+
 /**
  * Returns a generated parser object.
  *
@@ -1348,7 +1350,10 @@ export type SourceBuildOptions<Output extends SourceOutputs = "source">
  * @throws {GrammarError} If the grammar contains a semantic error, for example,
  *         duplicated labels
  */
-export function generate(grammar: string, options?: ParserBuildOptions): Parser;
+export function generate(
+  grammar: GrammarInput,
+  options?: ParserBuildOptions
+): Parser;
 
 /**
  * Returns the generated source code as a `string` in the specified module format.
@@ -1363,7 +1368,7 @@ export function generate(grammar: string, options?: ParserBuildOptions): Parser;
  *         duplicated labels
  */
 export function generate(
-  grammar: string,
+  grammar: GrammarInput,
   options: SourceBuildOptions<"source">
 ): string;
 
@@ -1385,7 +1390,7 @@ export function generate(
  *         example, duplicated labels
  */
 export function generate(
-  grammar: string,
+  grammar: GrammarInput,
   options: SourceBuildOptions<"source-with-inline-map">
 ): string;
 
@@ -1423,12 +1428,12 @@ export function generate(
  *         duplicated labels
  */
 export function generate(
-  grammar: string,
+  grammar: GrammarInput,
   options: SourceBuildOptions<"source-and-map">
 ): SourceNode;
 
 export function generate(
-  grammar: string,
+  grammar: GrammarInput,
   options: SourceBuildOptions<SourceOutputs>
 ): SourceNode | string;
 
@@ -1449,7 +1454,7 @@ export function generate(
  *         duplicated labels
  */
 export function generate(
-  grammar: string,
+  grammar: GrammarInput,
   options: SourceOptionsBase<"ast">
 ): ast.Grammar;
 
