@@ -66,6 +66,7 @@ describe("Peggy grammar parser", () => {
   function oneRuleGrammar(expression) {
     return {
       type: "grammar",
+      imports: [],
       topLevelInitializer: null,
       initializer: null,
       rules: [{ type: "rule", name: "start", expression }],
@@ -123,6 +124,7 @@ describe("Peggy grammar parser", () => {
   const trivialGrammar = literalGrammar("abcd", false);
   const twoRuleGrammar = {
     type: "grammar",
+    imports: [],
     topLevelInitializer: null,
     initializer: null,
     rules: [ruleA, ruleB],
@@ -283,33 +285,33 @@ describe("Peggy grammar parser", () => {
   // Canonical Grammar is "a = 'abcd'; b = 'efgh'; c = 'ijkl';".
   it("parses Grammar", () => {
     expect("\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA] }
+      { type: "grammar", imports: [], topLevelInitializer: null, initializer: null, rules: [ruleA] }
     );
     expect("\na = 'abcd'; /* comment */; // comment\n;\nb = 'efgh';\nc = 'ijkl';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer: null, initializer: null, rules: [ruleA, ruleB, ruleC] }
+      { type: "grammar", imports: [], topLevelInitializer: null, initializer: null, rules: [ruleA, ruleB, ruleC] }
     );
     expect("\n{ code };\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer: null, initializer, rules: [ruleA] }
+      { type: "grammar", imports: [], topLevelInitializer: null, initializer, rules: [ruleA] }
     );
     expect("\n{{ top level code }};\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer, initializer: null, rules: [ruleA] }
+      { type: "grammar", imports: [], topLevelInitializer, initializer: null, rules: [ruleA] }
     );
     expect("\n{{ top level code }};\n{ code };\na = 'abcd';\n").to.parseAs(
-      { type: "grammar", topLevelInitializer, initializer, rules: [ruleA] }
+      { type: "grammar", imports: [], topLevelInitializer, initializer, rules: [ruleA] }
     );
   });
 
   // Canonical Top-Level Initializer is "{ top level code }".
   it("parses Top-Level Initializer", () => {
     expect("{{ top level code }};start = 'abcd'").to.parseAs(
-      { type: "grammar", topLevelInitializer, initializer: null, rules: [ruleStart] }
+      { type: "grammar", imports: [], topLevelInitializer, initializer: null, rules: [ruleStart] }
     );
   });
 
   // Canonical Initializer is "{ code }".
   it("parses Initializer", () => {
     expect("{ code };start = 'abcd'").to.parseAs(
-      { type: "grammar", topLevelInitializer: null, initializer, rules: [ruleStart] }
+      { type: "grammar", imports: [], topLevelInitializer: null, initializer, rules: [ruleStart] }
     );
   });
 
@@ -1133,6 +1135,7 @@ c = @'ijkl'
 `);
     expect(result).to.eql({
       type: "grammar",
+      imports: [],
       topLevelInitializer: {
         type: "top_level_initializer",
         code: "\n  const foo = 12;\n",

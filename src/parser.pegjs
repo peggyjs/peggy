@@ -46,15 +46,112 @@
 // ---- Syntactic Grammar -----
 
 Grammar
-  = __ topLevelInitializer:(@TopLevelInitializer __)? initializer:(@Initializer __)? rules:(@Rule __)+ {
+  = imports:ImportDeclarations topLevelInitializer:(__ @TopLevelInitializer)? initializer:(__ @Initializer)? __ rules:(@Rule __)+ {
       return {
         type: "grammar",
+        imports,
         topLevelInitializer,
         initializer,
         rules,
         location: location()
       };
     }
+
+// Alternate entry point to split JS into imports and not-imports.
+ImportsAndSource
+  = imports:ImportsAsText body:GrammarBody {
+    return [imports, body];
+  }
+
+// Everything after the imports.
+GrammarBody
+  = code:$.* {
+    return {
+      type: "top_level_initializer",
+      code,
+      codeLocation: location(),
+    }
+  }
+
+ImportsAsText
+  = code:$ImportDeclarations {
+    return {
+      type: "top_level_initializer",
+      code,
+      codeLocation: location()
+    }
+  }
+
+ImportDeclarations
+  = ImportDeclaration*
+
+ImportDeclaration
+  = __ "import" __ what:ImportClause __ from:FromClause (__ ";")? { return {what, from} }
+  / __ "import" __ from:ModuleSpecifier (__ ";")? { return {what: [], from} } // Intializers only
+
+ImportClause
+  = NameSpaceImport
+  / NamedImports
+  / first:ImportedDefaultBinding others:(__ "," __ @(NameSpaceImport / NamedImports))? {
+    if (!others) {
+      return [first];
+    }
+    if (Array.isArray(others)) {
+      others.unshift(first);
+      return others;
+    }
+    return [first, others];
+  }
+
+ImportedDefaultBinding
+  = binding:ImportedBinding {
+    return { type: 'import_binding_default', binding }
+  }
+
+NameSpaceImport
+  = "*" __ "as" __ binding:ImportedBinding {
+    return {
+      type: 'import_binding_all',
+      binding,
+    }
+  }
+
+NamedImports
+  = "{" __ "}" { return [] } // Can't have bare comma
+  / "{" __ @ImportsList __ ("," __)? "}"
+
+FromClause
+  = "from" __ @ModuleSpecifier
+
+ImportsList
+  = ImportSpecifier|1.., __ "," __|
+
+ImportSpecifier
+  = rename:ModuleExportName __ "as" __ binding:ImportedBinding {
+    return { type: 'import_binding_rename', rename: rename[0], binding }
+  }
+  / binding:ImportedBinding {
+    return { type: 'import_binding', binding }
+  }
+
+ModuleSpecifier
+  = module:StringLiteral {
+      return { type: 'import_module_specifier', module }
+    }
+
+ImportedBinding
+  = BindingIdentifier
+
+ModuleExportName
+  = IdentifierName
+  / StringLiteral
+
+BindingIdentifier = id:IdentifierName {
+  if (reservedWords.indexOf(id[0]) >= 0) {
+    error(`Binding identifier can't be a reserved word "${id[0]}"`, id[1]);
+  }
+  return id[0];
+}
 
 TopLevelInitializer
   = "{" code:CodeBlock "}" EOS {
