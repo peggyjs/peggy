@@ -13,6 +13,8 @@ describe("utility class Intern", () => {
     expect(i.add("two")).to.equal(1);
     expect(i.add("one")).to.equal(0);
     expect(i.add("two")).to.equal(1);
+    expect(i.add(undefined)).to.equal(-1);
+    expect(i.add(null)).to.equal(-1);
     expect(i.items.length).to.equal(2);
     expect(i.items).to.deep.equal(["one", "two"]);
     expect(i.get(0)).to.equal("one");

@@ -391,11 +391,11 @@ function peg$parse(input, options) {
         if (s0 === peg$FAILED) {
           s0 = peg$parsebab();
           if (s0 === peg$FAILED) {
-            s0 = peg$callLibrary(peg$import5, "boo");
+            s0 = peg$callLibrary(peg$import5, "fazboo");
             if (s0 === peg$FAILED) {
               s0 = peg$parseb1();
               if (s0 === peg$FAILED) {
-                s0 = peg$callLibrary(peg$import6, "boo");
+                s0 = peg$callLibrary(peg$import6, "b2boo");
                 if (s0 === peg$FAILED) {
                   s0 = peg$parseb3();
                   if (s0 === peg$FAILED) {
