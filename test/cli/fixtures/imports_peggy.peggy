@@ -17,9 +17,9 @@ a
   / baz
   / boo
   / bab
-  // faz.boo
+  / faz.fazboo
   / b1
-  // b2.boo
+  / b2.b2boo
   / b3
   / b4
   / b5

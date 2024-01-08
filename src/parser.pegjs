@@ -377,7 +377,16 @@ PrimaryExpression
     }
 
 RuleReferenceExpression
-  = name:IdentifierName !(__ (StringLiteral __)? "=") {
+  = library:IdentifierName "." name:IdentifierName {
+      return {
+        type: "library_ref",
+        name: name[0],
+        library: library[0],
+        libraryNumber: -1,
+        location: location()
+      }
+    }
+  / name:IdentifierName !(__ (StringLiteral __)? "=") {
       return { type: "rule_ref", name: name[0], location: location() };
     }
 
