@@ -33,7 +33,7 @@ describe("utility class Intern", () => {
   it("does conversions", () => {
     /** @type {Intern<string, number[]>} */
     const i = new Intern({
-      convert: x => [...x].map(y => y.codePointAt(0)),
+      convert: x => Array.from(x).map(y => y.codePointAt(0)),
     });
     expect(i.add("abc")).to.equal(0);
     expect(i.add("abc")).to.equal(0);

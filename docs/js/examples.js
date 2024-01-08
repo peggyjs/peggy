@@ -239,12 +239,12 @@ function peg$parse(input, options) {
   var peg$savedPos = peg$currPos;
   var peg$posDetailsCache = [{ line: 1, column: 1 }];
   var peg$maxFailPos = peg$currPos;
-  var peg$maxFailExpected = [];
+  var peg$maxFailExpected = options.peg$maxFailExpected || [];
   var peg$silentFails = options.peg$silentFails | 0;
 
   var peg$result;
 
-  if ("startRule" in options) {
+  if (options.startRule) {
     if (!(options.startRule in peg$startRuleFunctions)) {
       throw new Error("Can't start parsing from rule \"" + options.startRule + "\".");
     }
@@ -395,33 +395,6 @@ function peg$parse(input, options) {
       found,
       location
     );
-  }
-
-  var peg$assign = Object.assign || function(t) {
-    var i, s;
-    for (i = 1; i < arguments.length; i++) {
-      s = arguments[i];
-      for (var p in s) {
-        if (Object.prototype.hasOwnProperty.call(s, p)) {
-          t[p] = s[p];
-        }
-      }
-    }
-    return t;
-  };
-  
-  function peg$callLibrary(lib, startRule) {
-    const opts = peg$assign({}, options, {
-      startRule: startRule,
-      peg$currPos: peg$currPos,
-      peg$silentFails: peg$silentFails,
-      peg$library: true
-    });
-    const res = lib.parse(input, opts);
-    peg$currPos = res.peg$currPos;
-    peg$maxFailPos = res.peg$maxFailPos;
-    peg$maxFailExpected = res.peg$maxFailExpected;
-    return (res.peg$result === res.peg$FAILED) ? peg$FAILED : res.peg$result;
   }
 
   function peg$parseliteral() {
