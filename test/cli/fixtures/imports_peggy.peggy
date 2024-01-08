@@ -1,0 +1,27 @@
+import "./lib.js" // Just initializers
+import {} from "./lib.js" // Just initializers
+import bar from "./lib.js" // Just first rule
+import {baz} from "./lib.js" // One rule imported into this namespace
+import {
+  boo, bab,
+} from "../fixtures/lib.js"
+import * as faz from "./lib.js"
+import b1, * as b2 from "./lib.js"
+import b3, { boo as b4 } from "./lib.js";
+import { boo as b5 } from "./lib.js";
+import { "floo" as b6 } from "./lib.js";
+// import Grammar from "https://raw.githubusercontent.com/peggyjs/peggy/main/lib/parser.js"
+
+a
+  = bar
+  / baz
+  / boo
+  / bab
+  // faz.boo
+  / b1
+  // b2.boo
+  / b3
+  / b4
+  / b5
+  / b6
+  // Grammar

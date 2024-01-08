@@ -71,14 +71,43 @@ declare namespace ast {
   type AllNodes =
     | Expression
     | Grammar
+    | GrammarImport
     | Initializer
     | Named
     | Rule
     | TopLevelInitializer
     ;
 
+  interface GrammarImportWhatGeneral {
+    type: "import_binding_all" | "import_binding_default" | "import_binding";
+    binding: string;
+    location: LocationRange;
+  }
+
+  interface GrammarImportWhatRename {
+    type: "import_binding_rename";
+    binding: string;
+    rename: string;
+    location: LocationRange;
+  }
+
+  type GrammarImportWhat = GrammarImportWhatGeneral | GrammarImportWhatRename;
+
+  interface GrammarImportFrom {
+    type: "import_module_specifier";
+    module: string;
+    location: LocationRange;
+  }
+
+  interface GrammarImport extends Node<"grammar_import"> {
+    what: GrammarImportWhat[];
+    from: GrammarImportFrom;
+  }
+
   /** The main Peggy AST class returned by the parser. */
   interface Grammar extends Node<"grammar"> {
+    /** External grammars imported into this grammar. */
+    imports: GrammarImport[];
     /** Initializer that run once when importing generated parser module. */
     topLevelInitializer?: TopLevelInitializer | TopLevelInitializer[];
     /** Initializer that run each time when `parser.parse()` method in invoked. */
@@ -99,6 +128,7 @@ declare namespace ast {
      literals?: string[];
      classes?: GrammarCharacterClass[];
      expectations?: GrammarExpectation[];
+     importedNames?: string[];
      functions?: FunctionConst[];
      locations?: LocationRange[];
    }
@@ -149,7 +179,6 @@ declare namespace ast {
     nameLocation: LocationRange;
     /** Parsing expression of this rule. */
     expression: Expression | Named;
-
     /** Added by the `generateBytecode` pass. */
     bytecode?: number[];
   }
@@ -294,6 +323,7 @@ declare namespace ast {
     = Any
     | CharacterClass
     | Group
+    | LibraryReference
     | Literal
     | RuleReference
     | SemanticPredicate;
@@ -301,6 +331,21 @@ declare namespace ast {
   interface RuleReference extends Expr<"rule_ref"> {
     /** Name of the rule to refer. */
     name: string;
+  }
+
+  interface LibraryReference extends Expr<"library_ref"> {
+    /** Name of the rule in the library.  `undefined` means default rule. */
+    name: string | undefined;
+
+    /**
+     * Namespace import name for the rule library.
+     * `import * as library from "foo.js"`
+     */
+    library: string;
+    /**
+     * With the first import statement as 0, which import?
+     */
+    libraryNumber: number;
   }
 
   interface SemanticPredicate extends CodeBlockExpr<"semantic_and" | "semantic_not"> {}
@@ -636,6 +681,7 @@ export namespace compiler {
     interface NodeTypes {
       /**
        * Default behavior: run visitor:
+       * - on each import statement
        * - on the top level initializer, if it is defined
        * - on the initializer, if it is defined
        * - on each element in `rules`
@@ -646,6 +692,14 @@ export namespace compiler {
        * @param args Any arguments passed to the `Visitor`
        */
       grammar?(node: ast.Grammar, ...args: any[]): any;
+
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Node representing a single import statement
+       * @param args Any arguments passed to the `Visitor`
+       */
+      grammar_import?(node: ast.GrammarImport, ...args: any[]): any;
 
       /**
        * Default behavior: do nothing
@@ -802,6 +856,14 @@ export namespace compiler {
       /**
        * Default behavior: do nothing
        *
+       * @param node Leaf node, representing calling a rule in an external library.
+       * @param args Any arguments passed to the `Visitor`
+       */
+      library_ref?(node: ast.LibraryReference, ...args: an[]): any;
+
+      /**
+       * Default behavior: do nothing
+       *
        * @param node Leaf node, representing match of a continuous sequence of symbols
        * @param args Any arguments passed to the `Visitor`
        */
@@ -870,16 +932,21 @@ export namespace compiler {
     [key: string]: Pass[];
 
     /**
-     * Pack of passes that performing checks on the AST. This bunch of passes
+     * List of passes that prepare the code for checking, such as linking
+     * to extrernal rules.
+     */
+    prepare: Pass[];
+    /**
+     * List of passes that perform checks on the AST. This bunch of passes
      * executed in the very beginning of the compilation stage.
      */
     check: Pass[];
     /**
-     * Pack of passes that performing transformation of the AST.
+     * List of passes that perform transformation of the AST.
      * Various types of optimizations are performed here.
      */
     transform: Pass[];
-    /** Pack of passes that generates the code. */
+    /** List of passes that generates the code. */
     generate: Pass[];
   }
 
@@ -1007,6 +1074,10 @@ export interface ParserOptions {
    * Initial silent mode.  0 = report failures, > 0 = silence failures
    */
   peg$silentFails?: number;
+  /**
+   * Pending list of expectations.
+   */
+  peg$maxFailExpected?: Expectation[];
 }
 
 export interface LibraryResults {

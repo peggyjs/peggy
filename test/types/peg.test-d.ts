@@ -183,6 +183,32 @@ describe("peg.d.ts", () => {
 
   it("creates an AST", () => {
     const grammar = peggy.parser.parse(src);
+
+    // Make due until everything is working.
+    grammar.imports.push({
+      type: "grammar_import",
+      what: [],
+      from: {
+        type: "import_module_specifier",
+        module: "foo",
+        location: grammar.location,
+      },
+      location: grammar.location,
+    });
+    grammar.rules.push({
+      type: "rule",
+      name: "bar",
+      nameLocation: grammar.location,
+      expression: {
+        type: "library_ref",
+        name: "bar",
+        library: "foo",
+        libraryNumber: 0,
+        location: grammar.location,
+      },
+      location: grammar.location,
+    });
+
     expectExact<peggy.ast.Grammar>()(grammar)();
     type AstTypes = peggy.ast.AllNodes["type"];
     const visited: { [typ in AstTypes]?: number } = {};
@@ -197,6 +223,7 @@ describe("peg.d.ts", () => {
         expectExact<peggy.ast.Grammar>()(node)();
         expectExact<"grammar">()(node.type)();
         expectExact<peggy.LocationRange>()(node.location)();
+        expectExact<peggy.ast.GrammarImport[]>()(node.imports)();
         expectExact<
           | peggy.ast.TopLevelInitializer
           | peggy.ast.TopLevelInitializer[]
@@ -220,6 +247,10 @@ describe("peg.d.ts", () => {
           node.locations
         )();
 
+        for (const imp of node.imports) {
+          visit(imp);
+        }
+
         if (node.topLevelInitializer) {
           if (Array.isArray(node.topLevelInitializer)) {
             for (const tli of node.topLevelInitializer) {
@@ -239,6 +270,14 @@ describe("peg.d.ts", () => {
           }
         }
         node.rules.forEach(visit);
+      },
+      grammar_import(node) {
+        add(node.type);
+        expectExact<peggy.ast.GrammarImport>()(node)();
+        expectExact<"grammar_import">()(node.type)();
+        expectExact<peggy.LocationRange>()(node.location)();
+        expectExact<peggy.ast.GrammarImportWhat[]>()(node.what)();
+        expectExact<peggy.ast.GrammarImportFrom>()(node.from)();
       },
       top_level_initializer(node) {
         add(node.type);
@@ -433,6 +472,14 @@ describe("peg.d.ts", () => {
         expectExact<peggy.LocationRange>()(node.location)();
         expectExact<string>()(node.name)();
       },
+      library_ref(node) {
+        add(node.type);
+        expectExact<peggy.ast.LibraryReference>()(node)();
+        expectExact<"library_ref">()(node.type)();
+        expectExact<peggy.LocationRange>()(node.location)();
+        expectExact<string | undefined>()(node.name)();
+        expectExact<string>()(node.library)();
+      },
       literal(node) {
         add(node.type);
         expectExact<peggy.ast.Literal>()(node)();
@@ -471,9 +518,11 @@ describe("peg.d.ts", () => {
       "choice",
       "class",
       "grammar",
+      "grammar_import",
       "group",
       "initializer",
       "labeled",
+      "library_ref",
       "literal",
       "named",
       "one_or_more",

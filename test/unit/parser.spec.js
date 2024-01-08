@@ -216,6 +216,7 @@ describe("Peggy grammar parser", () => {
       semantic_and: stripLeaf,
       semantic_not: stripLeaf,
       rule_ref: stripLeaf,
+      library_ref: stripLeaf,
       literal: stripLeaf,
       class: stripLeaf,
       any: stripLeaf,

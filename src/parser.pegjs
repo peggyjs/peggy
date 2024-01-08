@@ -86,8 +86,12 @@ ImportDeclarations
   = ImportDeclaration*
 
 ImportDeclaration
-  = __ "import" __ what:ImportClause __ from:FromClause (__ ";")? { return {what, from} }
-  / __ "import" __ from:ModuleSpecifier (__ ";")? { return {what: [], from} } // Intializers only
+  = __ "import" __ what:ImportClause __ from:FromClause (__ ";")? { return {
+    type: "grammar_import", what, from, location: location()
+  }}
+  / __ "import" __ from:ModuleSpecifier (__ ";")? { return {
+    type: "grammar_import", what: [], from, location: location()
+  }} // Intializers only
 
 ImportClause
   = NameSpaceImport
@@ -105,15 +109,20 @@ ImportClause
 
 ImportedDefaultBinding
   = binding:ImportedBinding {
-    return { type: 'import_binding_default', binding }
+    return {
+      type: 'import_binding_default',
+      binding: binding[0],
+      location: binding[1],
+    }
   }
 
 NameSpaceImport
   = "*" __ "as" __ binding:ImportedBinding {
-    return {
+    return [{
       type: 'import_binding_all',
-      binding,
-    }
+      binding: binding[0],
+      location: binding[1],
+    }]
   }
 
 NamedImports
@@ -128,23 +137,33 @@ ImportsList
 
 ImportSpecifier
   = rename:ModuleExportName __ "as" __ binding:ImportedBinding {
-    return { type: 'import_binding_rename', rename: rename[0], binding }
+    return {
+      type: 'import_binding_rename',
+      rename: rename[0],
+      renameLocation: rename[1],
+      binding: binding[0],
+      location: binding[1],
+    }
   }
   / binding:ImportedBinding {
-    return { type: 'import_binding', binding }
+    return {
+      type: 'import_binding',
+      binding: binding[0],
+      location: binding[1]
+    }
   }
 
 ModuleSpecifier
   = module:StringLiteral {
-      return { type: 'import_module_specifier', module }
+      return { type: 'import_module_specifier', module, location: location() }
     }
 
 ImportedBinding
-  = BindingIdentifier
+  = id:BindingIdentifier { return [id, location()] }
 
 ModuleExportName
   = IdentifierName
-  / StringLiteral
+  / id:StringLiteral { return [id, location() ] }
 
 BindingIdentifier = id:IdentifierName {
   if (reservedWords.indexOf(id[0]) >= 0) {
