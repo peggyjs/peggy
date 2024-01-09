@@ -35,6 +35,7 @@ stylesheets: ["css/documentation.css"]
   <li>
     <a href="#grammar-syntax-and-semantics">Grammar Syntax and Semantics</a>
     <ul>
+      <li><a href="#importing-external-rules">Importing External Rules</a></li>
       <li><a href="#grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</a></li>
       <li><a href="#action-execution-environment">Action Execution Environment</a></li>
       <li><a href="#parsing-lists">Parsing Lists</a></li>
@@ -131,12 +132,9 @@ order specified before generating a parser.  If generating the "es" format,
 <code>import</code> statements in the top-level initializers from each of the
 inputs will be moved to the top of the generated code in reverse order of the
 inputs, and all other top-level initializers will be inserted directly after
-those imports, also in reverse order of the inputs.  Note that because the
-input JavaScript is parsed using a grammar very close to the ECMAscript
-grammar, if import statements are found, all comments before the first
-non-import statement will move with the import statement, which may be a
-little surprising.  This approach can be used to keep libraries of often-used
-grammar rules in separate files.</p>
+those imports, also in reverse order of the inputs.  This approach can be used
+to keep libraries of often-used grammar rules in
+<a href="#importing-external-rules">separate files</a>.</p>
 
 <p>By default, the generated parser is in the commonjs module format. You can
   override this using the <code>--format</code> option.</p>
@@ -690,6 +688,63 @@ integer "simple number"
   It takes the match result of the expression [0-9]+, which is an array
   of strings containing digits, as its parameter. It joins the digits together to
   form a number and converts it to a JavaScript <code>number</code> object.</p>
+
+<h3 id="importing-external-rules">Importing External Rules</h3>
+
+<p>Sometimes, you want to split a large grammar into multiple files for ease
+   of editing, reuse in multiple higher-level grammars, etc.  There are two ways
+   to accomplish this in Peggy:</p>
+
+<ol>
+  <li>
+    <p>From the <a href="#generating-a-parser-command-line">Command Line</a>,
+       include multiple source files.  This will generate the least total amount
+       of code, since the combined output will only have the runtime overhead
+       included once.  The resulting code will be slightly more performant, as
+       there will be no overhead to call between the rules defined in different
+       files at runtime.  Finally, Peggy will be able to perform better checks
+       and optimizations across the combined grammar with this approach, since the
+       combination is applied before any other rules.  For example:</p>
+    <p><code>csv.peggy</code>:</p>
+    <pre><code class="language-peggy">a = number|1.., "," WS|
+WS = [ \t]*</code></pre>
+    <p><code>number.peggy</code>:</p>
+    <pre><code class="language-peggy">number = n:$[0-9]+ { return parseInt(n, 10); }</code></pre>
+    <p>Generate:</p>
+    <pre><code class="language-console">$ peggy csv.peggy number.peggy</code></pre>
+  </li>
+
+  <li>
+    <p>The downside of the CLI approach is that editor tooling will not be
+       able to detect that rules coming from another file -- references to such
+       rules will be shown with errors like <code>Rule "number" is not
+       defined</code>.  Furthermore, you must rely on getting the CLI or API call
+       correct, which is not possible in all workflows.</p>
+    <p>The second approach is to use ES6-style <code>import</code> statements
+       at the top of your grammar to import rules into the local rule namespace.
+       For example:</p>
+    <p><code>csv_imp.peggy</code>:</p>
+    <pre><code class="language-peggy">import {number} from "./number.js"
+a = number|1.., "," WS|
+WS = [ \t]*</code></pre>
+    <p>Note that the file imported from is the compiled version of the
+       grammar, NOT the source.  Grammars MUST be compiled by a version that
+       supports imports in order to be imported.  Only rules that are allowed
+       start rules are valid.  It can be useful to specify
+       <code>--allowed-start-rules \*</code> in library grammars. All of the
+       following are valid:</p>
+    <ul>
+      <li><code>import * as num from "number.js" // Call with num.number</code></li>
+      <li><code>import num from "number.js" // Calls the default rule</code></li>
+      <li><code>import {number, float} "number.js" // Import multiple rules by name</code></li>
+      <li><code>import {number as NUM} "number.js" // Rename the local rule to NUM to avoid colliding</code></li>
+      <li><code>import {"number" as NUM} "number.js" // Valid in ES6</code></li>
+      <li><code>import integer, {float} "number.js" // The default rule and some named rules</code></li>
+      <li><code>import from "number.js" // Just the top-level initializer side-effects</code></li>
+      <li><code>import {} "number.js" // Just the top-level initializer side-effects</code></li>
+    </ul>
+  </li>
+</ol>
 
 <h3 id="grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</h3>
 
