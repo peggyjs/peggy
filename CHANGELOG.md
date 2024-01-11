@@ -21,10 +21,12 @@ Released: TBD
   names of the form `npm:<package-name>/<filename>` to load library rules from
   an NPM package that is installed relative to the previous non-npm file name,
   or to the current working directory if this is the first file name.
-- [#456](https://github.com/peggyjs/peggy/pull/456) BREAKING: Allow imports from
-  external compiled grammars inside a source grammar, using
-  `import {rule} from "external.js"`.  This will need require explicit support
-  from plugins, with a few new AST node types and a few visitor changes.
+- [#456](https://github.com/peggyjs/peggy/pull/456) BREAKING: Allow imports
+  from external compiled grammars inside a source grammar, using `import
+  {rule} from "external.js"`.  Note that this syntax will generate either
+  `import` or `require` in the JavaScript output, depending on the value of
+  the `format` parameter.  This will need explicit support from
+  plugins, with a few new AST node types and a few visitor changes.
 
 ### Minor Changes
 
