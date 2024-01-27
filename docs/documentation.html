@@ -1098,7 +1098,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
 
     <div class="example">
       <div>
-        <div><em>Example:</em> <br><code>posPredicate = [0-9]+ &amp;{return parseInt(match, 10) &lt; 100}</code></div>
+        <div><em>Example:</em> <br><code>posPredicate = @num:$[0-9]+ &amp;{return parseInt(num, 10) &lt; 100}</code></div>
         <div><em>Matches:</em> <code>"0"</code>, <code>"99"</code></div>
         <div><em>Does not match:</em> <code>"100"</code>, <code>"-1"</code>, <code>""</code></div>
       </div>
