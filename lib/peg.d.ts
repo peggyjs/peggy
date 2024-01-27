@@ -125,13 +125,13 @@ declare namespace ast {
      * Added by the `generateBytecode` pass and contain data for
      * bytecodes to refer back to via index.
      */
-     literals?: string[];
-     classes?: GrammarCharacterClass[];
-     expectations?: GrammarExpectation[];
-     importedNames?: string[];
-     functions?: FunctionConst[];
-     locations?: LocationRange[];
-   }
+    literals?: string[];
+    classes?: GrammarCharacterClass[];
+    expectations?: GrammarExpectation[];
+    importedNames?: string[];
+    functions?: FunctionConst[];
+    locations?: LocationRange[];
+  }
 
   /**
    * Base interface for all initializer nodes with the code.
@@ -222,11 +222,11 @@ declare namespace ast {
   interface Action extends CodeBlockExpr<"action"> {
     expression: (
         Labeled
-      | Prefixed
-      | Primary
-      | Repeated
-      | Sequence
-      | Suffixed
+        | Prefixed
+        | Primary
+        | Repeated
+        | Sequence
+        | Suffixed
     );
   }
 

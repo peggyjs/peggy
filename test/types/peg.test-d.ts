@@ -508,7 +508,7 @@ describe("peg.d.ts", () => {
     // Extract the keys from the visitor object
     type DefinedKeys
       = typeof visit extends peggy.compiler.visitor.Visitor<infer U>
-      ? keyof U : never;
+        ? keyof U : never;
 
     visit(grammar);
 

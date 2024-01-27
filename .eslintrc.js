@@ -18,7 +18,7 @@ module.exports = {
     "build",
   ],
   parserOptions: {
-    project: "tsconfig.json",
+    project: true,
   },
   overrides: [
     {

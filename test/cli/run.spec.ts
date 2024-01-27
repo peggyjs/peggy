@@ -1126,6 +1126,8 @@ bar = '2'
       error: "Error running test",
     });
 
+    // Abusing template literals to ensure we have a trailing space.
+    /* eslint-disable @typescript-eslint/no-useless-template-literals */
     await exec({
       args: ["-t", ""],
       stdin: "foo='1'",
@@ -1140,6 +1142,7 @@ Error: Expected "1" but end of input found.
   | ^`,
     });
   });
+  /* eslint-enable @typescript-eslint/no-useless-template-literals */
 
   it("handles stdout errors", async() => {
     const stderr = new MockStream({ name: "stderr", encoding: "utf8" });

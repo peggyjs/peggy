@@ -1,0 +1,12 @@
+{
+    "extends": "../../tsconfig-base.json",
+    "include": ["**/*.ts"],
+    "exclude": ["./fixtures/bad.js"],
+    "compilerOptions": {
+        "outDir": "../../build/ts-cli"
+    },
+    "references": [
+      { "path": "../../bin" },
+      { "path": "../../lib" }
+    ]
+  }
