@@ -1128,7 +1128,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
 
     <div class="example">
       <div>
-        <div><em>Example:</em> <br><code>negPredicate = $[0-9]+ !{ return parseInt(match, 10) &lt; 100 }</code></div>
+        <div><em>Example:</em> <br><code>negPredicate = @num:$[0-9]+ !{ return parseInt(num, 10) &lt; 100 }</code></div>
         <div><em>Matches:</em> <code>"100"</code>, <code>"156"</code></div>
         <div><em>Does not match:</em> <code>"56"</code>, <code>"-1"</code>, <code>""</code></div>
       </div>
