@@ -324,7 +324,7 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 
 <pre><code class="language-javascript">import peggy from "peggy";</code></pre>
 
-<p>With some configurations of Typescript, you might need:</p>
+<p>With some configurations of Typescript or other tools, you might need:</p>
 
 <pre><code class="language-javascript">import * as peggy from "peggy";</code></pre>
 
@@ -1098,7 +1098,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
 
     <div class="example">
       <div>
-        <div><em>Example:</em> <br><code>posPredicate = [0-9]+ &amp;{return parseInt(match, 10) &lt; 100}</code></div>
+        <div><em>Example:</em> <br><code>posPredicate = @num:$[0-9]+ &amp;{return parseInt(num, 10) &lt; 100}</code></div>
         <div><em>Matches:</em> <code>"0"</code>, <code>"99"</code></div>
         <div><em>Does not match:</em> <code>"100"</code>, <code>"-1"</code>, <code>""</code></div>
       </div>
@@ -1128,7 +1128,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
 
     <div class="example">
       <div>
-        <div><em>Example:</em> <br><code>negPredicate = $[0-9]+ !{ return parseInt(match, 10) &lt; 100 }</code></div>
+        <div><em>Example:</em> <br><code>negPredicate = @num:$[0-9]+ !{ return parseInt(num, 10) &lt; 100 }</code></div>
         <div><em>Matches:</em> <code>"100"</code>, <code>"156"</code></div>
         <div><em>Does not match:</em> <code>"56"</code>, <code>"-1"</code>, <code>""</code></div>
       </div>

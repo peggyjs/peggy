@@ -26,9 +26,9 @@ posAssertion = match:"a" &"b" rest:rest { return {match, rest}; }
 
 negAssertion = match:"a" !"b" rest:rest { return {match, rest}; }
 
-posPredicate = match:$[0-9]+ &{ return parseInt(match, 10) < 100 } rest:rest { return {match, rest}; }
+posPredicate = match:(@num:$[0-9]+ &{ return parseInt(num, 10) < 100 }) rest:rest { return {match, rest}; }
 
-negPredicate = match:$[0-9]+ !{ return parseInt(match, 10) < 100 } rest:rest { return {match, rest}; }
+negPredicate = match:(@num:$[0-9]+ !{ return parseInt(num, 10) < 100 }) rest:rest { return {match, rest}; }
 
 dollar = match:$"a"+ rest:rest { return {match, rest}; }
 
