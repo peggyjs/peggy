@@ -14,6 +14,7 @@ describe("compiler pass |generateJS|", () => {
   /** @type {PEG.ast.Grammar} */
     const ast = {
       type: "grammar",
+      imports: [],
       rules: [],
       location: {
         source: "",
@@ -44,6 +45,10 @@ describe("compiler pass |generateJS|", () => {
         () => pass({ ...ast, literals:[] }, options)
       ).to.throw(Error, "generateJS: generate bytecode was not called.");
       ast.functions = [];
+      expect(
+        () => pass({ ...ast, literals:[] }, options)
+      ).to.throw(Error, "generateJS: generate bytecode was not called.");
+      ast.importedNames = [];
       expect(
         () => pass(ast, options)
       ).to.throw(Error, "generateJS: options.allowedStartRules was not set.");

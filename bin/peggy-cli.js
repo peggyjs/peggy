@@ -184,6 +184,7 @@ class PeggyCLI extends Command {
           .choices(MODULE_FORMATS)
           .default("commonjs")
       )
+      .addOption(new Option("--library").hideHelp(), "Run tests in library mode.  Maintainers only, for now.")
       .option("-o, --output <file>", "Output file for generated parser. Use '-' for stdout (the default is a file next to the input file with the extension change to '.js', unless a test is specified, in which case no parser is output without this option)")
       .option(
         "--plugin <module>",
@@ -217,6 +218,11 @@ class PeggyCLI extends Command {
       .action((inputFiles, opts) => { // On parse()
         this.inputFiles = inputFiles;
         this.argv = opts;
+
+        if (this.argv.library) {
+          this.peg$library = true;
+          delete this.argv.library;
+        }
 
         if ((typeof this.argv.startRule === "string")
           && !this.argv.allowedStartRules.includes(this.argv.startRule)) {
@@ -620,6 +626,7 @@ class PeggyCLI extends Command {
 
       const opts = {
         grammarSource: this.testGrammarSource,
+        peg$library: this.peg$library,
       };
       if (typeof this.progOptions.startRule === "string") {
         opts.startRule = this.progOptions.startRule;

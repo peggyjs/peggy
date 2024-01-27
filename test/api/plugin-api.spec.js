@@ -78,6 +78,7 @@ describe("plugin API", () => {
             "start = .* {",
             "  return {",
             "    type: 'grammar',",
+            "    imports: [],",
             "    initializer: {",
             "      type: 'initializer',",
             "      code: ['/* included for cover ast2SourceNode in the generate-js pass */'],",

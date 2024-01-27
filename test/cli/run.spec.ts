@@ -1185,6 +1185,22 @@ error: Rule "unknownRule" is not defined
     });
   });
 
+  it("handles imports", async() => {
+    const lib = path.join(__dirname, "fixtures", "lib.peggy");
+    const imps = path.join(__dirname, "fixtures", "imports_peggy.peggy");
+    const impjs = path.join(__dirname, "fixtures", "imports_peggy.js");
+
+    await exec({
+      args: [lib, "--allowed-start-rules", "*"],
+    });
+    await exec({
+      args: [imps],
+    });
+
+    const { parse } = await import(impjs);
+    expect(parse("baz")).toBe("baz");
+  });
+
   describe("--watch option", () => {
     it("rejects stdin for watching", async() => {
       await exec({
