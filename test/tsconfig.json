@@ -4,6 +4,7 @@
   "exclude": ["./cli/**/*", "./types/**/*"],
   "references": [
     { "path": "../lib" },
-    { "path": "./tsconfig-cli.json" }
+    { "path": "./cli" },
+    { "path": "./types" }
   ]
 }
