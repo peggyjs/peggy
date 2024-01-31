@@ -12,6 +12,7 @@ const path = require("path");
 const url = require("url");
 
 // These already exist in a new, blank VM.  Date, JSON, NaN, etc.
+// Things from the core language.
 const vmGlobals = new vm
   .Script("Object.getOwnPropertyNames(globalThis)")
   .runInNewContext()
@@ -19,15 +20,16 @@ const vmGlobals = new vm
 vmGlobals.push("global", "globalThis", "sys");
 
 // These are the things that are normally in the environment, that vm doesn't
-// make available.
+// make available.  This that you expect to be available in a node environment
+// that aren't in the laguage itself.
 const neededKeys = Object
   .getOwnPropertyNames(global)
-  .filter(k => vmGlobals.indexOf(k) < 0)
+  .filter(k => !vmGlobals.includes(k))
   .sort();
-const globalContext = {};
-for (const k of neededKeys) {
-  globalContext[k] = global[k];
-}
+const globalContext = Object.fromEntries(
+  neededKeys.map(k => [k, global[k]])
+);
+
 // In node <15, console is in vmGlobals.
 globalContext.console = console;
 
@@ -36,7 +38,8 @@ globalContext.console = console;
  *
  * @typedef {object} FromMemOptions
  * @property {"amd"|"bare"|"commonjs"|"es"|"globals"|"umd"} [format="commonjs"]
- *   What format does the code have?
+ *   What format does the code have?  Throws an error if the format is not
+ *   "commonjs", "es", "umd", or "bare".
  * @property {string} [filename=__filename] What is the fully-qualified synthetic
  *   filename for the code?  Most important is the directory, which is used to
  *   find modules that the code import's or require's.
@@ -103,7 +106,7 @@ async function importString(code, dirname, options) {
   }
 
   const [maj, min] = process.version
-    .match(/v(\d+)\.(\d+)\.(\d+)/)
+    .match(/^v(\d+)\.(\d+)\.(\d+)/)
     .slice(1)
     .map(x => parseInt(x, 10));
   if ((maj < 20) || ((maj === 20) && (min < 8))) {
