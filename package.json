@@ -29,7 +29,7 @@
     "lint": "eslint . --ext js,ts,mjs",
     "ts": "tsc --build tsconfig.json",
     "docs": "cd docs && npm run build",
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:web": "cd web-test && npm test",
     "test:all": "npm run test && npm run test:web",
     "benchmark": "node ./benchmark/run_bench.js",
