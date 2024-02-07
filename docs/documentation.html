@@ -20,6 +20,9 @@ stylesheets: ["css/documentation.css"]
     </ul>
   </li>
   <li>
+    <a href="#supported-runtimes">Supported Rutimes</a>
+  </li>
+  <li>
     <a href="#generating-a-parser">Generating a Parser</a>
     <ul>
       <li><a href="#generating-a-parser-command-line">Command Line</a></li>
@@ -103,6 +106,18 @@ In your <code>package.json</code> file, you can do something like:
 </ul>
 
 <p>When your document is done loading, there will be a global <code>peggy</code> object.</p>
+
+<h2 id="supported-runtimes">Supported Runtimes</h2>
+<p>Browsers and JS runtimes that pass the following
+  <a href="https://github.com/browserslist/browserslist#readme">Browserslist</a>
+  query at the time of release are supported:</p>
+  <pre><code>defaults, maintained node versions, not op_mini all</code></pre>
+
+  <p>Opera Mini can't be bothered to implement <code>URL</code> of all things,
+    so it's not worth our time to support.</p>
+  <p>Deno issues will be fixed if possible, but we are not currently testing on Deno.</p>
+  <p>All versions of Internet Explorer are <em>EXPLICITLY</em> unsupported,
+    for both generating and running generated parsers.</p>
 
 <h2 id="generating-a-parser">Generating a Parser</h2>
 
