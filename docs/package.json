@@ -14,6 +14,9 @@
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1"
   },
+  "browserslist": [
+    "defaults, maintained node versions, not op_mini all"
+  ],
   "engines": {
     "node": ">=14"
   }
