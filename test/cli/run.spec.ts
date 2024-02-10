@@ -1,6 +1,7 @@
 // This is typescript so that it only runs in node contexts, not on the web
 
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 import * as peggy from "../../lib/peg.js";
 import { CommanderError, PeggyCLI } from "../../bin/peggy.js";
@@ -14,6 +15,19 @@ foo = '1'
 bar = '2'
 baz = '3'
 `;
+
+const fixtures = path.resolve(__dirname, "fixtures");
+const packageJson = path.resolve(__dirname, "..", "..", "package.json");
+const grammarFile = path.resolve(__dirname, "..", "..", "examples", "json.pegjs");
+let tmpDir = "";
+
+beforeAll(async() => {
+  tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "run-spec-"));
+});
+
+afterAll(async() => {
+  await fs.promises.rm(tmpDir, { recursive: true });
+});
 
 interface ErrorWritableOptions extends TransformOptions {
   name?: string;
@@ -293,13 +307,13 @@ async function checkSourceMap(
     error,
   });
 
-  expect(fs.statSync(sourceMap)).toBeInstanceOf(fs.Stats);
+  expect(await fs.promises.stat(sourceMap)).toBeInstanceOf(fs.Stats);
 
   await expect(new SourceMapConsumer(
-    fs.readFileSync(sourceMap, { encoding: "utf8" })
+    await fs.promises.readFile(sourceMap, { encoding: "utf8" })
   )).resolves.toBeInstanceOf(SourceMapConsumer);
 
-  fs.unlinkSync(sourceMap);
+  await fs.promises.unlink(sourceMap);
 }
 
 describe("MockStream", () => {
@@ -598,8 +612,8 @@ Options:
   });
 
   it("handles extra options in a file", async() => {
-    const optFile = path.join(__dirname, "fixtures", "options.json");
-    const optFileJS = path.join(__dirname, "fixtures", "options.js");
+    const optFile = path.join(fixtures, "options.json");
+    const optFileJS = path.join(fixtures, "options.js");
 
     const res = await exec({
       args: ["--extra-options-file", optFile],
@@ -729,7 +743,7 @@ Options:
   });
 
   it("outputs to a file", async() => {
-    const test_output = path.resolve(__dirname, "test_output.js");
+    const test_output = "test_output.js";
 
     expect(() => {
       // Make sure the file isn't there before we start
@@ -741,8 +755,17 @@ Options:
       stdin: "foo = '1'",
       expected: null,
     });
+
     expect(fs.statSync(test_output)).toBeInstanceOf(fs.Stats);
     fs.unlinkSync(test_output);
+
+    await exec({
+      args: ["-o", "create/new/dir/output.js"],
+      stdin: "foo = '1'",
+      expected: null,
+    });
+    expect(fs.statSync("create/new/dir/output.js")).toBeInstanceOf(fs.Stats);
+    await fs.promises.rm("create", { recursive: true });
 
     await exec({
       args: ["--output"],
@@ -753,18 +776,18 @@ Options:
     });
 
     await exec({
-      args: ["--output", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js"],
+      args: ["--output", `${fixtures}/imp.peggy/none.js`],
       stdin: "foo = '1'",
       errorCode: "peggy.cli",
       exitCode: 1,
-      error: "ENOENT: no such file or directory",
+      error: "Error opening output stream",
     });
   });
 
   it("handles plugins", async() => {
     // Plugin, starting with "./"
-    const plugin = path.join(__dirname, "fixtures", "plugin.js");
-    const bad = path.join(__dirname, "fixtures", "bad.js");
+    const plugin = path.join(fixtures, "plugin.js");
+    const bad = path.join(fixtures, "bad.js");
 
     await exec({
       args: [
@@ -925,6 +948,7 @@ Options:
         expect(() => {
           // Make sure the file isn't there before we start
           fs.statSync(testOutput);
+          console.log(`Delete "${testOutput}"`);
         }).toThrow();
 
         await checkSourceMap(sourceMap, ["--output", testOutput, "--source-map"]);
@@ -965,6 +989,18 @@ Options:
         );
         expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
         fs.unlinkSync(testOutput);
+
+        const testFile = path.join(tmpDir, "testFile");
+        await fs.promises.writeFile(testFile, "2");
+        await checkSourceMap(
+          sourceMap,
+          ["-o", testOutput, "-T", testFile, "-m"],
+          'Error: Expected "1" but "2" found'
+        );
+        await fs.promises.rm(testFile);
+
+        expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
+        fs.unlinkSync(testOutput);
       });
 
       it("emits an error with hidden:inline", async() => {
@@ -993,17 +1029,12 @@ Options:
       const sourceMap = path.resolve(__dirname, "specified-name.map");
 
       it("generates a source map 3", async() => {
-        expect(() => {
-          // Make sure the file isn't there before we start
-          fs.statSync(sourceMap);
-        }).toThrow();
-
         await exec({
-          args: ["--source-map", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js.map"],
+          args: ["--source-map", `${fixtures}/imp.peggy/none.js.map`],
           stdin: "foo = '1' { return 42; }",
           exitCode: 1,
           errorCode: "peggy.cli",
-          error: "no such file or directory",
+          error: "Error writing sourceMap",
         });
 
         await checkSourceMap(sourceMap, ["--source-map", sourceMap]);
@@ -1074,11 +1105,8 @@ bar = '2'
       expected: "'2'\n",
     });
 
-    const grammarFile = path.join(__dirname, "..", "..", "examples", "json.pegjs");
-    const testFile = path.join(__dirname, "..", "..", "package.json");
-
     await exec({
-      args: ["-T", testFile, grammarFile],
+      args: ["-T", packageJson, grammarFile],
       expected: /name: 'peggy',$/m, // Output is JS, not JSON
     });
 
