@@ -27,6 +27,14 @@ Released: TBD
   `import` or `require` in the JavaScript output, depending on the value of
   the `format` parameter.  This will need explicit support from
   plugins, with a few new AST node types and a few visitor changes.
+- [#379](https://github.com/peggyjs/peggy/issues/379) Fix infinite recursion
+  issue by moving reportInfiniteRecursion to the new prepare pass, and having
+  it fail after finding the first issue.  This will require plugin authors
+  to ensure that reportInfiniteRecursion is in the new pass correctly.
+- [#463](https://github.com/peggyjs/peggy/issues/463) Drop support for
+  Internet Explorer.  Move to eslint flat configs in order to lint minimized
+  browser code for compatibility with
+  `defaults, maintained node versions, not op_mini all`.
 
 ### Minor Changes
 

@@ -3032,13 +3032,32 @@ Error: Expected "import", "{", code block, comment, end of line, identifier, or 
       }
     });
 
+    it("detects infinite loops before other errors", () => {
+      try {
+        peg.generate(`
+          start = start
+          dup = label:"foo" label:"bar"
+        `);
+      } catch (e) {
+        expect(e).with.property("stage", "prepare");
+        expect(e).with.property("problems").to.be.an("array");
+        // Get second elements of errors (error messages)
+        const messages = e.problems.filter(p => p[0] === "error").map(p => p[1]);
+
+        // Check that only infloop errors are present
+        expect(messages).to.deep.equal([
+          "Possible infinite loop when parsing (left recursion: start -> start)",
+        ]);
+      }
+    });
+
     it("reports multiple errors in each compilation stage", () => {
       try {
         peg.generate(`
           start = leftRecursion
           leftRecursion = duplicatedLabel:duplicatedRule duplicatedLabel:missingRule
           duplicatedRule = missingRule
-          duplicatedRule = start
+          duplicatedRule = "nothing"
         `);
       } catch (e) {
         expect(e).with.property("stage", "check");
@@ -3058,7 +3077,6 @@ Error: Expected "import", "{", code block, comment, end of line, identifier, or 
           "Rule \"missingRule\" is not defined",
           "Rule \"duplicatedRule\" is already defined",
           "Label \"duplicatedLabel\" is already defined",
-          "Possible infinite loop when parsing (left recursion: duplicatedRule -> start -> leftRecursion -> duplicatedRule)",
         ]);
       }
     });
