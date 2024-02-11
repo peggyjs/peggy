@@ -45,6 +45,26 @@ Full documentation is available at [peggyjs.org](https://peggyjs.org/documentati
 
 ## Development
 
+To get started, check out peggy, install the dependencies, and run build:
+
+```bash
+git clone https://github.com/peggyjs/peggy.git
+cd peggy
+npm install
+(cd docs && npm install)
+(cd web-test && npm install)
+npm run build
+npm run test:web
+```
+
+If you send a pull request, please update the `CHANGELOG.md` file, and ensure
+that your information is in the `AUTHORS` file is correct -- even for minor
+changes.  If you change anything in the `src` or `lib` directories, make sure
+you have run a test, and include the minimized versions in the docs directory
+in your commit.
+
+## Links
+
 - [Project website](https://peggyjs.org/)
 - [Wiki](https://github.com/peggyjs/peggy/wiki)
 - [Source code](https://github.com/peggyjs/peggy)

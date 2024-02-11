@@ -64,6 +64,7 @@ Released: TBD
 
 - [#405](https://github.com/peggyjs/peggy/pull/405) Doc example doesn't correspond to code example.  From @hildjj
 - [#415](https://github.com/peggyjs/peggy/issues/415) Make docs match reality with `import`.
+- [#466](https://github.com/peggyjs/peggy/issues/466) Add docs for developers.
 
 3.0.2
 -----
