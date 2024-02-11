@@ -56,6 +56,21 @@ function readFile(name) {
   return f;
 }
 
+async function ensureDirectoryExists(filename) {
+  const dir = path.dirname(filename);
+  try {
+    const stats = await fs.promises.stat(dir);
+    if (!stats.isDirectory()) {
+      throw new Error(`"${dir}" exists and is not a directory`);
+    }
+  } catch (er) {
+    if (er.code !== "ENOENT") {
+      throw er;
+    }
+    await fs.promises.mkdir(dir, { recursive: true });
+  }
+}
+
 /**
  * @typedef {object} Stdio
  * @property {stream.Readable} [in] StdIn.
@@ -472,11 +487,12 @@ class PeggyCLI extends Command {
       const hasTest = !this.testFile && (typeof this.testText !== "string");
       return Promise.resolve(hasTest ? this.std.out : null);
     }
-    return new Promise((resolve, reject) => {
-      const outputStream = fs.createWriteStream(this.outputFile);
-      outputStream.on("error", reject);
-      outputStream.on("open", () => resolve(outputStream));
-    });
+    return ensureDirectoryExists(this.outputFile)
+      .then(() => new Promise((resolve, reject) => {
+        const outputStream = fs.createWriteStream(this.outputFile);
+        outputStream.on("error", reject);
+        outputStream.on("open", () => resolve(outputStream));
+      }));
   }
 
   /**
@@ -486,64 +502,54 @@ class PeggyCLI extends Command {
    *   to serialize.
    * @returns {Promise<string>} The plain text output.
    */
-  writeSourceMap(source) {
-    return new Promise((resolve, reject) => {
-      if (!this.progOptions.sourceMap) {
-        resolve(source);
-        return;
-      }
+  async writeSourceMap(source) {
+    if (!this.progOptions.sourceMap) {
+      return source;
+    }
 
-      let hidden = false;
-      if (this.progOptions.sourceMap.startsWith("hidden:")) {
-        hidden = true;
-        this.progOptions.sourceMap = this.progOptions.sourceMap.slice(7);
-      }
-      const inline = this.progOptions.sourceMap === "inline";
-      const mapDir = inline
-        ? path.dirname(this.outputJS)
-        : path.dirname(this.progOptions.sourceMap);
+    let hidden = false;
+    if (this.progOptions.sourceMap.startsWith("hidden:")) {
+      hidden = true;
+      this.progOptions.sourceMap = this.progOptions.sourceMap.slice(7);
+    }
+    const inline = this.progOptions.sourceMap === "inline";
+    const mapDir = inline
+      ? path.dirname(this.outputJS)
+      : path.dirname(this.progOptions.sourceMap);
 
-      const file = path.relative(mapDir, this.outputJS);
-      const sourceMap = source.toStringWithSourceMap({ file });
+    const file = path.relative(mapDir, this.outputJS);
+    const sourceMap = source.toStringWithSourceMap({ file });
 
-      // According to specifications, paths in the "sources" array should be
-      // relative to the map file. Compiler cannot generate right paths, because
-      // it is unaware of the source map location
-      const json = sourceMap.map.toJSON();
-      json.sources = json.sources.map(
-        src => ((src === null) ? null : path.relative(mapDir, src))
-      );
+    // According to specifications, paths in the "sources" array should be
+    // relative to the map file. Compiler cannot generate right paths, because
+    // it is unaware of the source map location
+    const json = sourceMap.map.toJSON();
+    json.sources = json.sources.map(
+      src => ((src === null) ? null : path.relative(mapDir, src))
+    );
 
-      if (inline) {
-        // Note: hidden + inline makes no sense.
-        const buf = Buffer.from(JSON.stringify(json));
-        // Use \x23 instead of # so that Jest won't treat this as a real
-        // source map URL for *this* file.
-        resolve(sourceMap.code + `\
+    if (inline) {
+      // Note: hidden + inline makes no sense.
+      const buf = Buffer.from(JSON.stringify(json));
+      // Use \x23 instead of # so that Jest won't treat this as a real
+      // source map URL for *this* file.
+      return sourceMap.code + `\
 //\x23 sourceMappingURL=data:application/json;charset=utf-8;base64,${buf.toString("base64")}
-`);
-      } else {
-        fs.writeFile(
-          this.progOptions.sourceMap,
-          JSON.stringify(json),
-          "utf8",
-          err => {
-            if (err) {
-              reject(err);
-            } else {
-              if (hidden) {
-                resolve(sourceMap.code);
-              } else {
-                // Opposite direction from mapDir
-                resolve(sourceMap.code + `\
+`;
+    }
+    await ensureDirectoryExists(this.progOptions.sourceMap);
+    await fs.promises.writeFile(
+      this.progOptions.sourceMap,
+      JSON.stringify(json),
+      "utf8"
+    );
+    if (hidden) {
+      return sourceMap.code;
+    }
+    // Opposite direction from mapDir
+    return sourceMap.code + `\
 //# sourceMappingURL=${path.relative(path.dirname(this.outputJS), this.progOptions.sourceMap)}
-`);
-              }
-            }
-          }
-        );
-      }
-    });
+`;
   }
 
   writeOutput(outputStream, source) {
@@ -645,7 +651,7 @@ class PeggyCLI extends Command {
       this.verbose("CLI", errorText = "parsing grammar");
       const source = peggy.generate(sources, this.argv); // All of the real work.
 
-      this.verbose("CLI", errorText = "open output stream");
+      this.verbose("CLI", errorText = "opening output stream");
       const outputStream = await this.openOutputStream();
 
       // If option `--ast` is specified, `generate()` returns an AST object

@@ -22,7 +22,7 @@
     "peggy": "bin/peggy.js"
   },
   "scripts": {
-    "clean": "rimraf build browser bin/*.map && mkdir browser",
+    "clean": "rimraf -g build browser bin/*.map && mkdir browser",
     "parser": "node bin/peggy.js -o lib/parser.js --format commonjs --allowed-start-rules Grammar,ImportsAndSource src/parser.pegjs ",
     "examples": "node bin/peggy.js -c docs/js/options.js docs/js/examples.peggy",
     "set_version": "node ./tools/set_version",
@@ -61,7 +61,7 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/chai": "^4.3.11",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.16",
+    "@types/node": "^20.11.17",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "chai": "^4.3.11",
@@ -73,7 +73,7 @@
     "glob": "^10.3.10",
     "jest": "^29.7.0",
     "rimraf": "^5.0.5",
-    "rollup": "^4.9.6",
+    "rollup": "^4.10.0",
     "rollup-plugin-ignore": "1.0.10",
     "source-map": "^0.8.0-beta.0",
     "terser": "^5.27.0",
