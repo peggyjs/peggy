@@ -57,11 +57,8 @@ npm run build
 npm run test:web
 ```
 
-If you send a pull request, please update the `CHANGELOG.md` file, and ensure
-that your information is in the `AUTHORS` file is correct -- even for minor
-changes.  If you change anything in the `src` or `lib` directories, make sure
-you have run a test, and include the minimized versions in the docs directory
-in your commit.
+Please see the [Contribution Guidelines](CONTRIBUTING.md) for details on how
+to contribute code.
 
 ## Links
 
@@ -72,6 +69,7 @@ in your commit.
 - [Discussions](https://github.com/peggyjs/peggy/discussions)
 - [Browser Benchmark Suite](https://peggyjs.org/development/benchmark.html)
 - [Browser Test Suite](https://peggyjs.org/development/test.html)
+- [Contribution Guidelines](CONTRIBUTING.md)
 - [Discord Server](https://discord.gg/HU5tbEbwAB)
 
 Peggy was originally developed by [David Majda](https://majda.cz/)
