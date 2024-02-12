@@ -45,6 +45,23 @@ Full documentation is available at [peggyjs.org](https://peggyjs.org/documentati
 
 ## Development
 
+To get started, check out peggy, install the dependencies, and run build:
+
+```bash
+git clone https://github.com/peggyjs/peggy.git
+cd peggy
+npm install
+(cd docs && npm install)
+(cd web-test && npm install)
+npm run build
+npm run test:web
+```
+
+Please see the [Contribution Guidelines](CONTRIBUTING.md) for details on how
+to contribute code.
+
+## Links
+
 - [Project website](https://peggyjs.org/)
 - [Wiki](https://github.com/peggyjs/peggy/wiki)
 - [Source code](https://github.com/peggyjs/peggy)
@@ -52,6 +69,7 @@ Full documentation is available at [peggyjs.org](https://peggyjs.org/documentati
 - [Discussions](https://github.com/peggyjs/peggy/discussions)
 - [Browser Benchmark Suite](https://peggyjs.org/development/benchmark.html)
 - [Browser Test Suite](https://peggyjs.org/development/test.html)
+- [Contribution Guidelines](CONTRIBUTING.md)
 - [Discord Server](https://discord.gg/HU5tbEbwAB)
 
 Peggy was originally developed by [David Majda](https://majda.cz/)
