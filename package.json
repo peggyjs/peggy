@@ -53,7 +53,7 @@
     "start": "cd docs && npm start"
   },
   "devDependencies": {
-    "@peggyjs/eslint-config": "^3.2.0",
+    "@peggyjs/eslint-config": "^3.2.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-multi-entry": "^6.0.1",
@@ -62,8 +62,8 @@
     "@types/chai": "^4.3.11",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.17",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
     "chai": "^4.3.11",
     "chai-like": "^1.1.1",
     "copyfiles": "^2.4.1",
