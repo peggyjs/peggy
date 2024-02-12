@@ -540,11 +540,11 @@ Elision
 ObjectLiteral
   = "{" __ "}" { return { type: "ObjectExpression", properties: [] }; }
   / "{" __ properties:PropertyNameAndValueList __ "}" {
-       return { type: "ObjectExpression", properties: properties };
-     }
+      return { type: "ObjectExpression", properties: properties };
+    }
   / "{" __ properties:PropertyNameAndValueList __ "," __ "}" {
-       return { type: "ObjectExpression", properties: properties };
-     }
+      return { type: "ObjectExpression", properties: properties };
+    }
 PropertyNameAndValueList
   = head:PropertyAssignment tail:(__ "," __ PropertyAssignment)* {
       return buildList(head, tail, 3);
