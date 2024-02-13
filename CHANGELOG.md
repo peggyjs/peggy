@@ -3,10 +3,10 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+4.0.0
+-----
 
-Released: TBD
+Released: 2024-02-13
 
 ### Major Changes
 
@@ -38,6 +38,8 @@ Released: TBD
 
 ### Minor Changes
 
+- [#400](https://github.com/peggyjs/peggy/pull/400) Use `@generated` in generated
+  code
 - [#404](https://github.com/peggyjs/peggy/issues/404) Add support for -w/--watch
   to the command line interface.
 - [#415](https://github.com/peggyjs/peggy/issues/415) Added `browser` key to package.json, pointing to Webpack output.
@@ -59,12 +61,17 @@ Released: TBD
 - [#451](https://github.com/peggyjs/peggy/pull/451) Make stack.js ts clean
 - [#452](https://github.com/peggyjs/peggy/pull/452) Fixes to prepare generate-bytecode.js for ts-check
 - [#453](https://github.com/peggyjs/peggy/pull/453) Make generate-bytecode.js ts-clean
+- [#460](https://github.com/peggyjs/peggy/pull/453) Allow `-t` and `-T` testing
+  from the CLI with `--format es`.
 
 ### Bug Fixes
 
 - [#405](https://github.com/peggyjs/peggy/pull/405) Doc example doesn't correspond to code example.  From @hildjj
 - [#415](https://github.com/peggyjs/peggy/issues/415) Make docs match reality with `import`.
+- [#426](https://github.com/peggyjs/peggy/pull/426) Fix typo in XML example.
+- [#434](https://github.com/peggyjs/peggy/issues/434) Fixed bad example in docs.
 - [#445](https://github.com/peggyjs/peggy/issues/415) Fix indentation in `examples/javascript.pegjs`.
+- [#450](https://github.com/peggyjs/peggy/issues/450) Fixed misleading documentation.
 - [#466](https://github.com/peggyjs/peggy/issues/466) Add docs for developers.
 
 3.0.2
