@@ -4,17 +4,22 @@
 .eslintrc.js
 .gitattributes
 .github
+.ncurc.cjs
 .nyc_output
 .vscode/
 *.map
 benchmark
 bin/*.mjs
 build/
+CHANGELOG.md
+CONTRIBUTING.md
 coverage/
 docs
+eslint.config.js
 examples
 jest.config.js
 lib/.eslintrc.json
+peggy.code-workspace
 pnpm-lock.yaml
 rollup.config.mjs
 src
@@ -23,4 +28,3 @@ tools
 tsconfig*.json
 web-test/
 yarn.lock
-peggy.code-workspace
