@@ -157,5 +157,17 @@ describe("compiler pass |reportInfiniteRecursion|", () => {
       expect(pass).to.reportError("start = ''|2..3, start|");
       expect(pass).to.reportError("start = ''| 42 , start|");
     });
+
+    it("does not inifinite loop", () => {
+      // From https://github.com/peggyjs/peggy/issues/379
+      expect(pass).to.reportError(`
+        start = expr*
+
+        expr
+          = expr "++"
+      `, {
+        message: "Possible infinite loop when parsing (left recursion: start -> expr -> expr)",
+      });
+    });
   });
 });

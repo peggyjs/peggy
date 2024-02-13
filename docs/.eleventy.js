@@ -5,6 +5,7 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("js");
   eleventyConfig.addPassthroughCopy("vendor");
   eleventyConfig.addPassthroughCopy("favicon.ico");
+  eleventyConfig.addPassthroughCopy("development/favicon.ico");
   eleventyConfig.addPassthroughCopy("CNAME");
 
   eleventyConfig.setServerOptions({

@@ -46,15 +46,131 @@
 // ---- Syntactic Grammar -----
 
 Grammar
-  = __ topLevelInitializer:(@TopLevelInitializer __)? initializer:(@Initializer __)? rules:(@Rule __)+ {
+  = imports:ImportDeclarations topLevelInitializer:(__ @TopLevelInitializer)? initializer:(__ @Initializer)? __ rules:(@Rule __)+ {
       return {
         type: "grammar",
+        imports,
         topLevelInitializer,
         initializer,
         rules,
         location: location()
       };
     }
+
+// Alternate entry point to split JS into imports and not-imports.
+ImportsAndSource
+  = imports:ImportsAsText body:GrammarBody {
+    return [imports, body];
+  }
+
+// Everything after the imports.
+GrammarBody
+  = code:$.* {
+    return {
+      type: "top_level_initializer",
+      code,
+      codeLocation: location(),
+    }
+  }
+
+ImportsAsText
+  = code:$ImportDeclarations {
+    return {
+      type: "top_level_initializer",
+      code,
+      codeLocation: location()
+    }
+  }
+
+ImportDeclarations
+  = ImportDeclaration*
+
+ImportDeclaration
+  = __ "import" __ what:ImportClause __ from:FromClause (__ ";")? { return {
+    type: "grammar_import", what, from, location: location()
+  }}
+  / __ "import" __ from:ModuleSpecifier (__ ";")? { return {
+    type: "grammar_import", what: [], from, location: location()
+  }} // Intializers only
+
+ImportClause
+  = NameSpaceImport
+  / NamedImports
+  / first:ImportedDefaultBinding others:(__ "," __ @(NameSpaceImport / NamedImports))? {
+    if (!others) {
+      return [first];
+    }
+    if (Array.isArray(others)) {
+      others.unshift(first);
+      return others;
+    }
+    return [first, others];
+  }
+
+ImportedDefaultBinding
+  = binding:ImportedBinding {
+    return {
+      type: 'import_binding_default',
+      binding: binding[0],
+      location: binding[1],
+    }
+  }
+
+NameSpaceImport
+  = "*" __ "as" __ binding:ImportedBinding {
+    return [{
+      type: 'import_binding_all',
+      binding: binding[0],
+      location: binding[1],
+    }]
+  }
+
+NamedImports
+  = "{" __ "}" { return [] } // Can't have bare comma
+  / "{" __ @ImportsList __ ("," __)? "}"
+
+FromClause
+  = "from" __ @ModuleSpecifier
+
+ImportsList
+  = ImportSpecifier|1.., __ "," __|
+
+ImportSpecifier
+  = rename:ModuleExportName __ "as" __ binding:ImportedBinding {
+    return {
+      type: 'import_binding_rename',
+      rename: rename[0],
+      renameLocation: rename[1],
+      binding: binding[0],
+      location: binding[1],
+    }
+  }
+  / binding:ImportedBinding {
+    return {
+      type: 'import_binding',
+      binding: binding[0],
+      location: binding[1]
+    }
+  }
+
+ModuleSpecifier
+  = module:StringLiteral {
+      return { type: 'import_module_specifier', module, location: location() }
+    }
+
+ImportedBinding
+  = id:BindingIdentifier { return [id, location()] }
+
+ModuleExportName
+  = IdentifierName
+  / id:StringLiteral { return [id, location() ] }
+
+BindingIdentifier = id:IdentifierName {
+  if (reservedWords.indexOf(id[0]) >= 0) {
+    error(`Binding identifier can't be a reserved word "${id[0]}"`, id[1]);
+  }
+  return id[0];
+}
 
 TopLevelInitializer
   = "{" code:CodeBlock "}" EOS {
@@ -261,7 +377,16 @@ PrimaryExpression
     }
 
 RuleReferenceExpression
-  = name:IdentifierName !(__ (StringLiteral __)? "=") {
+  = library:IdentifierName "." name:IdentifierName {
+      return {
+        type: "library_ref",
+        name: name[0],
+        library: library[0],
+        libraryNumber: -1,
+        location: location()
+      }
+    }
+  / name:IdentifierName !(__ (StringLiteral __)? "=") {
       return { type: "rule_ref", name: name[0], location: location() };
     }
 

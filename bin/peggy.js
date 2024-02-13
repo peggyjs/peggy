@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S node --experimental-vm-modules --no-warnings
 
 "use strict";
 
@@ -17,6 +17,9 @@ if (require.main === module) {
   const cli = new PeggyCLI().parse();
   cli.main().then(
     code => process.exit(code),
-    er => console.error("Uncaught Error\n", er)
+    er => {
+      console.error("Uncaught Error\n", er);
+      process.exit(1);
+    }
   );
 }

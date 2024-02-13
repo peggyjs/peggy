@@ -47,6 +47,13 @@ describe("utility class Stack", () => {
           "Rule 'rule': The variable stack underflow: attempt to use a variable 'v<x>' at an index -3.\nBytecode: 42"
         );
       });
+
+      it("`sourceMapPop`", () => {
+        expect(() => stack.sourceMapPop()).to.throw(
+          RangeError,
+          "Rule 'rule': Attempting to pop an empty source map stack.\nBytecode: 42"
+        );
+      });
     });
 
     it("`defines` returns an empty string", () => {
@@ -266,6 +273,16 @@ describe("utility class Stack", () => {
         + "(before: 0, after: -1). "
         + "Bytecode: 42"
       );
+    });
+  });
+
+  describe("SourceNode handling", () => {
+    it("sourceNode handles unknown column", () => {
+      expect(Stack.sourceNode({
+        source: "",
+        start: { line:1, column:0, offset:0 },
+        end: { line:1, column:0, offset:0 },
+      }, ["foo"], "test").column).to.equal(null);
     });
   });
 });

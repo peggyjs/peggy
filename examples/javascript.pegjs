@@ -540,11 +540,11 @@ Elision
 ObjectLiteral
   = "{" __ "}" { return { type: "ObjectExpression", properties: [] }; }
   / "{" __ properties:PropertyNameAndValueList __ "}" {
-       return { type: "ObjectExpression", properties: properties };
-     }
+      return { type: "ObjectExpression", properties: properties };
+    }
   / "{" __ properties:PropertyNameAndValueList __ "," __ "}" {
-       return { type: "ObjectExpression", properties: properties };
-     }
+      return { type: "ObjectExpression", properties: properties };
+    }
 PropertyNameAndValueList
   = head:PropertyAssignment tail:(__ "," __ PropertyAssignment)* {
       return buildList(head, tail, 3);
@@ -716,9 +716,17 @@ UnaryOperator
   / "~"
   / "!"
 
-MultiplicativeExpression
+ExponentiationExpression
   = head:UnaryExpression
-    tail:(__ MultiplicativeOperator __ UnaryExpression)*
+    tail:(__ ExponentiationOperator __ ExponentiationExpression)*
+    { return buildBinaryExpression(head, tail); }
+
+ExponentiationOperator
+  = $("**" !"=")
+
+MultiplicativeExpression
+  = head:ExponentiationExpression
+    tail:(__ MultiplicativeOperator __ ExponentiationExpression)*
     { return buildBinaryExpression(head, tail); }
 
 MultiplicativeOperator
@@ -930,7 +938,8 @@ AssignmentExpressionNoIn
   / ConditionalExpressionNoIn
 
 AssignmentOperator
-  = "*="
+  = "**="
+  / "*="
   / "/="
   / "%="
   / "+="

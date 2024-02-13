@@ -3,6 +3,7 @@
 const chai = require("chai");
 const { SourceNode } = require("source-map");
 const peg = require("../../lib/peg");
+const op = require("../../lib/compiler/opcodes");
 
 const expect = chai.expect;
 
@@ -77,6 +78,7 @@ describe("plugin API", () => {
             "start = .* {",
             "  return {",
             "    type: 'grammar',",
+            "    imports: [],",
             "    initializer: {",
             "      type: 'initializer',",
             "      code: ['/* included for cover ast2SourceNode in the generate-js pass */'],",
@@ -165,6 +167,46 @@ describe("plugin API", () => {
       expect(parser.parse("x", { startRule: "a" })).to.equal("x");
       expect(parser.parse("x", { startRule: "b" })).to.equal("x");
       expect(parser.parse("x", { startRule: "c" })).to.equal("x");
+    });
+
+    it("can munge the bytecode", () => {
+      // This test demonstrates that plugins can munge the bytecode, but
+      // is also here to ensure full coverage in generate-js.js.
+      // With the current bytecode generator, compileInputChunkCondition
+      // always ensures that skipAccept will be set on any ACCEPT_N with
+      // a length greater than one. This means that the line that would
+      // normally handle that gets no coverage.
+      //
+      // We fix that here by inserting an effective no-op (PUSH_CUR_POS, POP)
+      // which will prevent compileInputChunkCondition from recognizing the
+      // MATCH_STRING_IC .. ACCEPT_N pattern.
+      const plugin = {
+        use(config) {
+          function munge(ast) {
+            expect(ast.rules.length).to.equal(2);
+            let bc = ast.rules[0].bytecode;
+            expect(bc[0]).to.equal(op.MATCH_STRING_IC);
+            bc.splice(4, 0, op.PUSH_CURR_POS, op.POP);
+            bc[2] += 2;
+            bc = ast.rules[1].bytecode;
+            expect(bc[0]).to.equal(op.MATCH_STRING);
+            expect(bc[4]).to.equal(op.ACCEPT_STRING);
+            bc[4] = op.ACCEPT_N;
+            bc[5] = 1;
+          }
+
+          config.passes.generate.splice(1, 0, munge);
+        },
+      };
+      const parser = peg.generate("one = 'abc'i; two = 'a'", { plugins: [plugin], output: "source" });
+      // Lint complained about a long regex, so split and join.
+      const matcher = new RegExp([
+        /if \(input\.substr\(peg\$currPos, 3\)/,
+        /.toLowerCase\(\) === peg\$c0\) \{/,
+        /\s*s0 = peg\$currPos;/, // Inserted by the munged bytecode
+        /\s*s0 = input\.substr/,
+      ].map(r => r.source).join(""));
+      expect(parser.search(matcher)).to.be.greaterThan(0);
     });
   });
 });

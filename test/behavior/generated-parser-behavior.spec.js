@@ -2677,13 +2677,13 @@ describe("generated parser behavior", () => {
         });
 
         it("reports expectations correctly with multiple alternatives", () => {
-          const parser = peg.generate("start = 'a' / 'b' / 'c'", options);
+          const parser = peg.generate("start = 'aa' / 'bb' / 'cc'", options);
 
-          expect(parser).to.failToParse("d", {
+          expect(parser).to.failToParse("dd", {
             expected: [
-              { type: "literal", text: "a", ignoreCase: false },
-              { type: "literal", text: "b", ignoreCase: false },
-              { type: "literal", text: "c", ignoreCase: false },
+              { type: "literal", text: "aa", ignoreCase: false },
+              { type: "literal", text: "bb", ignoreCase: false },
+              { type: "literal", text: "cc", ignoreCase: false },
             ],
           });
         });
@@ -2721,10 +2721,10 @@ describe("generated parser behavior", () => {
         });
 
         it("builds message correctly with multiple alternatives", () => {
-          const parser = peg.generate("start = 'a' / 'b' / 'c'", options);
+          const parser = peg.generate("start = 'aa' / 'bb' / 'cc'", options);
 
-          expect(parser).to.failToParse("d", {
-            message: "Expected \"a\", \"b\", or \"c\" but \"d\" found.",
+          expect(parser).to.failToParse("dd", {
+            message: "Expected \"aa\", \"bb\", or \"cc\" but \"d\" found.",
           });
         });
 
@@ -2753,10 +2753,10 @@ describe("generated parser behavior", () => {
         });
 
         it("sorts expectations", () => {
-          const parser = peg.generate("start = 'c' / 'b' / 'a'", options);
+          const parser = peg.generate("start = 'cc' / 'bb' / 'aa'", options);
 
           expect(parser).to.failToParse("d", {
-            message: "Expected \"a\", \"b\", or \"c\" but \"d\" found.",
+            message: "Expected \"aa\", \"bb\", or \"cc\" but \"d\" found.",
           });
         });
       });
@@ -3015,7 +3015,7 @@ describe("generated parser behavior", () => {
       } catch (er) {
         expect(er).to.be.an.instanceof(peg.parser.SyntaxError);
         expect(er.format([source])).to.equal(`\
-Error: Expected "{", code block, comment, end of line, identifier, or whitespace but "=" found.
+Error: Expected "import", "{", code block, comment, end of line, identifier, or whitespace but "=" found.
  --> stdin:1:1
   |
 1 | ===
@@ -3027,8 +3027,27 @@ Error: Expected "{", code block, comment, end of line, identifier, or whitespace
       } catch (er) {
         expect(er).to.be.an.instanceof(peg.parser.SyntaxError);
         expect(er.format([])).to.equal(`\
-Error: Expected "{", code block, comment, end of line, identifier, or whitespace but "=" found.
+Error: Expected "import", "{", code block, comment, end of line, identifier, or whitespace but "=" found.
  at stdin:1:1`);
+      }
+    });
+
+    it("detects infinite loops before other errors", () => {
+      try {
+        peg.generate(`
+          start = start
+          dup = label:"foo" label:"bar"
+        `);
+      } catch (e) {
+        expect(e).with.property("stage", "prepare");
+        expect(e).with.property("problems").to.be.an("array");
+        // Get second elements of errors (error messages)
+        const messages = e.problems.filter(p => p[0] === "error").map(p => p[1]);
+
+        // Check that only infloop errors are present
+        expect(messages).to.deep.equal([
+          "Possible infinite loop when parsing (left recursion: start -> start)",
+        ]);
       }
     });
 
@@ -3038,7 +3057,7 @@ Error: Expected "{", code block, comment, end of line, identifier, or whitespace
           start = leftRecursion
           leftRecursion = duplicatedLabel:duplicatedRule duplicatedLabel:missingRule
           duplicatedRule = missingRule
-          duplicatedRule = start
+          duplicatedRule = "nothing"
         `);
       } catch (e) {
         expect(e).with.property("stage", "check");
@@ -3058,7 +3077,6 @@ Error: Expected "{", code block, comment, end of line, identifier, or whitespace
           "Rule \"missingRule\" is not defined",
           "Rule \"duplicatedRule\" is already defined",
           "Label \"duplicatedLabel\" is already defined",
-          "Possible infinite loop when parsing (left recursion: duplicatedRule -> start -> leftRecursion -> duplicatedRule)",
         ]);
       }
     });

@@ -1,6 +1,7 @@
 // This is typescript so that it only runs in node contexts, not on the web
 
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 import * as peggy from "../../lib/peg.js";
 import { CommanderError, PeggyCLI } from "../../bin/peggy.js";
@@ -14,6 +15,19 @@ foo = '1'
 bar = '2'
 baz = '3'
 `;
+
+const fixtures = path.resolve(__dirname, "fixtures");
+const packageJson = path.resolve(__dirname, "..", "..", "package.json");
+const grammarFile = path.resolve(__dirname, "..", "..", "examples", "json.pegjs");
+let tmpDir = "";
+
+beforeAll(async() => {
+  tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "run-spec-"));
+});
+
+afterAll(async() => {
+  await fs.promises.rm(tmpDir, { recursive: true });
+});
 
 interface ErrorWritableOptions extends TransformOptions {
   name?: string;
@@ -100,6 +114,8 @@ interface Options {
   errorCode?: number | string;
   exitCode?: number;
   expected?: any;
+  onstdout?(s: string, cli: PeggyCLI): void;
+  onstderr?(s: string, cli: PeggyCLI): void;
 }
 
 /**
@@ -138,6 +154,16 @@ async function exec(opts: Options = {}): Promise<string> {
         "peggy",
         ...(opts.args || []),
       ]);
+
+    if (opts.onstdout) {
+      const oso = opts.onstdout; // Snapshot
+      out.on("data", buf => oso(buf, cli));
+    }
+
+    if (opts.onstderr) {
+      const ose = opts.onstderr; // Snapshot
+      err.on("data", buf => ose(buf, cli));
+    }
 
     cli.main().then(resolve, reject);
   });
@@ -271,6 +297,7 @@ async function checkSourceMap(
   expect(() => {
     // Make sure the file isn't there before we start
     fs.statSync(sourceMap);
+    console.log(`Delete file: "${sourceMap}"`);
   }).toThrow();
 
   await exec({
@@ -280,13 +307,13 @@ async function checkSourceMap(
     error,
   });
 
-  expect(fs.statSync(sourceMap)).toBeInstanceOf(fs.Stats);
+  expect(await fs.promises.stat(sourceMap)).toBeInstanceOf(fs.Stats);
 
   await expect(new SourceMapConsumer(
-    fs.readFileSync(sourceMap, { encoding: "utf8" })
+    await fs.promises.readFile(sourceMap, { encoding: "utf8" })
   )).resolves.toBeInstanceOf(SourceMapConsumer);
 
-  fs.unlinkSync(sourceMap);
+  await fs.promises.unlink(sourceMap);
 }
 
 describe("MockStream", () => {
@@ -310,11 +337,15 @@ describe("MockStream", () => {
 describe("Command Line Interface", () => {
   it("has help", async() => {
     const HELP = `\
-Usage: peggy [options] [input_file]
+Usage: peggy [options] [input_file...]
 
 Arguments:
-  input_file                       Grammar file to read.  Use "-" to read
-                                   stdin. (default: "-")
+  input_file                       Grammar file(s) to read.  Use "-" to read
+                                   stdin.  If multiple files are given, they
+                                   are combined in the given order to produce a
+                                   single output.  Use
+                                   npm:"<packageName>/file.peggy" to import
+                                   from an npm dependency. (default: ["-"])
 
 Options:
   -v, --version                    output the version number
@@ -346,9 +377,11 @@ Options:
                                    "amd", "bare", "commonjs", "es", "globals",
                                    "umd", default: "commonjs")
   -o, --output <file>              Output file for generated parser. Use '-'
-                                   for stdout (the default, unless a test is
-                                   specified, in which case no parser is output
-                                   without this option)
+                                   for stdout (the default is a file next to
+                                   the input file with the extension change to
+                                   '.js', unless a test is specified, in which
+                                   case no parser is output without this
+                                   option)
   --plugin <module>                Comma-separated list of plugins. (can be
                                    specified multiple times)
   -m, --source-map [mapfile]       Generate a source map. If name is not
@@ -380,6 +413,9 @@ Options:
                                    will read from stdin.
   --trace                          Enable tracing in generated parser (default:
                                    false)
+  -w,--watch                       Watch the input file for changes, generating
+                                   the output once at the start, and again
+                                   whenever the file changes.
   -h, --help                       display help for command
 `;
 
@@ -576,8 +612,8 @@ Options:
   });
 
   it("handles extra options in a file", async() => {
-    const optFile = path.join(__dirname, "fixtures", "options.json");
-    const optFileJS = path.join(__dirname, "fixtures", "options.js");
+    const optFile = path.join(fixtures, "options.json");
+    const optFileJS = path.join(fixtures, "options.js");
 
     const res = await exec({
       args: ["--extra-options-file", optFile],
@@ -606,7 +642,7 @@ Options:
       stdin: "foo = '1'",
       errorCode: "peggy.cli",
       exitCode: 1,
-      error: "Error reading input stream",
+      error: "Error reading input \"____ERROR____FILE_DOES_NOT_EXIST\"",
     });
 
     await exec({
@@ -707,7 +743,7 @@ Options:
   });
 
   it("outputs to a file", async() => {
-    const test_output = path.resolve(__dirname, "test_output.js");
+    const test_output = "test_output.js";
 
     expect(() => {
       // Make sure the file isn't there before we start
@@ -719,8 +755,17 @@ Options:
       stdin: "foo = '1'",
       expected: null,
     });
+
     expect(fs.statSync(test_output)).toBeInstanceOf(fs.Stats);
     fs.unlinkSync(test_output);
+
+    await exec({
+      args: ["-o", "create/new/dir/output.js"],
+      stdin: "foo = '1'",
+      expected: null,
+    });
+    expect(fs.statSync("create/new/dir/output.js")).toBeInstanceOf(fs.Stats);
+    await fs.promises.rm("create", { recursive: true });
 
     await exec({
       args: ["--output"],
@@ -731,18 +776,18 @@ Options:
     });
 
     await exec({
-      args: ["--output", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js"],
+      args: ["--output", `${fixtures}/imp.peggy/none.js`],
       stdin: "foo = '1'",
       errorCode: "peggy.cli",
       exitCode: 1,
-      error: "ENOENT: no such file or directory",
+      error: "Error opening output stream",
     });
   });
 
   it("handles plugins", async() => {
     // Plugin, starting with "./"
-    const plugin = path.join(__dirname, "fixtures", "plugin.js");
-    const bad = path.join(__dirname, "fixtures", "bad.js");
+    const plugin = path.join(fixtures, "plugin.js");
+    const bad = path.join(fixtures, "bad.js");
 
     await exec({
       args: [
@@ -817,6 +862,48 @@ Options:
     })).resolves.toMatch("DefaultTracer: peg$DefaultTracer");
   });
 
+  it("handles multiple files", async() => {
+    const input1 = path.join(__dirname, "fixtures", "imports1.peggy");
+    const input2 = path.join(__dirname, "fixtures", "imports2.peggy");
+    const out = path.join(__dirname, "fixtures", "imports1.js");
+
+    await expect(exec({
+      args: [input1, input2],
+      exitCode: 0,
+    })).resolves.toBe("");
+
+    fs.unlinkSync(out);
+  });
+
+  it("handles npm: sources", async() => {
+    let input1 = path.join(__dirname, "fixtures", "useFrags", "identifier.peggy");
+    let out = path.join(__dirname, "fixtures", "useFrags", "identifier.js");
+    await expect(exec({
+      args: ["--format", "es", input1, "npm:frags/unicode.peggy"],
+      exitCode: 0,
+    })).resolves.toBe("");
+
+    fs.unlinkSync(out);
+
+    input1 = path.join(__dirname, "fixtures", "useFrags", "fs.peggy");
+    out = path.join(__dirname, "fixtures", "useFrags", "fs.js");
+    await expect(exec({
+      args: ["--format", "es", input1, "npm:frags/path.peggy"],
+      exitCode: 0,
+    })).resolves.toBe("");
+
+    fs.unlinkSync(out);
+
+    out = path.join(__dirname, "..", "..", "path.js");
+    await expect(exec({
+      args: ["--format", "es", "npm:frags/path.peggy"],
+
+      exitCode: 0,
+    })).resolves.toBe("");
+
+    fs.unlinkSync(out);
+  });
+
   describe("handles source map", () => {
     describe("with default name without --output", () => {
       const sourceMap = path.resolve(__dirname, "..", "..", "source.map");
@@ -861,6 +948,7 @@ Options:
         expect(() => {
           // Make sure the file isn't there before we start
           fs.statSync(testOutput);
+          console.log(`Delete "${testOutput}"`);
         }).toThrow();
 
         await checkSourceMap(sourceMap, ["--output", testOutput, "--source-map"]);
@@ -901,6 +989,18 @@ Options:
         );
         expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
         fs.unlinkSync(testOutput);
+
+        const testFile = path.join(tmpDir, "testFile");
+        await fs.promises.writeFile(testFile, "2");
+        await checkSourceMap(
+          sourceMap,
+          ["-o", testOutput, "-T", testFile, "-m"],
+          'Error: Expected "1" but "2" found'
+        );
+        await fs.promises.rm(testFile);
+
+        expect(fs.statSync(testOutput)).toBeInstanceOf(fs.Stats);
+        fs.unlinkSync(testOutput);
       });
 
       it("emits an error with hidden:inline", async() => {
@@ -929,17 +1029,12 @@ Options:
       const sourceMap = path.resolve(__dirname, "specified-name.map");
 
       it("generates a source map 3", async() => {
-        expect(() => {
-          // Make sure the file isn't there before we start
-          fs.statSync(sourceMap);
-        }).toThrow();
-
         await exec({
-          args: ["--source-map", "__DIRECTORY__/__DOES/NOT__/__EXIST__/none.js.map"],
+          args: ["--source-map", `${fixtures}/imp.peggy/none.js.map`],
           stdin: "foo = '1' { return 42; }",
           exitCode: 1,
           errorCode: "peggy.cli",
-          error: "no such file or directory",
+          error: "Error writing sourceMap",
         });
 
         await checkSourceMap(sourceMap, ["--source-map", sourceMap]);
@@ -991,13 +1086,6 @@ Options:
       exitCode: 1,
       error: /no such file or directory, open '[^']*--trace'/,
     });
-
-    await exec({
-      args: ["--", "--trace", "--format"],
-      errorCode: "commander.excessArguments",
-      exitCode: 1,
-      error: "too many arguments.",
-    });
   });
 
   it("handles input tests", async() => {
@@ -1017,11 +1105,8 @@ bar = '2'
       expected: "'2'\n",
     });
 
-    const grammarFile = path.join(__dirname, "..", "..", "examples", "json.pegjs");
-    const testFile = path.join(__dirname, "..", "..", "package.json");
-
     await exec({
-      args: ["-T", testFile, grammarFile],
+      args: ["-T", packageJson, grammarFile],
       expected: /name: 'peggy',$/m, // Output is JS, not JSON
     });
 
@@ -1069,6 +1154,8 @@ bar = '2'
       error: "Error running test",
     });
 
+    // Abusing template literals to ensure we have a trailing space.
+    /* eslint-disable @typescript-eslint/no-useless-template-literals */
     await exec({
       args: ["-t", ""],
       stdin: "foo='1'",
@@ -1083,6 +1170,7 @@ Error: Expected "1" but end of input found.
   | ^`,
     });
   });
+  /* eslint-enable @typescript-eslint/no-useless-template-literals */
 
   it("handles stdout errors", async() => {
     const stderr = new MockStream({ name: "stderr", encoding: "utf8" });
@@ -1113,6 +1201,35 @@ Error: Expected "1" but end of input found.
     });
   });
 
+  it("handles tests that import other modules", async() => {
+    if ((await import("vm")).SourceTextModule) {
+      const grammar = path.join(__dirname, "fixtures", "imp.peggy");
+      try {
+        await exec({
+          args: ["--format", "es", "-t", "1", grammar],
+          expected: "[ [ 'zazzy' ], [ 'zazzy' ], true ]\n",
+        });
+      } catch (e) {
+        expect((e as Error).message).toMatch("Requires node.js 20.8+ or 21");
+      }
+      await exec({
+        args: ["--format", "amd", "-t", "1", grammar],
+        error: /Unsupported output format/,
+      });
+      await exec({
+        args: ["--format", "globals", "-t", "1", grammar],
+        error: /Unsupported output format/,
+      });
+      await exec({
+        args: ["--format", "bare", "-t", "1"],
+        stdin: "foo = '1'\n",
+        expected: "'1'\n",
+      });
+    } else {
+      throw new Error("Use --experimental-vm-modules");
+    }
+  });
+
   it("handles grammar errors", async() => {
     await exec({
       stdin: "foo=unknownRule",
@@ -1125,6 +1242,106 @@ error: Rule "unknownRule" is not defined
   |
 1 | foo=unknownRule
   |     ^^^^^^^^^^^`,
+    });
+  });
+
+  it("handles imports", async() => {
+    const lib = path.join(__dirname, "fixtures", "lib.peggy");
+    const imps = path.join(__dirname, "fixtures", "imports_peggy.peggy");
+    const impjs = path.join(__dirname, "fixtures", "imports_peggy.js");
+
+    await exec({
+      args: [lib, "--allowed-start-rules", "*"],
+    });
+    await exec({
+      args: [imps],
+    });
+
+    const { parse } = await import(impjs);
+    expect(parse("baz")).toBe("baz");
+  });
+
+  describe("--watch option", () => {
+    it("rejects stdin for watching", async() => {
+      await exec({
+        args: ["-w"],
+        errorCode: "peggy.invalidArgument",
+      });
+
+      await exec({
+        args: ["--watch", "-"],
+        errorCode: "peggy.invalidArgument",
+      });
+    });
+
+    it("errors when stopWatching is invalid", async() => {
+      const cli = new PeggyCLI();
+      await expect(cli.stopWatching()).rejects.toThrow();
+    });
+
+    it("handles grammar errors but keeps going", async() => {
+      const bad = path.join(__dirname, "fixtures", "bad.js");
+
+      let count = 0;
+      await exec({
+        args: ["-w", bad],
+        exitCode: 0,
+        onstderr(s, cli) {
+          // This is brittle.  Stderr gets the "file added" message, then
+          // the error, then a newline.
+          if (++count === 4) {
+            cli.stopWatching();
+          }
+        },
+      });
+    });
+
+    it("watches", async() => {
+      const grammar = path.join(__dirname, "fixtures", "simple.peggy");
+      let count = 0;
+      await exec({
+        args: ["-w", grammar],
+        exitCode: 0,
+        expected: /Wrote:/,
+        onstdout(s, cli) {
+          if (++count === 3) {
+            cli.stopWatching();
+          }
+        },
+      });
+    });
+
+    it("watches with tests", async() => {
+      const grammar = path.join(__dirname, "fixtures", "simple.peggy");
+      let count = 0;
+      await exec({
+        args: ["-w", "-t", "1", grammar],
+        exitCode: 0,
+        onstdout(s, cli) {
+          if (++count === 2) {
+            cli.stopWatching();
+          }
+        },
+      });
+    });
+
+    it("handles watcher errors", async() => {
+      const grammar = path.join(__dirname, "fixtures", "simple.peggy");
+      let count = 0;
+      await exec({
+        args: ["-w", grammar],
+        error: "Fake error",
+        onstdout(s, cli) {
+          if (++count === 3) {
+            cli.watcher?.watchers[0].emit("error", new Error("Fake error"));
+          }
+        },
+      });
+    });
+
+    afterAll(() => {
+      const out = path.join(__dirname, "fixtures", "simple.js");
+      fs.unlinkSync(out);
     });
   });
 });

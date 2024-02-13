@@ -3,8 +3,79 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
+4.0.0
+-----
+
+Released: 2024-02-13
+
+### Major Changes
+
+- [#379](https://github.com/peggyjs/peggy/issues/379) Fix infinite recursion
+  issue by moving reportInfiniteRecursion to the new prepare pass, and having
+  it fail after finding the first issue.  This will require plugin authors
+  to ensure that reportInfiniteRecursion is in the new pass correctly.
+- [#417](https://github.com/peggyjs/peggy/pull/417) BREAKING: change to AST to
+  allow topLevelInitializer and initializer to be arrays, in support of
+  multi-file inputs.  This will require plugin updates.  The CLI and API now
+  take multiple files as input, where the first file is your main library, and
+  subsequent files consist of a library of other rules.  The CLI can take file
+  names of the form `npm:<package-name>/<filename>` to load library rules from
+  an NPM package that is installed relative to the previous non-npm file name,
+  or to the current working directory if this is the first file name.
+- [#420](https://github.com/peggyjs/peggy/pull/420) BREAKING: Node v16+ is now
+  required for running the CLI or using Peggy as a library.  Generated code
+  still targets older runtimes.
+- [#456](https://github.com/peggyjs/peggy/pull/456) BREAKING: Allow imports
+  from external compiled grammars inside a source grammar, using `import
+  {rule} from "external.js"`.  Note that this syntax will generate either
+  `import` or `require` in the JavaScript output, depending on the value of
+  the `format` parameter.  This will need explicit support from
+  plugins, with a few new AST node types and a few visitor changes.
+- [#463](https://github.com/peggyjs/peggy/issues/463) Drop support for
+  Internet Explorer.  Move to eslint flat configs in order to lint minimized
+  browser code for compatibility with
+  `defaults, maintained node versions, not op_mini all`.
+
+### Minor Changes
+
+- [#400](https://github.com/peggyjs/peggy/pull/400) Use `@generated` in generated
+  code
+- [#404](https://github.com/peggyjs/peggy/issues/404) Add support for -w/--watch
+  to the command line interface.
+- [#415](https://github.com/peggyjs/peggy/issues/415) Added `browser` key to package.json, pointing to Webpack output.
+- [#420](https://github.com/peggyjs/peggy/pull/420) Updated dependencies to
+  avoid audit warnings.
+- [#425](https://github.com/peggyjs/peggy/pull/425) Add a pass to simplify single-character choices
+- [#427](https://github.com/peggyjs/peggy/pull/427) Avoid double extraction of
+  substrings in various MATCH_ bytecodes
+- [#430](https://github.com/peggyjs/peggy/pull/430) Make generate-js.js ts clean
+- [#432](https://github.com/peggyjs/peggy/pull/432) Add peggy.code-workspace
+- [#435](https://github.com/peggyjs/peggy/pull/435) Setup tsconfig to detect use of library functions from es6 or later
+- [#436](https://github.com/peggyjs/peggy/pull/436) Get rid of tsd
+- [#437](https://github.com/peggyjs/peggy/pull/437) Better type checking for visitor
+- [#438](https://github.com/peggyjs/peggy/pull/438) Make test build deterministic
+- [#439](https://github.com/peggyjs/peggy/pull/439) Make peg$computePosDetails a little faster
+- [#440](https://github.com/peggyjs/peggy/issues/440) Create directories for
+  output and source-map if they do not exist, rather than erroring.
+- [#446](https://github.com/peggyjs/peggy/pull/446) Add a right-associative `ExponentiationExpression` rule (operator `**`) to `javascript.pegjs` example grammar.
+- [#451](https://github.com/peggyjs/peggy/pull/451) Make stack.js ts clean
+- [#452](https://github.com/peggyjs/peggy/pull/452) Fixes to prepare generate-bytecode.js for ts-check
+- [#453](https://github.com/peggyjs/peggy/pull/453) Make generate-bytecode.js ts-clean
+- [#460](https://github.com/peggyjs/peggy/pull/453) Allow `-t` and `-T` testing
+  from the CLI with `--format es`.
+
+### Bug Fixes
+
+- [#405](https://github.com/peggyjs/peggy/pull/405) Doc example doesn't correspond to code example.  From @hildjj
+- [#415](https://github.com/peggyjs/peggy/issues/415) Make docs match reality with `import`.
+- [#426](https://github.com/peggyjs/peggy/pull/426) Fix typo in XML example.
+- [#434](https://github.com/peggyjs/peggy/issues/434) Fixed bad example in docs.
+- [#445](https://github.com/peggyjs/peggy/issues/415) Fix indentation in `examples/javascript.pegjs`.
+- [#450](https://github.com/peggyjs/peggy/issues/450) Fixed misleading documentation.
+- [#466](https://github.com/peggyjs/peggy/issues/466) Add docs for developers.
+
 3.0.2
-----------
+-----
 
 Released: 2023-03-21
 
@@ -25,7 +96,7 @@ Released: 2023-03-21
 - [#384](https://github.com/peggyjs/peggy/issues/384) Improve the error.format()
   documentation.  From @AndrewRayCode.
 - [#386](https://github.com/peggyjs/peggy/issues/386) Ensure '*' as
-  allowed-start-rule is documented for CLI.
+  allowed-start-rule is documented for CLI.  From @hildjj.
 
 3.0.1
 -----

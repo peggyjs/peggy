@@ -36,20 +36,26 @@ In the request, please describe:
 
 ## Contributing Code
 
-Contribute code using [GitHub pull requests][pulls]. For non-trivial changes,
-first file a corresponding bug report or feature request. This will ensure the
-*problem* is separated from a *solution*.
+Contribute code using [GitHub pull requests][pulls].
 
-Split your change into atomic commits with descriptive messages adhering to
+1. For non-trivial changes, first file a corresponding bug report or feature
+request. This will ensure the *problem* is separated from a *solution*.
+
+1. Split your change into atomic commits with descriptive messages adhering to
 [these conventions][git-commit-messages]. Have a look in the commit history to
 see good examples.
 
-When appropriate, add documentation and tests.
+1. When appropriate, add documentation and tests.
 
-Before submitting, make sure your change passes the tests (`npm test`) and
-ESLint checks (`npm run lint`).
+1. Before submitting, make sure your change passes the tests and lint checks
+by running `npm run build`.  If the build script produces output that git sees
+as a change, please add that output file to your pull request.
 
-Please add yourself to the AUTHORS file.
+1. Ensure that your pull request contains an addition to the
+[CHANGELOG.md](CHANGELOG.md) file.
+
+1. Please add yourself to the [AUTHORS](AUTHORS) file, or double-check that the
+information there is still correct if you have contributed before.
 
 [issues]: https://github.com/peggyjs/peggy/issues
 [issues-search-bugs]: https://github.com/peggyjs/peggy/issues?q=is%3Aopen+is%3Aissue+label%3ABug

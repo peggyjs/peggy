@@ -51,12 +51,67 @@ declare namespace ast {
     location: LocationRange;
   }
 
+  /**
+   * Type of the classes field on a Grammar node. Not quite the same as
+   * CharacterClass (`parts` was renamed to `value`).
+   */
+  interface GrammarCharacterClass {
+    value: (string[] | string)[];
+    inverted: boolean;
+    ignoreCase: boolean;
+  }
+
+  type GrammarExpectation =
+    | { type: "any" }
+    | { type: "literal"; value: string; ignoreCase: boolean }
+    | { type: "rule"; value: string }
+    | GrammarCharacterClass & { type: "class" }
+    ;
+
+  type AllNodes =
+    | Expression
+    | Grammar
+    | GrammarImport
+    | Initializer
+    | Named
+    | Rule
+    | TopLevelInitializer
+    ;
+
+  interface GrammarImportWhatGeneral {
+    type: "import_binding_all" | "import_binding_default" | "import_binding";
+    binding: string;
+    location: LocationRange;
+  }
+
+  interface GrammarImportWhatRename {
+    type: "import_binding_rename";
+    binding: string;
+    rename: string;
+    location: LocationRange;
+  }
+
+  type GrammarImportWhat = GrammarImportWhatGeneral | GrammarImportWhatRename;
+
+  interface GrammarImportFrom {
+    type: "import_module_specifier";
+    module: string;
+    location: LocationRange;
+  }
+
+  interface GrammarImport extends Node<"grammar_import"> {
+    what: GrammarImportWhat[];
+    from: GrammarImportFrom;
+  }
+
   /** The main Peggy AST class returned by the parser. */
   interface Grammar extends Node<"grammar"> {
+    /** External grammars imported into this grammar. */
+    imports: GrammarImport[];
     /** Initializer that run once when importing generated parser module. */
-    topLevelInitializer?: TopLevelInitializer;
+    topLevelInitializer?: TopLevelInitializer | TopLevelInitializer[];
     /** Initializer that run each time when `parser.parse()` method in invoked. */
-    initializer?: Initializer;
+    initializer?: Initializer | Initializer[];
     /** List of all rules in that grammar. */
     rules: Rule[];
 
@@ -70,12 +125,13 @@ declare namespace ast {
      * Added by the `generateBytecode` pass and contain data for
      * bytecodes to refer back to via index.
      */
-     literals?: string[];
-     classes?: CharacterClass[];
-     expectations?: parser.Expectation[];
-     functions?: FunctionConst[];
-     locations?: LocationRange[];
-   }
+    literals?: string[];
+    classes?: GrammarCharacterClass[];
+    expectations?: GrammarExpectation[];
+    importedNames?: string[];
+    functions?: FunctionConst[];
+    locations?: LocationRange[];
+  }
 
   /**
    * Base interface for all initializer nodes with the code.
@@ -107,7 +163,10 @@ declare namespace ast {
    */
   interface TopLevelInitializer extends CodeBlock<"top_level_initializer"> {}
 
-  /** Code that runs on each `parse()` call of the generated parser. */
+  /**
+   * Code that runs on each `parse()` call of the generated parser.
+   * May be split into multiple chunks if there are multiple input files.
+   */
   interface Initializer extends CodeBlock<"initializer"> {}
 
   interface Rule extends Expr<"rule"> {
@@ -120,7 +179,6 @@ declare namespace ast {
     nameLocation: LocationRange;
     /** Parsing expression of this rule. */
     expression: Expression | Named;
-
     /** Added by the `generateBytecode` pass. */
     bytecode?: number[];
   }
@@ -164,11 +222,11 @@ declare namespace ast {
   interface Action extends CodeBlockExpr<"action"> {
     expression: (
         Labeled
-      | Prefixed
-      | Primary
-      | Repeated
-      | Sequence
-      | Suffixed
+        | Prefixed
+        | Primary
+        | Repeated
+        | Sequence
+        | Suffixed
     );
   }
 
@@ -226,6 +284,8 @@ declare namespace ast {
   interface VariableBoundary extends Boundary<"variable"> {
     /** Repetition count - name of the label of the one of preceding expressions. */
     value: string;
+    /** Stack offset, added by generateBytecode. */
+    sp?: number;
   }
 
   interface FunctionBoundary extends Boundary<"function"> {
@@ -233,6 +293,8 @@ declare namespace ast {
     value: string;
     /** Span that covers all code between `{` and `}`. */
     codeLocation: LocationRange;
+    /** Stack offset, added by generateBytecode. */
+    sp?: number;
   }
 
   type RepeatedBoundary
@@ -261,6 +323,7 @@ declare namespace ast {
     = Any
     | CharacterClass
     | Group
+    | LibraryReference
     | Literal
     | RuleReference
     | SemanticPredicate;
@@ -268,6 +331,21 @@ declare namespace ast {
   interface RuleReference extends Expr<"rule_ref"> {
     /** Name of the rule to refer. */
     name: string;
+  }
+
+  interface LibraryReference extends Expr<"library_ref"> {
+    /** Name of the rule in the library.  `undefined` means default rule. */
+    name: string | undefined;
+
+    /**
+     * Namespace import name for the rule library.
+     * `import * as library from "foo.js"`
+     */
+    library: string;
+    /**
+     * With the first import statement as 0, which import?
+     */
+    libraryNumber: number;
   }
 
   interface SemanticPredicate extends CodeBlockExpr<"semantic_and" | "semantic_not"> {}
@@ -603,6 +681,7 @@ export namespace compiler {
     interface NodeTypes {
       /**
        * Default behavior: run visitor:
+       * - on each import statement
        * - on the top level initializer, if it is defined
        * - on the initializer, if it is defined
        * - on each element in `rules`
@@ -613,6 +692,14 @@ export namespace compiler {
        * @param args Any arguments passed to the `Visitor`
        */
       grammar?(node: ast.Grammar, ...args: any[]): any;
+
+      /**
+       * Default behavior: do nothing
+       *
+       * @param node Node representing a single import statement
+       * @param args Any arguments passed to the `Visitor`
+       */
+      grammar_import?(node: ast.GrammarImport, ...args: any[]): any;
 
       /**
        * Default behavior: do nothing
@@ -634,7 +721,11 @@ export namespace compiler {
        *        run of the `parse()` method of the generated parser
        * @param args Any arguments passed to the `Visitor`
        */
-      initializer?(node: ast.Initializer, ...args: any[]): any;
+      initializer?(
+        node: ast.Initializer,
+        ...args: any[]
+      ): any;
+
       /**
        * Default behavior: run visitor on `expression` and return it result
        *
@@ -765,6 +856,14 @@ export namespace compiler {
       /**
        * Default behavior: do nothing
        *
+       * @param node Leaf node, representing calling a rule in an external library.
+       * @param args Any arguments passed to the `Visitor`
+       */
+      library_ref?(node: ast.LibraryReference, ...args: an[]): any;
+
+      /**
+       * Default behavior: do nothing
+       *
        * @param node Leaf node, representing match of a continuous sequence of symbols
        * @param args Any arguments passed to the `Visitor`
        */
@@ -833,16 +932,21 @@ export namespace compiler {
     [key: string]: Pass[];
 
     /**
-     * Pack of passes that performing checks on the AST. This bunch of passes
+     * List of passes that prepare the code for checking, such as linking
+     * to extrernal rules.
+     */
+    prepare: Pass[];
+    /**
+     * List of passes that perform checks on the AST. This bunch of passes
      * executed in the very beginning of the compilation stage.
      */
     check: Pass[];
     /**
-     * Pack of passes that performing transformation of the AST.
+     * List of passes that perform transformation of the AST.
      * Various types of optimizations are performed here.
      */
     transform: Pass[];
-    /** Pack of passes that generates the code. */
+    /** List of passes that generates the code. */
     generate: Pass[];
   }
 
@@ -955,11 +1059,42 @@ export interface ParserOptions {
   grammarSource?: any;
   startRule?: string;
   tracer?: ParserTracer;
+
+  // Internal use only:
+  /**
+   * If true, run in library mode.  Return an object with results and offsets,
+   * and don't fail if there is leftover input.
+   */
+  peg$library?: boolean;
+  /**
+   * Offset, in JS characters (UTF-16 code units) to start parsing input from.
+   */
+  peg$currPos?: number;
+  /**
+   * Initial silent mode.  0 = report failures, > 0 = silence failures
+   */
+  peg$silentFails?: number;
+  /**
+   * Pending list of expectations.
+   */
+  peg$maxFailExpected?: Expectation[];
+}
+
+export interface LibraryResults {
+  peg$result: any;
+  peg$currPos: number;
+  peg$FAILED: object;
+  peg$maxFailExpected: number;
+  peg$maxFailPo: number;
 }
 
 export interface Parser {
   SyntaxError: parser.SyntaxErrorConstructor;
 
+  parse(
+    input: string,
+    options: Omit<ParserOptions, "peg$library"> & { peg$library: true }
+  ): LibraryResults;
   parse(input: string, options?: ParserOptions): any;
 }
 
@@ -1272,6 +1407,8 @@ export type SourceBuildOptions<Output extends SourceOutputs = "source">
   | OutputFormatGlobals<Output>
   | OutputFormatUmd<Output>;
 
+export type GrammarInput = SourceText[] | string;
+
 /**
  * Returns a generated parser object.
  *
@@ -1284,7 +1421,10 @@ export type SourceBuildOptions<Output extends SourceOutputs = "source">
  * @throws {GrammarError} If the grammar contains a semantic error, for example,
  *         duplicated labels
  */
-export function generate(grammar: string, options?: ParserBuildOptions): Parser;
+export function generate(
+  grammar: GrammarInput,
+  options?: ParserBuildOptions
+): Parser;
 
 /**
  * Returns the generated source code as a `string` in the specified module format.
@@ -1299,7 +1439,7 @@ export function generate(grammar: string, options?: ParserBuildOptions): Parser;
  *         duplicated labels
  */
 export function generate(
-  grammar: string,
+  grammar: GrammarInput,
   options: SourceBuildOptions<"source">
 ): string;
 
@@ -1321,7 +1461,7 @@ export function generate(
  *         example, duplicated labels
  */
 export function generate(
-  grammar: string,
+  grammar: GrammarInput,
   options: SourceBuildOptions<"source-with-inline-map">
 ): string;
 
@@ -1359,12 +1499,12 @@ export function generate(
  *         duplicated labels
  */
 export function generate(
-  grammar: string,
+  grammar: GrammarInput,
   options: SourceBuildOptions<"source-and-map">
 ): SourceNode;
 
 export function generate(
-  grammar: string,
+  grammar: GrammarInput,
   options: SourceBuildOptions<SourceOutputs>
 ): SourceNode | string;
 
@@ -1385,7 +1525,7 @@ export function generate(
  *         duplicated labels
  */
 export function generate(
-  grammar: string,
+  grammar: GrammarInput,
   options: SourceOptionsBase<"ast">
 ): ast.Grammar;
 

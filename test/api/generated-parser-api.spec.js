@@ -56,7 +56,7 @@ describe("generated parser API", () => {
     describe("tracing", () => {
       const parser = peg.generate([
         "start = a / b",
-        "a = 'a'",
+        "a = 'a'i",
         "b = 'b'",
       ].join("\n"), { trace: true });
 

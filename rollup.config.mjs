@@ -1,5 +1,6 @@
 
 import commonjs    from "@rollup/plugin-commonjs";
+import { glob }    from "glob";
 import ignore      from "rollup-plugin-ignore";
 import json        from "@rollup/plugin-json";
 import multiEntry  from "@rollup/plugin-multi-entry";
@@ -50,7 +51,7 @@ const browser_test_config = {
     console.error(message);
   },
 
-  input: "build/ts/test/**/*.spec.js",
+  input: glob.sync("build/ts/test/**/*.spec.js").sort(),
 
   output: {
     file   : "build/rollup/test.umd.js",
