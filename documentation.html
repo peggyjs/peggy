@@ -52,6 +52,9 @@
     </ul>
   </li>
   <li>
+    <a href="#supported-runtimes">Supported Runtimes</a>
+  </li>
+  <li>
     <a href="#generating-a-parser">Generating a Parser</a>
     <ul>
       <li><a href="#generating-a-parser-command-line">Command Line</a></li>
@@ -67,6 +70,7 @@
   <li>
     <a href="#grammar-syntax-and-semantics">Grammar Syntax and Semantics</a>
     <ul>
+      <li><a href="#importing-external-rules">Importing External Rules</a></li>
       <li><a href="#grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</a></li>
       <li><a href="#action-execution-environment">Action Execution Environment</a></li>
       <li><a href="#parsing-lists">Parsing Lists</a></li>
@@ -86,20 +90,35 @@
 
 <h2 id="installation">Installation</h2>
 
+<p>Note: When you pre-generate a grammar using the
+  <a href="#generating-a-parser-command-line">Peggy Command Line Interface</a>,
+  no runtime is required, and Peggy can be a development-only dependency.</p>
+
 <h3 id="installation-node-js">Node.js</h3>
 
-<p>To use the <code>peggy</code> command, install Peggy globally:</p>
+<p>To use the <code>peggy</code> command:</p>
 
-<pre><code class="language-console">$ npm install -g peggy</code></pre>
+<pre><code class="language-console">$ npm install --save-dev peggy</code></pre>
+<pre><code class="language-console">$ npx peggy --help</code></pre>
 
-<p>To use the JavaScript API, install Peggy locally:</p>
+In your <code>package.json</code> file, you can do something like:
 
-<pre><code class="language-console">$ npm install peggy</code></pre>
-
-<p>If you need both the <code>peggy</code> command and the JavaScript API,
-  install Peggy both ways.</p>
+<pre><code class="language-json">
+{
+  "scripts": {
+    "parser": "peggy -o lib/parser.js --format es src/parser.peggy"
+  }
+}
+</code></pre>
 
 <h3 id="installation-browser">Browser</h3>
+
+<p>NOTE: For most uses of Peggy, use the command line version at build time,
+  outputting the generated parser to a static JavaScript file that you can
+  import later as needed.  The API is most useful for tooling that needs to
+  process user-edited grammar source, such as the <a href="online.html">online
+  Peggy editor</a>.  Generating the parser at runtime can be much slower than
+  executing pre-generated code.</p>
 
 <p>The easiest way to use Peggy from the browser is to pull the latest version
   from a CDN. Either of these should work:</p>
@@ -120,11 +139,24 @@
 
 <p>When your document is done loading, there will be a global <code>peggy</code> object.</p>
 
+<h2 id="supported-runtimes">Supported Runtimes</h2>
+<p>Browsers and JS runtimes that pass the following
+  <a href="https://github.com/browserslist/browserslist#readme">Browserslist</a>
+  query at the time of release are supported:</p>
+  <pre><code>defaults, maintained node versions, not op_mini all</code></pre>
+
+  <p>Opera Mini can't be bothered to implement <code>URL</code> of all things,
+    so it's not worth our time to support.</p>
+  <p>Deno issues will be fixed if possible, but we are not currently testing on Deno.</p>
+  <p>All versions of Internet Explorer are <em>EXPLICITLY</em> unsupported,
+    for both generating and running generated parsers.</p>
+
 <h2 id="generating-a-parser">Generating a Parser</h2>
 
-<p>Peggy generates parser from a grammar that describes expected input and can
-  specify what the parser returns (using semantic actions on matched parts of the
-  input). Generated parser itself is a JavaScript object with a simple API.</p>
+<p>Peggy generates a parser from a grammar that describes the expected input
+  and can specify what the parser returns (using semantic actions on matched
+  parts of the input). The generated parser itself is a JavaScript object with a
+  <a href="#using-the-parser">small API</a>.</p>
 
 <h3 id="generating-a-parser-command-line">Command Line</h3>
 
@@ -142,7 +174,16 @@
 <p>If you omit both input and output file, standard input and standard output
   are used.</p>
 
-<p>By default, the generated parser is in the Node.js module format. You can
+<p>If you specify multiple input files, they will be folded together in the
+order specified before generating a parser.  If generating the "es" format,
+<code>import</code> statements in the top-level initializers from each of the
+inputs will be moved to the top of the generated code in reverse order of the
+inputs, and all other top-level initializers will be inserted directly after
+those imports, also in reverse order of the inputs.  This approach can be used
+to keep libraries of often-used grammar rules in
+<a href="#importing-external-rules">separate files</a>.</p>
+
+<p>By default, the generated parser is in the commonjs module format. You can
   override this using the <code>--format</code> option.</p>
 
 <p>You can tweak the generated parser with several options:</p>
@@ -231,6 +272,10 @@
   <dt><code>--trace</code></dt>
   <dd>Makes the parser trace its progress.</dd>
 
+  <dt><code>-w,--watch</code></dt>
+  <dd>Watch the input file for changes, generating the output once at the
+    start, and again whenever the file changes.</dd>
+
   <dt><code>-v</code>, <code>--version</code></dt>
   <dd>Output the version number.</dd>
 
@@ -313,11 +358,20 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 
 <h3 id="generating-a-parser-javascript-api">JavaScript API</h3>
 
+<h4 id="importing">Importing</h4>
+
+<p>Note again: this is an advanced usage of Peggy.  Most of the core use cases
+  of Peggy should prefer to generate a grammar at build time using the CLI.</p>
+
 <p>In Node.js, require the Peggy parser generator module:</p>
 
 <pre><code class="language-javascript">const peggy = require("peggy");</code></pre>
 
 <p>or:</p>
+
+<pre><code class="language-javascript">import peggy from "peggy";</code></pre>
+
+<p>With some configurations of Typescript or other tools, you might need:</p>
 
 <pre><code class="language-javascript">import * as peggy from "peggy";</code></pre>
 
@@ -327,15 +381,33 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
   itself as a module, otherwise the API will be available in the
   <code>peg</code> global object.</p>
 
+<p>In deno, you can import through a CDN like this:</p>
+<pre><code class="language-javascript">import peggy from "https://esm.sh/peggy"; // Note: add @version in production</code></pre>
+
+<h4 id="generating-api">Generating a parser with the API</h4>
+
 <p>To generate a parser, call the <code>peggy.generate</code> method and pass your
   grammar as a parameter:</p>
 
 <pre><code class="language-javascript">const parser = peggy.generate("start = ('a' / 'b')+");</code></pre>
 
-<p>The method will return generated parser object or its source code as a string
+<p>The method will return a generated parser object or its source code as a string
   (depending on the value of the <code>output</code> option — see below). It will
   throw an exception if the grammar is invalid. The exception will contain a
   <code>message</code> property with more details about the error.</p>
+
+<p>If your grammar is split across multiple files, instead of passing a string
+   as the first parameter of <code>peggy.generate</code>, pass an array
+   containing objects with <code>"source"</code> and <code>"text"</code> keys:</p>
+
+<pre><code class="language-javascript">const parser = peggy.generate([
+  { source: "file1.peggy", text: "numbers = number|.., ','|" },
+  { source: "lib.peggy", text: "number = n:$[0-9]+ { return parseInt(n, 10) }" },
+]);</code></pre>
+
+<p>Note that this is the same format the
+  <a href="#error-format"><code>GrammarError.format()</code></a> function
+  expects.</p>
 
 <p>You can tweak the generated parser by passing a second parameter with an
   options object to <code>peg.generate</code>. The following options are
@@ -394,7 +466,7 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
     <br><br>
     If you pass an object, the location API returns the entire object in the
     <code>source</code> key. If you format an error containing a location with
-    <a href="#error-messages"><code>format()</code></a>, the formatter
+    <a href="#error-format"><code>format()</code></a>, the formatter
     stringifies the object. If you pass an object, we recommend you add
     a <code>toString()</code> method to the object to improve error messages.
   </dd>
@@ -406,8 +478,10 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
   <dd>
     <p>A string, one of:</p>
     <ul>
-      <li><code>"parser"</code> - return generated parser object.</li>
       <li><code>"source"</code> - return parser source code as a string.</li>
+      <li><code>"parser"</code> - return a generated <a href="#using-the-parser">parser object</a>.  This is
+        just the "source" output that has had `eval` run on it.  As such, some
+        formats, such as "es" may not work.</li>
       <li><code>"source-and-map"</code> - return a
         <a href="https://github.com/mozilla/source-map#sourcenode"><code>SourceNode</code></a>
         object; you can get source code by calling <code>toString()</code>
@@ -474,13 +548,14 @@ echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
 
 <h2 id="using-the-parser">Using the Parser</h2>
 
-<p>To use the generated parser, call its <code>parse</code>
+<p>To use the generated parser, import it using your selected module approach
+  if needed, then call its <code>parse</code>
   method and pass an input string as a parameter. The method will return a parse
   result (the exact value depends on the grammar used to generate the parser) or
   throw an exception if the input is invalid. The exception will contain
   <code>location</code>, <code>expected</code>, <code>found</code>,
   <code>message</code>, and <code>diagnostic</code> properties with more details about the error. The error
-  will have a <code>format(SourceText[])</code> function, to which you pass an array
+  will have a <a href="#error-format"><code>format(SourceText[])</code></a> function, to which you pass an array
   of objects that look like <code>{ source: grammarSource, text: string }</code>; this
   will return a nicely-formatted error suitable for human consumption.</p>
 
@@ -661,6 +736,63 @@ integer "simple number"
   of strings containing digits, as its parameter. It joins the digits together to
   form a number and converts it to a JavaScript <code>number</code> object.</p>
 
+<h3 id="importing-external-rules">Importing External Rules</h3>
+
+<p>Sometimes, you want to split a large grammar into multiple files for ease
+   of editing, reuse in multiple higher-level grammars, etc.  There are two ways
+   to accomplish this in Peggy:</p>
+
+<ol>
+  <li>
+    <p>From the <a href="#generating-a-parser-command-line">Command Line</a>,
+       include multiple source files.  This will generate the least total amount
+       of code, since the combined output will only have the runtime overhead
+       included once.  The resulting code will be slightly more performant, as
+       there will be no overhead to call between the rules defined in different
+       files at runtime.  Finally, Peggy will be able to perform better checks
+       and optimizations across the combined grammar with this approach, since the
+       combination is applied before any other rules.  For example:</p>
+    <p><code>csv.peggy</code>:</p>
+    <pre><code class="language-peggy">a = number|1.., "," WS|
+WS = [ \t]*</code></pre>
+    <p><code>number.peggy</code>:</p>
+    <pre><code class="language-peggy">number = n:$[0-9]+ { return parseInt(n, 10); }</code></pre>
+    <p>Generate:</p>
+    <pre><code class="language-console">$ peggy csv.peggy number.peggy</code></pre>
+  </li>
+
+  <li>
+    <p>The downside of the CLI approach is that editor tooling will not be
+       able to detect that rules coming from another file -- references to such
+       rules will be shown with errors like <code>Rule "number" is not
+       defined</code>.  Furthermore, you must rely on getting the CLI or API call
+       correct, which is not possible in all workflows.</p>
+    <p>The second approach is to use ES6-style <code>import</code> statements
+       at the top of your grammar to import rules into the local rule namespace.
+       For example:</p>
+    <p><code>csv_imp.peggy</code>:</p>
+    <pre><code class="language-peggy">import {number} from "./number.js"
+a = number|1.., "," WS|
+WS = [ \t]*</code></pre>
+    <p>Note that the file imported from is the compiled version of the
+       grammar, NOT the source.  Grammars MUST be compiled by a version that
+       supports imports in order to be imported.  Only rules that are allowed
+       start rules are valid.  It can be useful to specify
+       <code>--allowed-start-rules \*</code> in library grammars. All of the
+       following are valid:</p>
+    <ul>
+      <li><code>import * as num from "number.js" // Call with num.number</code></li>
+      <li><code>import num from "number.js" // Calls the default rule</code></li>
+      <li><code>import {number, float} "number.js" // Import multiple rules by name</code></li>
+      <li><code>import {number as NUM} "number.js" // Rename the local rule to NUM to avoid colliding</code></li>
+      <li><code>import {"number" as NUM} "number.js" // Valid in ES6</code></li>
+      <li><code>import integer, {float} "number.js" // The default rule and some named rules</code></li>
+      <li><code>import from "number.js" // Just the top-level initializer side-effects</code></li>
+      <li><code>import {} "number.js" // Just the top-level initializer side-effects</code></li>
+    </ul>
+  </li>
+</ol>
+
 <h3 id="grammar-syntax-and-semantics-parsing-expression-types">Parsing Expression Types</h3>
 
 <p>There are several types of parsing expressions, some of them containing
@@ -732,7 +864,7 @@ integer "simple number"
       The list of characters can also contain ranges (e.g. <code>[a-z]</code>
       means “all lowercase letters”). Preceding the characters with <code>^</code>
       inverts the matched set (e.g. <code>[^a-z]</code> means “all character but
-      lowercase letters”). Appending <code>i</code> right after the literal makes
+      lowercase letters”). Appending <code>i</code> right after the class makes
       the match case-insensitive.</p>
 
     <div class="example">
@@ -750,13 +882,13 @@ integer "simple number"
 
     <div class="example">
       <div>
-        <div><em>Example:</em> <code>class_i = [^a-z]i</code></div>
+        <div><em>Example:</em> <code>not_class_i = [^a-z]i</code></div>
         <div><em>Matches:</em> <code>"="</code>, <code>" "</code></div>
         <div><em>Does not match:</em> <code>"F"</code>, <code>"f"</code>, <code>""</code></div>
       </div>
       <div class="try">
         <em>Try it:</em>
-        <input type="text" value="=" class="exampleInput" name="class_i">
+        <input type="text" value="=" class="exampleInput" name="not_class_i">
         <div class="result"></div>
       </div>
     </div>
@@ -787,7 +919,7 @@ integer "simple number"
   <dd>
     <p>Match a subexpression and return its match result.  Parentheses create
     a new local context for the <a href="#action-execution-environment">Action
-    Execution Environment</a> as well as plucks with the <code>@</code>
+    Execution Environment</a> as well as <a href="#pluck">plucks</a> with the <code>@</code>
     operator.  Note that the action block in the following example returns
     <code>2</code> from the parenthesized expression, NOT from the rule -- the
     rule returns an array of <code>2</code>'s due to the <code>+</code> operator.</p>
@@ -805,7 +937,7 @@ integer "simple number"
       </div>
     </div>
 
-    <p>Similarly, in the next example, the pluck operator applies to the
+    <p>Similarly, in the next example, the <a href="#pluck">pluck</a> operator applies to the
     return value of the parentheses, not the rule:</p>
 
     <div class="example">
@@ -887,6 +1019,7 @@ integer "simple number"
       <li><code>expression |..|</code> is equivalent to <code>expression |0..|</code>
       and <code>expression *</code></li>
       <li><code>expression |1..|</code> is equivalent to <code>expression +</code></li>
+      <li><code>expression |..1|</code> is equivalent to <code>expression ?</code></li>
     </ul>
 
     <p>Optionally, <code>delimiter</code> expression can be specified. The
@@ -1012,7 +1145,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
 
     <div class="example">
       <div>
-        <div><em>Example:</em> <br><code>posPredicate = [0-9]+ &amp;{return parseInt(match, 10) &lt; 100}</code></div>
+        <div><em>Example:</em> <br><code>posPredicate = @num:$[0-9]+ &amp;{return parseInt(num, 10) &lt; 100}</code></div>
         <div><em>Matches:</em> <code>"0"</code>, <code>"99"</code></div>
         <div><em>Does not match:</em> <code>"100"</code>, <code>"-1"</code>, <code>""</code></div>
       </div>
@@ -1042,7 +1175,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
 
     <div class="example">
       <div>
-        <div><em>Example:</em> <br><code>negPredicate = $[0-9]+ !{ return parseInt(match, 10) &lt; 100 }</code></div>
+        <div><em>Example:</em> <br><code>negPredicate = @num:$[0-9]+ !{ return parseInt(num, 10) &lt; 100 }</code></div>
         <div><em>Matches:</em> <code>"100"</code>, <code>"156"</code></div>
         <div><em>Does not match:</em> <code>"56"</code>, <code>"-1"</code>, <code>""</code></div>
       </div>
@@ -1060,8 +1193,9 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
     <p>Try to match the expression. If the match succeeds, return the matched
       text instead of the match result.</p>
 
-    <p>If you need to return the matched text in an action, use the
-      <a href="#action-execution-environment"><code>text()</code> function</a>.
+    <p>If you need to return the matched text in an action, you can use the
+      <a href="#action-execution-environment"><code>text()</code></a> function, but
+      returning a labeled <code>$</code> expression is sometimes more clear..
     </p>
 
     <div class="example">
@@ -1101,7 +1235,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
     </div>
   </dd>
 
-  <dt><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
+  <dt id="pluck"><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
 
   <dd>
     <p>Match the expression and if the label exists, remember its match result
@@ -1130,7 +1264,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
       </div>
       <div class="try">
         <em>Try it:</em>
-        <input type="text" value="aaa   " class="exampleInput" name="pluck_1">
+        <input type="text" value="aaa   bb" class="exampleInput" name="pluck_1">
         <div class="result"></div>
       </div>
     </div>
@@ -1319,7 +1453,7 @@ word
 _
   = [ \t]*</code></pre>
 
-<p>Note that the <code>@</code> in the tail section plucks the word out of the
+<p>Note that the <code>@</code> in the tail section <a href="#pluck">plucks</a> the word out of the
   parentheses, NOT out of the rule itself.</p>
 
 <h2 id="identifiers">Peggy Identifiers</h2>
@@ -1410,7 +1544,13 @@ _
     rules with the same name in one grammar, etc.</li>
 </ul>
 
-<p>By default, stringifying these errors produces an error string without location information. These errors also have a <code>format()</code> method that produces an error string with location information. If you provide an array of mappings from the <a href="#grammar-source"><code>grammarSource</code></a> to the input string being processed, then the formatted error string includes ASCII arrows and underlines highlighting the error(s) in the source.</p>
+<p id="error-format">By default, stringifying these errors produces an error
+  string without location information. These errors also have a
+  <a href="#error-format"><code>format()</code></a> method that produces an error string with location
+  information. If you provide an array of mappings from the
+  <a href="#grammar-source"><code>grammarSource</code></a> to the input string
+  being processed, then the formatted error string includes ASCII arrows and
+  underlines highlighting the error(s) in the source.</p>
 
 <pre><code class="language-javascript">let source = ...;
 try {
