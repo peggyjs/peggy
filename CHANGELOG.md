@@ -14,6 +14,10 @@ Released: TBD
 
 ### Bug fixes
 
+- [#479](https://github.com/peggyjs/peggy/issues/379)
+  Refactor `cli/fromMem.js` into separate project
+  [from-mem](https://github.com/peggyjs/from-mem/).
+
 4.0.0
 -----
 
