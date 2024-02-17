@@ -595,7 +595,7 @@ class PeggyCLI extends Command {
         ? path.resolve(this.outputJS)
         : path.join(process.cwd(), "stdout.js"); // Synthetic
 
-      const fromMem = require("./fromMem.js");
+      const fromMem = require("@peggyjs/from-mem");
       const exec = await fromMem(source, {
         filename,
         format: this.argv.format,
