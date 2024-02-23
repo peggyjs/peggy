@@ -14,7 +14,9 @@ Released: TBD
 
 ### Bug fixes
 
-- [#479](https://github.com/peggyjs/peggy/issues/379)
+- [#478](https://github.com/peggyjs/peggy/issues/478) Add "npx" to some doc
+  examples.
+- [#479](https://github.com/peggyjs/peggy/issues/479)
   Refactor `cli/fromMem.js` into separate project
   [from-mem](https://github.com/peggyjs/from-mem/).
 - [#481](https://github.com/peggyjs/peggy/issues/481) Add CLI test for
