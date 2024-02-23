@@ -1,3 +1,4 @@
+/* eslint-disable mocha/no-setup-in-describe */
 "use strict";
 
 const chai = require("chai");
@@ -18,6 +19,7 @@ describe("Grammar Errors", () => {
     expect(e.location).to.equal(undefined);
     expect(e.toString()).to.equal("GrammarError: message");
   });
+
   it("might have locations", () => {
     location.source = undefined;
     let e = new GrammarError("message", location);

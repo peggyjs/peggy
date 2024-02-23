@@ -1,3 +1,4 @@
+/* eslint-disable mocha/no-setup-in-describe */
 "use strict";
 
 const chai = require("chai");
@@ -3007,6 +3008,7 @@ describe("generated parser behavior", () => {
       });
     });
   });
+
   describe("syntax errors", () => {
     it("formats", () => {
       const source = { source: "stdin",  text: "===" };

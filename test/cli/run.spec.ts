@@ -1,3 +1,5 @@
+/* eslint-disable mocha/no-setup-in-describe */
+/* eslint-disable mocha/max-top-level-suites */
 // This is typescript so that it only runs in node contexts, not on the web
 
 import * as fs from "fs";
@@ -21,10 +23,12 @@ const packageJson = path.resolve(__dirname, "..", "..", "package.json");
 const grammarFile = path.resolve(__dirname, "..", "..", "examples", "json.pegjs");
 let tmpDir = "";
 
+// eslint-disable-next-line mocha/no-top-level-hooks
 beforeAll(async() => {
   tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "run-spec-"));
 });
 
+// eslint-disable-next-line mocha/no-top-level-hooks
 afterAll(async() => {
   await fs.promises.rm(tmpDir, { recursive: true });
 });
@@ -1261,6 +1265,21 @@ error: Rule "unknownRule" is not defined
     expect(parse("baz")).toBe("baz");
   });
 
+  it("produces library-style output", async() => {
+    await exec({
+      args: ["-t", "boo", "--library"],
+      stdin: "foo = 'boo'",
+      expected: `\
+{
+  'peg$result': 'boo',
+  'peg$currPos': 3,
+  'peg$FAILED': {},
+  'peg$maxFailExpected': [],
+  'peg$maxFailPos': 0
+}\n`,
+    });
+  });
+
   describe("--watch option", () => {
     it("rejects stdin for watching", async() => {
       await exec({
@@ -1345,3 +1364,4 @@ error: Rule "unknownRule" is not defined
     });
   });
 });
+

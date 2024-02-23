@@ -24,6 +24,7 @@ describe("compiler pass |generateJS|", () => {
     };
     const options
       = /** @type {PEG.SourceBuildOptions<PEG.SourceOutputs>} */({});
+
     it("throws unless various grammar fields are set", () => {
       expect(
         () => pass(ast, options)
