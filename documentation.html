@@ -163,13 +163,13 @@ In your <code>package.json</code> file, you can do something like:
 <p>To generate a parser from your grammar, use the <code>peggy</code>
   command:</p>
 
-<pre><code class="language-console">$ peggy arithmetics.pegjs</code></pre>
+<pre><code class="language-console">$ npx peggy arithmetics.pegjs</code></pre>
 
 <p>This writes parser source code into a file with the same name as the grammar
   file but with “.js” extension. You can also specify the output file
   explicitly:</p>
 
-<pre><code class="language-console">$ peggy -o arithmetics-parser.js arithmetics.pegjs</code></pre>
+<pre><code class="language-console">$ npx peggy -o arithmetics-parser.js arithmetics.pegjs</code></pre>
 
 <p>If you omit both input and output file, standard input and standard output
   are used.</p>
@@ -327,33 +327,33 @@ module.exports = {
 
 <pre><code class="language-console"># - write test results to stdout (42)
 # - exit with the code 0
-echo "foo = '1' { return 42 }" | peggy --test 1
+echo "foo = '1' { return 42 }" | npx peggy --test 1
 
 # - write a parser error to stdout (Expected "1" but "2" found)
 # - exit with the code 2
-echo "foo = '1' { return 42 }" | peggy --test 2
+echo "foo = '1' { return 42 }" | npx peggy --test 2
 
 # - write an error to stdout (Generation of the source map is useless if you don't
 #   store a generated parser code, perhaps you forgot to add an `-o/--output` option?)
 # - exit with the code 1
-echo "foo = '1' { return 42 }" | peggy --source-map --test 1
+echo "foo = '1' { return 42 }" | npx peggy --source-map --test 1
 
 # - write an error to stdout (Generation of the source map is useless if you don't
 #   store a generated parser code, perhaps you forgot to add an `-o/--output` option?)
 # - exit with the code 1
-echo "foo = '1' { return 42 }" | peggy --source-map --test 2
+echo "foo = '1' { return 42 }" | npx peggy --source-map --test 2
 
 # - write an output to `parser.js`,
 # - write a source map to `parser.js.map`
 # - write test results to stdout (42)
 # - exit with the code 0
-echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 1
+echo "foo = '1' { return 42 }" | npx peggy --output parser.js --source-map --test 1
 
 # - write an output to `parser.js`,
 # - write a source map to `parser.js.map`
 # - write a parser error to stdout (Expected "1" but "2" found)
 # - exit with the code 2
-echo "foo = '1' { return 42 }" | peggy --output parser.js --source-map --test 2
+echo "foo = '1' { return 42 }" | npx peggy --output parser.js --source-map --test 2
 </code></pre>
 
 <h3 id="generating-a-parser-javascript-api">JavaScript API</h3>
@@ -758,7 +758,7 @@ WS = [ \t]*</code></pre>
     <p><code>number.peggy</code>:</p>
     <pre><code class="language-peggy">number = n:$[0-9]+ { return parseInt(n, 10); }</code></pre>
     <p>Generate:</p>
-    <pre><code class="language-console">$ peggy csv.peggy number.peggy</code></pre>
+    <pre><code class="language-console">$ npx peggy csv.peggy number.peggy</code></pre>
   </li>
 
   <li>
