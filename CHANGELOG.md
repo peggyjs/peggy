@@ -17,6 +17,10 @@ Released: TBD
 - [#479](https://github.com/peggyjs/peggy/issues/379)
   Refactor `cli/fromMem.js` into separate project
   [from-mem](https://github.com/peggyjs/from-mem/).
+- [#481](https://github.com/peggyjs/peggy/issues/481) Add CLI test for
+  --library
+- [#483](https://github.com/peggyjs/peggy/issues/483) fix errors in
+  typescript file.
 
 4.0.0
 -----
