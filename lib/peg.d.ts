@@ -859,7 +859,7 @@ export namespace compiler {
        * @param node Leaf node, representing calling a rule in an external library.
        * @param args Any arguments passed to the `Visitor`
        */
-      library_ref?(node: ast.LibraryReference, ...args: an[]): any;
+      library_ref?(node: ast.LibraryReference, ...args: any[]): any;
 
       /**
        * Default behavior: do nothing
@@ -1077,7 +1077,7 @@ export interface ParserOptions {
   /**
    * Pending list of expectations.
    */
-  peg$maxFailExpected?: Expectation[];
+  peg$maxFailExpected?: parser.Expectation[];
 }
 
 export interface LibraryResults {

@@ -75,6 +75,7 @@ describe("compiler pass |mergeCharacterClasses|", () => {
       { mergeCharacterClasses: true }
     );
   });
+
   it("Merges case-independent single character literals, class, and ref_rules", () => {
     expect(pass).to.changeAST(
       [
@@ -141,6 +142,7 @@ describe("compiler pass |mergeCharacterClasses|", () => {
       { mergeCharacterClasses: true }
     );
   });
+
   it("Doesn't merge inappropriately", () => {
     expect(pass).to.changeAST(
       [
@@ -187,6 +189,7 @@ describe("compiler pass |mergeCharacterClasses|", () => {
       { mergeCharacterClasses: true }
     );
   });
+
   it("Handles undefined rule_refs", () => {
     expect(pass).to.changeAST(
       [

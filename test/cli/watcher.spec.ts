@@ -21,7 +21,7 @@ describe("watches files", () => {
     return p;
   });
 
-  it.only("debounces", done => {
+  it("debounces", done => {
     let count = 0;
     const fn = __filename;
     const base = path.basename(fn);

@@ -1,3 +1,4 @@
+/* eslint-disable mocha/no-setup-in-describe */
 "use strict";
 
 const chai = require("chai");
