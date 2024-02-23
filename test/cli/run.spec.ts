@@ -1265,6 +1265,21 @@ error: Rule "unknownRule" is not defined
     expect(parse("baz")).toBe("baz");
   });
 
+  it("produces library-style output", async() => {
+    await exec({
+      args: ["-t", "boo", "--library"],
+      stdin: "foo = 'boo'",
+      expected: `\
+{
+  'peg$result': 'boo',
+  'peg$currPos': 3,
+  'peg$FAILED': {},
+  'peg$maxFailExpected': [],
+  'peg$maxFailPos': 0
+}\n`,
+    });
+  });
+
   describe("--watch option", () => {
     it("rejects stdin for watching", async() => {
       await exec({
@@ -1349,3 +1364,4 @@ error: Rule "unknownRule" is not defined
     });
   });
 });
+
