@@ -17,6 +17,7 @@ describe("utility functions", () => {
     expect(hex("\n")).to.equal("A");
     expect(hex("\ufeff")).to.equal("FEFF");
   });
+
   it("stringEscape", () => {
     expect(stringEscape("abc")).to.equal("abc");
     expect(stringEscape("\\\"\0\b\t\n\v\f\r")).to.equal("\\\\\\\"\\0\\b\\t\\n\\v\\f\\r");
@@ -25,6 +26,7 @@ describe("utility functions", () => {
     expect(stringEscape("\u0100\u0fff")).to.equal("\\u0100\\u0FFF");
     expect(stringEscape("\u1000\uffff")).to.equal("\\u1000\\uFFFF");
   });
+
   it("regexpClassEscape", () => {
     expect(regexpClassEscape("\\\0\b\t\n\v\f\r")).to.equal("\\\\\\0\\b\\t\\n\\v\\f\\r");
     expect(regexpClassEscape("/]^-")).to.equal("\\/\\]\\^\\-");
@@ -33,6 +35,7 @@ describe("utility functions", () => {
     expect(regexpClassEscape("\u0100\u0fff")).to.equal("\\u0100\\u0FFF");
     expect(regexpClassEscape("\u1000\uffff")).to.equal("\\u1000\\uFFFF");
   });
+
   it("base64", () => {
     expect(base64(new Uint8Array([]))).to.equal("");
     expect(base64(new Uint8Array([97]))).to.equal("YQ==");

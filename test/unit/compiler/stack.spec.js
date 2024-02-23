@@ -163,6 +163,7 @@ describe("utility class Stack", () => {
           + "Bytecode: 42"
         );
       });
+
       it("decreases in `if` and was not moving in `then`", () => {
         expect(() => {
           stack.checkedIf(0, () => stack.pop(), () => { /* Lint */ });
@@ -186,6 +187,7 @@ describe("utility class Stack", () => {
           + "Bytecode: 42"
         );
       });
+
       it("increases in `if` and was not moving in `then`", () => {
         expect(() => {
           stack.checkedIf(0, () => stack.push("2"), () => { /* Lint */ });
@@ -209,6 +211,7 @@ describe("utility class Stack", () => {
           + "Bytecode: 42"
         );
       });
+
       it("increases in `if` and decreases in `then`", () => {
         expect(() => {
           stack.checkedIf(0, () => stack.push("2"), () => stack.pop());
