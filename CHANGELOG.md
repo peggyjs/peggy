@@ -13,6 +13,7 @@ Released: TBD
 ### New features
 
 ### Bug fixes
+- [#490](https://github.com/peggyjs/peggy/issues/490) Throw error when imports are used in unsupported formats.  Supported formats are now only "es" and "commonjs".
 
 4.0.1
 -----
