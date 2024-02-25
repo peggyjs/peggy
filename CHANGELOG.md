@@ -14,6 +14,7 @@ Released: TBD
 
 ### Bug fixes
 - [#490](https://github.com/peggyjs/peggy/issues/490) Throw error when imports are used in unsupported formats.  Supported formats are now only "es" and "commonjs".
+- [#494](https://github.com/peggyjs/peggy/pull/494) Updated docs to make `--allowedRules *` more clear
 
 4.0.1
 -----
