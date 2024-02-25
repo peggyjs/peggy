@@ -536,6 +536,18 @@ Options:
     });
 
     await exec({
+      args: ["-D", '{"c": "commander", "jest": "jest"}', "--format", "amd"],
+      stdin: "foo = '1' { return new c.Command(); }",
+      expected: /define\(\["commander", "jest"\]/,
+    });
+
+    await exec({
+      args: ["-D", '{"c": "commander", "jest": "jest"}', "--format", "umd", "-e", "foo"],
+      stdin: "foo = '1' { return new c.Command(); }",
+      expected: /define\(\["commander", "jest"\]/,
+    });
+
+    await exec({
       args: ["-D", '{"c": "commander"}', "-d", "c:jest"],
       stdin: "foo = '1' { return c.run(); }",
       expected: /c = require\("jest"\)/,
@@ -567,6 +579,13 @@ Options:
     });
 
     await exec({
+      args: ["--format", "globals"],
+      stdin: "foo = '1'",
+      exitCode: 1,
+      expected: "Error parsing grammar\nNo export variable defined\n",
+    });
+
+    await exec({
       args: ["--export-var"],
       stdin: "foo = '1'",
       errorCode: "commander.optionMissingArgument",
@@ -585,7 +604,7 @@ Options:
 
   it("handles extra options", async() => {
     await exec({
-      args: ["--extra-options", '{"format": "amd"}'],
+      args: ["-d", "fs", "--extra-options", '{"format": "amd"}'],
       stdin: 'foo = "1"',
       expected: /^define\(/m,
     });
@@ -1221,7 +1240,7 @@ Error: Expected "1" but end of input found.
         error: /Unsupported output format/,
       });
       await exec({
-        args: ["--format", "globals", "-t", "1", grammar],
+        args: ["--format", "globals", "-e", "foo", "-t", "1", grammar],
         error: /Unsupported output format/,
       });
       await exec({
@@ -1263,6 +1282,30 @@ error: Rule "unknownRule" is not defined
 
     const { parse } = await import(impjs);
     expect(parse("baz")).toBe("baz");
+
+    await exec({
+      args: [imps, "--format", "globals"],
+      exitCode: 1,
+      expected: "Error parsing grammar\nDependencies not supported in format 'globals'.\n",
+    });
+
+    await exec({
+      args: [imps, "--format", "bare"],
+      exitCode: 1,
+      expected: "Error parsing grammar\nDependencies not supported in format 'bare'.\n",
+    });
+
+    await exec({
+      args: [imps, "--format", "amd"],
+      exitCode: 1,
+      expected: "Error parsing grammar\nImports are not supported in format 'amd'.\n",
+    });
+
+    await exec({
+      args: [imps, "--format", "umd"],
+      exitCode: 1,
+      expected: "Error parsing grammar\nImports are not supported in format 'umd'.\n",
+    });
   });
 
   it("produces library-style output", async() => {
