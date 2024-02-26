@@ -778,8 +778,17 @@ WS = [ \t]*</code></pre>
        grammar, NOT the source.  Grammars MUST be compiled by a version that
        supports imports in order to be imported.  Only rules that are allowed
        start rules are valid.  It can be useful to specify
-       <code>--allowed-start-rules \*</code> in library grammars. All of the
-       following are valid:</p>
+       <code>--allowed-start-rules *</code> (with appropriate escaping for
+       your shell!) in library grammars.  Imports are only valid in output
+       formats "es" and "commonjs".  If you use imports, you should use
+       <code>{ output: "source" }</code>; the default output of "parser" will
+       call `eval` on the source which fails immediately for some formats
+       (e.g. "es") and will not find modules in the expected places for others
+       (e.g. "commonjs").  The
+       <a href="https://github.com/peggyjs/from-mem/">from-mem</a> project is
+       used by the Peggy CLI to resolve these issues, but note well its
+       relatively severe limitations.</p>
+       <p>All of the following are valid:</p>
     <ul>
       <li><code>import * as num from "number.js" // Call with num.number</code></li>
       <li><code>import num from "number.js" // Calls the default rule</code></li>
