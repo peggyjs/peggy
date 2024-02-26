@@ -746,7 +746,7 @@ WS = [ \t]*</code></pre>
        grammar, NOT the source.  Grammars MUST be compiled by a version that
        supports imports in order to be imported.  Only rules that are allowed
        start rules are valid.  It can be useful to specify
-       <code>--allowed-start-rules \*</code> in library grammars.  Imports are
+       <code>--allowed-start-rules *</code> in library grammars.  Imports are
        only valid in output formats "es" and "commonjs".  If you
        use imports, you should use <code>{ output: "source" }</code>; the default
        output of "parser" will call `eval` on the source which fails immediately
