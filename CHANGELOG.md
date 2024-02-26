@@ -3,6 +3,17 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
+4.0.2
+-----
+
+Released: 2024-02-26
+
+### Bug fixes
+- [#490](https://github.com/peggyjs/peggy/issues/490) Throw error when imports are used in unsupported formats.  Supported formats are now only "es" and "commonjs".
+- [#494](https://github.com/peggyjs/peggy/pull/494) Updated docs to make `--allowedRules *` more clear
+- [#495](https://github.com/peggyjs/peggy/issues/495) from-mem inadvertantly
+  made the minimum supported node version v20.8.  Updated to latest from-mem.
+
 4.0.1
 -----
 
