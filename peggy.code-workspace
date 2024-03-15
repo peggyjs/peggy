@@ -6,6 +6,7 @@
   ],
   "settings": {
     "eslint.format.enable": true,
+    "eslint.experimental.useFlatConfig": true,
     "[javascript][typescript]": {
       "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
