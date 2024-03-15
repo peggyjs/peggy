@@ -6,7 +6,9 @@
   ],
   "settings": {
     "eslint.format.enable": true,
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "[javascript][typescript]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
   },
   "extensions": {
     "recommendations": [
