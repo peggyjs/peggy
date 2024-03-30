@@ -12,6 +12,9 @@ Unreleased
 
 ### Bug fixes
 
+### Documentation
+- Added END OF INPUT (`!.`).
+
 4.0.2
 -----
 

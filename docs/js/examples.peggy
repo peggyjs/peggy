@@ -45,3 +45,7 @@ action = match:(" "+ "a" { return location(); }) rest:rest { return {match, rest
 alt = match:("a" / "b" / "c") rest:rest { return {match, rest}; }
 
 rest "The rest of the input" = $.*
+
+no_input = match:!. rest:rest { return {match, rest}; }
+
+end_of_input = match:("f" !.) rest:rest { return {match, rest}; }
