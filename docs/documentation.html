@@ -836,11 +836,10 @@ WS = [ \t]*</code></pre>
   <dt><code>!.</code> (END OF INPUT)</dt>
 
   <dd>
-    <p>Match END OF INPUT. This <em>Bang Dot</em> sequence will match a completely empty input,
-      or patterns up to the end of input. This is a composite rule;
-      It should NOT be placed inside a character set or quote.
-      For example <code>"f" !.</code>
-      will test for end of input after the character "f".</p>
+    <p>Match END OF INPUT. This <em>Bang Dot</em> sequence
+      will specify that the end of input should be matched.
+      <code>"f" !.</code> will test for end of input
+      after the character "f".</p>
     <div class="example">
       <div>
         <div><em>Example:</em> <code>no_input = !.</code></div>

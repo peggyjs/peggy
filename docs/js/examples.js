@@ -173,7 +173,7 @@ function peg$parse(input, options) {
   var peg$FAILED = {};
   var peg$source = options.grammarSource;
 
-  var peg$startRuleFunctions = { literal: peg$parseliteral, literal_i: peg$parseliteral_i, any: peg$parseany, class: peg$parseclass, not_class_i: peg$parsenot_class_i, rule: peg$parserule, child: peg$parsechild, paren: peg$parseparen, paren_pluck: peg$parseparen_pluck, star: peg$parsestar, plus: peg$parseplus, repetition: peg$parserepetition, maybe: peg$parsemaybe, posAssertion: peg$parseposAssertion, negAssertion: peg$parsenegAssertion, posPredicate: peg$parseposPredicate, negPredicate: peg$parsenegPredicate, dollar: peg$parsedollar, label: peg$parselabel, pluck_1: peg$parsepluck_1, pluck_2: peg$parsepluck_2, sequence: peg$parsesequence, action: peg$parseaction, alt: peg$parsealt, rest: peg$parserest, no_input: peg$parseno_input, end_of_input: peg$parseend_of_input };
+  var peg$startRuleFunctions = { literal: peg$parseliteral, literal_i: peg$parseliteral_i, any: peg$parseany, class: peg$parseclass, not_class_i: peg$parsenot_class_i, rule: peg$parserule, child: peg$parsechild, paren: peg$parseparen, paren_pluck: peg$parseparen_pluck, star: peg$parsestar, plus: peg$parseplus, repetition: peg$parserepetition, maybe: peg$parsemaybe, posAssertion: peg$parseposAssertion, negAssertion: peg$parsenegAssertion, posPredicate: peg$parseposPredicate, negPredicate: peg$parsenegPredicate, dollar: peg$parsedollar, label: peg$parselabel, pluck_1: peg$parsepluck_1, pluck_2: peg$parsepluck_2, sequence: peg$parsesequence, action: peg$parseaction, alt: peg$parsealt, no_input: peg$parseno_input, end_of_input: peg$parseend_of_input, rest: peg$parserest };
   var peg$startRuleFunction = peg$parseliteral;
 
   var peg$c0 = "foo";
@@ -205,8 +205,8 @@ function peg$parse(input, options) {
   var peg$e11 = peg$literalExpectation(" ", false);
   var peg$e12 = peg$literalExpectation("c", false);
   var peg$e13 = peg$classExpectation([["a", "c"]], false, false);
-  var peg$e14 = peg$otherExpectation("The rest of the input");
-  var peg$e15 = peg$literalExpectation("f", false);
+  var peg$e14 = peg$literalExpectation("f", false);
+  var peg$e15 = peg$otherExpectation("The rest of the input");
 
   var peg$f0 = function(match, rest) { return {match, rest}; };
   var peg$f1 = function(match, rest) { return {match, rest}; };
@@ -1481,37 +1481,6 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parserest() {
-    var s0, s1, s2;
-
-    peg$silentFails++;
-    s0 = peg$currPos;
-    s1 = [];
-    if (input.length > peg$currPos) {
-      s2 = input.charAt(peg$currPos);
-      peg$currPos++;
-    } else {
-      s2 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$e2); }
-    }
-    while (s2 !== peg$FAILED) {
-      s1.push(s2);
-      if (input.length > peg$currPos) {
-        s2 = input.charAt(peg$currPos);
-        peg$currPos++;
-      } else {
-        s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$e2); }
-      }
-    }
-    s0 = input.substring(s0, peg$currPos);
-    peg$silentFails--;
-    s1 = peg$FAILED;
-    if (peg$silentFails === 0) { peg$fail(peg$e14); }
-
-    return s0;
-  }
-
   function peg$parseno_input() {
     var s0, s1, s2;
 
@@ -1554,7 +1523,7 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s2 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$e15); }
+      if (peg$silentFails === 0) { peg$fail(peg$e14); }
     }
     if (s2 !== peg$FAILED) {
       s3 = peg$currPos;
@@ -1596,6 +1565,37 @@ function peg$parse(input, options) {
     return s0;
   }
 
+  function peg$parserest() {
+    var s0, s1, s2;
+
+    peg$silentFails++;
+    s0 = peg$currPos;
+    s1 = [];
+    if (input.length > peg$currPos) {
+      s2 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$e2); }
+    }
+    while (s2 !== peg$FAILED) {
+      s1.push(s2);
+      if (input.length > peg$currPos) {
+        s2 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$e2); }
+      }
+    }
+    s0 = input.substring(s0, peg$currPos);
+    peg$silentFails--;
+    s1 = peg$FAILED;
+    if (peg$silentFails === 0) { peg$fail(peg$e15); }
+
+    return s0;
+  }
+
   peg$result = peg$startRuleFunction();
 
   if (options.peg$library) {
@@ -1625,7 +1625,7 @@ function peg$parse(input, options) {
 }
 
   root.peggyExamples = {
-    StartRules: ["literal", "literal_i", "any", "class", "not_class_i", "rule", "child", "paren", "paren_pluck", "star", "plus", "repetition", "maybe", "posAssertion", "negAssertion", "posPredicate", "negPredicate", "dollar", "label", "pluck_1", "pluck_2", "sequence", "action", "alt", "rest", "no_input", "end_of_input"],
+    StartRules: ["literal", "literal_i", "any", "class", "not_class_i", "rule", "child", "paren", "paren_pluck", "star", "plus", "repetition", "maybe", "posAssertion", "negAssertion", "posPredicate", "negPredicate", "dollar", "label", "pluck_1", "pluck_2", "sequence", "action", "alt", "no_input", "end_of_input", "rest"],
     SyntaxError: peg$SyntaxError,
     parse: peg$parse
   };
