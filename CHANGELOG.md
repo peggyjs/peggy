@@ -11,7 +11,7 @@ Unreleased
 ### New features
 
 ### Bug fixes
-- Remove stray semicolon in CSS
+- [#507](https://github.com/peggyjs/peggy/pull/507) Remove stray semicolon in CSS
 
 ### Documentation
 - Added END OF INPUT (`!.`).
