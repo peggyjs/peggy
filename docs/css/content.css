@@ -139,7 +139,7 @@
 #content #settings label { padding-right: 1em; }
 #content #parser-var { width: 15em; }
 #content #options { padding-top: 1em; }
-#content #parser-download {
+#content .download-button {
   float: right;
   width: 10em;
   margin-top: 2em;
@@ -151,8 +151,11 @@
   text-align: center; text-decoration: none;
   color: #e0ffe0; background-color: #499149;
 }
-#content #parser-download:hover { background-color: #006000; }
-#content #parser-download.disabled { color: #e0e0e0; background-color: gray; }
+#content .download-button:not(:first-of-type) {
+  margin-right: .5rem;
+}
+#content .download-button:hover { background-color: #006000; }
+#content .download-button.disabled { color: #e0e0e0; background-color: gray; }
 
 
 #output {

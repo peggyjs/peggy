@@ -9,6 +9,7 @@ Unreleased
 ### Breaking changes
 
 ### New features
+- [#509](https://github.com/peggyjs/peggy/pull/509) Add and implement ES6 export button
 
 ### Bug fixes
 - [#507](https://github.com/peggyjs/peggy/pull/507) Remove stray semicolon in CSS
