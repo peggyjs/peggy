@@ -11,6 +11,7 @@ Unreleased
 ### New features
 
 ### Bug fixes
+- Remove stray semicolon in CSS
 
 ### Documentation
 - Added END OF INPUT (`!.`).
