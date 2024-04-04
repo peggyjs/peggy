@@ -213,7 +213,7 @@ $(document).ready(function() {
     }
   }
 
-  $("#parser-var, #option-cache")
+  $("#option-cache")
     .change(rebuildGrammar)
     .mousedown(rebuildGrammar)
     .mouseup(rebuildGrammar)
