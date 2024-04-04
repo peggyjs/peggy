@@ -14,7 +14,7 @@ Unreleased
 - [#507](https://github.com/peggyjs/peggy/pull/507) Remove stray semicolon in CSS
 
 ### Documentation
-- Added END OF INPUT (`!.`).
+- [#506](https://github.com/peggyjs/peggy/pull/506) Added END OF INPUT (`!.`).
 
 4.0.2
 -----
