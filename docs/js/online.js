@@ -242,7 +242,7 @@ $(document).ready(function() {
         })
 
         var blob = new Blob([esSource], {type: "application/javascript"});
-        window.saveAs(blob, "parser.js");
+        window.saveAs(blob, "parser.mjs");
       } catch (e) {
         console.error('Unable to save parser', e);
       }
