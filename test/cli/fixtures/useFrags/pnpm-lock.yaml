@@ -1,0 +1,23 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      frags:
+        specifier: file:../frags
+        version: file:../frags
+
+packages:
+
+  frags@file:../frags:
+    resolution: {directory: ../frags, type: directory}
+    name: frags
+
+snapshots:
+
+  frags@file:../frags: {}
