@@ -11,6 +11,8 @@ module.exports = [
       "test/cli/fixtures/bad.js", // Intentionally-invalid
       "test/cli/fixtures/imports_peggy.js", // Generated
       "test/cli/fixtures/lib.js", // Generated
+      "test/cli/fixtures/useFrags/fs.js", // Generated
+      "test/cli/fixtures/useFrags/identifier.js", // Generated
       "test/vendor/**",
     ],
   },

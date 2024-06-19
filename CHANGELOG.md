@@ -3,6 +3,35 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
+4.0.3
+-----
+
+Released: 2024-06-19
+
+### New features
+
+- [#509](https://github.com/peggyjs/peggy/pull/509) Add and implement ES6 export button
+
+### Bug fixes
+
+- [#493](https://github.com/peggyjs/peggy/issues/493) Allow use of an empty
+  array, null, or undefined as allowedStartRules option
+- [#505](https://github.com/peggyjs/peggy/pull/505) Fix vscode-eslint settings
+  to work with eslint flat config
+- [#507](https://github.com/peggyjs/peggy/pull/507) Remove stray semicolon in CSS
+- [#508](https://github.com/peggyjs/peggy/pull/508) Fix broken text input in
+  web version
+- [#512](https://github.com/peggyjs/peggy/issues/512) Add "StartRules" to peg.d.ts
+- [#513](https://github.com/peggyjs/peggy/issues/513) Allow whitespace between
+  plucked word and its pattern.
+- [#520](https://github.com/peggyjs/peggy/issues/520) Grammar with token "constructor" fails to generate
+- [#522](https://github.com/peggyjs/peggy/issues/522) Switched from puppeteer
+  to playwright for web tests, and added them to CI.
+
+### Documentation
+
+- [#506](https://github.com/peggyjs/peggy/pull/506) Added END OF INPUT (`!.`).
+
 4.0.2
 -----
 

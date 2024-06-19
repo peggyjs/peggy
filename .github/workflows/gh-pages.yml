@@ -14,20 +14,24 @@ jobs:
   deploy:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v3
+      - name: Enable pnpm
+        run: "corepack enable"
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
-          cache: npm
+          node-version: 22.x
+          cache: pnpm
       - name: Install dependencies
-        run: "cd docs && npm ci"
+        working-directory: docs
+        run: "pnpm i --frozen-lockfile"
       - name: Build
-        run: "cd docs && npm run build"
+        working-directory: docs
+        run: "npm run build"
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/_site

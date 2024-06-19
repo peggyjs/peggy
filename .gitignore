@@ -1,11 +1,10 @@
+.nyc_output
+.vscode/
+*.map
 browser/
 build/
 coverage/
+docs/_site
 examples/*.js
 node_modules/
-pnpm-lock.yaml
 yarn.lock
-.nyc_output
-*.map
-docs/_site
-.vscode/
