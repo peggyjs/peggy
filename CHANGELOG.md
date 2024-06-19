@@ -17,6 +17,8 @@ Unreleased
 - [#520](https://github.com/peggyjs/peggy/pull/520) Grammar with token "constructor" fails to generate
 - [#522](https://github.com/peggyjs/peggy/pull/522) Switched from puppeteer
   to playwright for web tests, and added them to CI.
+- [#513](https://github.com/peggyjs/peggy/pull/513) Allow whitespace between
+  plucked word and its pattern.
 
 ### Documentation
 - [#506](https://github.com/peggyjs/peggy/pull/506) Added END OF INPUT (`!.`).
