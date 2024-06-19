@@ -10,12 +10,18 @@ describe("Peggy compiler", () => {
   it("checks start rules", () => {
     const ast = parser.parse("foo='1'");
     expect(compiler.compile(ast, compiler.passes)).to.be.an("object");
-    expect(() => compiler.compile(ast, compiler.passes, {
+    expect(compiler.compile(ast, compiler.passes, {
       allowedStartRules: null,
-    })).to.throw("allowedStartRules must be an array");
-    expect(() => compiler.compile(ast, compiler.passes, {
+    })).to.be.an("object");
+    expect(compiler.compile(ast, compiler.passes, {
+      allowedStartRules: undefined,
+    })).to.be.an("object");
+    expect(compiler.compile(ast, compiler.passes, {
       allowedStartRules: [],
-    })).to.throw("Must have at least one start rule");
+    })).to.be.an("object");
+    expect(() => compiler.compile(ast, compiler.passes, {
+      allowedStartRules: {},
+    })).to.throw("allowedStartRules must be an array");
     expect(() => compiler.compile(ast, compiler.passes, {
       allowedStartRules: ["bar"],
     })).to.throw('Unknown start rule "bar"');
