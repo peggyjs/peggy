@@ -16,7 +16,6 @@ packages:
 
   frags@file:../frags:
     resolution: {directory: ../frags, type: directory}
-    name: frags
 
 snapshots:
 

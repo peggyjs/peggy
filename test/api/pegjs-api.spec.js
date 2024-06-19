@@ -27,6 +27,9 @@ const expect = chai.expect;
 describe("Peggy API", () => {
   it("has the correct VERSION", () => {
     expect(peg.VERSION).to.equal(pkg.version);
+    // Hack to get web tests working again
+    // eslint-disable-next-line no-undef
+    globalThis.peggyVersion = peg.VERSION;
   });
 
   describe("generate", () => {

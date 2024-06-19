@@ -15,6 +15,8 @@ Unreleased
 - [#507](https://github.com/peggyjs/peggy/pull/507) Remove stray semicolon in CSS
 - [#508](https://github.com/peggyjs/peggy/pull/508) Fix broken text input
 - [#520](https://github.com/peggyjs/peggy/pull/520) Grammar with token "constructor" fails to generate
+- [#522](https://github.com/peggyjs/peggy/pull/522) Switched from puppeteer
+  to playwright for web tests, and added them to CI.
 
 ### Documentation
 - [#506](https://github.com/peggyjs/peggy/pull/506) Added END OF INPUT (`!.`).
