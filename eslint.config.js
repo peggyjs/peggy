@@ -59,11 +59,4 @@ module.exports = [
       "compat/compat": "error",
     },
   },
-  // {
-  //   files: [
-  //   ],
-  //   languageOptions: {
-  //     sourceType: "module",
-  //   },
-  // },
 ];
