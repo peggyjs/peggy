@@ -367,6 +367,9 @@ describe("Peggy grammar parser", () => {
     expect("start = a:'abcd'\nb:'efgh'").to.parseAs(
       oneRuleGrammar(sequence2)
     );
+    expect("start = a: 'abcd'\nb :'efgh'").to.parseAs(
+      oneRuleGrammar(sequence2)
+    );
     expect("start = a:'abcd'\nb:'efgh'\nc:'ijkl'\nd:'mnop'").to.parseAs(
       oneRuleGrammar(sequence4)
     );
@@ -393,6 +396,15 @@ describe("Peggy grammar parser", () => {
       $S($P(null, literalAbcd))
     );
     expect("start = @a:'abcd'").to.parseAs(
+      $S($P("a", literalAbcd))
+    );
+    expect("start = @a: 'abcd'").to.parseAs(
+      $S($P("a", literalAbcd))
+    );
+    expect("start = @a :'abcd'").to.parseAs(
+      $S($P("a", literalAbcd))
+    );
+    expect("start = @a : 'abcd'").to.parseAs(
       $S($P("a", literalAbcd))
     );
     expect("start = 'abcd' @'efgh'").to.parseAs(

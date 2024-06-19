@@ -267,7 +267,7 @@ LabeledExpression
         location: location()
       };
     }
-  / label:LabelColon __ expression:PrefixedExpression {
+  / label:LabelColon expression:PrefixedExpression {
       return {
         type: "labeled",
         label: label[0],
@@ -282,7 +282,7 @@ Pluck
   = "@" { return location(); }
 
 LabelColon
-  = label:IdentifierName __ ":" {
+  = label:IdentifierName __ ":" __ {
       if (reservedWords.indexOf(label[0]) >= 0) {
         error(`Label can't be a reserved word "${label[0]}"`, label[1]);
       }
