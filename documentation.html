@@ -865,6 +865,40 @@ WS = [ \t]*</code></pre>
     </div>
   </dd>
 
+  <dt><code>!.</code> (END OF INPUT)</dt>
+
+  <dd>
+    <p>Match END OF INPUT. This <em>Bang Dot</em> sequence
+      will specify that the end of input should be matched.
+      <code>"f" !.</code> will test for end of input
+      after the character "f".</p>
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>no_input = !.</code></div>
+        <div><em>Matches:</em> <code>""</code></div>
+        <div><em>Does not match:</em> <code>"f"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="" class="exampleInput" name="no_input">
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>end_of_input = "f" !.</code></div>
+        <div><em>Matches:</em> <code>"f[EOI]"</code></div>
+        <div><em>Does not match:</em> <code>"f [EOI]"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="f" class="exampleInput" name="end_of_input">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
+
   <dt><code>[<em>characters</em>]</code></dt>
 
   <dd>

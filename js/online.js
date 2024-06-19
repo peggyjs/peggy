@@ -94,6 +94,7 @@ $(document).ready(function() {
     $("#parser-var").attr("disabled", "disabled");
     $("#option-cache").attr("disabled", "disabled");
     $("#parser-download").attr("disabled", "disabled");
+    $("#parser-download-es6").attr("disabled", "disabled");
 
     try {
       var timeBefore = (new Date).getTime();
@@ -134,6 +135,7 @@ $(document).ready(function() {
       $("#parser-var").removeAttr("disabled");
       $("#option-cache").removeAttr("disabled");
       $("#parser-download").removeAttr("disabled");
+      $("#parser-download-es6").removeAttr("disabled");
 
       var result = true;
     } catch (e) {
@@ -213,7 +215,7 @@ $(document).ready(function() {
     }
   }
 
-  $("#parser-var, #option-cache")
+  $("#option-cache")
     .change(rebuildGrammar)
     .mousedown(rebuildGrammar)
     .mouseup(rebuildGrammar)
@@ -227,6 +229,23 @@ $(document).ready(function() {
 
       var blob = new Blob( [$( "#parser-var" ).val() + " = " + parserSource + ";\n"], {type: "application/javascript"} );
       window.saveAs( blob, "parser.js" );
+
+    });
+
+  $( "#parser-download-es6" )
+    .click(function(){
+      try { // If this button was enabled, the source was already validated by 'rebuildGrammar'
+        const esSource = peggy.generate(editor.getValue(), {
+          cache: $("#option-cache").is(":checked"),
+          output: "source",
+          format: 'es'
+        })
+
+        var blob = new Blob([esSource], {type: "application/javascript"});
+        window.saveAs(blob, "parser.mjs");
+      } catch (e) {
+        console.error('Unable to save parser', e);
+      }
 
     });
 

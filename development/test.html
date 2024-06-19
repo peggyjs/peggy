@@ -17,14 +17,14 @@
       
         <link rel="stylesheet" href="/css/content.css" />
       
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/10.4.0/mocha.css" />
       
     
     
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/10.4.0/mocha.min.js"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.4/chai.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.4.1/chai.min.js"></script>
       
     
   </head>
@@ -47,7 +47,14 @@
   // Modern browsers don't need whatwgURL.
   // source-map looks for it with this name, as configured in rollup.config.mjs
   window.whatwgURL = { URL };
-  mocha.setup('bdd');
+  mocha.setup({
+    ui: "bdd",
+    global: [
+      "TextEncoder", // Not really a leak, we put it back after deleting
+      "peggyVersion", // Intentional
+    ],
+  });
+  mocha.checkLeaks();
 </script>
 <script src='../js/test-bundle.min.js'></script>
 <style>
@@ -63,7 +70,7 @@
   mocha.run(failures => {
     const result = failures === 0 ? 'PASS' : 'FAIL';
     // If you change the next line, please modifiy the regexp in web-test/index.js
-    const status = result + ': ' + failures + ' failures. Peggy Version: ' + browser.peggyVersion()
+    const status = result + ': ' + failures + ' failures. Peggy Version: ' + globalThis.peggyVersion;
     console.log(status);
     const div = document.getElementById('results');
     div.innerHTML = status;
