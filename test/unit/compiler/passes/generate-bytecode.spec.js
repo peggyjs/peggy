@@ -41,6 +41,30 @@ describe("compiler pass |generateBytecode|", () => {
       });
     });
 
+    it("allows Object prototype property names as literals", () => {
+      expect(pass).to.changeAST([
+        "a = '__proto__'",
+        "b = 'constructor'",
+        "c = 'hasOwnProperty'",
+        "d = 'isPrototypeOf'",
+        "e = 'propertyIsEnumerable'",
+        "f = 'toLocaleString'",
+        "g = 'toString'",
+        "h = 'valueOf'",
+      ].join("\n"), {
+        rules: [
+          { bytecode: [18, 0, 2, 2, 22, 0, 23, 0] },
+          { bytecode: [18, 1, 2, 2, 22, 1, 23, 1] },
+          { bytecode: [18, 2, 2, 2, 22, 2, 23, 2] },
+          { bytecode: [18, 3, 2, 2, 22, 3, 23, 3] },
+          { bytecode: [18, 4, 2, 2, 22, 4, 23, 4] },
+          { bytecode: [18, 5, 2, 2, 22, 5, 23, 5] },
+          { bytecode: [18, 6, 2, 2, 22, 6, 23, 6] },
+          { bytecode: [18, 7, 2, 2, 22, 7, 23, 7] },
+        ],
+      });
+    });
+
     it("defines correct constants", () => {
       expect(pass).to.changeAST([
         "a = 'a'",
