@@ -14,11 +14,12 @@ Unreleased
 ### Bug fixes
 - [#507](https://github.com/peggyjs/peggy/pull/507) Remove stray semicolon in CSS
 - [#508](https://github.com/peggyjs/peggy/pull/508) Fix broken text input
+- [#512](https://github.com/peggyjs/peggy/pull/512) Add "StartRules" to peg.d.ts.
+- [#513](https://github.com/peggyjs/peggy/pull/513) Allow whitespace between
+  plucked word and its pattern.
 - [#520](https://github.com/peggyjs/peggy/pull/520) Grammar with token "constructor" fails to generate
 - [#522](https://github.com/peggyjs/peggy/pull/522) Switched from puppeteer
   to playwright for web tests, and added them to CI.
-- [#513](https://github.com/peggyjs/peggy/pull/513) Allow whitespace between
-  plucked word and its pattern.
 
 ### Documentation
 - [#506](https://github.com/peggyjs/peggy/pull/506) Added END OF INPUT (`!.`).

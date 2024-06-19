@@ -1089,6 +1089,7 @@ export interface LibraryResults {
 }
 
 export interface Parser {
+  StartRules: string[];
   SyntaxError: parser.SyntaxErrorConstructor;
 
   parse(
