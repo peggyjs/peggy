@@ -5,15 +5,17 @@
   "description": "Test peggy for the web in the browser",
   "main": "index.js",
   "scripts": {
-    "test": "node index.js"
+    "test": "playwright test",
+    "start": "cd ../docs && npm start"
   },
   "keywords": [],
   "author": "Joe Hildebrand <joe-github@cursive.net>",
   "license": "MIT",
   "devDependencies": {
-    "puppeteer": "22.11.2"
+    "@playwright/test": "1.44.1",
+    "@types/node": "20.14.6"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }
