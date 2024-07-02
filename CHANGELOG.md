@@ -14,6 +14,9 @@ Released: TBD
 
 ### Bug fixes
 
+- [#531](https://github.com/peggyjs/peggy/issues/531) Clean up rollup hacks
+  from CLI code.
+
 ### Documentation
 
 4.0.3
