@@ -736,43 +736,6 @@ class PeggyCLI extends Command {
       return this.run();
     }
   }
-
-  // For some reason, after running through rollup, typescript can't see
-  // methods from the base class.
-
-  /**
-   * @param {string[]} [argv] - optional, defaults to process.argv
-   * @param {Object} [parseOptions] - optionally specify style of options with from: node/user/electron
-   * @param {string} [parseOptions.from] - where the args are from: 'node', 'user', 'electron'
-   * @return {PeggyCLI} `this` command for chaining
-   */
-  parse(argv, parseOptions) {
-    return super.parse(argv, parseOptions);
-  }
-
-  /**
-   * @param {Object} [configuration] - configuration options
-   * @return {PeggyCLI} `this` command for chaining, or stored configuration
-   */
-  configureHelp(configuration) {
-    return super.configureHelp(configuration);
-  }
-
-  /**
-   * @param {Object} [configuration] - configuration options
-   * @return {PeggyCLI} `this` command for chaining, or stored configuration
-   */
-  configureOutput(configuration) {
-    return super.configureOutput(configuration);
-  }
-
-  /**
-   * @param {Function} [fn] optional callback which will be passed a CommanderError, defaults to throwing
-   * @return {PeggyCLI} `this` command for chaining
-   */
-  exitOverride(fn) {
-    return super.exitOverride(fn);
-  }
 }
 
 exports.PeggyCLI = PeggyCLI;
