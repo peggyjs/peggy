@@ -14,12 +14,14 @@ exports.PeggyCLI = PeggyCLI;
 // See: https://github.com/facebook/jest/issues/5274
 /* istanbul ignore if */
 if (require.main === module) {
-  const cli = new PeggyCLI().parse();
-  cli.main().then(
-    code => process.exit(code),
-    er => {
+  (async() => {
+    let code = 1;
+    try {
+      const cli = await (new PeggyCLI().parseAsync());
+      code = await cli.main();
+    } catch (er) {
       console.error("Uncaught Error\n", er);
-      process.exit(1);
     }
-  );
+    process.exit(code);
+  })();
 }
