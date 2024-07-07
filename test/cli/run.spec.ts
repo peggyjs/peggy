@@ -145,20 +145,16 @@ async function exec(opts: Options = {}): Promise<string> {
   const err = opts.stderr || out;
   const outputBuffers: (Buffer | string)[] = [];
   out.on("data", buf => outputBuffers.push(buf));
-  const p = new Promise<number>((resolve, reject) => {
+
+  // All of the errors we want to capture go into this promise.
+  const p = (async(): Promise<number> => {
     const cli = new PeggyCLI({ in: stdin, out, err })
       .exitOverride()
       .configureOutput({
         writeOut: (c: string) => out.write(c),
         writeErr: (c: string) => err.write(c),
       })
-      .configureHelp({ helpWidth: 80 })
-      .parse([
-        process.execPath,
-        "peggy",
-        ...(opts.args || []),
-      ]);
-
+      .configureHelp({ helpWidth: 80 });
     if (opts.onstdout) {
       const oso = opts.onstdout; // Snapshot
       out.on("data", buf => oso(buf, cli));
@@ -168,9 +164,13 @@ async function exec(opts: Options = {}): Promise<string> {
       const ose = opts.onstderr; // Snapshot
       err.on("data", buf => ose(buf, cli));
     }
-
-    cli.main().then(resolve, reject);
-  });
+    await cli.parseAsync([
+      process.execPath,
+      "peggy",
+      ...(opts.args || []),
+    ]);
+    return cli.main();
+  })();
 
   let waited = false;
   if (opts.error !== undefined) {
@@ -810,11 +810,45 @@ Options:
   it("handles plugins", async() => {
     // Plugin, starting with "./"
     const plugin = path.join(fixtures, "plugin.js");
+    const pluginMjs = path.join(fixtures, "plugin.mjs");
+    const plugin2Mjs = path.join(fixtures, "plugin2.mjs");
+    const pluginCjs = path.join(fixtures, "plugin.cjs");
     const bad = path.join(fixtures, "bad.js");
+    const optFileJS = path.join(fixtures, "options.js");
 
     await exec({
       args: [
         "--plugin", plugin,
+        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
+        "-t", "1",
+      ],
+      stdin: "var = bar:'1'",
+      expected: "'1'\n",
+    });
+
+    await exec({
+      args: [
+        "--plugin", pluginMjs,
+        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
+        "-t", "1",
+      ],
+      stdin: "var = bar:'1'",
+      expected: "'1'\n",
+    });
+
+    await exec({
+      args: [
+        "--plugin", plugin2Mjs,
+        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
+        "-t", "1",
+      ],
+      stdin: "var = bar:'1'",
+      expected: "'1'\n",
+    });
+
+    await exec({
+      args: [
+        "--plugin", pluginCjs,
         "--extra-options", '{"cli_test": {"words": ["foo"]}}',
         "-t", "1",
       ],
@@ -856,7 +890,15 @@ Options:
       stdin: "foo = '1'",
       errorCode: "peggy.invalidArgument",
       exitCode: 1,
-      error: 'requiring "ERROR BAD MODULE DOES NOT EXIST"',
+      error: "Error importing: Cannot find module",
+    });
+
+    await exec({
+      args: ["--plugin", optFileJS],
+      stdin: "foo = '1'",
+      errorCode: "peggy.invalidArgument",
+      exitCode: 1,
+      error: "no `use()` function",
     });
 
     await exec({
@@ -1348,7 +1390,7 @@ error: Rule "unknownRule" is not defined
       await exec({
         args: ["-w", bad],
         exitCode: 0,
-        onstderr(s, cli) {
+        onstderr(_s, cli) {
           // This is brittle.  Stderr gets the "file added" message, then
           // the error, then a newline.
           if (++count === 4) {
@@ -1365,7 +1407,7 @@ error: Rule "unknownRule" is not defined
         args: ["-w", grammar],
         exitCode: 0,
         expected: /Wrote:/,
-        onstdout(s, cli) {
+        onstdout(_s, cli) {
           if (++count === 3) {
             cli.stopWatching();
           }
@@ -1379,7 +1421,7 @@ error: Rule "unknownRule" is not defined
       await exec({
         args: ["-w", "-t", "1", grammar],
         exitCode: 0,
-        onstdout(s, cli) {
+        onstdout(_s, cli) {
           if (++count === 2) {
             cli.stopWatching();
           }
@@ -1393,7 +1435,7 @@ error: Rule "unknownRule" is not defined
       await exec({
         args: ["-w", grammar],
         error: "Fake error",
-        onstdout(s, cli) {
+        onstdout(_s, cli) {
           if (++count === 3) {
             cli.watcher?.watchers[0].emit("error", new Error("Fake error"));
           }
@@ -1405,6 +1447,11 @@ error: Rule "unknownRule" is not defined
       const out = path.join(__dirname, "fixtures", "simple.js");
       fs.unlinkSync(out);
     });
+  });
+
+  it("throws on parse now", () => {
+    const cli = new PeggyCLI();
+    expect(() => cli.parse([])).toThrow();
   });
 });
 

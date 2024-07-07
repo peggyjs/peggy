@@ -1697,6 +1697,20 @@ note: Step 3: call itself without input consumption - left recursion
   That method will be called for all plugins in the <code>options.plugins</code>
   array, supplied to the <code>generate()</code> method.</p>
 
+<p>Plugins suitable for use on the command line can be written either as CJS
+  or MJS modules that export a "use" function.  The CLI loads plugins with
+  <code class="language-js">await(plugin_name)</code>, which should
+  correctly load from node_modules, a local file starting with "/" or "./",
+  etc.  For example:</p>
+
+<pre><code class="language-js">// CJS
+exports.use = (config, options) => {
+}</code></pre>
+
+<pre><code class="language-js">// MJS
+export function use(config, options) => {
+}</code></pre>
+
 <p><code>use</code> accepts these parameters:</p>
 
 <h3><code>config</code></h3>
@@ -1754,8 +1768,12 @@ note: Step 3: call itself without input consumption - left recursion
 
 <p>Build options passed to the <code>generate()</code> method. A best practice
   for a plugin would look for its own options under a
-  <code>&lt;plugin_name&gt;</code> key.</p>
+  <code>&lt;plugin_name&gt;</code> key:</p>
 
+<pre><code class="language-js">// File: foo.mjs
+export function use(config, options) => {
+  const mine = options['foo_mine'] ?? 'my default';
+}</code></pre>
 
 <h3 id="session-api">Session API</h3>
 

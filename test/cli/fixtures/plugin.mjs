@@ -1,6 +1,4 @@
-"use strict";
-
-exports.use = function use(config, options) {
+export function use(config, options) {
   if (options.cli_test) {
     if (options.cli_test.words) {
       config.reservedWords.push(...options.cli_test.words);
@@ -11,4 +9,4 @@ exports.use = function use(config, options) {
       });
     }
   }
-};
+}

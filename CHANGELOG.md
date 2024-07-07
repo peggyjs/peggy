@@ -12,6 +12,8 @@ Released: TBD
 
 ### New features
 
+- [#530](https://github.com/peggyjs/peggy/issues/531) Allow es6 plugins from CLI
+
 ### Bug fixes
 
 - [#531](https://github.com/peggyjs/peggy/issues/531) Clean up rollup hacks

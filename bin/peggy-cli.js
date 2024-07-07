@@ -183,7 +183,7 @@ class PeggyCLI extends Command {
         "-c, --extra-options-file <file>",
         "File with additional options (in JSON as an object or commonjs module format) to pass to peggy.generate",
         val => {
-          if (/\.c?js$/.test(val)) {
+          if (/\.[cm]?js$/.test(val)) {
             return this.addExtraOptions(require(path.resolve(val)), "extra-options-file");
           } else {
             return this.addExtraOptionsJSON(readFile(val), "extra-options-file");
@@ -229,7 +229,7 @@ class PeggyCLI extends Command {
           .hideHelp()
           .default(false)
       )
-      .action((inputFiles, opts) => { // On parse()
+      .action(async(inputFiles, opts) => { // On parse()
         this.inputFiles = inputFiles;
         this.argv = opts;
 
@@ -252,10 +252,10 @@ class PeggyCLI extends Command {
         // Combine plugin/plugins
         if ((this.argv.plugin && (this.argv.plugin.length > 0))
             || (this.argv.plugins && (this.argv.plugins.length > 0))) {
-          this.argv.plugins = [
+          this.argv.plugins = await Promise.all([
             ...(this.argv.plugins || []),
             ...(this.argv.plugin || []),
-          ].map(val => {
+          ].map(async val => {
             if (typeof val !== "string") {
               return val;
             }
@@ -265,16 +265,23 @@ class PeggyCLI extends Command {
               : val;
             let mod = null;
             try {
-              mod = require(id);
+              mod = await import(id);
+              if (typeof mod.use !== "function") {
+                mod = mod.default;
+              }
+              if (typeof mod.use !== "function") {
+                this.error(`Invalid plugin "${id}", no \`use()\` function`);
+              }
             } catch (e) {
-              if (e.code !== "MODULE_NOT_FOUND") {
-                this.error(`requiring:\n${e.stack}`);
+              if ((e.code === "ERR_MODULE_NOT_FOUND")
+                  || (e.code === "MODULE_NOT_FOUND")) {
+                this.error(`importing: ${e.message}`);
               } else {
-                this.error(`requiring "${id}": ${e.message}`);
+                this.error(`importing "${id}":\n${e.stack}`);
               }
             }
             return mod;
-          });
+          }));
         }
         delete this.argv.plugin;
 
@@ -422,6 +429,12 @@ class PeggyCLI extends Command {
     }
   }
 
+  /**
+   * Print text and a newline to stdout, using util.format.
+   *
+   * @param {NodeJS.WriteStream} stream Stream to write to.
+   * @param  {...any} args Format arguments.
+   */
   static print(stream, ...args) {
     stream.write(util.formatWithOptions({
       colors: stream.isTTY,
@@ -432,6 +445,12 @@ class PeggyCLI extends Command {
     stream.write("\n");
   }
 
+  /**
+   * If we are in verbose mode, print to stderr with a newline.
+   *
+   * @param {...any} args Format arguments.
+   * @returns {boolean} On write, true.  Otherwise false.
+   */
   verbose(...args) {
     if (!this.progOptions.verbose) {
       return false;
@@ -440,6 +459,13 @@ class PeggyCLI extends Command {
     return true;
   }
 
+  /**
+   * Get options from a JSON string.
+   *
+   * @param {string} json JSON as text
+   * @param {string} source Name of option that was the source of the JSON.
+   * @returns {peggy.BuildOptionsBase}
+   */
   addExtraOptionsJSON(json, source) {
     let extraOptions = undefined;
 
@@ -452,6 +478,12 @@ class PeggyCLI extends Command {
     return this.addExtraOptions(extraOptions, source);
   }
 
+  /**
+   * Add
+   * @param {peggy.BuildOptionsBase|peggy.BuildOptionsBase[]|null} extraOptions
+   * @param {string} source
+   * @returns {peggy.BuildOptionsBase}
+   */
   addExtraOptions(extraOptions, source) {
     if ((extraOptions === null)
         || (typeof extraOptions !== "object")
@@ -696,6 +728,17 @@ class PeggyCLI extends Command {
     }
     await this.watcher.close();
     this.watcher = null;
+  }
+
+  /**
+   * @deprecated Use parseAsync instead
+   * @param {string[]} args Arguments
+   */
+  // eslint-disable-next-line class-methods-use-this
+  parse(args) {
+    // Put this here in case anyone was calling PeggyCLI by hand.
+    // Remove in peggy@v5
+    throw new Error(`Must call parseAsync: ${args}`);
   }
 
   /**
