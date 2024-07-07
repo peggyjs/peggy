@@ -376,7 +376,7 @@ Options:
                                    object) to pass to peggy.generate
   -c, --extra-options-file <file>  File with additional options (in JSON as an
                                    object or commonjs module format) to pass to
-                                   peggy.generate
+                                   peggy.generate (default: [])
   --format <format>                Format of the generated parser (choices:
                                    "amd", "bare", "commonjs", "es", "globals",
                                    "umd", default: "commonjs")
@@ -582,7 +582,7 @@ Options:
       args: ["--format", "globals"],
       stdin: "foo = '1'",
       exitCode: 1,
-      expected: "Error parsing grammar\nNo export variable defined\n",
+      expected: "Error parsing grammar\nNo export variable defined for format 'globals'.\n",
     });
 
     await exec({
@@ -637,6 +637,7 @@ Options:
   it("handles extra options in a file", async() => {
     const optFile = path.join(fixtures, "options.json");
     const optFileJS = path.join(fixtures, "options.js");
+    const optFileMJS = path.join(fixtures, "options.mjs");
 
     const res = await exec({
       args: ["--extra-options-file", optFile],
@@ -644,6 +645,12 @@ Options:
       expected: /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/,
     });
     expect(res).toMatch("(function(root, factory) {");
+
+    await exec({
+      args: ["--extra-options-file", optFileJS],
+      stdin: foobarbaz,
+      expected: /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/,
+    });
 
     // Intentional overwrite
     await exec({
@@ -654,6 +661,14 @@ Options:
 
     await exec({
       args: ["-c", optFileJS],
+      stdin: "foo = zazzy:'1'",
+      errorCode: "peggy.cli",
+      exitCode: 1,
+      error: 'Error: Label can\'t be a reserved word "zazzy"',
+    });
+
+    await exec({
+      args: ["-c", optFileMJS],
       stdin: "foo = zazzy:'1'",
       errorCode: "peggy.cli",
       exitCode: 1,
@@ -682,6 +697,14 @@ Options:
       errorCode: "commander.invalidArgument",
       exitCode: 1,
       error: "Can't read from file",
+    });
+
+    await exec({
+      args: ["--extra-options-file", "____ERROR____FILE_DOES_NOT_EXIST.js"],
+      stdin: 'foo = "1"',
+      error: CommanderError,
+      exitCode: 1,
+      expected: /Error importing config/,
     });
   });
 
