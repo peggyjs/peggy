@@ -269,11 +269,15 @@ class PeggyCLI extends Command {
               if (typeof mod.use !== "function") {
                 mod = mod.default;
               }
+              if (typeof mod.use !== "function") {
+                this.error(`Invalid plugin "${id}", no \`use()\` function`);
+              }
             } catch (e) {
-              if (e.code !== "MODULE_NOT_FOUND") {
-                this.error(`requiring:\n${e.stack}`);
+              if ((e.code === "ERR_MODULE_NOT_FOUND")
+                  || (e.code === "MODULE_NOT_FOUND")) {
+                this.error(`importing: ${e.message}`);
               } else {
-                this.error(`requiring "${id}": ${e.message}`);
+                this.error(`importing "${id}":\n${e.stack}`);
               }
             }
             return mod;

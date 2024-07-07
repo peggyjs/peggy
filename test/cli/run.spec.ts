@@ -814,6 +814,7 @@ Options:
     const plugin2Mjs = path.join(fixtures, "plugin2.mjs");
     const pluginCjs = path.join(fixtures, "plugin.cjs");
     const bad = path.join(fixtures, "bad.js");
+    const optFileJS = path.join(fixtures, "options.js");
 
     await exec({
       args: [
@@ -889,7 +890,15 @@ Options:
       stdin: "foo = '1'",
       errorCode: "peggy.invalidArgument",
       exitCode: 1,
-      error: 'requiring "ERROR BAD MODULE DOES NOT EXIST"',
+      error: "Error importing: Cannot find module",
+    });
+
+    await exec({
+      args: ["--plugin", optFileJS],
+      stdin: "foo = '1'",
+      errorCode: "peggy.invalidArgument",
+      exitCode: 1,
+      error: "no `use()` function",
     });
 
     await exec({
