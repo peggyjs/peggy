@@ -21,7 +21,7 @@ const MODULE_FORMATS_WITH_GLOBAL = ["globals", "umd"];
 // Helpers
 
 function select(obj, sel) {
-  const ret = {};
+  const ret = Object.create(null);
   for (const s of sel) {
     if (Object.prototype.hasOwnProperty.call(obj, s)) {
       ret[s] = obj[s];
@@ -107,13 +107,13 @@ class PeggyCLI extends Command {
     };
 
     /** @type {peggy.BuildOptionsBase} */
-    this.argv = {};
+    this.argv = Object.create(null);
     /** @type {string[]} */
     this.inputFiles = [];
     /** @type {string?} */
     this.outputFile = null;
     /** @type {object} */
-    this.progOptions = {};
+    this.progOptions = Object.create(null);
     /** @type {string?} */
     this.testFile = null;
     /** @type {string?} */
@@ -182,13 +182,8 @@ class PeggyCLI extends Command {
       .option(
         "-c, --extra-options-file <file>",
         "File with additional options (in JSON as an object or commonjs module format) to pass to peggy.generate",
-        val => {
-          if (/\.[cm]?js$/.test(val)) {
-            return this.addExtraOptions(require(path.resolve(val)), "extra-options-file");
-          } else {
-            return this.addExtraOptionsJSON(readFile(val), "extra-options-file");
-          }
-        }
+        (val, prev) => prev.concat(val),
+        []
       )
       .addOption(
         new Option(
@@ -230,6 +225,21 @@ class PeggyCLI extends Command {
           .default(false)
       )
       .action(async(inputFiles, opts) => { // On parse()
+        // Can't load options from node_modules
+        for (const val of opts.extraOptionsFile) {
+          if (/\.[cm]?js$/.test(val)) {
+            try {
+              const eOpts = await import(path.resolve(val));
+              this.addExtraOptions(eOpts.default, "extra-options-file");
+            } catch (e) {
+              this.error(`Error importing config "${val}": ${e.message}`);
+            }
+          } else {
+            this.addExtraOptionsJSON(readFile(val), "extra-options-file");
+          }
+        }
+        delete opts.extraOptionsFile;
+
         this.inputFiles = inputFiles;
         this.argv = opts;
 
@@ -479,7 +489,10 @@ class PeggyCLI extends Command {
   }
 
   /**
-   * Add
+   * Add extra options from a config file, if they haven't already been
+   * set on the command line.  Exception: multi-value options like plugins
+   * are additive.
+   *
    * @param {peggy.BuildOptionsBase|peggy.BuildOptionsBase[]|null} extraOptions
    * @param {string} source
    * @returns {peggy.BuildOptionsBase}
@@ -492,39 +505,33 @@ class PeggyCLI extends Command {
     }
     for (const [k, v] of Object.entries(extraOptions)) {
       const prev = this.getOptionValue(k);
-      if ((this.getOptionValueSource(k) === "default")
-          || (prev === "null")
-          || (typeof prev !== "object")) {
+      const src = this.getOptionValueSource(k);
+      if (!src || (src === "default")) {
         // Overwrite
         this.setOptionValueWithSource(k, v, source);
-      } else {
-        // Combine with previous if it's a non-default, non-null object.
-        if (Array.isArray(prev)) {
-          prev.push(...v);
-        } else {
-          Object.assign(prev, v);
-        }
+      } else if (Array.isArray(prev)) {
+        // Combine with previous
+        prev.push(...v);
+      } else if (typeof prev === "object") {
+        Object.assign(prev, v);
       }
     }
     return null;
   }
 
-  openOutputStream() {
-    // If there is a valid outputFile, write the parser to it.  Otherwise,
-    // if no test and no outputFile, write to stdout.
-
+  async openOutputStream() {
     if (this.outputFile === "-") {
       // Note: empty string is a valid input for testText.
       // Don't just test for falsy.
       const hasTest = !this.testFile && (typeof this.testText !== "string");
-      return Promise.resolve(hasTest ? this.std.out : null);
+      return hasTest ? this.std.out : null;
     }
-    return ensureDirectoryExists(this.outputFile)
-      .then(() => new Promise((resolve, reject) => {
-        const outputStream = fs.createWriteStream(this.outputFile);
-        outputStream.on("error", reject);
-        outputStream.on("open", () => resolve(outputStream));
-      }));
+    await ensureDirectoryExists(this.outputFile);
+    return new Promise((resolve, reject) => {
+      const outputStream = fs.createWriteStream(this.outputFile);
+      outputStream.on("error", reject);
+      outputStream.on("open", () => resolve(outputStream));
+    });
   }
 
   /**
