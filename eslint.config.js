@@ -3,6 +3,7 @@
 module.exports = [
   {
     ignores: [
+      "**/*.d.ts",
       "benchmark/**",
       "build/**",
       "docs/**",

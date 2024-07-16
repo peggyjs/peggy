@@ -24,7 +24,7 @@ module.exports = function(chai, utils) {
   Assertion.addMethod("reportError", function(grammar, props) {
     const ast = parser.parse(grammar);
 
-    let passed = undefined;
+    let passed = false;
     let result = undefined;
 
     try {
@@ -34,7 +34,6 @@ module.exports = function(chai, utils) {
       passed = true;
     } catch (e) {
       result = e;
-      passed = false;
     }
 
     this.assert(

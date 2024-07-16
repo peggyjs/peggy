@@ -71,7 +71,7 @@ describe("generated parser behavior", () => {
     Assertion.addMethod("failToParse", function(input, props, options) {
       options = options !== undefined ? options : {};
 
-      let passed = undefined;
+      let passed = false;
       let result = undefined;
 
       try {
@@ -80,7 +80,6 @@ describe("generated parser behavior", () => {
         passed = true;
       } catch (e) {
         result = e;
-        passed = false;
       }
 
       this.assert(

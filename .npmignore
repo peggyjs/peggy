@@ -28,3 +28,4 @@ tools
 tsconfig*.json
 web-test/
 yarn.lock
+pnpm-workspace.yaml
