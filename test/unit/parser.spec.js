@@ -245,7 +245,7 @@ describe("Peggy grammar parser", () => {
     });
 
     Assertion.addMethod("failToParse", function(props) {
-      let passed = undefined;
+      let passed = false;
       let result = undefined;
 
       try {
@@ -253,7 +253,6 @@ describe("Peggy grammar parser", () => {
         passed = true;
       } catch (e) {
         result = e;
-        passed = false;
       }
 
       if (passed) {

@@ -47,13 +47,11 @@ function readStream(inputStream) {
 }
 
 function readFile(name) {
-  let f = null;
   try {
-    f = fs.readFileSync(name, "utf8");
+    return fs.readFileSync(name, "utf8");
   } catch (e) {
     throw new InvalidArgumentError(`Can't read from file "${name}".`, e);
   }
-  return f;
 }
 
 async function ensureDirectoryExists(filename) {
@@ -161,13 +159,12 @@ class PeggyCLI extends Command {
         "-D, --dependencies <json>",
         "Dependencies, in JSON object format with variable:module pairs. (Can be specified multiple times).",
         (val, prev = {}) => {
-          let v = null;
           try {
-            v = JSON.parse(val);
+            const v = JSON.parse(val);
+            return Object.assign(prev, v);
           } catch (e) {
             throw new InvalidArgumentError(`Error parsing JSON: ${e.message}`);
           }
-          return Object.assign(prev, v);
         }
       )
       .option(
@@ -477,15 +474,12 @@ class PeggyCLI extends Command {
    * @returns {peggy.BuildOptionsBase}
    */
   addExtraOptionsJSON(json, source) {
-    let extraOptions = undefined;
-
     try {
-      extraOptions = JSON.parse(json);
+      const extraOptions = JSON.parse(json);
+      return this.addExtraOptions(extraOptions, source);
     } catch (e) {
       throw new InvalidArgumentError(`Error parsing JSON: ${e.message}`);
     }
-
-    return this.addExtraOptions(extraOptions, source);
   }
 
   /**
@@ -667,7 +661,8 @@ class PeggyCLI extends Command {
     try {
       for (const source of this.inputFiles) {
         const input = { source, text: null };
-        this.verbose("CLI", errorText = `reading input "${source}"`);
+        errorText = `reading input "${source}"`;
+        this.verbose("CLI", errorText);
         if (source === "-") {
           input.source = "stdin";
           this.std.in.resume();
@@ -687,10 +682,12 @@ class PeggyCLI extends Command {
       // This is wrong.  It's a hack in place until source generation is fixed.
       this.argv.grammarSource = sources[0].source;
 
-      this.verbose("CLI", errorText = "parsing grammar");
+      errorText = "parsing grammar";
+      this.verbose("CLI", errorText);
       const source = peggy.generate(sources, this.argv); // All of the real work.
 
-      this.verbose("CLI", errorText = "opening output stream");
+      errorText = "opening output stream";
+      this.verbose("CLI", errorText);
       const outputStream = await this.openOutputStream();
 
       // If option `--ast` is specified, `generate()` returns an AST object
@@ -698,14 +695,17 @@ class PeggyCLI extends Command {
         this.verbose("CLI", errorText = "writing AST");
         await this.writeOutput(outputStream, JSON.stringify(source, null, 2));
       } else {
-        this.verbose("CLI", errorText = "writing sourceMap");
+        errorText = "writing sourceMap";
+        this.verbose("CLI", errorText);
         const mappedSource = await this.writeSourceMap(source);
 
-        this.verbose("CLI", errorText = "writing parser");
+        errorText = "writing parser";
+        this.verbose("CLI", errorText);
         await this.writeOutput(outputStream, mappedSource);
 
         exitCode = 2;
-        this.verbose("CLI", errorText = "running test");
+        errorText = "running test";
+        this.verbose("CLI", errorText);
         await this.test(mappedSource);
       }
     } catch (error) {

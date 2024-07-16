@@ -1,0 +1,5 @@
+packages:
+  - docs
+  - test/cli/fixtures/frags
+  - test/cli/fixtures/useFrag
+  - web-test

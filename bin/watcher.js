@@ -37,7 +37,6 @@ class Watcher extends EventEmitter {
     this.watchers = [];
 
     for (const dir of dirs) {
-      // eslint-disable-next-line func-style -- Needs "this"
       const changed = (_typ, fn) => {
         if (typeof this.timeout === "symbol") {
           return;
