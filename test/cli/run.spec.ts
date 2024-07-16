@@ -369,6 +369,10 @@ Options:
   -D, --dependencies <json>        Dependencies, in JSON object format with
                                    variable:module pairs. (Can be specified
                                    multiple times).
+  --dts [filename]                 Create a .d.ts to describe the generated
+                                   parser.
+  --dtsType <typeInfo>             Types returned for rules, as JSON object of
+                                   the form {"rule": "type"}
   -e, --export-var <variable>      Name of a global variable into which the
                                    parser object is assigned to when no module
                                    loader is detected.
@@ -694,9 +698,9 @@ Options:
     await exec({
       args: ["--extra-options-file", "____ERROR____FILE_DOES_NOT_EXIST"],
       stdin: 'foo = "1"',
-      errorCode: "commander.invalidArgument",
+      error: CommanderError,
       exitCode: 1,
-      error: "Can't read from file",
+      expected: /Error reading/,
     });
 
     await exec({
@@ -913,7 +917,7 @@ Options:
       stdin: "foo = '1'",
       errorCode: "peggy.invalidArgument",
       exitCode: 1,
-      error: "Error importing: Cannot find module",
+      error: /Error importing/,
     });
 
     await exec({
