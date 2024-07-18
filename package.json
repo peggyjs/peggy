@@ -76,7 +76,7 @@
     "rollup-plugin-ignore": "1.0.10",
     "source-map": "^0.8.0-beta.0",
     "terser": "^5.31.3",
-    "ts-jest": "^29.2.2",
+    "ts-jest": "^29.2.3",
     "tslib": "^2.6.3",
     "typescript": "^5.5.3",
     "typescript-eslint": "8.0.0-alpha.44"
@@ -99,7 +99,7 @@
       "@typescript-eslint/parser": "8.0.0-alpha.44"
     }
   },
-  "packageManager": "pnpm@9.4.0",
+  "packageManager": "pnpm@9.5.0",
   "engines": {
     "node": ">=18"
   }
