@@ -9,4 +9,7 @@ export default {
     j: "jest",
     commander: "commander",
   },
+  returnTypes: {
+    foo: "string",
+  },
 };

@@ -369,10 +369,8 @@ Options:
   -D, --dependencies <json>        Dependencies, in JSON object format with
                                    variable:module pairs. (Can be specified
                                    multiple times).
-  --dts [filename]                 Create a .d.ts to describe the generated
+  --dts                            Create a .d.ts to describe the generated
                                    parser.
-  --dtsType <typeInfo>             Types returned for rules, as JSON object of
-                                   the form {"rule": "type"}
   -e, --export-var <variable>      Name of a global variable into which the
                                    parser object is assigned to when no module
                                    loader is detected.
@@ -405,6 +403,8 @@ Options:
                                    This option conflicts with the \`-t/--test\`
                                    and \`-T/--test-file\` options unless
                                    \`-o/--output\` is also specified
+  --returnTypes <typeInfo>         Types returned for rules, as JSON object of
+                                   the form {"ruleName": "type"}
   -S, --start-rule <rule>          When testing, use the given rule as the
                                    start rule.  If this rule is not in the
                                    allowed start rules, it will be added.
@@ -1479,5 +1479,56 @@ error: Rule "unknownRule" is not defined
     const cli = new PeggyCLI();
     expect(() => cli.parse([])).toThrow();
   });
-});
 
+  describe(".d.ts", () => {
+    const opts = path.join(__dirname, "fixtures", "options.mjs");
+    const grammar = path.join(__dirname, "fixtures", "simple.peggy");
+    const grammarJS = path.join(__dirname, "fixtures", "simple.js");
+    const grammarDTS = path.join(__dirname, "fixtures", "simple.d.ts");
+
+    it("creates .d.ts files", async() => {
+      await exec({
+        args: ["--dts", grammar],
+        exitCode: 0,
+      });
+      const dts = await fs.promises.readFile(grammarDTS, "utf8");
+      expect(dts).toMatch(/: any;\n$/);
+    });
+
+    it("uses returnTypes", async() => {
+      await exec({
+        args: ["--dts", "-c", opts, grammar],
+        exitCode: 0,
+      });
+      const dts = await fs.promises.readFile(grammarDTS, "utf8");
+      expect(dts).toMatch(/: string;\n$/);
+    });
+
+    it("generates overloads for allowed-start-rules='*'", async() => {
+      await exec({
+        args: ["--dts", "-c", opts, "--allowed-start-rules", "*", grammar],
+        exitCode: 0,
+      });
+      const dts = await fs.promises.readFile(grammarDTS, "utf8");
+      expect(dts).toMatch(/: string;\n$/);
+    });
+
+    it("errors with dts for stdin", async() => {
+      await exec({
+        args: ["--dts"],
+        stdin: "foo = '1'",
+        exitCode: 1,
+        error: /Must supply output file with --dts/,
+      });
+    });
+
+    afterAll(() => {
+      fs.unlink(grammarJS, () => {
+        // Ignored
+      });
+      fs.unlink(grammarDTS, () => {
+        // Ignored
+      });
+    });
+  });
+});

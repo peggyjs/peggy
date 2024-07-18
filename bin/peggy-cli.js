@@ -14,7 +14,7 @@ exports.CommanderError = CommanderError;
 exports.InvalidArgumentError = InvalidArgumentError;
 
 // Options that aren't for the API directly:
-const PROG_OPTIONS = ["ast", "dts", "dtsType", "input", "output", "sourceMap", "startRule", "test", "testFile", "verbose"];
+const PROG_OPTIONS = ["ast", "dts", "returnTypes", "input", "output", "sourceMap", "startRule", "test", "testFile", "verbose"];
 const MODULE_FORMATS = ["amd", "bare", "commonjs", "es", "globals", "umd"];
 const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
 const MODULE_FORMATS_WITH_GLOBAL = ["globals", "umd"];
@@ -36,7 +36,7 @@ function isER(er) {
  * @returns {er is NodeJS.ErrnoException}
  */
 function isErrno(er) {
-  return (er instanceof Error)
+  return (typeof er === "object")
     && (Object.prototype.hasOwnProperty.call(er, "code"));
 }
 
@@ -169,8 +169,8 @@ async function ensureDirectoryExists(filename) {
 /**
  * @typedef {object} ProgOptions
  * @property {boolean} [ast]
- * @property {string|boolean} [dts]
- * @property {string} [dtsType]
+ * @property {string} [dts]
+ * @property {string} [returnTypes]
  * @property {string} [input]
  * @property {string} [output]
  * @property {boolean|string} [sourceMap]
@@ -222,8 +222,6 @@ class PeggyCLI extends Command {
     this.lastError = null;
     /** @type {import('./watcher.js')?} */
     this.watcher = null;
-    /** @type {string?} */
-    this.dtsFile = null;
 
     this
       .version(peggy.VERSION, "-v, --version")
@@ -261,13 +259,8 @@ class PeggyCLI extends Command {
         moreJSON
       )
       .option(
-        "--dts [filename]",
+        "--dts",
         "Create a .d.ts to describe the generated parser."
-      )
-      .option(
-        "--dtsType <typeInfo>",
-        "Types returned for rules, as JSON object of the form {\"rule\": \"type\"}",
-        moreJSON
       )
       .option(
         "-e, --export-var <variable>",
@@ -305,6 +298,11 @@ class PeggyCLI extends Command {
       .option(
         "-m, --source-map [mapfile]",
         "Generate a source map. If name is not specified, the source map will be named \"<input_file>.map\" if input is a file and \"source.map\" if input is a standard input. If the special filename `inline` is given, the sourcemap will be embedded in the output file as a data URI.  If the filename is prefixed with `hidden:`, no mapping URL will be included so that the mapping can be specified with an HTTP SourceMap: header.  This option conflicts with the `-t/--test` and `-T/--test-file` options unless `-o/--output` is also specified"
+      )
+      .option(
+        "--returnTypes <typeInfo>",
+        "Types returned for rules, as JSON object of the form {\"ruleName\": \"type\"}",
+        moreJSON
       )
       .option(
         "-S, --start-rule <rule>",
@@ -434,9 +432,8 @@ class PeggyCLI extends Command {
         this.argv.output = "ast";
         if ((this.args.length === 0) && this.progOptions.input) {
           // Allow command line to override config file.
-          this.inputFiles = Array.isArray(this.progOptions.input)
-            ? this.progOptions.input
-            : [this.progOptions.input];
+          // It can either be a single string or an array of strings.
+          this.inputFiles = [this.progOptions.input].flat();
         }
         this.outputFile = this.progOptions.output;
         this.outputJS = this.progOptions.output;
@@ -473,18 +470,14 @@ class PeggyCLI extends Command {
         }
 
         if (this.progOptions.dts) {
-          if (typeof this.progOptions.dts === "string") {
-            this.dtsFile = this.progOptions.dts;
-          } else {
-            if (this.outputFile === "-") {
-              this.error("Must supply output file with --dts");
-            }
-            this.dtsFile = this.outputFile.slice(
-              0,
-              this.outputFile.length
-                - path.extname(this.outputFile).length
-            ) + ".d.ts";
+          if (this.outputFile === "-") {
+            this.error("Must supply output file with --dts");
           }
+          this.dtsFile = this.outputFile.slice(
+            0,
+            this.outputFile.length
+              - path.extname(this.outputFile).length
+          ) + ".d.ts";
         }
 
         // If CLI parameter was defined, enable source map generation
@@ -758,6 +751,52 @@ class PeggyCLI extends Command {
   }
 
   /**
+   * @param {import("../lib/peg.js").ast.Grammar} ast
+   * @returns {Promise<void>}
+   */
+  async writeDTS(ast) {
+    if (!this.dtsFile) {
+      return;
+    }
+    let template = await fs.promises.readFile(
+      path.join(__dirname, "generated_template.d.ts"), "utf8"
+    );
+    let startRules = (this.argv.allowedStartRules || [ast.rules[0].name]);
+    if (startRules.includes("*")) {
+      startRules = ast.rules.map(r => r.name);
+    }
+    const qsr = startRules.map(r => `"${r}"`);
+
+    template = template.replace("$$$StartRules$$$", qsr.join(" | "));
+    template = template.replace("$$$DefaultStartRule$$$", qsr[0]);
+
+    const out = fs.createWriteStream(this.dtsFile);
+    out.write(template);
+
+    const types = /** @type {Record<string, string>|undefined} */(
+      this.progOptions.returnTypes
+    ) || {};
+    for (const sr of startRules) {
+      out.write(`
+export function ParseFunction<Options extends ParseOptions<"${sr}">>(
+  input: string,
+  options?: Options,
+): ${types[sr] || "any"};
+`);
+    }
+
+    await /** @type {Promise<void>} */(new Promise((resolve, reject) => {
+      out.close(er => {
+        if (er) {
+          reject(er);
+        } else {
+          resolve();
+        }
+      });
+    }));
+  }
+
+  /**
    * @param {string} source
    * @returns {Promise<void>}
    */
@@ -863,6 +902,10 @@ class PeggyCLI extends Command {
         errorText = "writing parser";
         this.verbose("CLI", errorText);
         await this.writeOutput(outputStream, mappedSource);
+
+        errorText = "writing .d.ts file";
+        this.verbose("CLI", errorText);
+        await this.writeDTS(source);
 
         exitCode = 2;
         errorText = "running test";
