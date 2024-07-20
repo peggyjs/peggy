@@ -49,9 +49,9 @@ function select(obj, sel) {
   const ret = Object.create(null);
   for (const s of sel) {
     if (Object.prototype.hasOwnProperty.call(obj, s)) {
-      // @ts-ignore
+      // @ts-expect-error treating objects like maps
       ret[s] = obj[s];
-      // @ts-ignore
+      // @ts-expect-error treating objects like maps
       delete obj[s];
     }
   }
