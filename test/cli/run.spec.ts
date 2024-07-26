@@ -978,7 +978,7 @@ Options:
     fs.unlinkSync(out);
 
     await expect(exec({
-      args: ["--extra-options", `{"input": ["${input1}", "${input2}"]}`],
+      args: ["--extra-options", `{"input": [${JSON.stringify(input1)}, ${JSON.stringify(input2)}]}`],
       exitCode: 0,
     })).resolves.toBe("");
     fs.unlinkSync(out);
