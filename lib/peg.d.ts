@@ -1084,8 +1084,8 @@ export interface LibraryResults {
   peg$result: any;
   peg$currPos: number;
   peg$FAILED: object;
-  peg$maxFailExpected: number;
-  peg$maxFailPo: number;
+  peg$maxFailExpected: parser.Expectation[];
+  peg$maxFailPos: number;
 }
 
 export interface Parser {
