@@ -405,7 +405,7 @@ class PeggyCLI extends Command {
     ) || {};
     for (const sr of startRules) {
       out.write(`
-export function ParseFunction<Options extends ParseOptions<"${sr}">>(
+declare function ParseFunction<Options extends ParseOptions<"${sr}">>(
   input: string,
   options?: Options,
 ): ${types[sr] || "any"};
