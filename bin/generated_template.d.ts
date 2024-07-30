@@ -1,45 +1,61 @@
 /** Provides information pointing to a location within a source. */
 export interface Location {
   /** Line in the parsed source (1-based). */
-  line: number;
+  readonly line: number;
   /** Column in the parsed source (1-based). */
-  column: number;
+  readonly column: number;
   /** Offset in the parsed source (0-based). */
-  offset: number;
+  readonly offset: number;
 }
+
+export interface GrammarSourceObject {
+  readonly source?: undefined | string | unknown;
+  readonly offset?: undefined | ((loc: Location) => Location);
+  readonly toString: () => string;
+}
+
+export type GrammarSource = string | GrammarSourceObject | unknown;
 
 /** The `start` and `end` position's of an object within the source. */
 export interface LocationRange {
-  /** Any object that was supplied to the `parse()` call as the `grammarSource` option. */
-  source: any;
+  /**
+   * A string or object that was supplied to the `parse()` call as the
+   * `grammarSource` option.
+   */
+  readonly source: GrammarSource;
   /** Position at the beginning of the expression. */
-  start: Location;
+  readonly start: Location;
   /** Position after the end of the expression. */
-  end: Location;
+  readonly end: Location;
 }
 
 export interface LiteralExpectation {
-  type: "literal";
-  text: string;
-  ignoreCase: boolean;
+  readonly type: "literal";
+  readonly text: string;
+  readonly ignoreCase: boolean;
 }
-export interface ClassParts extends Array<string | ClassParts> {
+
+export type ClassRange = [
+  start: string,
+  end: string,
+]
+export interface ClassParts extends Array<string | ClassRange> {
 }
 export interface ClassExpectation {
-  type: "class";
-  parts: ClassParts;
-  inverted: boolean;
-  ignoreCase: boolean;
+  readonly type: "class";
+  readonly parts: ClassParts;
+  readonly inverted: boolean;
+  readonly ignoreCase: boolean;
 }
 export interface AnyExpectation {
-  type: "any";
+  readonly type: "any";
 }
 export interface EndExpectation {
-  type: "end";
+  readonly type: "end";
 }
 export interface OtherExpectation {
-  type: "other";
-  description: string;
+  readonly type: "other";
+  readonly description: string;
 }
 export type Expectation =
   | AnyExpectation
@@ -48,7 +64,16 @@ export type Expectation =
   | LiteralExpectation
   | OtherExpectation;
 
-declare class _PeggySyntaxError extends Error {
+export interface SourceText {
+  /**
+   * Identifier of an input that was used as a grammarSource in parse().
+   */
+  readonly source: GrammarSource;
+  /** Source text of the input. */
+  readonly text: string;
+}
+
+export declare class SyntaxError extends Error {
   /**
    * Constructs the human-readable message from the machine representation.
    *
@@ -56,46 +81,49 @@ declare class _PeggySyntaxError extends Error {
    * @param found Any text that will appear as found in the input instead of
    *   expected
    */
-  static buildMessage(expected: Expectation[], found: string | null): string;
-  message: string;
-  expected: Expectation[];
-  found: string | null;
-  location: LocationRange;
-  name: string;
+  static buildMessage(expected: Expectation[], found?: string | null | undefined): string;
+  readonly message: string;
+  readonly expected: Expectation[];
+  readonly found: string | null | undefined;
+  readonly location: LocationRange;
+  readonly name: string;
   constructor(
     message: string,
     expected: Expectation[],
     found: string | null,
     location: LocationRange,
   );
-  format(sources: {
-    source?: any;
-    text: string;
-  }[]): string;
+  format(sources: SourceText[]): string;
 }
 
 export interface ParserTracer {
-  trace(event: ParserTracerEvent): void;
+  trace: (event: ParserTracerEvent) => void;
 }
 
 export type ParserTracerEvent
-  = { type: "rule.enter"; rule: string; location: LocationRange }
-  | { type: "rule.fail"; rule: string; location: LocationRange }
-  | { type: "rule.match"; rule: string; result: any; location: LocationRange };
+  = { readonly type: "rule.enter"; readonly rule: string; readonly location: LocationRange }
+  | { readonly type: "rule.fail"; readonly rule: string; readonly location: LocationRange }
+  | {
+      readonly type: "rule.match";
+      readonly rule: string;
+      readonly location: LocationRange
+      /** Return value from the rule. */
+      readonly result: unknown;
+    };
 
 export type StartRules = $$$StartRules$$$;
-export interface ParseOptions<T extends  StartRules = $$$DefaultStartRule$$$> {
+export interface ParseOptions<T extends StartRules = $$$DefaultStartRule$$$> {
   /**
-   * Object that will be attached to the each `LocationRange` object created by
-   * the parser. For example, this can be path to the parsed file or even the
-   * File object.
+   * String or object that will be attached to the each `LocationRange` object
+   * created by the parser. For example, this can be path to the parsed file
+   * or even the File object.
    */
-  grammarSource?: any;
-  startRule?: T;
-  tracer?: ParserTracer;
+  readonly grammarSource?: GrammarSource;
+  readonly startRule?: T;
+  readonly tracer?: ParserTracer;
 
   // Internal use only:
-  peg$library?: boolean;
+  readonly peg$library?: boolean;
   // Internal use only:
   peg$currPos?: number;
   // Internal use only:
@@ -103,11 +131,10 @@ export interface ParseOptions<T extends  StartRules = $$$DefaultStartRule$$$> {
   // Internal use only:
   peg$maxFailExpected?: Expectation[];
   // Extra application-specific properties
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export declare const parse: typeof ParseFunction;
 export declare const SyntaxError: typeof _PeggySyntaxError;
-export type SyntaxError = _PeggySyntaxError;
 
 // Overload of ParseFunction for each allowedStartRule
