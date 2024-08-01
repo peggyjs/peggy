@@ -8,13 +8,16 @@ export interface Location {
   readonly offset: number;
 }
 
-export interface GrammarSourceObject {
-  readonly source?: undefined | string | unknown;
-  readonly offset?: undefined | ((loc: Location) => Location);
+export interface Stringable {
   readonly toString: () => string;
 }
 
-export type GrammarSource = string | GrammarSourceObject | unknown;
+export interface GrammarSourceObject extends Stringable {
+  readonly source?: undefined | string | Stringable;
+  readonly offset?: undefined | ((loc: Location) => Location);
+}
+
+export type GrammarSource = string | GrammarSourceObject;
 
 /** The `start` and `end` position's of an object within the source. */
 export interface LocationRange {
