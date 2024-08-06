@@ -415,7 +415,7 @@ Options:
                                    This option conflicts with the \`-t/--test\`
                                    and \`-T/--test-file\` options unless
                                    \`-o/--output\` is also specified
-  --returnTypes <typeInfo>         Types returned for rules, as JSON object of
+  --return-types <typeInfo>        Types returned for rules, as JSON object of
                                    the form {"ruleName": "type"}
   -S, --start-rule <rule>          When testing, use the given rule as the
                                    start rule.  If this rule is not in the

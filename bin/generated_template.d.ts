@@ -8,15 +8,25 @@ export interface Location {
   readonly offset: number;
 }
 
-export interface Stringable {
-  readonly toString: () => string;
-}
-
+/**
+ * Anything that can successfully be converted to a string with `String()`
+ * so that it can be used in error messages.
+ *
+ * The GrammarLocation class in Peggy is a good example.
+ */
 export interface GrammarSourceObject extends Stringable {
-  readonly source?: undefined | string | Stringable;
+  readonly toString: () => string;
+
+  /**
+   * If specified, allows the grammar source to be embedded in a larger file
+   * at some offset.
+   */
   readonly offset?: undefined | ((loc: Location) => Location);
 }
 
+/**
+ * Most often, you just use a string with the file name.
+ */
 export type GrammarSource = string | GrammarSourceObject;
 
 /** The `start` and `end` position's of an object within the source. */
@@ -32,34 +42,60 @@ export interface LocationRange {
   readonly end: Location;
 }
 
+/**
+ * Expected a literal string, like `"foo"i`.
+ */
 export interface LiteralExpectation {
   readonly type: "literal";
   readonly text: string;
   readonly ignoreCase: boolean;
 }
 
+/**
+ * Range of characters, like `a-z`
+ */
 export type ClassRange = [
   start: string,
   end: string,
 ]
+
 export interface ClassParts extends Array<string | ClassRange> {
 }
+
+/**
+ * Expected a class, such as `[^acd-gz]i`
+ */
 export interface ClassExpectation {
   readonly type: "class";
   readonly parts: ClassParts;
   readonly inverted: boolean;
   readonly ignoreCase: boolean;
 }
+
+/**
+ * Expected any character, with `.`
+ */
 export interface AnyExpectation {
   readonly type: "any";
 }
+
+/**
+ * Expected the end of input.
+ */
 export interface EndExpectation {
   readonly type: "end";
 }
+
+/**
+ * Expected some other input.  These are specified with a rule's
+ * "human-readable name", or with the `expected(message, location)`
+ * function.
+ */
 export interface OtherExpectation {
   readonly type: "other";
   readonly description: string;
 }
+
 export type Expectation =
   | AnyExpectation
   | ClassExpectation
@@ -67,6 +103,9 @@ export type Expectation =
   | LiteralExpectation
   | OtherExpectation;
 
+/**
+ * Pass an array of these into `SyntaxError.prototype.format()`
+ */
 export interface SourceText {
   /**
    * Identifier of an input that was used as a grammarSource in parse().
@@ -96,16 +135,33 @@ export declare class SyntaxError extends Error {
     found: string | null,
     location: LocationRange,
   );
+
+  /**
+   * With good sources, generates a feature-rich error message pointing to the
+   * error in the input.
+   * @param sources List of {source, text} objects that map to the input.
+   */
   format(sources: SourceText[]): string;
 }
 
+/**
+ * Trace execution of the parser.
+ */
 export interface ParserTracer {
   trace: (event: ParserTracerEvent) => void;
 }
 
 export type ParserTracerEvent
-  = { readonly type: "rule.enter"; readonly rule: string; readonly location: LocationRange }
-  | { readonly type: "rule.fail"; readonly rule: string; readonly location: LocationRange }
+  = {
+      readonly type: "rule.enter";
+      readonly rule: string;
+      readonly location: LocationRange
+    }
+  | {
+      readonly type: "rule.fail";
+      readonly rule: string;
+      readonly location: LocationRange
+    }
   | {
       readonly type: "rule.match";
       readonly rule: string;
@@ -114,8 +170,8 @@ export type ParserTracerEvent
       readonly result: unknown;
     };
 
-export type StartRules = $$$StartRules$$$;
-export interface ParseOptions<T extends StartRules = $$$DefaultStartRule$$$> {
+export type StartRuleNames = $$$StartRules$$$;
+export interface ParseOptions<T extends StartRuleNames = $$$DefaultStartRule$$$> {
   /**
    * String or object that will be attached to the each `LocationRange` object
    * created by the parser. For example, this can be path to the parsed file
@@ -137,7 +193,8 @@ export interface ParseOptions<T extends StartRules = $$$DefaultStartRule$$$> {
   [key: string]: unknown;
 }
 
-export declare const parse: typeof ParseFunction;
+export declare const StartRules: StartRuleNames[];
 export declare const SyntaxError: typeof _PeggySyntaxError;
+export declare const parse: typeof ParseFunction;
 
 // Overload of ParseFunction for each allowedStartRule
