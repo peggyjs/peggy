@@ -3,7 +3,14 @@
 const {
   Command, CommanderError, InvalidArgumentError, Option,
 } = require("commander");
+const {
+  addExtraOptionsJSON, refineOptions,
+} = require("./opts.js");
+const {
+  isER, commaArg, moreJSON, readStream, mkFileDir,
+} = require("./utils.js");
 const Module = require("module");
+const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 const peggy = require("../lib/peg.js");
@@ -12,78 +19,33 @@ const util = require("util");
 exports.CommanderError = CommanderError;
 exports.InvalidArgumentError = InvalidArgumentError;
 
-// Options that aren't for the API directly:
-const PROG_OPTIONS = ["ast", "input", "output", "sourceMap", "startRule", "test", "testFile", "verbose"];
 const MODULE_FORMATS = ["amd", "bare", "commonjs", "es", "globals", "umd"];
-const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
-const MODULE_FORMATS_WITH_GLOBAL = ["globals", "umd"];
-
-// Helpers
-
-function select(obj, sel) {
-  const ret = Object.create(null);
-  for (const s of sel) {
-    if (Object.prototype.hasOwnProperty.call(obj, s)) {
-      ret[s] = obj[s];
-      delete obj[s];
-    }
-  }
-  return ret;
-}
-
-function commaArg(val, prev) {
-  return (prev || []).concat(val.split(",").map(x => x.trim()));
-}
-
-// Files
-
-function readStream(inputStream) {
-  return new Promise((resolve, reject) => {
-    const input = [];
-    inputStream.on("data", data => { input.push(data); });
-    inputStream.on("end", () => resolve(Buffer.concat(input).toString()));
-    inputStream.on("error", reject);
-  });
-}
-
-function readFile(name) {
-  try {
-    return fs.readFileSync(name, "utf8");
-  } catch (e) {
-    throw new InvalidArgumentError(`Can't read from file "${name}".`, e);
-  }
-}
-
-async function ensureDirectoryExists(filename) {
-  const dir = path.dirname(filename);
-  try {
-    const stats = await fs.promises.stat(dir);
-    if (!stats.isDirectory()) {
-      throw new Error(`"${dir}" exists and is not a directory`);
-    }
-  } catch (er) {
-    if (er.code !== "ENOENT") {
-      throw er;
-    }
-    await fs.promises.mkdir(dir, { recursive: true });
-  }
-}
 
 /**
- * @typedef {object} Stdio
- * @property {stream.Readable} [in] StdIn.
- * @property {stream.Writable} [out] StdOut.
- * @property {stream.Writable} [err] StdErr.
+ * @typedef {object} TTYWritable
+ * @property {boolean} [isTTY]
  */
 
 /**
- * @typedef {object} ErrorOptions
- * @property {string} [code="peggy.invalidArgument"] Code for exception if
- *   throwing.
- * @property {number} [exitCode=1] Exit code if exiting.
+ * @typedef {import("node:stream").Writable & TTYWritable} Writable
+ */
+
+/**
+ * @typedef {object} Stdio
+ * @property {import("./utils.js").Readable} in StdIn.
+ * @property {Writable} out StdOut.
+ * @property {Writable} err StdErr.
+ */
+
+/**
+ * @typedef {object} PeggyErrorOptions
  * @property {peggy.SourceText[]} [sources=[]] Source text for formatting compile errors.
  * @property {Error} [error] Error to extract message from.
  * @property {string} [message] Error message, only used internally.
+ */
+
+/**
+ * @typedef {import("commander").ErrorOptions & PeggyErrorOptions} ErrorOptions
  */
 
 // Command line processing
@@ -104,24 +66,12 @@ class PeggyCLI extends Command {
       ...stdio,
     };
 
-    /** @type {peggy.BuildOptionsBase} */
-    this.argv = Object.create(null);
-    /** @type {string[]} */
-    this.inputFiles = [];
-    /** @type {string?} */
-    this.outputFile = null;
-    /** @type {object} */
+    /** @type {import("../lib/peg.js").SourceOptionsBase<"ast">} */
+    this.parserOptions = Object.create(null);
+    /** @type {import("./opts.js").ProgOptions} */
     this.progOptions = Object.create(null);
-    /** @type {string?} */
-    this.testFile = null;
-    /** @type {string?} */
-    this.testGrammarSource = null;
-    /** @type {string?} */
-    this.testText = null;
-    /** @type {string?} */
-    this.outputJS = null;
-    /** @type {string?} */
-    this.lastError = null;
+    /** @type {string=} */
+    this.lastError = undefined;
     /** @type {import('./watcher.js')?} */
     this.watcher = null;
 
@@ -143,7 +93,7 @@ class PeggyCLI extends Command {
           "Output a grammar AST instead of a parser code"
         )
           .default(false)
-          .conflicts(["test", "testFile", "sourceMap"])
+          .conflicts(["dts", "test", "testFile", "sourceMap"])
       )
       .option(
         "--cache",
@@ -158,14 +108,11 @@ class PeggyCLI extends Command {
       .option(
         "-D, --dependencies <json>",
         "Dependencies, in JSON object format with variable:module pairs. (Can be specified multiple times).",
-        (val, prev = {}) => {
-          try {
-            const v = JSON.parse(val);
-            return Object.assign(prev, v);
-          } catch (e) {
-            throw new InvalidArgumentError(`Error parsing JSON: ${e.message}`);
-          }
-        }
+        moreJSON
+      )
+      .option(
+        "--dts",
+        "Create a .d.ts to describe the generated parser."
       )
       .option(
         "-e, --export-var <variable>",
@@ -174,13 +121,12 @@ class PeggyCLI extends Command {
       .option(
         "--extra-options <options>",
         "Additional options (in JSON format as an object) to pass to peggy.generate",
-        val => this.addExtraOptionsJSON(val, "extra-options")
+        val => addExtraOptionsJSON(this, val, "extra-options")
       )
       .option(
         "-c, --extra-options-file <file>",
         "File with additional options (in JSON as an object or commonjs module format) to pass to peggy.generate",
-        (val, prev) => prev.concat(val),
-        []
+        (val, /** @type {string[]} */prev) => (prev || []).concat(val)
       )
       .addOption(
         new Option(
@@ -190,7 +136,10 @@ class PeggyCLI extends Command {
           .choices(MODULE_FORMATS)
           .default("commonjs")
       )
-      .addOption(new Option("--library").hideHelp(), "Run tests in library mode.  Maintainers only, for now.")
+      .addOption(new Option(
+        "--library",
+        "Run tests in library mode.  Maintainers only, for now."
+      ).hideHelp())
       .option("-o, --output <file>", "Output file for generated parser. Use '-' for stdout (the default is a file next to the input file with the extension change to '.js', unless a test is specified, in which case no parser is output without this option)")
       .option(
         "--plugin <module>",
@@ -200,6 +149,11 @@ class PeggyCLI extends Command {
       .option(
         "-m, --source-map [mapfile]",
         "Generate a source map. If name is not specified, the source map will be named \"<input_file>.map\" if input is a file and \"source.map\" if input is a standard input. If the special filename `inline` is given, the sourcemap will be embedded in the output file as a data URI.  If the filename is prefixed with `hidden:`, no mapping URL will be included so that the mapping can be specified with an HTTP SourceMap: header.  This option conflicts with the `-t/--test` and `-T/--test-file` options unless `-o/--output` is also specified"
+      )
+      .option(
+        "--return-types <typeInfo>",
+        "Types returned for rules, as JSON object of the form {\"ruleName\": \"type\"}",
+        moreJSON
       )
       .option(
         "-S, --start-rule <rule>",
@@ -222,179 +176,18 @@ class PeggyCLI extends Command {
           .default(false)
       )
       .action(async(inputFiles, opts) => { // On parse()
-        // Can't load options from node_modules
-        for (const val of opts.extraOptionsFile) {
-          if (/\.[cm]?js$/.test(val)) {
-            try {
-              const eOpts = await import(path.resolve(val));
-              this.addExtraOptions(eOpts.default, "extra-options-file");
-            } catch (e) {
-              this.error(`Error importing config "${val}": ${e.message}`);
-            }
-          } else {
-            this.addExtraOptionsJSON(readFile(val), "extra-options-file");
-          }
+        const {
+          parserOptions,
+          progOptions,
+        } = await refineOptions(this, inputFiles, opts);
+        if (progOptions.verbose) {
+          parserOptions.info = (pass, msg) => PeggyCLI.print(this.std.err, `INFO(${pass}): ${msg}`);
         }
-        delete opts.extraOptionsFile;
-
-        this.inputFiles = inputFiles;
-        this.argv = opts;
-
-        if (this.argv.library) {
-          this.peg$library = true;
-          delete this.argv.library;
-        }
-
-        if ((typeof this.argv.startRule === "string")
-          && !this.argv.allowedStartRules.includes(this.argv.startRule)) {
-          this.argv.allowedStartRules.push(this.argv.startRule);
-        }
-
-        if (this.argv.allowedStartRules.length === 0) {
-          // [] is an invalid input, as is null
-          // undefined doesn't work as a default in commander
-          delete this.argv.allowedStartRules;
-        }
-
-        // Combine plugin/plugins
-        if ((this.argv.plugin && (this.argv.plugin.length > 0))
-            || (this.argv.plugins && (this.argv.plugins.length > 0))) {
-          this.argv.plugins = await Promise.all([
-            ...(this.argv.plugins || []),
-            ...(this.argv.plugin || []),
-          ].map(async val => {
-            if (typeof val !== "string") {
-              return val;
-            }
-            // If this is an absolute or relative path (not a module name)
-            const id = (path.isAbsolute(val) || /^\.\.?[/\\]/.test(val))
-              ? path.resolve(val)
-              : val;
-            let mod = null;
-            try {
-              mod = await import(id);
-              if (typeof mod.use !== "function") {
-                mod = mod.default;
-              }
-              if (typeof mod.use !== "function") {
-                this.error(`Invalid plugin "${id}", no \`use()\` function`);
-              }
-            } catch (e) {
-              if ((e.code === "ERR_MODULE_NOT_FOUND")
-                  || (e.code === "MODULE_NOT_FOUND")) {
-                this.error(`importing: ${e.message}`);
-              } else {
-                this.error(`importing "${id}":\n${e.stack}`);
-              }
-            }
-            return mod;
-          }));
-        }
-        delete this.argv.plugin;
-
-        // Combine dependency/dependencies
-        this.argv.dependencies = this.argv.dependencies || {};
-        if (this.argv.dependency) {
-          if (this.argv.dependency.length > 0) {
-            for (const dep of this.argv.dependency) {
-              const [name, val] = dep.split(":");
-              this.argv.dependencies[name] = val ? val : name;
-            }
-          }
-          delete this.argv.dependency;
-        }
-
-        if ((Object.keys(this.argv.dependencies).length > 0)
-            && !MODULE_FORMATS_WITH_DEPS.includes(this.argv.format)) {
-          this.error(`Can't use the -d/--dependency or -D/--dependencies options with the "${this.argv.format}" module format.`);
-        }
-
-        if ((this.argv.exportVar !== undefined)
-            && !MODULE_FORMATS_WITH_GLOBAL.includes(this.argv.format)) {
-          this.error(`Can't use the -e/--export-var option with the "${this.argv.format}" module format.`);
-        }
-
-        this.progOptions = select(this.argv, PROG_OPTIONS);
-        this.argv.output = "source";
-        if ((this.args.length === 0) && this.progOptions.input) {
-          // Allow command line to override config file.
-          this.inputFiles = Array.isArray(this.progOptions.input)
-            ? this.progOptions.input
-            : [this.progOptions.input];
-        }
-        this.outputFile = this.progOptions.output;
-        this.outputJS = this.progOptions.output;
-
-        if ((this.inputFiles.includes("-")) && this.argv.watch) {
-          this.argv.watch = false; // Make error throw.
-          this.error("Can't watch stdin");
-        }
-
-        if (!this.outputFile) {
-          if (!this.inputFiles.includes("-")) {
-            let inFile = this.inputFiles[0];
-            // You might just want to run a fragment grammar as-is,
-            // particularly with a specified start rule.
-            const m = inFile.match(/^npm:.*\/([^/]+)$/);
-            if (m) {
-              inFile = m[1];
-            }
-            this.outputJS = inFile.slice(
-              0,
-              inFile.length
-                - path.extname(inFile).length
-            ) + ".js";
-
-            this.outputFile = ((typeof this.progOptions.test !== "string")
-                               && !this.progOptions.testFile)
-              ? this.outputJS
-              : "-";
-          } else {
-            this.outputFile = "-";
-            // Synthetic
-            this.outputJS = path.join(process.cwd(), "stdout.js");
-          }
-        }
-        // If CLI parameter was defined, enable source map generation
-        if (this.progOptions.sourceMap !== undefined) {
-          if (!this.progOptions.output
-              && (this.progOptions.test || this.progOptions.testFile)) {
-            this.error("Generation of the source map is not useful if you don't output a parser file, perhaps you forgot to add an `-o/--output` option?");
-          }
-
-          this.argv.output = "source-and-map";
-
-          // If source map name is not specified, calculate it
-          if (this.progOptions.sourceMap === true) {
-            this.progOptions.sourceMap = this.outputFile === "-" ? "source.map" : this.outputFile + ".map";
-          }
-
-          if (this.progOptions.sourceMap === "hidden:inline") {
-            this.error("hidden + inline sourceMap makes no sense.");
-          }
-        }
-
-        if (this.progOptions.ast) {
-          this.argv.output = "ast";
-        }
-
-        // Empty string is a valid test input.  Don't just test for falsy.
-        if (typeof this.progOptions.test === "string") {
-          this.testText = this.progOptions.test;
-          this.testGrammarSource = "command line";
-        }
-        if (this.progOptions.testFile) {
-          this.testFile = this.progOptions.testFile;
-          this.testGrammarSource = this.progOptions.testFile;
-        }
-        this.verbose("PARSER OPTIONS:", this.argv);
-        this.verbose("PROGRAM OPTIONS:", this.progOptions);
-        this.verbose('INPUT: "%s"', this.inputFiles);
-        this.verbose('OUTPUT: "%s"', this.outputFile);
-        if (this.progOptions.verbose) {
-          this.argv.info = (pass, msg) => PeggyCLI.print(this.std.err, `INFO(${pass}): ${msg}`);
-        }
-        this.argv.warning = (pass, msg) => PeggyCLI.print(this.std.err, `WARN(${pass}): ${msg}`);
+        parserOptions.warning = (pass, msg) => PeggyCLI.print(this.std.err, `WARN(${pass}): ${msg}`);
+        this.parserOptions = parserOptions;
+        this.progOptions = progOptions;
+        this.verbose("PARSER OPTIONS:", parserOptions);
+        this.verbose("PROGRAM OPTIONS:", progOptions);
       });
   }
 
@@ -407,29 +200,32 @@ class PeggyCLI extends Command {
    * @param {string} message The message to print.
    * @param {ErrorOptions} [opts] Options
    */
+  // @ts-expect-error Commander has this returning `never`, which isn't quite right
   error(message, opts = {}) {
     opts = {
       code: "peggy.invalidArgument",
       exitCode: 1,
-      error: null,
+      error: undefined,
       sources: [],
       ...opts,
     };
 
     if (opts.error) {
-      if (typeof opts.error.format === "function") {
-        message = `${message}\n${opts.error.format(opts.sources)}`;
+      const er = /** @type {peggy.parser.SyntaxError} */(opts.error);
+      if (typeof er.format === "function") {
+        const fmt = er.format(/** @type {peggy.SourceText[]} */(opts.sources));
+        message = `${message}\n${fmt}`;
       } else {
-        message = (this.progOptions.verbose || !opts.error.message)
-          ? `${message}\n${opts.error.stack}`
-          : `${message}\n${opts.error.message}`;
+        message = (this.progOptions.verbose || !er.message)
+          ? `${message}\n${er.stack}`
+          : `${message}\n${er.message}`;
       }
     }
     if (!/^error/i.test(message)) {
       message = `Error ${message}`;
     }
 
-    if (this.argv.watch) {
+    if (this.progOptions.watch) {
       this.lastError = message;
     } else {
       super.error(message, opts);
@@ -439,7 +235,7 @@ class PeggyCLI extends Command {
   /**
    * Print text and a newline to stdout, using util.format.
    *
-   * @param {NodeJS.WriteStream} stream Stream to write to.
+   * @param {Writable} stream Stream to write to.
    * @param  {...any} args Format arguments.
    */
   static print(stream, ...args) {
@@ -467,62 +263,21 @@ class PeggyCLI extends Command {
   }
 
   /**
-   * Get options from a JSON string.
    *
-   * @param {string} json JSON as text
-   * @param {string} source Name of option that was the source of the JSON.
-   * @returns {peggy.BuildOptionsBase}
+   * @returns {Promise<Writable | null>}
    */
-  addExtraOptionsJSON(json, source) {
-    try {
-      const extraOptions = JSON.parse(json);
-      return this.addExtraOptions(extraOptions, source);
-    } catch (e) {
-      throw new InvalidArgumentError(`Error parsing JSON: ${e.message}`);
-    }
-  }
-
-  /**
-   * Add extra options from a config file, if they haven't already been
-   * set on the command line.  Exception: multi-value options like plugins
-   * are additive.
-   *
-   * @param {peggy.BuildOptionsBase|peggy.BuildOptionsBase[]|null} extraOptions
-   * @param {string} source
-   * @returns {peggy.BuildOptionsBase}
-   */
-  addExtraOptions(extraOptions, source) {
-    if ((extraOptions === null)
-        || (typeof extraOptions !== "object")
-        || Array.isArray(extraOptions)) {
-      throw new InvalidArgumentError("The JSON with extra options has to represent an object.");
-    }
-    for (const [k, v] of Object.entries(extraOptions)) {
-      const prev = this.getOptionValue(k);
-      const src = this.getOptionValueSource(k);
-      if (!src || (src === "default")) {
-        // Overwrite
-        this.setOptionValueWithSource(k, v, source);
-      } else if (Array.isArray(prev)) {
-        // Combine with previous
-        prev.push(...v);
-      } else if (typeof prev === "object") {
-        Object.assign(prev, v);
-      }
-    }
-    return null;
-  }
-
   async openOutputStream() {
-    if (this.outputFile === "-") {
+    if (this.progOptions.outputFile === "-") {
       // Note: empty string is a valid input for testText.
       // Don't just test for falsy.
-      const hasTest = !this.testFile && (typeof this.testText !== "string");
+      const hasTest = !this.progOptions.testFile && (typeof this.progOptions.testText !== "string");
       return hasTest ? this.std.out : null;
     }
-    await ensureDirectoryExists(this.outputFile);
+    assert(this.progOptions.outputFile);
+    await mkFileDir(this.progOptions.outputFile);
     return new Promise((resolve, reject) => {
-      const outputStream = fs.createWriteStream(this.outputFile);
+      assert(this.progOptions.outputFile);
+      const outputStream = fs.createWriteStream(this.progOptions.outputFile);
       outputStream.on("error", reject);
       outputStream.on("open", () => resolve(outputStream));
     });
@@ -533,33 +288,38 @@ class PeggyCLI extends Command {
    *
    * @param {import("source-map-generator").SourceNode} source The SourceNode
    *   to serialize.
-   * @returns {Promise<string>} The plain text output.
+   * @returns {Promise<string>} The
+   *   plain text output.
    */
   async writeSourceMap(source) {
     if (!this.progOptions.sourceMap) {
-      return source;
+      return source.toString();
     }
 
     let hidden = false;
+    assert(typeof this.progOptions.sourceMap === "string");
     if (this.progOptions.sourceMap.startsWith("hidden:")) {
       hidden = true;
-      this.progOptions.sourceMap = this.progOptions.sourceMap.slice(7);
+      this.progOptions.sourceMap
+        = this.progOptions.sourceMap.slice(7);
     }
     const inline = this.progOptions.sourceMap === "inline";
+    assert(this.progOptions.outputJS);
     const mapDir = inline
-      ? path.dirname(this.outputJS)
+      ? path.dirname(this.progOptions.outputJS)
       : path.dirname(this.progOptions.sourceMap);
 
-    const file = path.relative(mapDir, this.outputJS);
+    const file = path.relative(mapDir, this.progOptions.outputJS);
     const sourceMap = source.toStringWithSourceMap({ file });
 
     // According to specifications, paths in the "sources" array should be
     // relative to the map file. Compiler cannot generate right paths, because
     // it is unaware of the source map location
     const json = sourceMap.map.toJSON();
-    json.sources = json.sources.map(
-      src => ((src === null) ? null : path.relative(mapDir, src))
-    );
+    json.sources = json
+      .sources
+      .filter(x => x)
+      .map(src => path.relative(mapDir, src));
 
     if (inline) {
       // Note: hidden + inline makes no sense.
@@ -570,7 +330,7 @@ class PeggyCLI extends Command {
 //\x23 sourceMappingURL=data:application/json;charset=utf-8;base64,${buf.toString("base64")}
 `;
     }
-    await ensureDirectoryExists(this.progOptions.sourceMap);
+    await mkFileDir(this.progOptions.sourceMap);
     await fs.promises.writeFile(
       this.progOptions.sourceMap,
       JSON.stringify(json),
@@ -581,10 +341,16 @@ class PeggyCLI extends Command {
     }
     // Opposite direction from mapDir
     return sourceMap.code + `\
-//# sourceMappingURL=${path.relative(path.dirname(this.outputJS), this.progOptions.sourceMap)}
+//\x23 sourceMappingURL=${path.relative(path.dirname(this.progOptions.outputJS), this.progOptions.sourceMap)}
 `;
   }
 
+  /**
+   *
+   * @param {Writable|null} outputStream
+   * @param {string} source
+   * @returns {Promise<void>}
+   */
   writeOutput(outputStream, source) {
     return new Promise((resolve, reject) => {
       if (!outputStream) {
@@ -601,7 +367,7 @@ class PeggyCLI extends Command {
           }
         });
       } else {
-        outputStream.end(source, err => {
+        outputStream.end(source, (/** @type {unknown} */ err) => {
           if (!err) {
             resolve();
           }
@@ -610,39 +376,87 @@ class PeggyCLI extends Command {
     });
   }
 
+  /**
+   * @param {import("../lib/peg.js").ast.Grammar} ast
+   * @returns {Promise<void>}
+   */
+  async writeDTS(ast) {
+    if (!this.progOptions.dtsFile) {
+      return;
+    }
+    let template = await fs.promises.readFile(
+      path.join(__dirname, "generated_template.d.ts"), "utf8"
+    );
+    let startRules = this.parserOptions.allowedStartRules
+      || [ast.rules[0].name];
+    if (startRules.includes("*")) {
+      startRules = ast.rules.map(r => r.name);
+    }
+    const qsr = startRules.map(r => `"${r}"`);
+
+    template = template.replace("$$$StartRules$$$", qsr.join(" | "));
+    template = template.replace("$$$DefaultStartRule$$$", qsr[0]);
+
+    const out = fs.createWriteStream(this.progOptions.dtsFile);
+    out.write(template);
+
+    const types = /** @type {Record<string, string>|undefined} */(
+      this.progOptions.returnTypes
+    ) || {};
+    for (const sr of startRules) {
+      out.write(`
+declare function ParseFunction<Options extends ParseOptions<"${sr}">>(
+  input: string,
+  options?: Options,
+): ${types[sr] || "any"};
+`);
+    }
+
+    await /** @type {Promise<void>} */(new Promise((resolve, reject) => {
+      out.close(er => {
+        if (er) {
+          reject(er);
+        } else {
+          resolve();
+        }
+      });
+    }));
+  }
+
+  /**
+   * @param {string} source
+   * @returns {Promise<void>}
+   */
   async test(source) {
-    if (this.testFile) {
-      if (this.testFile === "-") {
-        this.testText = await readStream(this.std.in);
+    if (this.progOptions.testFile) {
+      if (this.progOptions.testFile === "-") {
+        this.progOptions.testText = await readStream(this.std.in);
       } else {
-        this.testText = await fs.promises.readFile(this.testFile, "utf8");
+        this.progOptions.testText = await fs.promises.readFile(this.progOptions.testFile, "utf8");
       }
     }
-    if (typeof this.testText === "string") {
-      this.verbose("TEST TEXT:", this.testText);
+    if (typeof this.progOptions.testText === "string") {
+      this.verbose("TEST TEXT:", this.progOptions.testText);
 
       // Create a module that exports the parser, then load it from the
       // correct directory, so that any modules that the parser requires will
       // be loaded from the correct place.
-      const filename = this.outputJS
-        ? path.resolve(this.outputJS)
-        : path.join(process.cwd(), "stdout.js"); // Synthetic
-
       const fromMem = require("@peggyjs/from-mem");
-      const exec = await fromMem(source, {
-        filename,
-        format: this.argv.format,
-        globalExport: this.argv.exportVar,
-      });
 
+      assert(this.progOptions.outputJS);
+      const exec = /** @type {import("../lib/peg.js").Parser} */(
+        await fromMem(source, {
+          filename: this.progOptions.outputJS,
+          format: this.parserOptions.format,
+        })
+      );
+
+      /** @type {import("../lib/peg.js").ParserOptions} */
       const opts = {
-        grammarSource: this.testGrammarSource,
-        peg$library: this.peg$library,
+        grammarSource: this.progOptions.testGrammarSource,
+        peg$library: this.progOptions.library,
       };
-      if (typeof this.progOptions.startRule === "string") {
-        opts.startRule = this.progOptions.startRule;
-      }
-      const results = exec.parse(this.testText, opts);
+      const results = exec.parse(this.progOptions.testText, opts);
       PeggyCLI.print(this.std.out, "%O", results);
     }
   }
@@ -653,14 +467,15 @@ class PeggyCLI extends Command {
    * @returns {Promise<number>}
    */
   async run() {
+    /** @type {import("../lib/peg.js").SourceText[]} */
     const sources = [];
 
     let exitCode = 1;
     let errorText = "";
     let prevSource = process.cwd() + "/";
     try {
-      for (const source of this.inputFiles) {
-        const input = { source, text: null };
+      for (const source of this.progOptions.inputFiles) {
+        const input = { source, text: "" };
         errorText = `reading input "${source}"`;
         this.verbose("CLI", errorText);
         if (source === "-") {
@@ -680,11 +495,15 @@ class PeggyCLI extends Command {
       }
 
       // This is wrong.  It's a hack in place until source generation is fixed.
-      this.argv.grammarSource = sources[0].source;
+      this.parserOptions.grammarSource = sources[0].source;
 
       errorText = "parsing grammar";
       this.verbose("CLI", errorText);
-      const source = peggy.generate(sources, this.argv); // All of the real work.
+
+      const source = peggy.generate(
+        sources,
+        this.parserOptions
+      ); // All of the real work.
 
       errorText = "opening output stream";
       this.verbose("CLI", errorText);
@@ -695,13 +514,18 @@ class PeggyCLI extends Command {
         this.verbose("CLI", errorText = "writing AST");
         await this.writeOutput(outputStream, JSON.stringify(source, null, 2));
       } else {
+        assert(source.code);
         errorText = "writing sourceMap";
         this.verbose("CLI", errorText);
-        const mappedSource = await this.writeSourceMap(source);
+        const mappedSource = await this.writeSourceMap(source.code);
 
         errorText = "writing parser";
         this.verbose("CLI", errorText);
         await this.writeOutput(outputStream, mappedSource);
+
+        errorText = "writing .d.ts file";
+        this.verbose("CLI", errorText);
+        await this.writeDTS(source);
 
         exitCode = 2;
         errorText = "running test";
@@ -709,10 +533,11 @@ class PeggyCLI extends Command {
         await this.test(mappedSource);
       }
     } catch (error) {
-      if (this.testGrammarSource) {
+      isER(error);
+      if (this.progOptions.testGrammarSource) {
         sources.push({
-          source: this.testGrammarSource,
-          text: this.testText,
+          source: this.progOptions.testGrammarSource,
+          text: this.progOptions.testText || "",
         });
       }
       // Will either exit or throw.
@@ -739,7 +564,8 @@ class PeggyCLI extends Command {
 
   /**
    * @deprecated Use parseAsync instead
-   * @param {string[]} args Arguments
+   * @param {string[]} [args] Arguments
+   * @returns {never}
    */
   // eslint-disable-next-line class-methods-use-this
   parse(args) {
@@ -755,10 +581,10 @@ class PeggyCLI extends Command {
    * @returns {Promise<number>}
    */
   main() {
-    if (this.argv.watch) {
+    if (this.progOptions.watch) {
       const Watcher = require("./watcher.js"); // Lazy: usually not needed.
       const hasTest = this.progOptions.test || this.progOptions.testFile;
-      const watchFiles = [...this.inputFiles];
+      const watchFiles = [...this.progOptions.inputFiles];
       if (this.progOptions.testFile) {
         watchFiles.push(this.progOptions.testFile);
       }
@@ -766,21 +592,21 @@ class PeggyCLI extends Command {
 
       this.watcher.on("change", async fn => {
         PeggyCLI.print(this.std.err, `"${fn}" changed...`);
-        this.lastError = null;
+        this.lastError = undefined;
         await this.run();
 
         if (this.lastError) {
           PeggyCLI.print(this.std.err, this.lastError);
         } else if (!hasTest) {
-          PeggyCLI.print(this.std.err, `Wrote: "${this.outputFile}"`);
+          PeggyCLI.print(this.std.err, `Wrote: "${this.progOptions.outputFile}"`);
         }
       });
 
       return new Promise((resolve, reject) => {
-        this.watcher.on("error", er => {
+        this.watcher?.on("error", er => {
           reject(er);
         });
-        this.watcher.on("close", () => resolve(0));
+        this.watcher?.on("close", () => resolve(0));
       });
     } else {
       return this.run();

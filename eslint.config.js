@@ -30,7 +30,7 @@ module.exports = [
   {
     ...require("@peggyjs/eslint-config/flat/modern"),
     // All of these can use modern JS and node constructs
-    files: ["bin/*.js", "tools/**", "web-test/**"],
+    files: ["bin/*.js", "tools/**", "web-test/**", "src/*.mjs"],
   },
   {
     files: ["lib/peg.d.ts"],

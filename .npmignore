@@ -29,3 +29,4 @@ tsconfig*.json
 web-test/
 yarn.lock
 pnpm-workspace.yaml
+bin/tsconfig.json
