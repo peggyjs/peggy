@@ -9,9 +9,11 @@ import * as peggy from "../../lib/peg.js";
 import { CommanderError, PeggyCLI } from "../../bin/peggy.js";
 import { Transform, TransformCallback, TransformOptions } from "stream";
 import { SourceMapConsumer } from "source-map";
+import { isER } from "../../bin/utils.js";
 import { promisify } from "util";
 import { spawn } from "child_process";
 
+const peggyPath = path.resolve(__dirname, "..", "..", "bin", "peggy.js");
 const foobarbaz = `\
 foo = '1'
 bar = '2'
@@ -135,103 +137,113 @@ async function exec(opts: Options = {}): Promise<string> {
     ...opts,
   };
 
-  const stdin = (opts.stdin instanceof MockStream)
-    ? opts.stdin
-    : MockStream.create(opts.stdin, { name: "stdin" });
-  const out = opts.stdout || new MockStream({
-    name: "stdout",
-    encoding: opts.encoding,
-  });
-  const err = opts.stderr || out;
-  const outputBuffers: (Buffer | string)[] = [];
-  out.on("data", buf => outputBuffers.push(buf));
+  try {
+    const stdin = (opts.stdin instanceof MockStream)
+      ? opts.stdin
+      : MockStream.create(opts.stdin, { name: "stdin" });
+    const out = opts.stdout || new MockStream({
+      name: "stdout",
+      encoding: opts.encoding,
+    });
+    const err = opts.stderr || out;
+    const outputBuffers: (Buffer | string)[] = [];
+    out.on("data", buf => outputBuffers.push(buf));
 
-  // All of the errors we want to capture go into this promise.
-  const p = (async(): Promise<number> => {
-    const cli = new PeggyCLI({ in: stdin, out, err })
-      .exitOverride()
-      .configureOutput({
-        writeOut: (c: string) => out.write(c),
-        writeErr: (c: string) => err.write(c),
-      })
-      .configureHelp({ helpWidth: 80 });
-    if (opts.onstdout) {
-      const oso = opts.onstdout; // Snapshot
-      out.on("data", buf => oso(buf, cli));
-    }
-
-    if (opts.onstderr) {
-      const ose = opts.onstderr; // Snapshot
-      err.on("data", buf => ose(buf, cli));
-    }
-    await cli.parseAsync([
-      process.execPath,
-      "peggy",
-      ...(opts.args || []),
-    ]);
-    return cli.main();
-  })();
-
-  let waited = false;
-  if (opts.error !== undefined) {
-    waited = true;
-    await expect(p).rejects.toThrow(opts.error);
-  }
-  if (opts.errorCode !== undefined) {
-    waited = true;
-    try {
-      await expect(p).rejects.toThrow(
-        expect.objectContaining({ code: opts.errorCode })
-      );
-    } catch (e) {
-      // It's hard to figure these out sometimes.  Give ourselves a little help.
-      try {
-        await p;
-      } catch (realErr) {
-        console.log("RECEIVED ERROR CODE:", (realErr as CodeObject).code);
+    // All of the errors we want to capture go into this promise.
+    const p = (async(): Promise<number> => {
+      const cli = new PeggyCLI({ in: stdin, out, err })
+        .exitOverride()
+        .configureOutput({
+          writeOut: (c: string) => out.write(c),
+          writeErr: (c: string) => err.write(c),
+        })
+        .configureHelp({ helpWidth: 80 });
+      if (opts.onstdout) {
+        const oso = opts.onstdout; // Snapshot
+        out.on("data", buf => oso(buf, cli));
       }
-      throw e;
-    }
-  }
-  if (opts.exitCode) {
-    waited = true;
-    try {
-      await expect(p).rejects.toThrow(
-        expect.objectContaining({ exitCode: opts.exitCode })
-      );
-    } catch (e) {
-      // It's hard to figure these out sometimes.  Give ourselves a little help.
-      try {
-        await p;
-      } catch (realErr) {
-        console.log("RECEIVED EXIT CODE:", (realErr as CodeObject).exitCode);
+
+      if (opts.onstderr) {
+        const ose = opts.onstderr; // Snapshot
+        err.on("data", buf => ose(buf, cli));
       }
-      throw e;
-    }
-  }
+      await cli.parseAsync([
+        process.execPath,
+        "peggy",
+        ...(opts.args || []),
+      ]);
+      return cli.main();
+    })();
 
-  if (!waited) {
-    // Make sure to include opts.error or opts.errorCode if you're expecting
-    // an exception.
-    const exitCode = await p;
-    expect(exitCode).toBe(0);
-  }
-
-  let outputString = "";
-  if (outputBuffers.length > 0) {
-    if (typeof outputBuffers[0] === "string") {
-      outputString = outputBuffers.join("");
-    } else {
-      outputString = Buffer.concat(outputBuffers as Buffer[])
-        .toString(opts.encoding);
+    let waited = false;
+    if (opts.error !== undefined) {
+      waited = true;
+      await expect(p).rejects.toThrow(opts.error);
     }
+    if (opts.errorCode !== undefined) {
+      waited = true;
+      try {
+        await expect(p).rejects.toThrow(
+          expect.objectContaining({ code: opts.errorCode })
+        );
+      } catch (e) {
+        // It's hard to figure these out sometimes.  Give ourselves a little help.
+        try {
+          await p;
+        } catch (realErr) {
+          console.log("RECEIVED ERROR CODE:", (realErr as CodeObject).code);
+        }
+        throw e;
+      }
+    }
+    if (opts.exitCode) {
+      waited = true;
+      try {
+        await expect(p).rejects.toThrow(
+          expect.objectContaining({ exitCode: opts.exitCode })
+        );
+      } catch (e) {
+        // It's hard to figure these out sometimes.  Give ourselves a little help.
+        try {
+          await p;
+        } catch (realErr) {
+          console.log("RECEIVED EXIT CODE:", (realErr as CodeObject).exitCode);
+        }
+        throw e;
+      }
+    }
+
+    if (!waited) {
+      // Make sure to include opts.error or opts.errorCode if you're expecting
+      // an exception.
+      const exitCode = await p;
+      expect(exitCode).toBe(0);
+    }
+
+    let outputString = "";
+    if (outputBuffers.length > 0) {
+      if (typeof outputBuffers[0] === "string") {
+        outputString = outputBuffers.join("");
+      } else {
+        outputString = Buffer.concat(outputBuffers as Buffer[])
+          .toString(opts.encoding);
+      }
+    }
+    if (opts.expected instanceof RegExp) {
+      expect(outputString).toMatch(opts.expected);
+    } else if (typeof opts.expected === "string") {
+      expect(outputString).toBe(opts.expected);
+    }
+    return outputString;
+  } catch (er) {
+    isER(er);
+    er.message = `${peggyPath} ${opts.args ? opts.args.map(a => JSON.stringify(a)).join(" ") : "with no args"}\n${er.message}`;
+    if (opts.stdin) {
+      er.message = `printf ${JSON.stringify(opts.stdin)} | ${er.message}`;
+    }
+
+    throw er;
   }
-  if (opts.expected instanceof RegExp) {
-    expect(outputString).toMatch(opts.expected);
-  } else if (typeof opts.expected === "string") {
-    expect(outputString).toBe(opts.expected);
-  }
-  return outputString;
 }
 
 function forkExec(opts: Options = {}): Promise<string> {
@@ -369,6 +381,8 @@ Options:
   -D, --dependencies <json>        Dependencies, in JSON object format with
                                    variable:module pairs. (Can be specified
                                    multiple times).
+  --dts                            Create a .d.ts to describe the generated
+                                   parser.
   -e, --export-var <variable>      Name of a global variable into which the
                                    parser object is assigned to when no module
                                    loader is detected.
@@ -376,7 +390,7 @@ Options:
                                    object) to pass to peggy.generate
   -c, --extra-options-file <file>  File with additional options (in JSON as an
                                    object or commonjs module format) to pass to
-                                   peggy.generate (default: [])
+                                   peggy.generate
   --format <format>                Format of the generated parser (choices:
                                    "amd", "bare", "commonjs", "es", "globals",
                                    "umd", default: "commonjs")
@@ -401,6 +415,8 @@ Options:
                                    This option conflicts with the \`-t/--test\`
                                    and \`-T/--test-file\` options unless
                                    \`-o/--output\` is also specified
+  --return-types <typeInfo>        Types returned for rules, as JSON object of
+                                   the form {"ruleName": "type"}
   -S, --start-rule <rule>          When testing, use the given rule as the
                                    start rule.  If this rule is not in the
                                    allowed start rules, it will be added.
@@ -694,9 +710,9 @@ Options:
     await exec({
       args: ["--extra-options-file", "____ERROR____FILE_DOES_NOT_EXIST"],
       stdin: 'foo = "1"',
-      errorCode: "commander.invalidArgument",
+      error: CommanderError,
       exitCode: 1,
-      error: "Can't read from file",
+      expected: /Error reading/,
     });
 
     await exec({
@@ -913,7 +929,7 @@ Options:
       stdin: "foo = '1'",
       errorCode: "peggy.invalidArgument",
       exitCode: 1,
-      error: "Error importing: Cannot find module",
+      error: /Error importing/,
     });
 
     await exec({
@@ -959,7 +975,12 @@ Options:
       args: [input1, input2],
       exitCode: 0,
     })).resolves.toBe("");
+    fs.unlinkSync(out);
 
+    await expect(exec({
+      args: ["--extra-options", `{"input": [${JSON.stringify(input1)}, ${JSON.stringify(input2)}]}`],
+      exitCode: 0,
+    })).resolves.toBe("");
     fs.unlinkSync(out);
   });
 
@@ -1451,6 +1472,21 @@ error: Rule "unknownRule" is not defined
       });
     });
 
+    it("watches with test file", async() => {
+      const grammar = path.join(__dirname, "fixtures", "simple.peggy");
+      const testFile = path.join(__dirname, "fixtures", "simple.txt");
+      let count = 0;
+      await exec({
+        args: ["-w", "-T", testFile, grammar],
+        exitCode: 0,
+        onstdout(_s, cli) {
+          if (++count === 2) {
+            cli.stopWatching();
+          }
+        },
+      });
+    });
+
     it("handles watcher errors", async() => {
       const grammar = path.join(__dirname, "fixtures", "simple.peggy");
       let count = 0;
@@ -1475,5 +1511,65 @@ error: Rule "unknownRule" is not defined
     const cli = new PeggyCLI();
     expect(() => cli.parse([])).toThrow();
   });
-});
 
+  describe(".d.ts", () => {
+    const opts = path.join(__dirname, "fixtures", "options.mjs");
+    const grammar = path.join(__dirname, "fixtures", "simple.peggy");
+    const grammarJS = path.join(__dirname, "fixtures", "simple.js");
+    const grammarDTS = path.join(__dirname, "fixtures", "simple.d.ts");
+
+    beforeAll(() => {
+      fs.unlink(grammarJS, () => {
+        // Ignored
+      });
+      fs.unlink(grammarDTS, () => {
+        // Ignored
+      });
+    });
+
+    it("creates .d.ts files", async() => {
+      await exec({
+        args: ["--dts", grammar],
+        exitCode: 0,
+      });
+      const dts = await fs.promises.readFile(grammarDTS, "utf8");
+      expect(dts).toMatch(/: any;\n$/);
+    });
+
+    it("uses returnTypes", async() => {
+      await exec({
+        args: ["--dts", "-c", opts, grammar],
+        exitCode: 0,
+      });
+      const dts = await fs.promises.readFile(grammarDTS, "utf8");
+      expect(dts).toMatch(/: string;\n$/);
+    });
+
+    it("generates overloads for allowed-start-rules='*'", async() => {
+      await exec({
+        args: ["--dts", "-c", opts, "--allowed-start-rules", "*", grammar],
+        exitCode: 0,
+      });
+      const dts = await fs.promises.readFile(grammarDTS, "utf8");
+      expect(dts).toMatch(/: string;\n$/);
+    });
+
+    it("errors with dts for stdin", async() => {
+      await exec({
+        args: ["--dts"],
+        stdin: "foo = '1'",
+        exitCode: 1,
+        error: /Must supply output file with --dts/,
+      });
+    });
+
+    afterAll(() => {
+      fs.unlink(grammarJS, () => {
+        // Ignored
+      });
+      fs.unlink(grammarDTS, () => {
+        // Ignored
+      });
+    });
+  });
+});

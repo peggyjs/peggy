@@ -12,6 +12,8 @@ Released: TBD
 
 ### New features
 
+- [#477](https://github.com/peggyjs/peggy/issues/477) Option to output .d.ts
+  files next to .js from CLI.
 - [#530](https://github.com/peggyjs/peggy/issues/531) Allow es6 plugins from CLI
 - [#532](https://github.com/peggyjs/peggy/issues/532) Allow es6 options files
   from the CLI

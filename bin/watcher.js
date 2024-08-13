@@ -37,7 +37,7 @@ class Watcher extends EventEmitter {
     this.watchers = [];
 
     for (const dir of dirs) {
-      const changed = (_typ, fn) => {
+      const changed = (/** @type {string} */_typ, /** @type {string} */fn) => {
         if (typeof this.timeout === "symbol") {
           return;
         }

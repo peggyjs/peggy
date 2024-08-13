@@ -1084,8 +1084,8 @@ export interface LibraryResults {
   peg$result: any;
   peg$currPos: number;
   peg$FAILED: object;
-  peg$maxFailExpected: number;
-  peg$maxFailPo: number;
+  peg$maxFailExpected: parser.Expectation[];
+  peg$maxFailPos: number;
 }
 
 export interface Parser {
@@ -1308,6 +1308,15 @@ export interface BuildOptionsBase {
   warning?: DiagnosticCallback;
   /** Called when an informational message during build was registered. */
   info?: DiagnosticCallback;
+
+  /**
+   * Override parser's reserved words.  Defaults to RESERVED_WORDS.
+   */
+  reservedWords?: string[];
+  /**
+   * Plugins and Peggy compiler rules can take any config items they want.
+   */
+  [pluginConfig: string]: any;
 }
 
 export interface ParserBuildOptions extends BuildOptionsBase {
@@ -1324,6 +1333,8 @@ export interface ParserBuildOptions extends BuildOptionsBase {
    *   which can give a parser source code as a string and a source map;
    * if set to `"source-with-inline-map"`, it will return the parser source
    *   along with an embedded source map as a `data:` URI;
+   * if set to `"ast"`, it will return an ast.Grammar with the source
+   *   property filled in.
    * (default: `"parser"`)
    */
   output?: "parser";
@@ -1334,7 +1345,8 @@ export type SourceOutputs
   = "parser"
   | "source-and-map"
   | "source-with-inline-map"
-  | "source";
+  | "source"
+  | "ast";
 
 /** Base options for all source-generating formats. */
 interface SourceOptionsBase<Output>
@@ -1346,14 +1358,20 @@ interface SourceOptionsBase<Output>
    *   which can give a parser source code as a string and a source map;
    * if set to `"source-with-inline-map"`, it will return the parser source
    *   along with an embedded source map as a `data:` URI;
+   * if set to `"ast"`, it will return the ast.Grammar, which includes
+   *   the source property.
    * (default: `"parser"`)
    */
   output: Output;
+  /**
+   * Format of the generated parser, valid only when `output` is not set to
+   * `"parser"` (default: `"bare"`)
+   */
+  format?: "amd" | "bare" | "commonjs" | "es" | "globals" | "umd";
 }
 
 export interface OutputFormatAmdCommonjsEs<Output extends SourceOutputs = "source">
   extends SourceOptionsBase<Output> {
-  /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "amd" | "commonjs" | "es";
   /**
    * Parser dependencies, the value is an object which maps variables used to
@@ -1366,7 +1384,6 @@ export interface OutputFormatAmdCommonjsEs<Output extends SourceOutputs = "sourc
 
 export interface OutputFormatUmd<Output extends SourceOutputs = "source">
   extends SourceOptionsBase<Output> {
-  /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "umd";
   /**
    * Parser dependencies, the value is an object which maps variables used to
@@ -1385,7 +1402,6 @@ export interface OutputFormatUmd<Output extends SourceOutputs = "source">
 
 export interface OutputFormatGlobals<Output extends SourceOutputs = "source">
   extends SourceOptionsBase<Output> {
-  /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format: "globals";
   /**
    * Name of a global variable into which the parser object is assigned to when
@@ -1397,7 +1413,6 @@ export interface OutputFormatGlobals<Output extends SourceOutputs = "source">
 
 export interface OutputFormatBare<Output extends SourceOutputs = "source">
   extends SourceOptionsBase<Output> {
-  /** Format of the generated parser (`"amd"`, `"bare"`, `"commonjs"`, `"es"`, `"globals"`, or `"umd"`); valid only when `output` is set to `"source"` (default: `"bare"`) */
   format?: "bare";
 }
 
@@ -1504,11 +1519,6 @@ export function generate(
   options: SourceBuildOptions<"source-and-map">
 ): SourceNode;
 
-export function generate(
-  grammar: GrammarInput,
-  options: SourceBuildOptions<SourceOutputs>
-): SourceNode | string;
-
 /**
  * Returns the generated AST for the grammar. Unlike result of the
  * `peggy.compiler.compile(...)` an AST returned by this method is augmented
@@ -1529,6 +1539,11 @@ export function generate(
   grammar: GrammarInput,
   options: SourceOptionsBase<"ast">
 ): ast.Grammar;
+
+export function generate(
+  grammar: GrammarInput,
+  options: SourceBuildOptions<SourceOutputs>
+): SourceNode | string;
 
 // Export all exported stuff under a global variable PEG in non-module environments
 export as namespace PEG;
