@@ -403,15 +403,24 @@ class PeggyCLI extends Command {
     const types = /** @type {Record<string, string>|undefined} */(
       this.progOptions.returnTypes
     ) || {};
+    const resultTypes = new Set();
     for (const sr of startRules) {
+      const typ = types[sr] || "any";
+      resultTypes.add(typ);
       out.write(`
 declare function ParseFunction<Options extends ParseOptions<"${sr}">>(
   input: string,
   options?: Options,
-): ${types[sr] || "any"};
+): ${typ};
 `);
     }
 
+    out.write(`
+declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
+  input: string,
+  options?: Options,
+): ${[...resultTypes].join(" | ")};
+`);
     await /** @type {Promise<void>} */(new Promise((resolve, reject) => {
       out.close(er => {
         if (er) {
