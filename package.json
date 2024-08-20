@@ -61,25 +61,25 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/chai": "^4.3.11",
     "@types/jest": "^29.5.12",
-    "@types/node": "^22.1.0",
+    "@types/node": "^22.4.1",
     "chai": "^4.3.11",
     "chai-like": "^1.1.1",
     "copyfiles": "^2.4.1",
-    "eslint": "^9.8.0",
+    "eslint": "^9.9.0",
     "eslint-plugin-compat": "6.0.0",
     "eslint-plugin-mocha": "10.5.0",
     "express": "4.19.2",
     "glob": "^11.0.0",
     "jest": "^29.7.0",
     "rimraf": "^6.0.1",
-    "rollup": "^4.20.0",
+    "rollup": "^4.21.0",
     "rollup-plugin-ignore": "1.0.10",
     "source-map": "^0.8.0-beta.0",
-    "terser": "^5.31.3",
+    "terser": "^5.31.6",
     "ts-jest": "^29.2.4",
     "tslib": "^2.6.3",
     "typescript": "^5.5.4",
-    "typescript-eslint": "8.0.1"
+    "typescript-eslint": "8.2.0"
   },
   "dependencies": {
     "@peggyjs/from-mem": "1.3.4",
@@ -89,7 +89,7 @@
   "browserslist": [
     "defaults, maintained node versions, not op_mini all"
   ],
-  "packageManager": "pnpm@9.6.0",
+  "packageManager": "pnpm@9.7.1",
   "engines": {
     "node": ">=18"
   }
