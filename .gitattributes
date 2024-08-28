@@ -8,3 +8,4 @@ bin/* text eol=lf
 *.png binary
 *.jpg binary
 *.ico binary
+*.peggy linguist-language=PEG.js
