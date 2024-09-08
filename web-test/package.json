@@ -12,8 +12,8 @@
   "author": "Joe Hildebrand <joe-github@cursive.net>",
   "license": "MIT",
   "devDependencies": {
-    "@playwright/test": "1.46.1",
-    "@types/node": "22.4.1"
+    "@playwright/test": "1.47.0",
+    "@types/node": "22.5.4"
   },
   "engines": {
     "node": ">=18"

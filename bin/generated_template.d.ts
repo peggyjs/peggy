@@ -14,7 +14,7 @@ export interface Location {
  *
  * The GrammarLocation class in Peggy is a good example.
  */
-export interface GrammarSourceObject extends Stringable {
+export interface GrammarSourceObject {
   readonly toString: () => string;
 
   /**
@@ -194,7 +194,6 @@ export interface ParseOptions<T extends StartRuleNames = $$$DefaultStartRule$$$>
 }
 
 export declare const StartRules: StartRuleNames[];
-export declare const SyntaxError: typeof _PeggySyntaxError;
 export declare const parse: typeof ParseFunction;
 
 // Overload of ParseFunction for each allowedStartRule
