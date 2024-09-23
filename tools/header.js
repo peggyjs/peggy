@@ -4,7 +4,7 @@
 // Pass list of files on command line.
 
 const fs = require("fs");
-const version = require("../lib/version.js");
+const { version } = require("../lib/version.js");
 
 const header = `\
 // peggy ${version}

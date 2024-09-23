@@ -72,6 +72,9 @@ importers:
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.5.5)
+      package-extract:
+        specifier: 2.1.1
+        version: 2.1.1
       rimraf:
         specifier: ^5.0.10
         version: 5.0.10
@@ -2221,6 +2224,11 @@ packages:
   p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
     engines: {node: '>=6'}
+
+  package-extract@2.1.1:
+    resolution: {integrity: sha512-AZrNKcksaeOI8DkAs0aHaHGeXu7IAyjnSNZYO6LOwfGnr5jXgsaWxyLZUU+7pzXcegXcE2UMI4YeShJavO/Xog==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   package-json-from-dist@1.0.0:
     resolution: {integrity: sha512-dATvCeZN/8wQsGywez1mzHtTlP22H8OEfPrVMLNr4/eGa+ijtLn/6M5f0dY8UKNrC2O9UCU6SSoG3qRKnt7STw==}
@@ -5408,6 +5416,10 @@ snapshots:
       p-limit: 3.1.0
 
   p-try@2.2.0: {}
+
+  package-extract@2.1.1:
+    dependencies:
+      commander: 12.1.0
 
   package-json-from-dist@1.0.0: {}
 

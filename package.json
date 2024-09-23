@@ -25,7 +25,7 @@
     "clean": "rimraf -g build browser bin/*.map && mkdir browser",
     "parser": "node bin/peggy.js -c src/opts.mjs",
     "examples": "node bin/peggy.js -c docs/js/options.js docs/js/examples.peggy",
-    "set_version": "node ./tools/set_version",
+    "set_version": "node ./tools/set_version.mjs",
     "lint": "eslint .",
     "ts": "tsc --build tsconfig.json",
     "docs": "cd docs && npm run build",
@@ -45,12 +45,12 @@
     "deploy:tests": "copyfiles -f build/test-bundle.min.js docs/js/",
     "deploy:bench": "copyfiles -f build/benchmark-bundle.min.js docs/js/",
     "build": "npm run build:notidy && npm run tidy",
-    "build:notidy": "npm run setup && npm run make && npm run lint && npm run audit",
-    "setup": "npm run clean && npm run set_version",
+    "build:notidy": "npm run clean && npm run make && npm run lint && npm run audit",
     "make": "npm run parser && npm run ts && npm run rollup && npm run terser && npm run examples && npm run docs && npm run headers && npm run deploy",
     "audit": "npm run test && npm run benchmark",
     "tidy": "rimraf build",
-    "start": "cd docs && npm start"
+    "start": "cd docs && npm start",
+    "version": "npm run set_version && npm run parser && npm run parser && git add lib/version.js lib/parser.js"
   },
   "devDependencies": {
     "@peggyjs/eslint-config": "^4.0.4",
@@ -71,6 +71,7 @@
     "express": "4.21.0",
     "glob": "^11.0.0",
     "jest": "^29.7.0",
+    "package-extract": "2.1.1",
     "rimraf": "^5.0.10",
     "rollup": "^4.22.4",
     "rollup-plugin-ignore": "1.0.10",
