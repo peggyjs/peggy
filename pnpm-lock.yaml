@@ -22,8 +22,8 @@ importers:
         specifier: ^4.0.4
         version: 4.0.4(eslint@9.11.0)(typescript@5.5.4)
       '@rollup/plugin-commonjs':
-        specifier: ^26.0.1
-        version: 26.0.1(rollup@4.22.4)
+        specifier: ^26.0.2
+        version: 26.0.2(rollup@4.22.4)
       '@rollup/plugin-json':
         specifier: ^6.1.0
         version: 6.1.0(rollup@4.22.4)
@@ -73,8 +73,8 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.5.5)
       package-extract:
-        specifier: 2.1.1
-        version: 2.1.1
+        specifier: 2.2.0
+        version: 2.2.0
       rimraf:
         specifier: ^5.0.10
         version: 5.0.10
@@ -486,8 +486,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@rollup/plugin-commonjs@26.0.1':
-    resolution: {integrity: sha512-UnsKoZK6/aGIH6AdkptXhNvhaqftcjq3zZdT+LY5Ftms6JR06nADcDsYp5hTU9E2lbJUEOhdlY5J4DNTneM+jQ==}
+  '@rollup/plugin-commonjs@26.0.2':
+    resolution: {integrity: sha512-3corgoIXkETcGYMlJuCacVm/SLQsg4q5MxC80M1zU4QKYxz99Ip/TIzXiuFKgm9DJ95PDtfZ5TcFnteVAUmufg==}
     engines: {node: '>=16.0.0 || 14 >= 14.17'}
     peerDependencies:
       rollup: ^2.68.0||^3.0.0||^4.0.0
@@ -2225,8 +2225,8 @@ packages:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
     engines: {node: '>=6'}
 
-  package-extract@2.1.1:
-    resolution: {integrity: sha512-AZrNKcksaeOI8DkAs0aHaHGeXu7IAyjnSNZYO6LOwfGnr5jXgsaWxyLZUU+7pzXcegXcE2UMI4YeShJavO/Xog==}
+  package-extract@2.2.0:
+    resolution: {integrity: sha512-tRVhDhmJYWLqiV7s/DS5xAhRFTXimMGvB1QVbD3w/4EQflioRv7ae+JkFZLLz+9Jv5H/SzzMQJBGk/W/uawdGA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -3460,7 +3460,7 @@ snapshots:
     dependencies:
       playwright: 1.47.2
 
-  '@rollup/plugin-commonjs@26.0.1(rollup@4.22.4)':
+  '@rollup/plugin-commonjs@26.0.2(rollup@4.22.4)':
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@4.22.4)
       commondir: 1.0.1
@@ -5417,7 +5417,7 @@ snapshots:
 
   p-try@2.2.0: {}
 
-  package-extract@2.1.1:
+  package-extract@2.2.0:
     dependencies:
       commander: 12.1.0
 
