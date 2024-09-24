@@ -8,6 +8,7 @@ on:
         description: Which branch to deploy to peggyjs.org
         required: true
         options:
+          - main
           - stable
 
 jobs:
@@ -26,7 +27,7 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         working-directory: docs
-        run: "pnpm i --frozen-lockfile"
+        run: "pnpm install"
       - name: Build
         working-directory: docs
         run: "npm run build"

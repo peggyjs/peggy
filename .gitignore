@@ -5,6 +5,8 @@ browser/
 build/
 coverage/
 docs/_site
+docs/js/*-bundle.min.js
+docs/vendor/peggy/
 examples/*.js
 node_modules/
 yarn.lock

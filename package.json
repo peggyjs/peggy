@@ -9,7 +9,10 @@
     "PEG.js"
   ],
   "homepage": "https://peggyjs.org/",
-  "repository": "peggyjs/peggy",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peggyjs/peggy.git"
+  },
   "bugs": "https://github.com/peggyjs/peggy/issues",
   "license": "MIT",
   "author": "David Majda <david@majda.cz> (https://majda.cz/)",
