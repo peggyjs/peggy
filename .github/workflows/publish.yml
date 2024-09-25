@@ -6,8 +6,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      id-token: write
+      contents: write # Needed for publishing docs
+      id-token: write # Needed for creating provenance attestation
     steps:
       - uses: actions/checkout@v4
       - run: corepack enable
