@@ -1,6 +1,27 @@
-#!/usr/bin/env -S node --experimental-vm-modules --no-warnings
+#!/usr/bin/env node
 
 "use strict";
+
+// Since Windows can't handle `env -S`, exec once to get permission
+// to use the vm module in its modern form.
+const execArgv = new Set(process.execArgv);
+if (!execArgv.has("--experimental-vm-modules")) {
+  execArgv.add("--experimental-vm-modules");
+  execArgv.add("--no-warnings");
+  const { spawnSync } = require("child_process");
+  // NOTE: Does not replace process.  Node can't do that, apparently.
+  const { status, signal, error } = spawnSync(process.argv[0], [
+    ...execArgv,
+    ...process.argv.slice(1),
+  ], { stdio: "inherit" });
+  if (error) {
+    throw error;
+  }
+  if (signal) {
+    process.kill(process.pid, signal);
+  }
+  process.exit(status);
+}
 
 const {
   CommanderError, InvalidArgumentError, PeggyCLI,

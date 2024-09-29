@@ -22,6 +22,9 @@ Released: TBD
 
 - [#531](https://github.com/peggyjs/peggy/issues/531) Clean up rollup hacks
   from CLI code.
+- [#514](https://github.com/peggyjs/peggy/issues/514) Allow execution of
+  the `peggy` binary on Windows by handling node runtime flags manually,
+  executing a sub-instance of node to actually run `peggy`.
 
 ### Documentation
 
