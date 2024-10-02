@@ -28,7 +28,7 @@
     "clean": "rimraf -g build browser bin/*.map && mkdir browser",
     "parser": "node bin/peggy.js -c src/opts.mjs",
     "examples": "node bin/peggy.js -c docs/js/options.js docs/js/examples.peggy",
-    "set_version": "package-extract -o lib/version.js -dcs && package-extract -o docs/index.html -r '(?<=https:\\/\\/unpkg.com\\/peggy@)(?<version>\\d+\\.\\d+\\.\\d+)(?=\\/browser\\/peggy\\.min\\.js)'",
+    "set_version": "package-extract -o lib/version.js -dcs && package-extract -u -o docs/index.html -r '(?<=https:\\/\\/unpkg.com\\/peggy@)(?<version>\\d+\\.\\d+\\.\\d+)(?=\\/browser\\/peggy\\.min\\.js)'",
     "lint": "eslint .",
     "ts": "tsc --build tsconfig.json",
     "docs": "cd docs && npm run build",
@@ -74,9 +74,9 @@
     "express": "4.21.0",
     "glob": "^11.0.0",
     "jest": "^29.7.0",
-    "package-extract": "2.2.0",
+    "package-extract": "2.3.0",
     "rimraf": "^5.0.10",
-    "rollup": "^4.23.0",
+    "rollup": "^4.24.0",
     "rollup-plugin-ignore": "1.0.10",
     "source-map": "^0.8.0-beta.0",
     "terser": "^5.34.1",
@@ -98,7 +98,7 @@
   "browserslist": [
     "defaults, maintained node versions, not op_mini all"
   ],
-  "packageManager": "pnpm@9.11.0",
+  "packageManager": "pnpm@9.12.0",
   "engines": {
     "node": ">=18"
   }
