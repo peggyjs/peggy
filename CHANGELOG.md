@@ -25,6 +25,10 @@ Released: TBD
 - [#514](https://github.com/peggyjs/peggy/issues/514) Allow execution of
   the `peggy` binary on Windows by handling node runtime flags manually,
   executing a sub-instance of node to actually run `peggy`.
+- [#538](https://github.com/peggyjs/peggy/pull/509) Fixed error in TS types
+  for `peg$maxFailExpected` and `peg$maxFailPos`.
+- [#551](https://github.com/peggyjs/peggy/pull/551) Moved to package-extract
+  instead of a custom script for version file generation.
 
 ### Documentation
 
