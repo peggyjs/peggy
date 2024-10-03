@@ -21,7 +21,6 @@ jobs:
       - name: Get version of the project
         id: vvver
         uses: 'euberdeveloper/ga-project-version@main'
-      - run: npm pkg delete devDependencies scripts pnpm browserslist packageManager
       - name: Create Docs
         if: ${{ !contains(steps.vvver.outputs.version, '-') }}
         run: npm run docs
@@ -32,6 +31,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/_site
           publish_branch: docs
+      - run: npm pkg delete devDependencies scripts pnpm browserslist packageManager
       - name: Publish full release
         run: npm publish --access public --provenance
         if: ${{ !contains(steps.vvver.outputs.version, '-') }}
