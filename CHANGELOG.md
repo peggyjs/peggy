@@ -3,12 +3,10 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+4.1.0
+-----
 
-Released: TBD
-
-### Breaking changes
+Released: 2024-10-03
 
 ### New features
 
@@ -29,8 +27,6 @@ Released: TBD
   for `peg$maxFailExpected` and `peg$maxFailPos`.
 - [#551](https://github.com/peggyjs/peggy/pull/551) Moved to package-extract
   instead of a custom script for version file generation.
-
-### Documentation
 
 4.0.3
 -----

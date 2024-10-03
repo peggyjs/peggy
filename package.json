@@ -53,7 +53,7 @@
     "audit": "npm run test && npm run benchmark",
     "tidy": "rimraf build",
     "start": "cd docs && npm start",
-    "version": "npm run set_version && npm run parser && npm run parser && git add lib/version.js lib/parser.js docs/index.html"
+    "version": "npm run set_version && npm run parser && npm run parser && npm run test && npm run examples && git add lib/version.js lib/parser.js docs/index.html test/cli/fixtures/imports_peggy.js test/cli/fixtures/lib.js docs/js/examples.js"
   },
   "devDependencies": {
     "@peggyjs/eslint-config": "^4.0.4",
