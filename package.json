@@ -1,6 +1,6 @@
 {
   "name": "peggy",
-  "version": "4.0.3",
+  "version": "4.1.0-pre.0",
   "description": "Parser generator for JavaScript",
   "keywords": [
     "grammar",
