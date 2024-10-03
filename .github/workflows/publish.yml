@@ -23,15 +23,22 @@ jobs:
         uses: 'euberdeveloper/ga-project-version@main'
       - run: npm pkg delete devDependencies scripts pnpm browserslist packageManager
       - name: Create Docs
-        if: contains(steps.vvver.outputs.version, 'pre') == false
+        if: ${{ !contains(steps.vvver.outputs.version, '-') }}
         run: npm run docs
       - name: Deploy Docs
-        if: contains(steps.vvver.outputs.version, 'pre') == false
+        if: ${{ !contains(steps.vvver.outputs.version, '-') }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/_site
           publish_branch: docs
-      - run: npm publish --access public --provenance
+      - name: Publish full release
+        run: npm publish --access public --provenance
+        if: ${{ !contains(steps.vvver.outputs.version, '-') }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish pre-release
+        run: npm publish --access public --provenance --tag pre
+        if: ${{ contains(steps.vvver.outputs.version, '-') }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
