@@ -76,7 +76,6 @@
 #content .message.disabled { color: gray; background-color: #f0f0f0; }
 
 #content table.online { table-layout: fixed; }
-#content table#columns { table-layout: fixed; }
 
 #content table.form { width: 100%; }
 #content table.form td, table.form th { padding: .5em 1em; }

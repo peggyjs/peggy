@@ -64,6 +64,9 @@
           <li><a href="#error-reporting">Error Reporting</a></li>
         </ul>
       </li>
+      <li>
+        <a href="#typescript-types">Generating TypeScript Types</a>
+      </li>
     </ul>
   </li>
   <li><a href="#using-the-parser">Using the Parser</a></li>
@@ -216,6 +219,12 @@ to keep libraries of often-used grammar rules in
   <dd>Dependencies, in JSON object format with variable:module pairs. (Can be
     specified multiple times).</dd>
 
+  <dt><code>--dts</code></dt>
+  <dd>Generate a .d.ts file next to the output .js file containing TypeScript
+    types for the generated parser.  See <a href="#typescript-types">Generating
+    TypeScript Types</a> for more information.
+  </dd>
+
   <dt><code>-e</code>, <code>--export-var &lt;variable&gt;</code></dt>
   <dd>Name of a global variable into which the parser object is assigned to when
     no module loader is detected.</dd>
@@ -253,6 +262,15 @@ to keep libraries of often-used grammar rules in
     header. This option conflicts with the <code>-t/--test</code> and
     <code>-T/--test-file</code> options unless <code>-o/--output</code> is also
     specified
+  </dd>
+
+  <dt><code>--return-types &lt;JSON object&gt;</code></dt>
+  <dd>If <code>--dts</code> is specified, the <code>typeInfo</code> provided
+    will be used to specify the return type of the given rules.
+    <code>typeInfo</code> should be specified as a JSON object whose keys are
+    rule names and whose values are strings containing the return type for that
+    rule.  See <a href="#typescript-types">Generating TypeScript Types</a> for
+    more information.
   </dd>
 
   <dt><code>-S</code>, <code>--start-rule &lt;rule&gt;</code></dt>
@@ -371,7 +389,7 @@ echo "foo = '1' { return 42 }" | npx peggy --output parser.js --source-map --tes
 
 <pre><code class="language-javascript">import peggy from "peggy";</code></pre>
 
-<p>With some configurations of Typescript or other tools, you might need:</p>
+<p>With some configurations of TypeScript or other tools, you might need:</p>
 
 <pre><code class="language-javascript">import * as peggy from "peggy";</code></pre>
 
@@ -545,6 +563,27 @@ echo "foo = '1' { return 42 }" | npx peggy --output parser.js --source-map --tes
   <li><code>transform</code></li>
   <li><code>generate</code></li>
 </ul>
+
+<h3 id="typescript-types">Generating TypeScript Types</h3>
+<p>If you are consuming the generated parser from TypeScript, it is useful for
+  there to be a .d.ts file next to the generated .js file that describes the
+  types used in the parser.  To enable this, use a configuration file such as:</p>
+
+<pre><code class="language-js">// MJS
+export default {
+  input: "foo.peggy",
+  output: "foo.js",
+  dts: true,
+  returnTypes: {
+    foo: "string",
+  },
+};</code></pre>
+
+<p>If a rule name is in the allowedStartRules, but not in returnTypes,
+  <code>any</code> will be used as the return type for that rule.</p>
+<p>Note that <code>--return-types &lt;JSON object&gt;</code> can be specified
+  on the command line; the use of a config file just makes quoting easier to get
+  correct.</p>
 
 <h2 id="using-the-parser">Using the Parser</h2>
 
@@ -1729,6 +1768,20 @@ note: Step 3: call itself without input consumption - left recursion
   That method will be called for all plugins in the <code>options.plugins</code>
   array, supplied to the <code>generate()</code> method.</p>
 
+<p>Plugins suitable for use on the command line can be written either as CJS
+  or MJS modules that export a "use" function.  The CLI loads plugins with
+  <code class="language-js">await(plugin_name)</code>, which should
+  correctly load from node_modules, a local file starting with "/" or "./",
+  etc.  For example:</p>
+
+<pre><code class="language-js">// CJS
+exports.use = (config, options) => {
+}</code></pre>
+
+<pre><code class="language-js">// MJS
+export function use(config, options) => {
+}</code></pre>
+
 <p><code>use</code> accepts these parameters:</p>
 
 <h3><code>config</code></h3>
@@ -1786,8 +1839,12 @@ note: Step 3: call itself without input consumption - left recursion
 
 <p>Build options passed to the <code>generate()</code> method. A best practice
   for a plugin would look for its own options under a
-  <code>&lt;plugin_name&gt;</code> key.</p>
+  <code>&lt;plugin_name&gt;</code> key:</p>
 
+<pre><code class="language-js">// File: foo.mjs
+export function use(config, options) => {
+  const mine = options['foo_mine'] ?? 'my default';
+}</code></pre>
 
 <h3 id="session-api">Session API</h3>
 
