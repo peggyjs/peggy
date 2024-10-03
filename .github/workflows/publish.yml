@@ -18,9 +18,15 @@ jobs:
           cache: pnpm
       - run: pnpm i -r
       - run: npm run build
-      - run: npm run docs
+      - name: Get version of the project
+        id: vvver
+        uses: 'euberdeveloper/ga-project-version@main'
       - run: npm pkg delete devDependencies scripts pnpm browserslist packageManager
+      - name: Create Docs
+        if: contains(steps.vvver.outputs.version, 'pre') == false
+        run: npm run docs
       - name: Deploy Docs
+        if: contains(steps.vvver.outputs.version, 'pre') == false
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
