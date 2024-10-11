@@ -1283,6 +1283,11 @@ export interface Dependencies {
 }
 
 export interface BuildOptionsBase {
+  /**
+   * Plugins and Peggy compiler rules can take any config items they want.
+   */
+  [pluginConfig: string]: any;
+
   /** Rules the parser will be allowed to start parsing from (default: the first rule in the grammar) */
   allowedStartRules?: string[];
 
@@ -1313,10 +1318,6 @@ export interface BuildOptionsBase {
    * Override parser's reserved words.  Defaults to RESERVED_WORDS.
    */
   reservedWords?: string[];
-  /**
-   * Plugins and Peggy compiler rules can take any config items they want.
-   */
-  [pluginConfig: string]: any;
 }
 
 export interface ParserBuildOptions extends BuildOptionsBase {
