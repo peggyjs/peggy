@@ -1509,6 +1509,8 @@ error: Rule "unknownRule" is not defined
 
   it("throws on parse now", () => {
     const cli = new PeggyCLI();
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => cli.parse([])).toThrow();
   });
 

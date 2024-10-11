@@ -8,6 +8,8 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("development/favicon.ico");
   eleventyConfig.addPassthroughCopy("CNAME");
 
+  eleventyConfig.ignores.add("README.md");
+
   eleventyConfig.setServerOptions({
     // Opt-out of the live reload snippet
     enabled: true,

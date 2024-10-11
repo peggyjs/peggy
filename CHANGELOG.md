@@ -245,7 +245,7 @@ Released: 2023-02-21
   the list of JavaScript reserved words. This will break existing grammars
   that use any of the new words in their rule or label names. from @hildjj
 
-Important information for plug-in authors: PR [#291] added 4 new opcodes to the bytecode:
+Important information for plug-in authors: PR #291 added 4 new opcodes to the bytecode:
 - `IF_LT`
 - `IF_GE`
 - `IF_LT_DYNAMIC`
