@@ -111,9 +111,6 @@ importers:
       '@11ty/eleventy':
         specifier: ^3.0.0
         version: 3.0.0
-      '@11ty/eleventy-upgrade-help':
-        specifier: 3.0.1
-        version: 3.0.1(posthtml@0.16.6)
 
   test/cli/fixtures/frags: {}
 
@@ -141,10 +138,6 @@ packages:
 
   '@11ty/eleventy-plugin-bundle@3.0.0':
     resolution: {integrity: sha512-JSnqehT+sWSPi6e44jTXUW+KiV9284YF9fzPQvfGB4cXlk/m/SJk17CavHCleIvKXDN+jrUw9TZkwAwr85ONWQ==}
-    engines: {node: '>=18'}
-
-  '@11ty/eleventy-upgrade-help@3.0.1':
-    resolution: {integrity: sha512-69CttBBfplByurn5vW7eRiLPywZZZHCH6B68Ib3t3348PaHHG9RysVPRqPQzMrGIEEbXg+0+ICm+R8sAkgjfPQ==}
     engines: {node: '>=18'}
 
   '@11ty/eleventy-utils@1.0.3':
@@ -3008,16 +3001,6 @@ snapshots:
     transitivePeerDependencies:
       - posthtml
       - supports-color
-
-  '@11ty/eleventy-upgrade-help@3.0.1(posthtml@0.16.6)':
-    dependencies:
-      fast-glob: 3.3.2
-      kleur: 4.1.5
-      minimist: 1.2.8
-      posthtml-match-helper: 2.0.2(posthtml@0.16.6)
-      semver: 7.6.3
-    transitivePeerDependencies:
-      - posthtml
 
   '@11ty/eleventy-utils@1.0.3':
     dependencies:
