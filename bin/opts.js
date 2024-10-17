@@ -10,6 +10,7 @@ const fs = require("fs");
 const path = require("path");
 const { InvalidArgumentError } = require("commander");
 const { isErrno, isER, replaceExt, select } = require("./utils.js");
+const { pathToFileURL } = require("url");
 
 const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
 const MODULE_FORMATS_WITH_GLOBAL = ["globals", "umd"];
@@ -140,7 +141,8 @@ function addExtraOptionsJSON(cmd, json, source) {
 async function loadConfig(cmd, val) {
   if (/\.[cm]?js$/.test(val)) {
     try {
-      const eOpts = await import(path.resolve(val));
+      const configURL = pathToFileURL(path.resolve(val)).toString();
+      const eOpts = await import(configURL);
       addExtraOptions(cmd, eOpts.default, "extra-options-file");
     } catch (error) {
       isER(error);
@@ -171,7 +173,7 @@ async function loadPlugin(cmd, val) {
 
   // If this is an absolute or relative path (not a module name)
   const id = (path.isAbsolute(val) || /^\.\.?[/\\]/.test(val))
-    ? path.resolve(val)
+    ? pathToFileURL(path.resolve(val)).toString()
     : val; // Otherwise, it's an NPM module
 
   /** @type {PEG.Plugin=} */
