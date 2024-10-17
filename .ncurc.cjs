@@ -6,6 +6,5 @@ module.exports = {
     "chai", // Moved to es6
     "@types/chai", // Should match chai,
     "rimraf", // Requires node 20
-    "typescript", // Waiting on typescript-eslint
   ],
 };

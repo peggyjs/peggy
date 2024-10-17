@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 
 export default {
-  dts: false, // Breaks tsc because it tries to then check parser.js
+  dts: true,
   output: fileURLToPath(new URL("../lib/parser.js", import.meta.url)),
   format: "commonjs",
   allowedStartRules: ["Grammar", "ImportsAndSource"],
