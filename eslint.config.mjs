@@ -16,6 +16,7 @@ export default [
       "test/cli/fixtures/useFrags/fs.js", // Generated
       "test/cli/fixtures/useFrags/identifier.js", // Generated
       "lib/parser.js", // Generated
+      "lib/parser.d.ts", // Generated
       "bin/generated_template.d.ts", // Generated
     ],
   },
