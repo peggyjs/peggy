@@ -14,6 +14,8 @@ Released: TBD
 
 ### Bug fixes
 
+- [#567](https://github.com/peggyjs/peggy/issues/567) Load config files and plugins correctly on Windows by using file: URIs in import().
+
 ### Documentation
 
 4.1.0
@@ -23,23 +25,16 @@ Released: 2024-10-03
 
 ### New features
 
-- [#477](https://github.com/peggyjs/peggy/issues/477) Option to output .d.ts
-  files next to .js from CLI.
+- [#477](https://github.com/peggyjs/peggy/issues/477) Option to output .d.ts files next to .js from CLI.
 - [#530](https://github.com/peggyjs/peggy/issues/531) Allow es6 plugins from CLI
-- [#532](https://github.com/peggyjs/peggy/issues/532) Allow es6 options files
-  from the CLI
+- [#532](https://github.com/peggyjs/peggy/issues/532) Allow es6 options files from the CLI
 
 ### Bug fixes
 
-- [#531](https://github.com/peggyjs/peggy/issues/531) Clean up rollup hacks
-  from CLI code.
-- [#514](https://github.com/peggyjs/peggy/issues/514) Allow execution of
-  the `peggy` binary on Windows by handling node runtime flags manually,
-  executing a sub-instance of node to actually run `peggy`.
-- [#538](https://github.com/peggyjs/peggy/pull/509) Fixed error in TS types
-  for `peg$maxFailExpected` and `peg$maxFailPos`.
-- [#551](https://github.com/peggyjs/peggy/pull/551) Moved to package-extract
-  instead of a custom script for version file generation.
+- [#531](https://github.com/peggyjs/peggy/issues/531) Clean up rollup hacks from CLI code.
+- [#514](https://github.com/peggyjs/peggy/issues/514) Allow execution of the `peggy` binary on Windows by handling node runtime flags manually, executing a sub-instance of node to actually run `peggy`.
+- [#538](https://github.com/peggyjs/peggy/pull/509) Fixed error in TS types for `peg$maxFailExpected` and `peg$maxFailPos`.
+- [#551](https://github.com/peggyjs/peggy/pull/551) Moved to package-extract instead of a custom script for version file generation.
 
 4.0.3
 -----
