@@ -3,20 +3,22 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+4.2.0
+-----
 
-Released: TBD
-
-### Breaking changes
+Released: 2024-11-19
 
 ### New features
+
+- [#568](https://github.com/peggyjs/peggy/pull/568) Upgrading to TypeScript 5.6 allowed for generating `parser.d.ts`, which should may help people that use Peggy programmatically in nonstandard ways.
 
 ### Bug fixes
 
 - [#567](https://github.com/peggyjs/peggy/issues/567) Load config files and plugins correctly on Windows by using file: URIs in import().
 
 ### Documentation
+
+- [#566](https://github.com/peggyjs/peggy/pull/566) Slight tweaks to document generation.
 
 4.1.0
 -----
