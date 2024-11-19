@@ -92,6 +92,8 @@
   },
   "pnpm": {
     "overrides": {
+      "@eslint/plugin-kit": "^0.2.3",
+      "cross-spawn": "^7.0.6",
       "picomatch": "^4.0.2"
     }
   },
