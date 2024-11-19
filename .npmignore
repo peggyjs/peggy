@@ -10,17 +10,20 @@
 *.map
 benchmark
 bin/*.mjs
+bin/tsconfig.json
 build/
 CHANGELOG.md
 CONTRIBUTING.md
 coverage/
 docs
 eslint.config.js
+eslint.config.mjs
 examples
 jest.config.js
 lib/.eslintrc.json
 peggy.code-workspace
 pnpm-lock.yaml
+pnpm-workspace.yaml
 rollup.config.mjs
 src
 test
@@ -28,5 +31,3 @@ tools
 tsconfig*.json
 web-test/
 yarn.lock
-pnpm-workspace.yaml
-bin/tsconfig.json
