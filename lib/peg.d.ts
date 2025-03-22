@@ -1337,8 +1337,9 @@ export interface ParserBuildOptions extends BuildOptionsBase {
    * if set to `"ast"`, it will return an ast.Grammar with the source
    *   property filled in.
    * (default: `"parser"`)
+   * @default "parser"
    */
-  output?: "parser";
+  output?: "parser" | "source" | "source-and-map" | "source-with-inline-map" | "ast";
 }
 
 /** Possible kinds of source output generators. */
