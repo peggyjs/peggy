@@ -96,5 +96,10 @@
   "packageManager": "pnpm@9.15.1",
   "engines": {
     "node": ">=18"
+  },
+  "pnpm": {
+    "overrides": {
+      "@babel/helpers@<7.26.10": ">=7.26.10"
+    }
   }
 }
