@@ -95,6 +95,6 @@
   ],
   "packageManager": "pnpm@10.6.5",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
