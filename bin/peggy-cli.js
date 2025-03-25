@@ -140,6 +140,15 @@ class PeggyCLI extends Command {
         "--library",
         "Run tests in library mode.  Maintainers only, for now."
       ).hideHelp())
+      .addOption(new Option(
+        "--testingHelp"
+      ).argParser(() => {
+        // Ensure help always wraps the same when unit testing.
+        // It's 79 because of a small change in commander.
+        this.configureHelp({
+          helpWidth: 79,
+        });
+      }).hideHelp())
       .option("-o, --output <file>", "Output file for generated parser. Use '-' for stdout (the default is a file next to the input file with the extension change to '.js', unless a test is specified, in which case no parser is output without this option)")
       .option(
         "--plugin <module>",

@@ -440,21 +440,21 @@ Options:
 `;
 
     await exec({
-      args: ["-h"],
+      args: ["-h", "--testingHelp"],
       error: CommanderError,
       errorCode: "commander.helpDisplayed",
       exitCode: 0, // This is the commander default
       expected: HELP,
     });
     await exec({
-      args: ["--help"],
+      args: ["--help", "--testingHelp"],
       error: CommanderError,
       errorCode: "commander.helpDisplayed",
       exitCode: 0, // This is the commander default
       expected: HELP,
     });
     await expect(forkExec({
-      args: ["--help"],
+      args: ["--help", "--testingHelp"],
     })).resolves.toBe(HELP);
   });
 

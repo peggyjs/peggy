@@ -19,7 +19,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
       - name: Enable pnpm
-        run: "corepack enable"
+        uses: pnpm/action-setup@v4
       - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
