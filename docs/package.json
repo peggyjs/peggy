@@ -10,7 +10,12 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "dependencies": {
+    "file-saver": "2.0.5",
+    "jquery": "3.7.1",
+    "node-inspect-extracted": "3.0.2"
+  },
   "devDependencies": {
     "@11ty/eleventy": "^3.0.0"
   },
