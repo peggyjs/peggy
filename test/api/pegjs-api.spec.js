@@ -42,10 +42,17 @@ describe("Peggy API", () => {
 
     it("throws an exception on syntax error", () => {
       expect(() => { peg.generate("start = @"); }).to.throw();
+      // Expects EOF, but extra chars in input.
+      expect(() => { peg.generate("start = 'a'\n\x01"); }).to.throw();
+      expect(() => { peg.generate("start = 'a'\n\x9f"); }).to.throw();
     });
 
     it("throws an exception on semantic error", () => {
       expect(() => { peg.generate("start = undefined"); }).to.throw();
+    });
+
+    it("throws an exception on bad startRule", () => {
+      expect(() => { peg.parser.parse("start = 'a'", { startRule: "BAD_START_RULE" }); }).to.throw();
     });
 
     describe("allowed start rules", () => {

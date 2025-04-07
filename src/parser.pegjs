@@ -100,11 +100,9 @@ ImportClause
     if (!others) {
       return [first];
     }
-    if (Array.isArray(others)) {
-      others.unshift(first);
-      return others;
-    }
-    return [first, others];
+    // others is always an array.
+    others.unshift(first);
+    return others;
   }
 
 ImportedDefaultBinding
