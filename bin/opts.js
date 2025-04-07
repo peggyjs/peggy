@@ -29,6 +29,7 @@ const PROG_OPTIONS = [
   "sourceMap",
   "test",
   "testFile",
+  "testFileEncoding",
   "verbose",
   "watch",
 ];
@@ -49,6 +50,7 @@ const PROG_OPTIONS = [
  * @property {boolean|string} [sourceMap]
  * @property {string} [test]
  * @property {string} [testFile]
+ * @property {string} [testFileEncoding]
  * @property {string} [testGrammarSource]
  * @property {string} [testText]
  * @property {string} [outputFile]

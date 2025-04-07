@@ -176,6 +176,10 @@ class PeggyCLI extends Command {
         "-T, --test-file <filename>",
         "Test the parser with the contents of the given file, outputting the result of running the parser instead of the parser itself. If the input to be tested is not parsed, the CLI will exit with code 2. A filename of '-' will read from stdin."
       ).conflicts("test"))
+      .addOption(new Option(
+        "--test-file-encoding <encoding>",
+        "Encoding for reading the test file from disk. Encoding will be ignored when --test-file is set to '-'' (stdin)."
+      ).conflicts("test"))
       .option("--trace", "Enable tracing in generated parser", false)
       .option("-w,--watch", "Watch the input file for changes, generating the output once at the start, and again whenever the file changes.")
       .addOption(
@@ -230,6 +234,7 @@ class PeggyCLI extends Command {
           : `${message}\n${er.message}`;
       }
     }
+
     if (!/^error/i.test(message)) {
       message = `Error ${message}`;
     }
@@ -446,21 +451,47 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
    * @returns {Promise<void>}
    */
   async test(source) {
+    /** @type BufferEncoding */
+    let testDataEncoding = "utf8";
+
+    /** @type Uint8Array */
+    let uint8ArrayTestData = new Uint8Array();
+    
+    // Create a module that exports the parser, then load it from the
+    // correct directory, so that any modules that the parser requires will
+    // be loaded from the correct place.
+    const fromMem = require("@peggyjs/from-mem");
+
     if (this.progOptions.testFile) {
       if (this.progOptions.testFile === "-") {
-        this.progOptions.testText = await readStream(this.std.in);
+        // read UTF8 string from STDIN
+        let str_utf8_stdin = await readStream(this.std.in);
+
+        // convert UTF8 string to Uint8Array
+        uint8ArrayTestData = (new TextEncoder()).encode(str_utf8_stdin);
       } else {
-        this.progOptions.testText = await fs.promises.readFile(this.progOptions.testFile, "utf8");
+        // check for different encoding
+        if (typeof this.progOptions.testFileEncoding !== "undefined") {
+          console.log("this.progOptions.testFileEncoding", this.progOptions.testFileEncoding);
+        }
+
+        // read file with specific encoding as buffer
+        let bufFileContent = await fs.promises.readFile(this.progOptions.testFile);
+        
+        // convert buffer to uint8array
+        uint8ArrayTestData = new Uint8Array(bufFileContent);
       }
     }
+
     if (typeof this.progOptions.testText === "string") {
       this.verbose("TEST TEXT:", this.progOptions.testText);
 
-      // Create a module that exports the parser, then load it from the
-      // correct directory, so that any modules that the parser requires will
-      // be loaded from the correct place.
-      const fromMem = require("@peggyjs/from-mem");
-
+      // convert UTF8 string to Uint8Array
+      uint8ArrayTestData = new TextEncoder().encode(this.progOptions.testText);
+    }
+        
+    // process test data
+    if (uint8ArrayTestData.length > 0) {
       assert(this.progOptions.outputJS);
       const exec = /** @type {import("../lib/peg.js").Parser} */(
         await fromMem(source, {
@@ -473,8 +504,10 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
       const opts = {
         grammarSource: this.progOptions.testGrammarSource,
         peg$library: this.progOptions.library,
+        encoding: testDataEncoding
       };
-      const results = exec.parse(this.progOptions.testText, opts);
+      
+      const results = exec.parse(uint8ArrayTestData, opts);
       PeggyCLI.print(this.std.out, "%O", results);
     }
   }

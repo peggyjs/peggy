@@ -1059,6 +1059,7 @@ export interface ParserOptions {
   grammarSource?: any;
   startRule?: string;
   tracer?: ParserTracer;
+  encoding?: string;
 
   // Internal use only:
   /**
@@ -1092,6 +1093,11 @@ export interface Parser {
   StartRules: string[];
   SyntaxError: parser.SyntaxErrorConstructor;
 
+  parse(
+    input: Uint8Array,
+    options: Omit<ParserOptions, "peg$library"> & { peg$library: true }
+  ): LibraryResults;
+  parse(input: Uint8Array, options?: ParserOptions): any;
   parse(
     input: string,
     options: Omit<ParserOptions, "peg$library"> & { peg$library: true }
