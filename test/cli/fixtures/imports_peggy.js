@@ -14,7 +14,7 @@ const peg$import7 = require("./lib.js");
 const peg$import8 = require("./lib.js");
 const peg$import9 = require("./lib.js");
 
-class peg$SyntaxError extends Error {
+class peg$SyntaxError extends SyntaxError {
   constructor(message, expected, found, location) {
     super(message);
     this.expected = expected;
