@@ -454,6 +454,10 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
     /** @type BufferEncoding */
     let testDataEncoding = "utf8";
 
+    // convert UTF8 string to Uint8Array
+    /** @type Uint8Array */
+    let uint8ArrayPeggyFile = (new TextEncoder()).encode(source);
+
     /** @type Uint8Array */
     let uint8ArrayTestData = new Uint8Array();
     
@@ -489,12 +493,14 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
       // convert UTF8 string to Uint8Array
       uint8ArrayTestData = new TextEncoder().encode(this.progOptions.testText);
     }
+
+    console.log("this.progOptions.outputJS", this.progOptions.outputJS)
         
     // process test data
     if (uint8ArrayTestData.length > 0) {
       assert(this.progOptions.outputJS);
       const exec = /** @type {import("../lib/peg.js").Parser} */(
-        await fromMem(source, {
+        await fromMem(uint8ArrayPeggyFile, {
           filename: this.progOptions.outputJS,
           format: this.parserOptions.format,
         })
@@ -506,7 +512,7 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
         peg$library: this.progOptions.library,
         encoding: testDataEncoding
       };
-      
+
       const results = exec.parse(uint8ArrayTestData, opts);
       PeggyCLI.print(this.std.out, "%O", results);
     }
@@ -525,23 +531,42 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
     let errorText = "";
     let prevSource = process.cwd() + "/";
     try {
+      console.log("this.progOptions.inputFiles", this.progOptions.inputFiles)
       for (const source of this.progOptions.inputFiles) {
-        const input = { source, text: "" };
+        // const input = { source, text: "" };
+        let input = { source };
         errorText = `reading input "${source}"`;
         this.verbose("CLI", errorText);
         if (source === "-") {
           input.source = "stdin";
+          input.encoding = "utf8"
           this.std.in.resume();
-          input.text = await readStream(this.std.in);
+          // input.text = await readStream(this.std.in);
+
+          // readStream stdin uses UTF8 encoding, convert to Uint8Array with TextEncoder()
+          input.arr_bytes = new Uint8Array((new TextEncoder()).encode(await readStream(this.std.in)));
         } else if (source.startsWith("npm:")) {
           const req = Module.createRequire(prevSource);
           prevSource = req.resolve(source.slice(4)); // Skip "npm:"
           input.source = prevSource;
-          input.text = await fs.promises.readFile(prevSource, "utf8");
+          // input.encoding = "utf8"
+          input.encoding = "binary"
+
+          // input.text = await fs.promises.readFile(prevSource, "utf8");
+          // input.arr_bytes = (new TextEncoder()).encode(await fs.promises.readFile(prevSource, "utf8"));
+          input.arr_bytes =  new Uint8Array(await fs.promises.readFile(prevSource));
+
         } else {
           prevSource = path.resolve(source);
-          input.text = await fs.promises.readFile(source, "utf8");
+          input.encoding = "binary"
+          // input.text = await fs.promises.readFile(source, "utf8");
+          input.arr_bytes = new Uint8Array(await fs.promises.readFile(source));
         }
+
+        // keep input.text as string temporarily
+        input.text = (new TextDecoder()).decode(input.arr_bytes);
+
+        console.log("add input", input)
         sources.push(input);
       }
 
@@ -589,6 +614,8 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
         sources.push({
           source: this.progOptions.testGrammarSource,
           text: this.progOptions.testText || "",
+          arr_bytes: this.progOptions.testText || "",
+          encoding: "utf8"
         });
       }
       // Will either exit or throw.

@@ -46,8 +46,8 @@ declare namespace ast {
   /** A function implementing an action */
   interface FunctionConst {
     predicate: boolean;
-    params: string[];
-    body: string;
+    params: Uint8Array[];
+    body: Uint8Array;
     location: LocationRange;
   }
 
@@ -56,15 +56,18 @@ declare namespace ast {
    * CharacterClass (`parts` was renamed to `value`).
    */
   interface GrammarCharacterClass {
-    value: (string[] | string)[];
+    // value: (string[] | string)[];
+    value: Uint8Array,
     inverted: boolean;
     ignoreCase: boolean;
   }
 
   type GrammarExpectation =
     | { type: "any" }
-    | { type: "literal"; value: string; ignoreCase: boolean }
-    | { type: "rule"; value: string }
+    // | { type: "literal"; value: string; ignoreCase: boolean }
+    // | { type: "rule"; value: string }
+    | { type: "literal"; value: Uint8Array; ignoreCase: boolean }
+    | { type: "rule"; value: Uint8Array }
     | GrammarCharacterClass & { type: "class" }
     ;
 
@@ -125,7 +128,7 @@ declare namespace ast {
      * Added by the `generateBytecode` pass and contain data for
      * bytecodes to refer back to via index.
      */
-    literals?: string[];
+    literals?: Uint8Array[];
     classes?: GrammarCharacterClass[];
     expectations?: GrammarExpectation[];
     importedNames?: string[];
@@ -140,7 +143,7 @@ declare namespace ast {
    */
   interface CodeBlock<T> extends Node<T> {
     /** The code from the grammar. */
-    code: string;
+    code: Uint8Array;
     /** Span that covers all code between `{` and `}`. */
     codeLocation: LocationRange;
   }
@@ -152,7 +155,7 @@ declare namespace ast {
    */
   interface CodeBlockExpr<T> extends Expr<T> {
     /** The code from the grammar. */
-    code: string;
+    code: Uint8Array;
     /** Span that covers all code between `{` and `}`. */
     codeLocation: LocationRange;
   }
@@ -283,14 +286,16 @@ declare namespace ast {
 
   interface VariableBoundary extends Boundary<"variable"> {
     /** Repetition count - name of the label of the one of preceding expressions. */
-    value: string;
+    // value: string;
+    value: Uint8Array;
     /** Stack offset, added by generateBytecode. */
     sp?: number;
   }
 
   interface FunctionBoundary extends Boundary<"function"> {
     /** The code from the grammar. */
-    value: string;
+    // value: string;
+    value: Uint8Array;
     /** Span that covers all code between `{` and `}`. */
     codeLocation: LocationRange;
     /** Stack offset, added by generateBytecode. */
@@ -358,7 +363,7 @@ declare namespace ast {
   /** Matches continuous sequence of symbols. */
   interface Literal extends Expr<"literal"> {
     /** Sequence of symbols to match. */
-    value: string;
+    value: Uint8Array;
     /** If `true`, symbols matches even if they case do not match case in the `value`. */
     ignoreCase: boolean;
   }
@@ -369,7 +374,8 @@ declare namespace ast {
      * Each part represents either symbol range or single symbol.
      * If empty, such character class never matches anything, even end-of-stream marker.
      */
-    parts: (string[] | string)[];
+    // parts: (string[] | string)[];
+    parts: (Uint8Array[] | Uint8Array)[];
     /**
      * If `true`, matcher will match, if symbol from input doesn't contains
      * in the `parts`.
@@ -406,8 +412,10 @@ export interface SourceText {
    * because their compared using `===`.
    */
   source: any;
+  encoding: string;
   /** Source text of a grammar. */
-  text: string;
+  // text: string;
+  arr_bytes: Uint8Array;
 }
 
 export interface DiagnosticNote {
@@ -542,7 +550,8 @@ export namespace parser {
    *
    * @throws {SyntaxError} If `grammar` has an incorrect format
    */
-  function parse(grammar: string, options?: Options): ast.Grammar;
+  // function parse(grammar: string, options?: Options): ast.Grammar;
+  function parse(grammar: Uint8Array, options?: Options): ast.Grammar;
 
   /** Options, accepted by the parser of PEG grammar. */
   interface Options {
@@ -565,7 +574,8 @@ export namespace parser {
   interface LiteralExpectation {
     type: "literal";
     /** Expected sequence of symbols. */
-    text: string;
+    // text: string;
+    text: Uint8Array;
     /** If `true`, symbols of any case is expected. `text` in that case in lower case */
     ignoreCase: boolean;
   }

@@ -23,6 +23,7 @@ const path = require("path");
  * @returns {asserts er is Error}
  */
 function isER(er) {
+  console.log("isEr", er)
   assert(er);
   assert.equal(typeof er, "object");
   assert(Object.prototype.hasOwnProperty.call(er, "message"));
