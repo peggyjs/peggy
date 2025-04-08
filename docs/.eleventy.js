@@ -18,6 +18,10 @@ module.exports = function (eleventyConfig) {
     "node_modules/jquery/dist/jquery.min.js": "vendor",
     "node_modules/file-saver/dist/FileSaver.min.js": "vendor",
     "node_modules/node-inspect-extracted/dist/inspect.js": "vendor",
+    "node_modules/jquery.scrollto/jquery.scrollTo.min.js": "vendor",
+    "node_modules/mocha/mocha.js": "vendor",
+    "node_modules/mocha/mocha.css": "vendor",
+    "../node_modules/chai/chai.js": "vendor",
   });
 
   eleventyConfig.ignores.add("README.md");
