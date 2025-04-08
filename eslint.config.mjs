@@ -41,4 +41,18 @@ export default [
       "compat/compat": "error",
     },
   },
+  // Enable if you want to lint the generated parser.
+  // {
+  //   files: [
+  //     "lib/parser.js",
+  //   ],
+  //   rules: {
+  //     "init-declarations": "off",
+  //     "no-misleading-character-class": "off",
+  //     "no-unused-vars": "off",
+  //     "no-use-before-define": "off",
+  //     "no-useless-assignment": "off",
+  //     "prefer-const": "off",
+  //   },
+  // },
 ];
