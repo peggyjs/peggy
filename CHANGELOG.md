@@ -6,15 +6,45 @@ This file documents all notable changes to Peggy.
 Unreleased
 ----------
 
-Released: TBD
+Released: TBD (Not before 2025-05-01)
 
 ### Major Changes
 
+- BREAKING: Generated code no longer supports ES5.  You can still generate
+  commonjs or es6 exports, but the code itself requires ES2020.  If you need
+  to support earlier runtimes, you should use a transpiler such as Babel.
+  Generated code now uses `const` and `let`, but is still not strict about
+  using `const` wherever possible, due to the complexities of code generation.
+  Work-arounds and polyfills for class extension, padding, and `Object.assign`
+  have been removed in favor of their ES2020 equivalents.
+  [#593](https://github.com/peggyjs/peggy/pull/593)
+- BREAKING: Node.js v20+ is now required for the CLI tools.  No testing is
+  performed on earlier versions of Node, and no issues will be fixed for
+  earlier versions. [#593](https://github.com/peggyjs/peggy/pull/593)
+- BREAKING: The SyntaxError class exported from generated parsers is now a
+  proper subclass of the built-in ECMAscript SyntaxError class.  The name of
+  the type has changed to `PeggySyntaxError`, which may cause some slight need
+  for rework in TypeScript-aware projects.  This was the main driver behind
+  moving away from ES5. [#593](https://github.com/peggyjs/peggy/pull/593)
+
 ### New features
+
 
 ### Bug fixes
 
+- All libraries used in the web site brought up-to-date, versioned with all
+  other dependencies, and served locally. (TODO: Old version of CodeMirror to
+  be replaced with Monaco). [#593](https://github.com/peggyjs/peggy/pull/593)
+- Code coverage increased for Peggy Grammar parser.
+  [#593](https://github.com/peggyjs/peggy/pull/593)
+- Minor changes in code generation for parsers.  More consistent indentation,
+  trailing commas (for consistency with the Peggy house style).
+  [#593](https://github.com/peggyjs/peggy/pull/593)
+
 ### Documentation
+
+- Link to browserlist support matrix in documentation.
+  [#593](https://github.com/peggyjs/peggy/pull/593)
 
 4.2.0
 -----
