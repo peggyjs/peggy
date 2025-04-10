@@ -47,6 +47,9 @@ Released: TBD (Not before 2025-05-01)
   [#593](https://github.com/peggyjs/peggy/pull/593)
 - When clicking on the link to the examples grammar, do not download the
   .peggy file, but instead show a .peggy.txt file in a browser window.
+  [#595](https://github.com/peggyjs/peggy/pull/595)
+- Set a minimum height for the editors in the online version.
+  [#596](https://github.com/peggyjs/peggy/pull/596)
 
 4.2.0
 -----
