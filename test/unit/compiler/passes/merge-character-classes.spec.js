@@ -72,7 +72,7 @@ describe("compiler pass |mergeCharacterClasses|", () => {
           },
         ],
       },
-      { mergeCharacterClasses: true }
+      { allowedStartRules: ["one"] }
     );
   });
 
@@ -139,7 +139,7 @@ describe("compiler pass |mergeCharacterClasses|", () => {
           },
         ],
       },
-      { mergeCharacterClasses: true }
+      { allowedStartRules: ["one"] }
     );
   });
 
@@ -186,7 +186,7 @@ describe("compiler pass |mergeCharacterClasses|", () => {
           },
         ],
       },
-      { mergeCharacterClasses: true }
+      { allowedStartRules: ["case"] }
     );
   });
 
@@ -209,7 +209,7 @@ describe("compiler pass |mergeCharacterClasses|", () => {
           },
         ],
       },
-      { mergeCharacterClasses: true }
+      { allowedStartRules: ["start"] }
     );
   });
 });

@@ -31,6 +31,21 @@ Released: TBD (Not before 2025-05-01)
 
 - Slightly better verbose output from the CLI, showing where files are written.
   [#601](https://github.com/peggyjs/peggy/pull/601)
+- Merged class rules (rules which consist of a character class like `foo =
+  [0-9]` that are only called from a rule like `bar = foo / [a-z]`, which
+  merges the two classes together into a single rule like `bar = [0-9a-z]`),
+  and which are not allowedStartRules, are no longer output into the generated
+  parser, since there is no way for that code to be called.  This has a chance
+  of generating issues for people who are calling the internals of the
+  generated parser using
+  [@peggyjs/coverage](https://github.com/peggyjs/coverage), but that's a
+  lightly-documented feature of the library.
+  [#594](https://github.com/peggyjs/peggy/pull/594)
+- Superfluous rules (rules which cannot be reached from an allowedStartRule)
+  no longer generate code into the parser.  An INFO-level debug statement is
+  generated for each of these removals.  Like merged class rules above, this
+  should only be removing dead code.
+  [#594](https://github.com/peggyjs/peggy/pull/594)
 
 ### Bug fixes
 
