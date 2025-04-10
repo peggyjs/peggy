@@ -26,6 +26,7 @@ const RE_START_RULES
 const fixtures = path.resolve(__dirname, "fixtures");
 const packageJson = path.resolve(__dirname, "..", "..", "package.json");
 const grammarFile = path.resolve(__dirname, "..", "..", "examples", "json.pegjs");
+const helpFile = path.resolve(fixtures, "help.lf");
 let tmpDir = "";
 
 // eslint-disable-next-line mocha/no-top-level-hooks
@@ -355,92 +356,7 @@ describe("MockStream", () => {
 
 describe("Command Line Interface", () => {
   it("has help", async() => {
-    const HELP = `\
-Usage: peggy [options] [input_file...]
-
-Arguments:
-  input_file                       Grammar file(s) to read.  Use "-" to read
-                                   stdin.  If multiple files are given, they
-                                   are combined in the given order to produce a
-                                   single output.  Use
-                                   npm:"<packageName>/file.peggy" to import
-                                   from an npm dependency. (default: ["-"])
-
-Options:
-  -v, --version                    output the version number
-  --allowed-start-rules <rules>    Comma-separated list of rules the generated
-                                   parser will be allowed to start parsing
-                                   from.  Use '*' if you want any rule to be
-                                   allowed as a start rule.  (Can be specified
-                                   multiple times) (default: the first rule in
-                                   the grammar)
-  --ast                            Output a grammar AST instead of a parser
-                                   code (default: false)
-  --cache                          Make generated parser cache results
-                                   (default: false)
-  -d, --dependency <dependency>    Comma-separated list of dependencies, either
-                                   as a module name, or as \`variable:module\`.
-                                   (Can be specified multiple times)
-  -D, --dependencies <json>        Dependencies, in JSON object format with
-                                   variable:module pairs. (Can be specified
-                                   multiple times).
-  --dts                            Create a .d.ts to describe the generated
-                                   parser.
-  -e, --export-var <variable>      Name of a global variable into which the
-                                   parser object is assigned to when no module
-                                   loader is detected.
-  --extra-options <options>        Additional options (in JSON format as an
-                                   object) to pass to peggy.generate
-  -c, --extra-options-file <file>  File with additional options (in JSON as an
-                                   object or commonjs module format) to pass to
-                                   peggy.generate
-  --format <format>                Format of the generated parser (choices:
-                                   "amd", "bare", "commonjs", "es", "globals",
-                                   "umd", default: "commonjs")
-  -o, --output <file>              Output file for generated parser. Use '-'
-                                   for stdout (the default is a file next to
-                                   the input file with the extension change to
-                                   '.js', unless a test is specified, in which
-                                   case no parser is output without this
-                                   option)
-  --plugin <module>                Comma-separated list of plugins. (can be
-                                   specified multiple times)
-  -m, --source-map [mapfile]       Generate a source map. If name is not
-                                   specified, the source map will be named
-                                   "<input_file>.map" if input is a file and
-                                   "source.map" if input is a standard input.
-                                   If the special filename \`inline\` is given,
-                                   the sourcemap will be embedded in the output
-                                   file as a data URI.  If the filename is
-                                   prefixed with \`hidden:\`, no mapping URL will
-                                   be included so that the mapping can be
-                                   specified with an HTTP SourceMap: header.
-                                   This option conflicts with the \`-t/--test\`
-                                   and \`-T/--test-file\` options unless
-                                   \`-o/--output\` is also specified
-  --return-types <typeInfo>        Types returned for rules, as JSON object of
-                                   the form {"ruleName": "type"}
-  -S, --start-rule <rule>          When testing, use the given rule as the
-                                   start rule.  If this rule is not in the
-                                   allowed start rules, it will be added.
-  -t, --test <text>                Test the parser with the given text,
-                                   outputting the result of running the parser
-                                   instead of the parser itself. If the input
-                                   to be tested is not parsed, the CLI will
-                                   exit with code 2
-  -T, --test-file <filename>       Test the parser with the contents of the
-                                   given file, outputting the result of running
-                                   the parser instead of the parser itself. If
-                                   the input to be tested is not parsed, the
-                                   CLI will exit with code 2. A filename of '-'
-                                   will read from stdin.
-  --trace                          Enable tracing in generated parser (default:
-                                   false)
-  -w,--watch                       Watch the input file for changes, generating
-                                   the output once at the start, and again
-                                   whenever the file changes.
-  -h, --help                       display help for command
-`;
+    const HELP = await fs.promises.readFile(helpFile, "utf8");
 
     await exec({
       args: ["-h", "--testingHelp"],
@@ -555,18 +471,6 @@ Options:
     });
 
     await exec({
-      args: ["-D", '{"c": "commander", "jest": "jest"}', "--format", "amd"],
-      stdin: "foo = '1' { return new c.Command(); }",
-      expected: /define\(\["commander", "jest"\]/,
-    });
-
-    await exec({
-      args: ["-D", '{"c": "commander", "jest": "jest"}', "--format", "umd", "-e", "foo"],
-      stdin: "foo = '1' { return new c.Command(); }",
-      expected: /define\(\["commander", "jest"\]/,
-    });
-
-    await exec({
       args: ["-D", '{"c": "commander"}', "-d", "c:jest"],
       stdin: "foo = '1' { return c.run(); }",
       expected: /c = require\("jest"\)/,
@@ -623,9 +527,9 @@ Options:
 
   it("handles extra options", async() => {
     await exec({
-      args: ["-d", "fs", "--extra-options", '{"format": "amd"}'],
+      args: ["-d", "fs", "--extra-options", '{"format": "es"}'],
       stdin: 'foo = "1"',
-      expected: /^define\(/m,
+      expected: /^import fs/m,
     });
 
     await exec({
@@ -663,7 +567,7 @@ Options:
       stdin: foobarbaz,
       expected: RE_START_RULES,
     });
-    expect(res).toMatch("(function(root, factory) {");
+    expect(res).toMatch(/^export {/m);
 
     await exec({
       args: ["--extra-options-file", optFileJS],
@@ -673,9 +577,9 @@ Options:
 
     // Intentional overwrite
     await exec({
-      args: ["-c", optFile, "--format", "amd"],
+      args: ["-c", optFile, "--format", "es"],
       stdin: foobarbaz,
-      expected: /^define\(/m,
+      expected: /^export {/m,
     });
 
     await exec({
@@ -739,7 +643,7 @@ Options:
       args: ["--format", "BAD_FORMAT"],
       errorCode: "commander.invalidArgument",
       exitCode: 1,
-      error: "option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are amd, bare, commonjs, es, globals, umd.",
+      error: "option '--format <format>' argument 'BAD_FORMAT' is invalid. Allowed choices are bare, commonjs, es, globals.",
     });
   });
 
@@ -1322,10 +1226,6 @@ Error: Expected "1" but end of input found.
         expect((e as Error).message).toMatch("Requires node.js 20.8+ or 21");
       }
       await exec({
-        args: ["--format", "amd", "-t", "1", grammar],
-        error: /Unsupported output format/,
-      });
-      await exec({
         args: ["--format", "globals", "-e", "foo", "-t", "1", grammar],
         error: /Unsupported output format/,
       });
@@ -1379,18 +1279,6 @@ error: Rule "unknownRule" is not defined
       args: [imps, "--format", "bare"],
       exitCode: 1,
       expected: "Error parsing grammar\nDependencies not supported in format 'bare'.\n",
-    });
-
-    await exec({
-      args: [imps, "--format", "amd"],
-      exitCode: 1,
-      expected: "Error parsing grammar\nImports are not supported in format 'amd'.\n",
-    });
-
-    await exec({
-      args: [imps, "--format", "umd"],
-      exitCode: 1,
-      expected: "Error parsing grammar\nImports are not supported in format 'umd'.\n",
     });
   });
 

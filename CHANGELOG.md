@@ -26,6 +26,11 @@ Released: TBD (Not before 2025-05-01)
   the type has changed to `PeggySyntaxError`, which may cause some slight need
   for rework in TypeScript-aware projects.  This was the main driver behind
   moving away from ES5. [#593](https://github.com/peggyjs/peggy/pull/593)
+- BREAKING: The output of AMD and UMD modules is no longer supported.  As far
+  as we can tell, AMD isn't used anymore, and folks using UMD can either use
+  a bundler, switch to es6 modules, or output both a globals format parser and
+  a commonjs parser if absolutely required.
+  [#598](https://github.com/peggyjs/peggy/pull/598)
 
 ### New features
 

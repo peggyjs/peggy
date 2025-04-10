@@ -19,7 +19,7 @@ const util = require("util");
 exports.CommanderError = CommanderError;
 exports.InvalidArgumentError = InvalidArgumentError;
 
-const MODULE_FORMATS = ["amd", "bare", "commonjs", "es", "globals", "umd"];
+const MODULE_FORMATS = ["bare", "commonjs", "es", "globals"];
 
 /**
  * @typedef {object} TTYWritable

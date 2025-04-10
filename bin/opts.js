@@ -12,8 +12,8 @@ const { InvalidArgumentError } = require("commander");
 const { isErrno, isER, replaceExt, select } = require("./utils.js");
 const { pathToFileURL } = require("url");
 
-const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
-const MODULE_FORMATS_WITH_GLOBAL = ["globals", "umd"];
+const MODULE_FORMATS_WITH_DEPS = ["commonjs", "es"];
+const MODULE_FORMATS_WITH_GLOBAL = ["globals"];
 
 // Options that aren't for the API directly:
 const PROG_OPTIONS = [

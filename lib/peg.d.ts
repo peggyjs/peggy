@@ -1368,37 +1368,19 @@ interface SourceOptionsBase<Output>
    * Format of the generated parser, valid only when `output` is not set to
    * `"parser"` (default: `"bare"`)
    */
-  format?: "amd" | "bare" | "commonjs" | "es" | "globals" | "umd";
+  format?: "bare" | "commonjs" | "es" | "globals";
 }
 
-export interface OutputFormatAmdCommonjsEs<Output extends SourceOutputs = "source">
+export interface OutputFormatCommonjsEs<Output extends SourceOutputs = "source">
   extends SourceOptionsBase<Output> {
-  format: "amd" | "commonjs" | "es";
+  format: "commonjs" | "es";
   /**
    * Parser dependencies, the value is an object which maps variables used to
    * access the dependencies in the parser to module IDs used to load them;
-   * valid only when `format` is set to `"amd"`, `"commonjs"`, `"es"`, or `"umd"`
+   * valid only when `format` is set to `"commonjs"` or `"es"`.
    * (default: `{}`)
    */
   dependencies?: Dependencies;
-}
-
-export interface OutputFormatUmd<Output extends SourceOutputs = "source">
-  extends SourceOptionsBase<Output> {
-  format: "umd";
-  /**
-   * Parser dependencies, the value is an object which maps variables used to
-   * access the dependencies in the parser to module IDs used to load them;
-   * valid only when `format` is set to `"amd"`, `"commonjs"`, `"es"`, or `"umd"`
-   * (default: `{}`)
-   */
-  dependencies?: Dependencies;
-  /**
-   * Name of a global variable into which the parser object is assigned to when
-   * no module loader is detected; valid only when `format` is set to `"globals"`
-   * (and in that case it should be defined) or `"umd"` (default: `null`)
-   */
-  exportVar?: string;
 }
 
 export interface OutputFormatGlobals<Output extends SourceOutputs = "source">
@@ -1407,7 +1389,7 @@ export interface OutputFormatGlobals<Output extends SourceOutputs = "source">
   /**
    * Name of a global variable into which the parser object is assigned to when
    * no module loader is detected; valid only when `format` is set to `"globals"`
-   * (and in that case it should be defined) or `"umd"` (default: `null`)
+   * (and in that case it should be defined) (default: `null`)
    */
   exportVar: string;
 }
@@ -1419,10 +1401,9 @@ export interface OutputFormatBare<Output extends SourceOutputs = "source">
 
 /** Options for generating source code of the parser. */
 export type SourceBuildOptions<Output extends SourceOutputs = "source">
-  = OutputFormatAmdCommonjsEs<Output>
+  = OutputFormatCommonjsEs<Output>
   | OutputFormatBare<Output>
-  | OutputFormatGlobals<Output>
-  | OutputFormatUmd<Output>;
+  | OutputFormatGlobals<Output>;
 
 export type GrammarInput = SourceText[] | string;
 

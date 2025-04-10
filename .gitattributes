@@ -5,6 +5,7 @@ bin/* text eol=lf
 *.html text eol=lf
 *.css text eol=lf
 *.map text eol=lf
+*.lf text eol=lf
 *.png binary
 *.jpg binary
 *.ico binary
