@@ -22,6 +22,7 @@ module.exports = function (eleventyConfig) {
     "node_modules/mocha/mocha.js": "vendor",
     "node_modules/mocha/mocha.css": "vendor",
     "../node_modules/chai/chai.js": "vendor",
+    "js/examples.peggy": "js/examples.peggy.txt",
   });
 
   eleventyConfig.ignores.add("README.md");
