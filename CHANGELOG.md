@@ -45,6 +45,8 @@ Released: TBD (Not before 2025-05-01)
 
 - Link to browserlist support matrix in documentation.
   [#593](https://github.com/peggyjs/peggy/pull/593)
+- When clicking on the link to the examples grammar, do not download the
+  .peggy file, but instead show a .peggy.txt file in a browser window.
 
 4.2.0
 -----
