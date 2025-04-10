@@ -111,6 +111,14 @@
 /* Browsers will enlarge the |.content-height| cells to fit the contents. */
 #content table.column td.content-height { height: 1px; }
 
+#grammar + .CodeMirror {
+  min-height: 150px;
+}
+
+#input + .CodeMirror {
+  min-height: 40px;
+}
+
 #content .CodeMirror {
   border: 1px solid gray;
 }
