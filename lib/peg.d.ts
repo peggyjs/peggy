@@ -181,8 +181,6 @@ declare namespace ast {
     expression: Expression | Named;
     /** Added by the `generateBytecode` pass. */
     bytecode?: number[];
-    /** Proxy rules do not get output. */
-    proxy?: boolean;
   }
 
   /** Represents rule body if it has a name. */
