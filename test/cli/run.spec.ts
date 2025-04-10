@@ -20,6 +20,9 @@ bar = '2'
 baz = '3'
 `;
 
+const RE_START_RULES
+  = /startRuleFunctions = {\s+foo: [a-z$]+,\s+bar: [a-z$]+,\s+baz: [a-z$]+,\s+}/i;
+
 const fixtures = path.resolve(__dirname, "fixtures");
 const packageJson = path.resolve(__dirname, "..", "..", "package.json");
 const grammarFile = path.resolve(__dirname, "..", "..", "examples", "json.pegjs");
@@ -471,7 +474,7 @@ Options:
     await exec({
       args: ["--allowed-start-rules", "foo,bar,baz"],
       stdin: foobarbaz,
-      expected: /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/,
+      expected: RE_START_RULES,
     });
 
     await exec({
@@ -481,7 +484,7 @@ Options:
         "--extra-options", '{"allowedStartRules": ["baz"]}',
       ],
       stdin: foobarbaz,
-      expected: /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/,
+      expected: RE_START_RULES,
     });
 
     await exec({
@@ -497,7 +500,7 @@ Options:
     await exec({
       args: ["--cache"],
       stdin: "foo = '1'",
-      expected: /^\s*var peg\$resultsCache/m,
+      expected: /^\s*let peg\$resultsCache/m,
     });
   });
 
@@ -658,14 +661,14 @@ Options:
     const res = await exec({
       args: ["--extra-options-file", optFile],
       stdin: foobarbaz,
-      expected: /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/,
+      expected: RE_START_RULES,
     });
     expect(res).toMatch("(function(root, factory) {");
 
     await exec({
       args: ["--extra-options-file", optFileJS],
       stdin: foobarbaz,
-      expected: /startRuleFunctions = { foo: [^, ]+, bar: [^, ]+, baz: \S+ }/,
+      expected: RE_START_RULES,
     });
 
     // Intentional overwrite

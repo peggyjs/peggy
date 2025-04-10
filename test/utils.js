@@ -8,7 +8,14 @@ class Call {
   }
 
   calledWithExactly(...args) {
-    return chai.util.eql(this.args, args);
+    const ret = chai.util.eql(this.args, args);
+    if (!ret) {
+      console.error("Not equal", {
+        calledWith: this.args,
+        expected: args,
+      });
+    }
+    return ret;
   }
 }
 

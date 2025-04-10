@@ -49,7 +49,6 @@ describe("Peggy compiler", () => {
       })).to.match(
         /^\/\/# sourceMappingURL=data:application\/json;charset=utf-8;base64,/m
       );
-      /* eslint-disable no-undef -- globalThis might not exist */
       // I *think* everywhere that has TextEncoder also has globalThis, but
       // I'm not positive.
       if (typeof globalThis === "object") {
@@ -61,7 +60,6 @@ describe("Peggy compiler", () => {
         })).to.throw("TextEncoder is not supported by this platform");
         globalThis.TextEncoder = TE;
       }
-      /* eslint-enable no-undef */
     }
   });
 

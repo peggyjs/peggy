@@ -3,6 +3,7 @@
 
 const chai = require("chai");
 const parser = require("../../lib/parser");
+const { RESERVED_WORDS } = require("../../lib/peg.js");
 
 const expect = chai.expect;
 
@@ -300,6 +301,10 @@ describe("Peggy grammar parser", () => {
     expect("\n{{ top level code }};\n{ code };\na = 'abcd';\n").to.parseAs(
       { type: "grammar", imports: [], topLevelInitializer, initializer, rules: [ruleA] }
     );
+    expect("{{ ").to.failToParse();
+    expect("{ ").to.failToParse();
+    expect("{{}").to.failToParse();
+    expect("{{}}\x00").to.failToParse();
   });
 
   // Canonical Top-Level Initializer is "{ top level code }".
@@ -346,6 +351,9 @@ describe("Peggy grammar parser", () => {
     ).to.parseAs(
       oneRuleGrammar(choice4)
     );
+    expect(
+      "start = 'a' / 'b' /"
+    ).to.failToParse();
   });
 
   // Canonical ActionExpression is "'abcd' { code }".
@@ -372,6 +380,7 @@ describe("Peggy grammar parser", () => {
     expect("start = a:'abcd'\nb:'efgh'\nc:'ijkl'\nd:'mnop'").to.parseAs(
       oneRuleGrammar(sequence4)
     );
+    expect("start = a:'foo").to.failToParse();
   });
 
   // Value Plucking
@@ -463,6 +472,8 @@ describe("Peggy grammar parser", () => {
     expect("start = (\na:'abcd'\n)").to.parseAs(oneRuleGrammar(groupLabeled));
     expect("start = (\n'abcd' 'efgh' 'ijkl'\n)").to.parseAs(oneRuleGrammar(groupSequence));
     expect("start = (\n'abcd'\n)").to.parseAs(trivialGrammar);
+    expect("start = ('foo'").to.failToParse();
+    expect("start = ('foo").to.failToParse();
   });
 
   // Canonical RepeatedExpression is "'abcd'|2..3|".
@@ -561,6 +572,7 @@ describe("Peggy grammar parser", () => {
         expect("start = 'abcd'|2..3\n,'efgh'|").to.parseAs(grammar);
         expect("start = 'abcd'|2..3,\n'efgh'|").to.parseAs(grammar);
         expect("start = 'abcd'|2..3,'efgh'\n|").to.parseAs(grammar);
+        expect("start = 'abcd'|2..3,'efgh").to.failToParse();
 
         grammar = oneRuleGrammar({
           type: "repeated",
@@ -823,11 +835,29 @@ describe("Peggy grammar parser", () => {
 
     expect("start = a\n=").to.failToParse();
     expect("start = a\n'abcd'\n=").to.failToParse();
+    expect("start = a.\x00").to.failToParse();
   });
 
   // Canonical SemanticPredicateExpression is "!{ code }".
   it("parses SemanticPredicateExpression", () => {
     expect("start = !\n{ code }").to.parseAs(oneRuleGrammar(semanticNot));
+    expect("start = !{").to.failToParse();
+    expect("start = &{").to.failToParse();
+    expect("start = &{ ").to.failToParse();
+    expect("start = &{  ").to.failToParse();
+    expect("start = &{{").to.failToParse();
+    expect("start = &{{ ").to.failToParse();
+    expect("start = &{{  ").to.failToParse();
+    expect("start = &{{   ").to.failToParse();
+    expect("start = &{{}").to.failToParse();
+    expect("start = &{{} ").to.failToParse();
+    expect("start = &{{}  ").to.failToParse();
+    expect("start = &{{}{}").to.failToParse();
+    expect("start = &{{}{} ").to.failToParse();
+    expect("start = &{{}{}  ").to.failToParse();
+    expect("start = &{{}{}{").to.failToParse();
+    expect("start = &{{}{}{ ").to.failToParse();
+    expect("start = &{{}{}{  ").to.failToParse();
   });
 
   // Canonical SemanticPredicateOperator is "!".
@@ -879,6 +909,12 @@ describe("Peggy grammar parser", () => {
     expect("start =/*abc*/'abcd'").to.parseAs(trivialGrammar);
 
     expect("start =/**/*/'abcd'").to.failToParse();
+    expect("start = /*").to.failToParse();
+    expect("start = /* ").to.failToParse();
+    expect("start = /*  ").to.failToParse();
+    expect("start = 'foo'/*").to.failToParse();
+    expect("start = 'foo'/* ").to.failToParse();
+    expect("start = 'foo'/*  ").to.failToParse();
   });
 
   // Canonical MultiLineCommentNoLineTerminator is "/* comment */".
@@ -897,6 +933,9 @@ describe("Peggy grammar parser", () => {
     expect("start =//a\n'abcd'").to.parseAs(trivialGrammar);
     expect("start =//abc\n'abcd'").to.parseAs(trivialGrammar);
 
+    expect("//").to.failToParse();
+    expect("// ").to.failToParse();
+    expect("//  ").to.failToParse();
     expect("start =//\n@\n'abcd'").to.failToParse();
   });
 
@@ -920,6 +959,8 @@ describe("Peggy grammar parser", () => {
     expect("start = a$b").to.parseAs(ruleRefGrammar("a$b"));
     expect("start = _").to.parseAs(ruleRefGrammar("_"));
     expect("start = \\u0061").to.parseAs(ruleRefGrammar("a"));
+
+    expect("start = \\").to.failToParse();
   });
 
   // Canonical IdentifierPart is "a".
@@ -1011,6 +1052,7 @@ describe("Peggy grammar parser", () => {
     expect("start = [b-a]").to.failToParse({
       message: "Invalid character range: b-a.",
     });
+    expect("start = [b-").to.failToParse();
   });
 
   // Canonical ClassCharacter is "a".
@@ -1035,8 +1077,10 @@ describe("Peggy grammar parser", () => {
     expect("start = '\\0'").to.parseAs(literalGrammar("\x00",   false));
     expect("start = '\\xFF'").to.parseAs(literalGrammar("\xFF",   false));
     expect("start = '\\uFFFF'").to.parseAs(literalGrammar("\uFFFF", false));
+    expect("start = '\\c'").to.parseAs(literalGrammar("c", false));
 
     expect("start = '\\09'").to.failToParse();
+    expect("start = '\\").to.failToParse();
   });
 
   // Canonical CharacterEscapeSequence is "n".
@@ -1072,11 +1116,17 @@ describe("Peggy grammar parser", () => {
   // Canonical HexEscapeSequence is "xFF".
   it("parses HexEscapeSequence", () => {
     expect("start = '\\xFF'").to.parseAs(literalGrammar("\xFF", false));
+    expect("start = '\\x").to.failToParse();
+    expect("start = '\\xF").to.failToParse();
   });
 
   // Canonical UnicodeEscapeSequence is "uFFFF".
   it("parses UnicodeEscapeSequence", () => {
     expect("start = '\\uFFFF'").to.parseAs(literalGrammar("\uFFFF", false));
+    expect("start = '\\u").to.failToParse();
+    expect("start = '\\uF").to.failToParse();
+    expect("start = '\\uFF").to.failToParse();
+    expect("start = '\\uFFF").to.failToParse();
   });
 
   // Digit rules are not tested.
@@ -1368,6 +1418,54 @@ c = @'ijkl'
         start: { offset: 0, line: 1, column: 1 },
         end: { offset: 153, line: 11, column: 1 },
       },
+    });
+  });
+
+  it("handles ImportsAndSource", () => {
+    const opts = { startRule: "ImportsAndSource", reservedWords: RESERVED_WORDS };
+
+    for (const txt of [
+      "",
+      "import foo",
+      "import 'foo';",
+      "import bar, baz from 'foo';",
+      "import * boo",
+      "import * as ",
+      "import * as ;",
+      "import {foo",
+      "import {foo,",
+      "import {foo, bar",
+      "import {foo, bar,",
+      "import {;",
+      "import from;",
+      "import * from;",
+      "import {foo} from;",
+      "import {foo as}",
+    ]) {
+      expect(() => parser.parse(txt, opts)).to.not.throw();
+    }
+
+    for (const txt of [
+      "import while from 'bar'",
+    ]) {
+      expect(() => parser.parse(txt, opts)).to.throw();
+    }
+  });
+
+  it("handles peg$library", () => {
+    const res = parser.parse("foo", { peg$library: true });
+    expect(res).to.eql({
+      peg$result: {},
+      peg$currPos: 0,
+      peg$FAILED: {},
+      peg$maxFailExpected: [
+        { type: "other", description: "whitespace" },
+        { type: "other", description: "end of line" },
+        { type: "other", description: "comment" },
+        { type: "other", description: "string" },
+        { type: "literal", text: "=", ignoreCase: false },
+      ],
+      peg$maxFailPos: 3,
     });
   });
 });

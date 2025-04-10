@@ -22,26 +22,25 @@
 // [1] http://www.ecma-international.org/publications/standards/Ecma-262.htm
 
 {{
-  const OPS_TO_PREFIXED_TYPES = {
-    "$": "text",
-    "&": "simple_and",
-    "!": "simple_not"
-  };
+const OPS_TO_PREFIXED_TYPES = {
+  "$": "text",
+  "&": "simple_and",
+  "!": "simple_not",
+};
 
-  const OPS_TO_SUFFIXED_TYPES = {
-    "?": "optional",
-    "*": "zero_or_more",
-    "+": "one_or_more"
-  };
+const OPS_TO_SUFFIXED_TYPES = {
+  "?": "optional",
+  "*": "zero_or_more",
+  "+": "one_or_more",
+};
 
-  const OPS_TO_SEMANTIC_PREDICATE_TYPES = {
-    "&": "semantic_and",
-    "!": "semantic_not"
-  };
+const OPS_TO_SEMANTIC_PREDICATE_TYPES = {
+  "&": "semantic_and",
+  "!": "semantic_not",
+};
 }}
 {
-  // Cannot use Set here because of native IE support.
-  const reservedWords = options.reservedWords || [];
+  const reservedWords = new Set(options.reservedWords);
 }
 // ---- Syntactic Grammar -----
 
@@ -53,80 +52,82 @@ Grammar
         topLevelInitializer,
         initializer,
         rules,
-        location: location()
+        location: location(),
       };
     }
 
 // Alternate entry point to split JS into imports and not-imports.
 ImportsAndSource
   = imports:ImportsAsText body:GrammarBody {
-    return [imports, body];
-  }
+      return [imports, body];
+    }
 
 // Everything after the imports.
 GrammarBody
   = code:$.* {
-    return {
-      type: "top_level_initializer",
-      code,
-      codeLocation: location(),
+      return {
+        type: "top_level_initializer",
+        code,
+        codeLocation: location(),
+      };
     }
-  }
 
 ImportsAsText
   = code:$ImportDeclarations {
-    return {
-      type: "top_level_initializer",
-      code,
-      codeLocation: location()
+      return {
+        type: "top_level_initializer",
+        code,
+        codeLocation: location(),
+      };
     }
-  }
 
 ImportDeclarations
   = ImportDeclaration*
 
 ImportDeclaration
-  = __ "import" __ what:ImportClause __ from:FromClause (__ ";")? { return {
-    type: "grammar_import", what, from, location: location()
-  }}
-  / __ "import" __ from:ModuleSpecifier (__ ";")? { return {
-    type: "grammar_import", what: [], from, location: location()
-  }} // Intializers only
+  = __ "import" __ what:ImportClause __ from:FromClause (__ ";")? {
+      return {
+        type: "grammar_import", what, from, location: location(),
+      };
+    }
+  / __ "import" __ from:ModuleSpecifier (__ ";")? {
+      return {
+        type: "grammar_import", what: [], from, location: location(),
+      };
+    } // Intializers only
 
 ImportClause
   = NameSpaceImport
   / NamedImports
   / first:ImportedDefaultBinding others:(__ "," __ @(NameSpaceImport / NamedImports))? {
-    if (!others) {
-      return [first];
-    }
-    if (Array.isArray(others)) {
+      if (!others) {
+        return [first];
+      }
+      // 'others' is always an array.
       others.unshift(first);
       return others;
     }
-    return [first, others];
-  }
 
 ImportedDefaultBinding
   = binding:ImportedBinding {
-    return {
-      type: 'import_binding_default',
-      binding: binding[0],
-      location: binding[1],
+      return {
+        type: "import_binding_default",
+        binding: binding[0],
+        location: binding[1],
+      };
     }
-  }
 
 NameSpaceImport
   = "*" __ "as" __ binding:ImportedBinding {
-    return [{
-      type: 'import_binding_all',
-      binding: binding[0],
-      location: binding[1],
-    }]
-  }
+      return [{
+        type: "import_binding_all",
+        binding: binding[0],
+        location: binding[1],
+      }];
+    }
 
 NamedImports
-  = "{" __ "}" { return [] } // Can't have bare comma
+  = "{" __ "}" { return []; } // Can't have bare comma
   / "{" __ @ImportsList __ ("," __)? "}"
 
 FromClause
@@ -137,40 +138,41 @@ ImportsList
 
 ImportSpecifier
   = rename:ModuleExportName __ "as" __ binding:ImportedBinding {
-    return {
-      type: 'import_binding_rename',
-      rename: rename[0],
-      renameLocation: rename[1],
-      binding: binding[0],
-      location: binding[1],
+      return {
+        type: "import_binding_rename",
+        rename: rename[0],
+        renameLocation: rename[1],
+        binding: binding[0],
+        location: binding[1],
+      };
     }
-  }
   / binding:ImportedBinding {
-    return {
-      type: 'import_binding',
-      binding: binding[0],
-      location: binding[1]
+      return {
+        type: "import_binding",
+        binding: binding[0],
+        location: binding[1],
+      };
     }
-  }
 
 ModuleSpecifier
   = module:StringLiteral {
-      return { type: 'import_module_specifier', module, location: location() }
+      return { type: "import_module_specifier", module, location: location() };
     }
 
 ImportedBinding
-  = id:BindingIdentifier { return [id, location()] }
+  = id:BindingIdentifier { return [id, location()]; }
 
 ModuleExportName
   = IdentifierName
-  / id:StringLiteral { return [id, location() ] }
+  / id:StringLiteral { return [id, location()]; }
 
-BindingIdentifier = id:IdentifierName {
-  if (reservedWords.indexOf(id[0]) >= 0) {
-    error(`Binding identifier can't be a reserved word "${id[0]}"`, id[1]);
-  }
-  return id[0];
-}
+BindingIdentifier
+  = id:IdentifierName {
+      if (reservedWords.has(id[0])) {
+        error(`Binding identifier can't be a reserved word "${id[0]}"`, id[1]);
+      }
+      return id[0];
+    }
 
 TopLevelInitializer
   = "{" code:CodeBlock "}" EOS {
@@ -178,7 +180,7 @@ TopLevelInitializer
         type: "top_level_initializer",
         code: code[0],
         codeLocation: code[1],
-        location: location()
+        location: location(),
       };
     }
 
@@ -188,7 +190,7 @@ Initializer
         type: "initializer",
         code: code[0],
         codeLocation: code[1],
-        location: location()
+        location: location(),
       };
     }
 
@@ -207,10 +209,10 @@ Rule
               type: "named",
               name: displayName,
               expression,
-              location: location()
+              location: location(),
             }
           : expression,
-        location: location()
+        location: location(),
       };
     }
 
@@ -223,7 +225,7 @@ ChoiceExpression
         ? {
             type: "choice",
             alternatives: [head].concat(tail),
-            location: location()
+            location: location(),
           }
         : head;
     }
@@ -236,7 +238,7 @@ ActionExpression
             expression,
             code: code[0],
             codeLocation: code[1],
-            location: location()
+            location: location(),
           }
         : expression;
     }
@@ -247,7 +249,7 @@ SequenceExpression
         ? {
             type: "sequence",
             elements: [head].concat(tail),
-            location: location()
+            location: location(),
           }
         : head;
     }
@@ -264,7 +266,7 @@ LabeledExpression
         labelLocation: label !== null ? label[1] : pluck,
         pick: true,
         expression,
-        location: location()
+        location: location(),
       };
     }
   / label:LabelColon expression:PrefixedExpression {
@@ -273,7 +275,7 @@ LabeledExpression
         label: label[0],
         labelLocation: label[1],
         expression,
-        location: location()
+        location: location(),
       };
     }
   / PrefixedExpression
@@ -283,7 +285,7 @@ Pluck
 
 LabelColon
   = label:IdentifierName __ ":" __ {
-      if (reservedWords.indexOf(label[0]) >= 0) {
+      if (reservedWords.has(label[0])) {
         error(`Label can't be a reserved word "${label[0]}"`, label[1]);
       }
 
@@ -295,7 +297,7 @@ PrefixedExpression
       return {
         type: OPS_TO_PREFIXED_TYPES[operator],
         expression,
-        location: location()
+        location: location(),
       };
     }
   / SuffixedExpression
@@ -310,7 +312,7 @@ SuffixedExpression
       return {
         type: OPS_TO_SUFFIXED_TYPES[operator],
         expression,
-        location: location()
+        location: location(),
       };
     }
   / RepeatedExpression
@@ -323,8 +325,8 @@ SuffixedOperator
 
 RepeatedExpression
   = expression:PrimaryExpression __ "|" __ boundaries:Boundaries __ delimiter:("," __ @Expression __)? "|" {
-      let min = boundaries[0];
-      let max = boundaries[1];
+      const min = boundaries[0];
+      const max = boundaries[1];
       if (max.type === "constant" && max.value === 0) {
         error("The maximum count of repetitions of the rule must be > 0", max.location);
       }
@@ -372,8 +374,8 @@ PrimaryExpression
       // nodes that already isolate label scope themselves. This leaves us with
       // "labeled" and "sequence".
       return expression.type === "labeled" || expression.type === "sequence"
-          ? { type: "group", expression, location: location() }
-          : expression;
+        ? { type: "group", expression, location: location() }
+        : expression;
     }
 
 RuleReferenceExpression
@@ -383,8 +385,8 @@ RuleReferenceExpression
         name: name[0],
         library: library[0],
         libraryNumber: -1,
-        location: location()
-      }
+        location: location(),
+      };
     }
   / name:IdentifierName !(__ (StringLiteral __)? "=") {
       return { type: "rule_ref", name: name[0], location: location() };
@@ -396,7 +398,7 @@ SemanticPredicateExpression
         type: OPS_TO_SEMANTIC_PREDICATE_TYPES[operator],
         code: code[0],
         codeLocation: code[1],
-        location: location()
+        location: location(),
       };
     }
 
@@ -484,7 +486,7 @@ LiteralMatcher "literal"
         type: "literal",
         value,
         ignoreCase: ignoreCase !== null,
-        location: location()
+        location: location(),
       };
     }
 
@@ -514,7 +516,7 @@ CharacterClassMatcher "character class"
         parts: parts.filter(part => part !== ""),
         inverted: inverted !== null,
         ignoreCase: ignoreCase !== null,
-        location: location()
+        location: location(),
       };
     }
 
