@@ -212,4 +212,27 @@ describe("compiler pass |mergeCharacterClasses|", () => {
       { allowedStartRules: ["start"] }
     );
   });
+
+  it("handles empty literals", () => {
+    expect(pass).to.changeAST(
+      [
+        "start = [a] / ''",
+      ].join("\n"),
+      {
+        rules: [
+          {
+            name: "start",
+            expression: {
+              type: "choice",
+              alternatives: [
+                { type: "class", parts: ["a"], ignoreCase: false, inverted: false, unicode: false },
+                { type: "literal", value: "" },
+              ],
+            },
+          },
+        ],
+      },
+      { allowedStartRules: ["start"] }
+    );
+  });
 });

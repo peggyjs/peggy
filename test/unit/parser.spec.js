@@ -87,12 +87,13 @@ describe("Peggy grammar parser", () => {
     );
   }
 
-  function classGrammar(parts, inverted, ignoreCase) {
+  function classGrammar(parts, inverted, ignoreCase, unicode = false) {
     return oneRuleGrammar({
       type: "class",
       parts,
       inverted,
       ignoreCase,
+      unicode,
     });
   }
 
@@ -301,6 +302,7 @@ describe("Peggy grammar parser", () => {
     expect("\n{{ top level code }};\n{ code };\na = 'abcd';\n").to.parseAs(
       { type: "grammar", imports: [], topLevelInitializer, initializer, rules: [ruleA] }
     );
+    expect("").to.failToParse();
     expect("{{ ").to.failToParse();
     expect("{ ").to.failToParse();
     expect("{{}").to.failToParse();
@@ -866,7 +868,16 @@ describe("Peggy grammar parser", () => {
     expect("start = !{ code }").to.parseAs(oneRuleGrammar(semanticNot));
   });
 
-  // The SourceCharacter rule is not tested.
+  it("parses SourceCharacter", () => {
+    // Correct surrogates; this produces two UTF-16 code units (2 "chars").
+    expect("start = '\u{1F4A9}' // \u{1F4A9}").to.parseAs(literalGrammar("\u{1F4A9}", false));
+    expect("start = \"\u{1F4A9}\" // \u{1F4A9}").to.parseAs(literalGrammar("\u{1F4A9}", false));
+    // Lone surrogates
+    expect("start = '\u{d83d}' // \u{d83d}").to.parseAs(literalGrammar("\u{d83d}", false));
+    expect("start = '\u{dca9}' // \u{dca9}").to.parseAs(literalGrammar("\u{dca9}", false));
+    // Backwards
+    expect("start = '\u{dca9}\u{d83d}' // \u{dca9}\u{d83d}").to.parseAs(literalGrammar("\u{dca9}\u{d83d}", false));
+  });
 
   // Canonical WhiteSpace is " ".
   it("parses WhiteSpace", () => {
@@ -1042,6 +1053,24 @@ describe("Peggy grammar parser", () => {
     expect("start = [\\\n]").to.parseAs(
       classGrammar([], false, false)
     );
+
+    expect("start = [\u{1F4A9}]").to.parseAs(
+      classGrammar(["\u{1F4A9}"], false, false, true)
+    );
+    expect("start = [\\u{1F4A9}]").to.parseAs(
+      classGrammar(["\u{1F4A9}"], false, false, true)
+    );
+    expect("start = [\u{1F4A9}-\u{1F4B0}]").to.parseAs(
+      classGrammar([["\u{1F4A9}", "\u{1F4B0}"]], false, false, true)
+    );
+    expect("start = [\\u{1F4A9}-\\u{1F4B0}]").to.parseAs(
+      classGrammar([["\u{1F4A9}", "\u{1F4B0}"]], false, false, true)
+    );
+    expect("start = [\\u{g}]").to.failToParse();
+    expect("start = [\\u{1g}]").to.failToParse();
+    expect("start = [\\u{12g}]").to.failToParse();
+    expect("start = [\\u{123g}]").to.failToParse();
+    expect("start = [\\xgg]").to.failToParse();
   });
 
   // Canonical ClassCharacterRange is "a-d".

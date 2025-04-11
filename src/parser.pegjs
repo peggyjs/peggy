@@ -409,7 +409,18 @@ SemanticPredicateOperator
 // ---- Lexical Grammar -----
 
 SourceCharacter
-  = .
+ = SourceCharacterLow
+  / SourceCharacterHigh
+
+// Not surrogates
+SourceCharacterLow
+  = [\u0000-\uD7FF\uE000-\uFFFF]
+
+// Can be properly-matched surrogates or lone surrogates.
+SourceCharacterHigh
+  = $([\uD800-\uDBFF][\uDC00-\uDFFF]) // Surrogate pair
+  / [\uD800-\uDBFF] // Lone first surrogate
+  / [\uDC00-\uDFFF] // Lone second surrogate
 
 WhiteSpace "whitespace"
   = "\t"
@@ -517,6 +528,7 @@ CharacterClassMatcher "character class"
         inverted: inverted !== null,
         ignoreCase: ignoreCase !== null,
         location: location(),
+        unicode: parts.flat().some(c => c.codePointAt(0) > 0xffff)
       };
     }
 
@@ -578,6 +590,9 @@ UnicodeEscapeSequence
   = "u" digits:$(HexDigit HexDigit HexDigit HexDigit) {
       return String.fromCharCode(parseInt(digits, 16));
     }
+  / "u" "{" digits:$HexDigit+ "}" {
+    return String.fromCodePoint(parseInt(digits, 16));
+  }
 
 DecimalDigit
   = [0-9]

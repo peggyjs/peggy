@@ -51,6 +51,7 @@ describe("compiler pass |inferenceMatchResult|", () => {
     expect(pass).to.changeAST("start = 'a' / []",  { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = []  / 'b'", { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = []  / []",  { rules: [{ match: -1 }] });
+    expect(pass).to.changeAST("start = 'a'? / 'b'",  { rules: [{ match: 0 }] });
   });
 
   it("calculate |match| property for predicates correctly", () => {
