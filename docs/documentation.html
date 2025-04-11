@@ -208,8 +208,8 @@ to keep libraries of often-used grammar rules in
   </dd>
 
   <dt><code>--format &lt;format&gt;</code></dt>
-  <dd>Format of the generated parser: <code>amd</code>, <code>commonjs</code>,
-    <code>globals</code>, <code>umd</code>, <code>es</code> (default: <code>commonjs</code>).
+  <dd>Format of the generated parser: <code>commonjs</code>,
+    <code>globals</code>, <code>es</code> (default: <code>commonjs</code>).
   </dd>
 
   <dt><code>-o</code>, <code>--output &lt;file&gt;</code></dt>
@@ -282,7 +282,7 @@ to keep libraries of often-used grammar rules in
 <pre><code class="language-javascript">// config.js or config.cjs
 module.exports = {
   allowedStartRules = ["foo", "bar"],
-  format: "umd",
+  format: "es",
   exportVar: "foo",
   input: "fooGrammar.peggy",
   plugins: [require("./plugin.js")],
@@ -362,10 +362,8 @@ echo "foo = '1' { return 42 }" | npx peggy --output parser.js --source-map --tes
 <pre><code class="language-javascript">import * as peggy from "peggy";</code></pre>
 
 <p>For use in browsers, include the Peggy library in your web page or
-  application using the <code>&lt;script&gt;</code> tag. If Peggy detects an
-  <a href="https://requirejs.org/docs/whyamd.html">AMD</a> loader, it will define
-  itself as a module, otherwise the API will be available in the
-  <code>peg</code> global object.</p>
+  application using the <code>&lt;script&gt;</code> tag. The API will be
+  available in the <code>peg</code> global object.</p>
 
 <p>In deno, you can import through a CDN like this:</p>
 <pre><code class="language-javascript">import peggy from "https://esm.sh/peggy"; // Note: add @version in production</code></pre>
@@ -414,8 +412,7 @@ echo "foo = '1' { return 42 }" | npx peggy --output parser.js --source-map --tes
   <dt><code>dependencies</code></dt>
   <dd>Parser dependencies. The value is an object which maps variables used to
     access the dependencies in the parser to module IDs used to load them; valid
-    only when <code>format</code> is set to <code>"amd"</code>,
-    <code>"commonjs"</code>, <code>"es"</code>, or <code>"umd"</code>.
+    only when <code>format</code> is set to <code>"commonjs"</code> or <code>"es"</code>.
     Dependencies variables will be available in both the <em>global
     initializer</em> and the <em>per-parse initializer</em>. Unless the parser
     is to be generated in different formats, it is recommended to rather
@@ -429,15 +426,14 @@ echo "foo = '1' { return 42 }" | npx peggy --output parser.js --source-map --tes
   <dt><code>exportVar</code></dt>
   <dd>Name of a global variable into which the parser object is assigned to when
     no module loader is detected; valid only when <code>format</code> is set to
-    <code>"globals"</code> or <code>"umd"</code> (default:
-    <code>null</code>).
+    <code>"globals"</code> (default: <code>null</code>).
   </dd>
 
   <dt><code>format</code></dt>
   <dd>
-    Format of the generated parser (<code>"amd"</code>, <code>"bare"</code>,
-    <code>"commonjs"</code>, <code>"es"</code>, <code>"globals"</code>, or
-    <code>"umd"</code>); valid only when <code>output</code> is set to
+    Format of the generated parser (<code>"bare"</code>,
+    <code>"commonjs"</code>, <code>"es"</code>, or <code>"globals"</code>);
+    valid only when <code>output</code> is set to
     <code>"source"</code>, <code>"source-and-map"</code>, or
     <code>"source-with-inline-map"</code>. (default: <code>"bare"</code>).
   </dd>
@@ -1877,16 +1873,15 @@ export function use(config, options) => {
   following environments:</p>
 
 <ul>
-  <li>Node.js 14+</li>
+  <li>Node.js 20+</li>
   <li>Edge</li>
   <li>Firefox</li>
   <li>Chrome</li>
   <li>Safari</li>
-  <li>Opera</li>
 </ul>
 
 <p>The generated parser is intended to run in older environments when the format
-  chosen is "globals" or "umd". Extensive testing is NOT performed in these
+  chosen is "globals". Extensive testing is NOT performed in these
   environments, but issues filed regarding the generated code will be fixed.</p>
 
 <script>
