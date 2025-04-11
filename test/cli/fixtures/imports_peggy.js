@@ -97,7 +97,7 @@ class peg$SyntaxError extends SyntaxError {
             : classEscape(part))
         );
 
-        return "[" + (expectation.inverted ? "^" : "") + escapedParts.join("") + "]";
+        return "[" + (expectation.inverted ? "^" : "") + escapedParts.join("") + "]" + (expectation.unicode ? "u" : "");
       },
 
       any() {
@@ -225,12 +225,20 @@ function peg$parse(input, options) {
     throw peg$buildSimpleError(message, location);
   }
 
+function peg$getUnicode(pos = peg$currPos) {
+  const cp = input.codePointAt(pos);
+  if (cp === undefined) {
+    return "";
+  }
+  return String.fromCodePoint(cp);
+}
+
   function peg$literalExpectation(text, ignoreCase) {
     return { type: "literal", text, ignoreCase };
   }
 
-  function peg$classExpectation(parts, inverted, ignoreCase) {
-    return { type: "class", parts, inverted, ignoreCase };
+  function peg$classExpectation(parts, inverted, ignoreCase, unicode) {
+    return { type: "class", parts, inverted, ignoreCase, unicode };
   }
 
   function peg$anyExpectation() {
@@ -465,7 +473,7 @@ function peg$parse(input, options) {
 
     throw peg$buildStructuredError(
       peg$maxFailExpected,
-      peg$maxFailPos < input.length ? input.charAt(peg$maxFailPos) : null,
+      peg$maxFailPos < input.length ? peg$getUnicode(peg$maxFailPos) : null,
       peg$maxFailPos < input.length
         ? peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1)
         : peg$computeLocation(peg$maxFailPos, peg$maxFailPos)

@@ -59,6 +59,7 @@ declare namespace ast {
     value: (string[] | string)[];
     inverted: boolean;
     ignoreCase: boolean;
+    unicode: boolean;
   }
 
   type GrammarExpectation =
@@ -380,6 +381,10 @@ declare namespace ast {
      * or it case-paired symbol in the one of ranges of `string[]` parts.
      */
     ignoreCase: boolean;
+    /**
+     * If `true`, unicode regexp is required.
+     */
+    unicode: boolean;
   }
 
   /** Matches any UTF-16 code unit in the input, but doesn't match the empty string. */

@@ -86,7 +86,7 @@ class peg$SyntaxError extends SyntaxError {
             : classEscape(part))
         );
 
-        return "[" + (expectation.inverted ? "^" : "") + escapedParts.join("") + "]";
+        return "[" + (expectation.inverted ? "^" : "") + escapedParts.join("") + "]" + (expectation.unicode ? "u" : "");
       },
 
       any() {
@@ -198,17 +198,17 @@ function peg$parse(input, options) {
   const peg$e0 = peg$literalExpectation("foo", false);
   const peg$e1 = peg$literalExpectation("foo", true);
   const peg$e2 = peg$anyExpectation();
-  const peg$e3 = peg$classExpectation([["a", "z"]], false, false);
-  const peg$e4 = peg$classExpectation([["a", "z"]], true, true);
+  const peg$e3 = peg$classExpectation([["a", "z"]], false, false, false);
+  const peg$e4 = peg$classExpectation([["a", "z"]], true, true, false);
   const peg$e5 = peg$literalExpectation("1", false);
-  const peg$e6 = peg$classExpectation([["0", "9"]], false, false);
+  const peg$e6 = peg$classExpectation([["0", "9"]], false, false, false);
   const peg$e7 = peg$literalExpectation(",", false);
   const peg$e8 = peg$literalExpectation("a", false);
   const peg$e9 = peg$literalExpectation("b", false);
   const peg$e10 = peg$literalExpectation("bar", true);
   const peg$e11 = peg$literalExpectation(" ", false);
   const peg$e12 = peg$literalExpectation("c", false);
-  const peg$e13 = peg$classExpectation([["a", "c"]], false, false);
+  const peg$e13 = peg$classExpectation([["a", "c"]], false, false, false);
   const peg$e14 = peg$literalExpectation("f", false);
 
   function peg$f0(match, rest) {    return {match, rest};  }
@@ -299,12 +299,20 @@ function peg$parse(input, options) {
     throw peg$buildSimpleError(message, location);
   }
 
+function peg$getUnicode(pos = peg$currPos) {
+  const cp = input.codePointAt(pos);
+  if (cp === undefined) {
+    return "";
+  }
+  return String.fromCodePoint(cp);
+}
+
   function peg$literalExpectation(text, ignoreCase) {
     return { type: "literal", text, ignoreCase };
   }
 
-  function peg$classExpectation(parts, inverted, ignoreCase) {
-    return { type: "class", parts, inverted, ignoreCase };
+  function peg$classExpectation(parts, inverted, ignoreCase, unicode) {
+    return { type: "class", parts, inverted, ignoreCase, unicode };
   }
 
   function peg$anyExpectation() {
@@ -433,7 +441,7 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
     s1 = input.substr(peg$currPos, 3);
     if (s1.toLowerCase() === peg$c0) {
-      peg$currPos += 3;
+      peg$currPos += (3);
     } else {
       s1 = peg$FAILED;
       if (peg$silentFails === 0) { peg$fail(peg$e1); }
@@ -1092,7 +1100,7 @@ function peg$parse(input, options) {
     s1 = peg$currPos;
     s2 = input.substr(peg$currPos, 3);
     if (s2.toLowerCase() === peg$c5) {
-      peg$currPos += 3;
+      peg$currPos += (3);
     } else {
       s2 = peg$FAILED;
       if (peg$silentFails === 0) { peg$fail(peg$e10); }
@@ -1607,7 +1615,7 @@ function peg$parse(input, options) {
 
     throw peg$buildStructuredError(
       peg$maxFailExpected,
-      peg$maxFailPos < input.length ? input.charAt(peg$maxFailPos) : null,
+      peg$maxFailPos < input.length ? peg$getUnicode(peg$maxFailPos) : null,
       peg$maxFailPos < input.length
         ? peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1)
         : peg$computeLocation(peg$maxFailPos, peg$maxFailPos)

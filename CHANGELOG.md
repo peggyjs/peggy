@@ -47,6 +47,11 @@ Released: TBD (Not before 2025-05-01)
   generated for each of these removals.  Like merged class rules above, this
   should only be removing dead code.
   [#594](https://github.com/peggyjs/peggy/pull/594)
+- Character classes now process characters not in the Basic Multi-Lingual
+  Plane (BMP) correctly.
+- Unicode characters may now be specified with the `\u{hex}` syntax, allowing
+  easier inclusion of characters not in the BMP (such as newer emoji).  This
+  syntax works both in string literals and in character classes.
 
 ### Bug fixes
 
