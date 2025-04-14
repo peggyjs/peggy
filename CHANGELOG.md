@@ -40,6 +40,11 @@ Released: TBD (Not before 2025-05-01)
 - Minor changes in code generation for parsers.  More consistent indentation,
   trailing commas (for consistency with the Peggy house style).
   [#593](https://github.com/peggyjs/peggy/pull/593)
+- Avoid performance cliff for deeply-nested grammars when checking for
+  infinite recursion.  Previously, nesting more than about 30 layers deep
+  caused drastically increasing processing time.  Now, nesting more than 700
+  layers deep causes "Maximum call stack size exceeded"; hopefully this is
+  deep enough in practice. [#600](https://github.com/peggyjs/peggy/pull/600)
 
 ### Documentation
 
