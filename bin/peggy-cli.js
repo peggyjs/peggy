@@ -280,12 +280,18 @@ class PeggyCLI extends Command {
       // Note: empty string is a valid input for testText.
       // Don't just test for falsy.
       const hasTest = !this.progOptions.testFile && (typeof this.progOptions.testText !== "string");
-      return hasTest ? this.std.out : null;
+      if (hasTest) {
+        this.verbose("CLI writing to stdout");
+        return this.std.out;
+      }
+      this.verbose("No grammar output");
+      return null;
     }
     assert(this.progOptions.outputFile);
     await mkFileDir(this.progOptions.outputFile);
     return new Promise((resolve, reject) => {
       assert(this.progOptions.outputFile);
+      this.verbose("CLI writing to '%s'", this.progOptions.outputFile);
       const outputStream = fs.createWriteStream(this.progOptions.outputFile);
       outputStream.on("error", reject);
       outputStream.on("open", () => resolve(outputStream));
@@ -339,6 +345,8 @@ class PeggyCLI extends Command {
 //\x23 sourceMappingURL=data:application/json;charset=utf-8;base64,${buf.toString("base64")}
 `;
     }
+
+    this.verbose("CLI writing sourceMap '%s'", this.progOptions.sourceMap);
     await mkFileDir(this.progOptions.sourceMap);
     await fs.promises.writeFile(
       this.progOptions.sourceMap,
@@ -393,9 +401,9 @@ class PeggyCLI extends Command {
     if (!this.progOptions.dtsFile) {
       return;
     }
-    let template = await fs.promises.readFile(
-      path.join(__dirname, "generated_template.d.ts"), "utf8"
-    );
+    const templateFile = path.join(__dirname, "generated_template.d.ts");
+    this.verbose("CLI reading DTS template from '%s'", templateFile);
+    let template = await fs.promises.readFile(templateFile, "utf8");
     let startRules = this.parserOptions.allowedStartRules
       || [ast.rules[0].name];
     if (startRules.includes("*")) {
@@ -406,6 +414,8 @@ class PeggyCLI extends Command {
     template = template.replace("$$$StartRules$$$", qsr.join(" | "));
     template = template.replace("$$$DefaultStartRule$$$", qsr[0]);
 
+    this.verbose("CLI writing DTS to '%s'", this.progOptions.dtsFile);
+    await mkFileDir(this.progOptions.dtsFile);
     const out = fs.createWriteStream(this.progOptions.dtsFile);
     out.write(template);
 
@@ -524,7 +534,7 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
       ); // All of the real work.
 
       errorText = "opening output stream";
-      this.verbose("CLI", errorText);
+      this.verbose("CLI maybe", errorText);
       const outputStream = await this.openOutputStream();
 
       // If option `--ast` is specified, `generate()` returns an AST object
@@ -534,20 +544,20 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
       } else {
         assert(source.code);
         errorText = "writing sourceMap";
-        this.verbose("CLI", errorText);
+        this.verbose("CLI maybe", errorText);
         const mappedSource = await this.writeSourceMap(source.code);
 
-        errorText = "writing parser";
+        errorText = "maybe writing parser";
         this.verbose("CLI", errorText);
         await this.writeOutput(outputStream, mappedSource);
 
-        errorText = "writing .d.ts file";
+        errorText = "maybe writing .d.ts file";
         this.verbose("CLI", errorText);
         await this.writeDTS(source);
 
         exitCode = 2;
         errorText = "running test";
-        this.verbose("CLI", errorText);
+        this.verbose("CLI maybe", errorText);
         await this.test(mappedSource);
       }
     } catch (error) {
