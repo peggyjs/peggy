@@ -21,6 +21,24 @@ module.exports = function(chai, utils) {
     new Assertion(ast).like(props);
   });
 
+  Assertion.addMethod("haveErrors", function(grammar, props) {
+    const ast = parser.parse(grammar);
+
+    const session = new Session();
+    utils.flag(this, "object")(ast, {}, session);
+
+    switch (typeof props) {
+      case "number":
+        new Assertion(session.errors).equal(props);
+        break;
+      case "object":
+        new Assertion(session.problems).like(props);
+        break;
+      default:
+        break;
+    }
+  });
+
   Assertion.addMethod("reportError", function(grammar, props) {
     const ast = parser.parse(grammar);
 

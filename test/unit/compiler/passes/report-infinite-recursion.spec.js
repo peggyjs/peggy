@@ -170,4 +170,25 @@ describe("compiler pass |reportInfiniteRecursion|", () => {
       });
     });
   });
+
+  it("does not fail on deeply-nested grammars", () => {
+    let src = "";
+    const max = 500; // Used to bonk at ~30.  Now bonks over 700.
+    for (let i = 0; i < max; i++) {
+      src += `foo${i} = foo${i + 1} / foo${i + 2}\n`;
+    }
+    src += `foo${max} = "a"\n`;
+    src += `foo${max + 1} = "a"\n`;
+    src += "bar = 'c'\n";
+    expect(pass).to.not.reportError(src);
+  });
+
+  it("does not continue after finding an error", () => {
+    // "reportError" stops on first error.
+
+    expect(pass).to.haveErrors("foo = foo 'b'", 1);
+    expect(pass).to.haveErrors("foo = foo / ([a] 'b')", 1);
+    expect(pass).to.haveErrors("foo = foo / ('b'|..|)", 1);
+    expect(pass).to.haveErrors("foo = foo / (bar)", 1);
+  });
 });
