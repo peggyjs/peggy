@@ -29,6 +29,8 @@ Released: TBD (Not before 2025-05-01)
 
 ### New features
 
+- Slightly better verbose output from the CLI, showing where files are written.
+  [#601](https://github.com/peggyjs/peggy/pull/601)
 
 ### Bug fixes
 
