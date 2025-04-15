@@ -317,6 +317,7 @@ describe("Peggy API", () => {
         const node = peg.generate(SOURCE, {
           grammarSource: source,
           output: "source-and-map",
+          allowedStartRules: ["*"],
         });
         const { code, map } = node.toStringWithSourceMap();
 

@@ -198,7 +198,11 @@ describe("plugin API", () => {
           config.passes.generate.splice(1, 0, munge);
         },
       };
-      const parser = peg.generate("one = 'abc'i; two = 'a'", { plugins: [plugin], output: "source" });
+      const parser = peg.generate("one = 'abc'i; two = 'a'", {
+        plugins: [plugin],
+        output: "source",
+        allowedStartRules: ["*"],
+      });
       // Lint complained about a long regex, so split and join.
       const matcher = new RegExp([
         /if \(input\.substr\(peg\$currPos, 3\)/,
