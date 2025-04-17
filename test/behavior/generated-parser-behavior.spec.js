@@ -215,11 +215,11 @@ describe("generated parser behavior", () => {
             });
           });
 
-          it("reports match failure and doesn't records any expectations when expression never match", () => {
+          it("reports match failure and records an expectation of type \"other\" when expression never match", () => {
             const parser = peg.generate("start 'start' = []", options);
 
             expect(parser).to.failToParse("b", {
-              expected: [],
+              expected: [{ type:"other", description: "start" }],
             });
           });
 

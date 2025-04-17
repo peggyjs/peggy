@@ -210,7 +210,6 @@ function peg$parse(input, options) {
   const peg$e12 = peg$literalExpectation("c", false);
   const peg$e13 = peg$classExpectation([["a", "c"]], false, false);
   const peg$e14 = peg$literalExpectation("f", false);
-  const peg$e15 = peg$otherExpectation("The rest of the input");
 
   function peg$f0(match, rest) {    return {match, rest};  }
   function peg$f1(match, rest) {    return {match, rest};  }
@@ -1594,8 +1593,6 @@ function peg$parse(input, options) {
     }
     s0 = input.substring(s0, peg$currPos);
     peg$silentFails--;
-    s1 = peg$FAILED;
-    if (peg$silentFails === 0) { peg$fail(peg$e15); }
 
     return s0;
   }

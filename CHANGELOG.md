@@ -65,6 +65,8 @@ Released: TBD (Not before 2025-05-01)
 - Small measures to try to get `deno run -A npm:peggy` to work.  We will not
   know if these were successful until the package is published next.  Testing
   with `--format es -t foo` will still not work in Deno.
+- Fix a bug with named NEVER_MATCH expressions.
+  [#454](https://github.com/peggyjs/peggy/pull/454)
 
 ### Documentation
 
