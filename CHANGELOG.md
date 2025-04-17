@@ -48,10 +48,25 @@ Released: TBD (Not before 2025-05-01)
   should only be removing dead code.
   [#594](https://github.com/peggyjs/peggy/pull/594)
 - Character classes now process characters not in the Basic Multi-Lingual
-  Plane (BMP) correctly.
+  Plane (BMP) correctly.  This feature requires a JavaScript environment
+  that supports the `u` flag to regular expressions.  The `u` flag will only
+  be used on character classes that make use of this new feature.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
 - Unicode characters may now be specified with the `\u{hex}` syntax, allowing
   easier inclusion of characters not in the BMP (such as newer emoji).  This
   syntax works both in string literals and in character classes.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
+- Errors pointing to non-BMP characters as the "found" text will now show the
+  full character and not the replacement character for the first surrogate in
+  the UTF-16 representation.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
+- Character classes can now be annotated with the "u" flag, which will force
+  the character class into Unicode mode, where one full Codepoint will be matched.
+  For example, `[^a]u` will match 💪 (U+1F4AA).  Without the "u" flag, `[^a]`
+  would only match \uD83D, the first surrogate that makes up U+1F4AA in UTF-16
+  encoding.  [#602](https://github.com/peggyjs/peggy/pull/602)
+- String literals may now contain characters from outside the BMP.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
 
 ### Bug fixes
 

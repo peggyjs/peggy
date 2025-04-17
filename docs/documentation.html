@@ -857,7 +857,7 @@ WS = [ \t]*</code></pre>
   <dt><code>.</code> (U+002E: FULL STOP, or "period")</dt>
 
   <dd>
-    <p>Match exactly one character and return it as a string.</p>
+    <p>Match exactly one JavaScript character (UTF-16 code unit) and return it as a string.</p>
     <div class="example">
       <div>
         <div><em>Example:</em> <code>any = .</code></div>
@@ -906,16 +906,23 @@ WS = [ \t]*</code></pre>
     </div>
   </dd>
 
-  <dt><code>[<em>characters</em>]</code></dt>
+  <dt><code>[<span class="dim">^</span><em>characters</em>]<span class="dim">iu</span></code></dt>
 
   <dd>
-    <p>Match one character from a set and return it as a string. The characters
-      in the list can be escaped in exactly the same way as in JavaScript string.
+    <p>Match one character from a character class and return it as a string. The characters
+      in the list can be escaped in exactly the same way as in JavaScript string, using
+      <code>\uXXXX</code> or <code>\u{XXXX}</code>.
       The list of characters can also contain ranges (e.g. <code>[a-z]</code>
       means “all lowercase letters”). Preceding the characters with <code>^</code>
-      inverts the matched set (e.g. <code>[^a-z]</code> means “all character but
-      lowercase letters”). Appending <code>i</code> right after the class makes
-      the match case-insensitive.</p>
+      inverts the matched set (e.g. <code>[^a-z]</code> means “all characters except
+      lowercase letters”). Appending <code>i</code> after the class makes
+      the match case-insensitive.  Appending <code>u</code> after the class forces
+      the class into Unicode mode, where an entire codepoint will be matched, even
+      if it takes up two JavaScript characters in a UTF-16 surrogate pair.  If
+      any of the characters in the class are outside the range 0x0-0xFFFF (the
+      Basic Multilingual Plane: BMP), the class is automatically forced into
+      Unicode mode even if the "u" flag is not specified.  Note: the Unicode mode
+      generates a JavaScript regular expression with the "u" flag set.</p>
 
     <div class="example">
       <div>
@@ -939,6 +946,19 @@ WS = [ \t]*</code></pre>
       <div class="try">
         <em>Try it:</em>
         <input type="text" value="=" class="exampleInput" name="not_class_i">
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>not_class_u = [^a-z]u</code></div>
+        <div><em>Matches:</em> <code>"🦥"</code></div>
+        <div><em>Does not match:</em> <code>"f"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="🦥" class="exampleInput" name="not_class_u">
         <div class="result"></div>
       </div>
     </div>
@@ -1718,17 +1738,12 @@ note: Step 3: call itself without input consumption - left recursion
 <p>All of the notes about values for <code>location()</code> object are also
   applicable to the <code>range()</code> and <code>offset()</code> calls.</p>
 
-<p>Currently, Peggy grammars may only contain codepoints from the
+<p>Peggy grammars work one UTF-16 code unit at a time, except for string
+  literals containing characters from outside the
   <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic
-  Multilingual Plane (BMP)</a> of Unicode.
-  This means that all offsets are measured in UTF-16 code units. If you
-  include characters outside this Plane (for example, emoji, or any
-  surrogate pairs), you may get an offset inside a code point.</p>
-
-<p>Changing this behavior might be a breaking change, so it will likely cause
-  a major version number increase if it happens. You can join to the discussion
-  for this topic on the <a href="https://github.com/peggyjs/peggy/discussions/15">GitHub Discussions
-    page</a>.</p>
+  Multilingual Plane (BMP)</a> of Unicode or character classes in Unicode mode.
+  All offsets are measured in UTF-16 code units (JavaScript characters).  It
+  is possible to get an offset in the middle of a UTF-16 surrogate pair.</p>
 
 <h2 id="plugins-api">Plugins API</h2>
 

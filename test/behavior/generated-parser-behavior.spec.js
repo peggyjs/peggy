@@ -351,8 +351,21 @@ describe("generated parser behavior", () => {
 
         it("matches unicode classes", () => {
           const parser = peg.generate("start = [\\u{1F4A9}]", options);
-
           expect(parser).to.parse("\u{1F4A9}");
+        });
+
+        it("matches explicit unicode classes", () => {
+          const parser = peg.generate("start = [^a]u", options);
+          expect(parser).to.parse("\u{1F4A9}");
+          expect(parser).to.parse("A");
+          expect(parser).to.failToParse("a");
+        });
+
+        it("matches explicit unicode classes, case-insensitive", () => {
+          const parser = peg.generate("start = [^a]ui", options);
+          expect(parser).to.parse("\u{1F4A9}");
+          expect(parser).to.failToParse("A");
+          expect(parser).to.failToParse("a");
         });
       });
 
