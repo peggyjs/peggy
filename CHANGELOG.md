@@ -26,6 +26,13 @@ Released: TBD (Not before 2025-05-01)
   the type has changed to `PeggySyntaxError`, which may cause some slight need
   for rework in TypeScript-aware projects.  This was the main driver behind
   moving away from ES5. [#593](https://github.com/peggyjs/peggy/pull/593)
+- BREAKING: The grammar parser now uses your JavaScript environment's understanding
+  of Unicode classes, rather than a partial copy of Unicode 8 as before.  This
+  should be more correct and evolve over time while staying backward-compatible
+  to the extent that the Unicode Consortium keeps to its goals.  Because this
+  might slightly affect what rule names are valid, we are marking this as a
+  breaking change just in case.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
 
 ### New features
 - Extend library mode to include a success flag and a function for throwing syntax errors when needed.
@@ -70,7 +77,10 @@ Released: TBD (Not before 2025-05-01)
 - Character classes may now contain `\p{}` or `\P{}` escapes to match or
   inverted-match Unicode properties.  See
   [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape)
-  for more details. [#602](https://github.com/peggyjs/peggy/pull/602)
+  for more details.  If you are generating code for a non-JavaScript environment
+  using a plugin, this may be somewhat challenging for the plugin author.
+  Please file an issue on Peggy for help.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
 
 ### Bug fixes
 
