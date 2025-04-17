@@ -221,7 +221,14 @@ describe("Peggy grammar parser", () => {
       rule_ref: stripLeaf,
       library_ref: stripLeaf,
       literal: stripLeaf,
-      class: stripLeaf,
+      class(node) {
+        stripLeaf(node);
+        for (const p of node.parts) {
+          if (typeof p === "object") {
+            stripLeaf(p);
+          }
+        }
+      },
       any: stripLeaf,
     });
 
@@ -1084,6 +1091,40 @@ describe("Peggy grammar parser", () => {
     expect("start = [^a]iu").to.parseAs(
       classGrammar(["a"], true, true, true)
     );
+    expect("start = [\\p{ASCII}]").to.parseAs(
+      classGrammar([{
+        type: "classEscape",
+        value: "p{ASCII}",
+        unicode: true,
+      }], false, false, true)
+    );
+    expect("start = [\\P{ASCII}]").to.parseAs(
+      classGrammar([{
+        type: "classEscape",
+        value: "P{ASCII}",
+        unicode: true,
+      }], false, false, true)
+    );
+    expect("start = [\\p{gc=Nd}]").to.parseAs(
+      classGrammar([{
+        type: "classEscape",
+        value: "p{gc=Nd}",
+        unicode: true,
+      }], false, false, true)
+    );
+    expect("start = [\\p{Script=New_Tai_Lue}]").to.parseAs(
+      classGrammar([{
+        type: "classEscape",
+        value: "p{Script=New_Tai_Lue}",
+        unicode: true,
+      }], false, false, true)
+    );
+    expect("start = [\\p]").to.failToParse();
+    expect("start = [\\p{]").to.failToParse();
+    expect("start = [\\p{a]").to.failToParse();
+    expect("start = [\\p{a=]").to.failToParse();
+    expect("start = [\\p{a=b]").to.failToParse();
+    expect("start = [\\p{\u0661}]").to.failToParse();
   });
 
   // Canonical ClassCharacterRange is "a-d".
