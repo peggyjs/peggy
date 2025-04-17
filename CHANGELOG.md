@@ -62,6 +62,9 @@ Released: TBD (Not before 2025-05-01)
   caused drastically increasing processing time.  Now, nesting more than 700
   layers deep causes "Maximum call stack size exceeded"; hopefully this is
   deep enough in practice. [#600](https://github.com/peggyjs/peggy/pull/600)
+- Small measures to try to get `deno run -A npm:peggy` to work.  We will not
+  know if these were successful until the package is published next.  Testing
+  with `--format es -t foo` will still not work in Deno.
 
 ### Documentation
 
