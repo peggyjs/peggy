@@ -2,13 +2,15 @@
 
 "use strict";
 
+const { isImportSupported } = require("@peggyjs/from-mem");
+
 // Since Windows can't handle `env -S`, exec once to get permission
 // to use the vm module in its modern form.
 const execArgv = new Set(process.execArgv);
-if (!execArgv.has("--experimental-vm-modules")) {
+if (!isImportSupported() && !Object.prototype.hasOwnProperty.call(globalThis, "Deno")) {
   execArgv.add("--experimental-vm-modules");
   execArgv.add("--no-warnings");
-  const { spawnSync } = require("child_process");
+  const { spawnSync } = require("node:child_process");
   // NOTE: Does not replace process.  Node can't do that, apparently.
   const { status, signal, error } = spawnSync(process.argv[0], [
     ...execArgv,
