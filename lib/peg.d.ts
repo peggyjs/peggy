@@ -56,7 +56,7 @@ declare namespace ast {
    * CharacterClass (`parts` was renamed to `value`).
    */
   interface GrammarCharacterClass {
-    value: (string[] | string)[];
+    value: (string[] | string | ClassEscape)[];
     inverted: boolean;
     ignoreCase: boolean;
     unicode: boolean;
@@ -364,13 +364,24 @@ declare namespace ast {
     ignoreCase: boolean;
   }
 
-  /** Matches single UTF-16 character. */
+  interface ClassEscape extends Node<"classEscape"> {
+    /**
+     * Escaped portion of character class, without the leading backslash.
+     * Example: "p{ASCII}"
+     */
+    value: string;
+  }
+
+  /**
+   * Matches single UTF-16 code unit or a full Unicode codepoint if unicode
+   * is true.
+   */
   interface CharacterClass extends Expr<"class"> {
     /**
      * Each part represents either symbol range or single symbol.
      * If empty, such character class never matches anything, even end-of-stream marker.
      */
-    parts: (string[] | string)[];
+    parts: (string[] | string | ClassEscape)[];
     /**
      * If `true`, matcher will match, if symbol from input doesn't contains
      * in the `parts`.

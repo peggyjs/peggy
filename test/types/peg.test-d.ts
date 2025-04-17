@@ -497,7 +497,9 @@ describe("peg.d.ts", () => {
         expectExact<peggy.LocationRange>()(node.location)();
         expectExact<boolean>()(node.inverted)();
         expectExact<boolean>()(node.ignoreCase)();
-        expectExact<(string[] | string)[]>()(node.parts)();
+        expectExact<(string[] | string | peggy.ast.ClassEscape)[]>()(
+          node.parts
+        )();
       },
       any(node) {
         add(node.type);

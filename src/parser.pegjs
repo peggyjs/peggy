@@ -518,7 +518,7 @@ SingleStringCharacter
 CharacterClassMatcher "character class"
   = "["
     inverted:"^"?
-    parts:(ClassCharacterRange / ClassCharacter)*
+    parts:(AtomEscape / ClassCharacterRange / ClassCharacter)*
     "]"
     flags:ClassFlags
     {
@@ -528,9 +528,47 @@ CharacterClassMatcher "character class"
         inverted: Boolean(inverted),
         ignoreCase: Boolean(flags.ignoreCase),
         location: location(),
-        unicode: Boolean(flags.unicode) || parts.flat().some(c => c.codePointAt(0) > 0xffff)
+        unicode: Boolean(flags.unicode) || parts.flat().some(
+          c => ((typeof c === 'object') && c.unicode) || (c.codePointAt(0) > 0xffff)
+        )
       };
     }
+
+AtomEscape
+  = "\\" @CharacterClassEscape
+
+CharacterClassEscape
+  = value:$("p"i "{" UnicodePropertyValueExpression "}") {
+    return {
+      type: 'classEscape',
+      value,
+      unicode: true,
+      location: location(),
+    };
+  }
+
+UnicodePropertyValueExpression
+  = UnicodePropertyName "=" UnicodePropertyValue
+  / LoneUnicodePropertyNameOrValue
+
+UnicodePropertyName
+  = $UnicodePropertyNameCharacter+
+
+UnicodePropertyValue
+  = $UnicodePropertyValueCharacter+
+
+LoneUnicodePropertyNameOrValue
+  = $UnicodePropertyValueCharacter+
+
+UnicodePropertyValueCharacter
+  = UnicodePropertyNameCharacter
+  / DecimalDigit
+
+UnicodePropertyNameCharacter
+  = AsciiLetter / "_"
+
+AsciiLetter
+  = [a-z]i
 
 ClassFlags
   = flags:ClassFlag* {
@@ -592,6 +630,7 @@ EscapeCharacter
   / DecimalDigit
   / "x"
   / "u"
+  / "p"
 
 HexEscapeSequence
   = "x" digits:$(HexDigit HexDigit) {

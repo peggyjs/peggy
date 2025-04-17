@@ -923,6 +923,12 @@ WS = [ \t]*</code></pre>
       Basic Multilingual Plane: BMP), the class is automatically forced into
       Unicode mode even if the "u" flag is not specified.  Note: the Unicode mode
       generates a JavaScript regular expression with the "u" flag set.</p>
+    <p>The list of characters may also contain the special escape sequences
+      <code>\p{}</code> or <code>\P{}</code></code>.  These escape sequences
+      are used to match Unicode properties.  See
+      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape">MDN: Unicode character class escape</a>
+      for more information.  When one or more of these escapes are included,
+      the class is automatically put in Unicode mode.</p>
 
     <div class="example">
       <div>
@@ -959,6 +965,32 @@ WS = [ \t]*</code></pre>
       <div class="try">
         <em>Try it:</em>
         <input type="text" value="🦥" class="exampleInput" name="not_class_u">
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>class_p = [\p{ASCII}]</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"_"</code></div>
+        <div><em>Does not match:</em> <code>ø</code>, <code>"🦥"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="a" class="exampleInput" name="class_p">
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>class_P = [\P{ASCII}]</code></div>
+        <div><em>Matches:</em> <code>ø</code>, <code>"🦥"</code></div>
+        <div><em>Does not match:</em> <code>"a"</code>, <code>"_"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="ø" class="exampleInput" name="class_P">
         <div class="result"></div>
       </div>
     </div>

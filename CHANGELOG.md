@@ -67,6 +67,10 @@ Released: TBD (Not before 2025-05-01)
   encoding.  [#602](https://github.com/peggyjs/peggy/pull/602)
 - String literals may now contain characters from outside the BMP.
   [#602](https://github.com/peggyjs/peggy/pull/602)
+- Character classes may now contain `\p{}` or `\P{}` escapes to match or
+  inverted-match Unicode properties.  See
+  [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape)
+  for more details. [#602](https://github.com/peggyjs/peggy/pull/602)
 
 ### Bug fixes
 
