@@ -520,17 +520,29 @@ CharacterClassMatcher "character class"
     inverted:"^"?
     parts:(ClassCharacterRange / ClassCharacter)*
     "]"
-    ignoreCase:"i"?
+    flags:ClassFlags
     {
       return {
         type: "class",
         parts: parts.filter(part => part !== ""),
-        inverted: inverted !== null,
-        ignoreCase: ignoreCase !== null,
+        inverted: Boolean(inverted),
+        ignoreCase: Boolean(flags.ignoreCase),
         location: location(),
-        unicode: parts.flat().some(c => c.codePointAt(0) > 0xffff)
+        unicode: Boolean(flags.unicode) || parts.flat().some(c => c.codePointAt(0) > 0xffff)
       };
     }
+
+ClassFlags
+  = flags:ClassFlag* {
+      const ret = Object.fromEntries(flags);
+      if (Object.keys(ret).length !== flags.length) {
+        error("Invalid flags");
+      }
+      return ret;
+    }
+ClassFlag
+  = "i" { return ["ignoreCase", true] }
+  / "u" { return ["unicode", true] }
 
 ClassCharacterRange
   = begin:ClassCharacter "-" end:ClassCharacter {
