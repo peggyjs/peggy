@@ -311,13 +311,13 @@ function peg$parse(input, options) {
     throw peg$buildSimpleError(message, location);
   }
 
-function peg$getUnicode(pos = peg$currPos) {
-  const cp = input.codePointAt(pos);
-  if (cp === undefined) {
-    return "";
+  function peg$getUnicode(pos = peg$currPos) {
+    const cp = input.codePointAt(pos);
+    if (cp === undefined) {
+      return "";
+    }
+    return String.fromCodePoint(cp);
   }
-  return String.fromCodePoint(cp);
-}
 
   function peg$literalExpectation(text, ignoreCase) {
     return { type: "literal", text, ignoreCase };
