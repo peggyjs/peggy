@@ -1,6 +1,7 @@
 {
   "env": {
-    "commonjs": true
+    "commonjs": true,
+    "es6": true
   },
   "parserOptions": {
     "project": ["lib/tsconfig.json"]
