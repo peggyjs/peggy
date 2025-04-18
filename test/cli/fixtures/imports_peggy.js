@@ -466,9 +466,8 @@ function peg$parse(input, options) {
       peg$maxFailPos,
     });
   }
-  if (peg$result !== peg$FAILED && peg$currPos === input.length) {
-    return peg$result;
-  } else {
+  var success = (peg$result !== peg$FAILED && peg$currPos === input.length);
+  function fail() {
     if (peg$result !== peg$FAILED && peg$currPos < input.length) {
       peg$fail(peg$endExpectation());
     }
@@ -480,6 +479,14 @@ function peg$parse(input, options) {
         ? peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1)
         : peg$computeLocation(peg$maxFailPos, peg$maxFailPos)
     );
+  }
+  if (options.soft) {
+     return {result: peg$result, success, fail};
+  }
+  if (success) {
+    return peg$result;
+  } else {
+    fail();
   }
 }
 
