@@ -996,6 +996,15 @@ WS = [ \t]*</code></pre>
     </div>
   </dd>
 
+  <dt><code>[^]<span class="dim">u</span></code> (not-nothing)</dt>
+  <dd>
+    <p>This is a special case of a character class, which is defined to equal
+      one character.  If the "u" flag is not specified, this is the same as the
+      <code>.</code> expression.  If the "u" flag is specified, this matches a
+      whole Unicode codepoint, which may be one or two JavaScript characters
+      (UTF-16 code units).</p>
+  </dd>
+
   <dt><code><em>rule</em></code></dt>
 
   <dd>

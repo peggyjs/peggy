@@ -97,8 +97,12 @@ describe("Peggy grammar parser", () => {
     });
   }
 
-  function anyGrammar() {
-    return oneRuleGrammar({ type: "any" });
+  function anyGrammar(unicode) {
+    const r = { type: "any" };
+    if (unicode) {
+      r.unicode = true;
+    }
+    return oneRuleGrammar(r);
   }
 
   function ruleRefGrammar(name) {
@@ -1091,6 +1095,7 @@ describe("Peggy grammar parser", () => {
     expect("start = [^a]iu").to.parseAs(
       classGrammar(["a"], true, true, true)
     );
+    expect("start = [^]u").to.parseAs(anyGrammar(true));
     expect("start = [\\p{ASCII}]").to.parseAs(
       classGrammar([{
         type: "classEscape",

@@ -398,8 +398,13 @@ declare namespace ast {
     unicode: boolean;
   }
 
-  /** Matches any UTF-16 code unit in the input, but doesn't match the empty string. */
-  interface Any extends Expr<"any"> {}
+  /**
+   * Matches any UTF-16 code unit in the input, but doesn't match the empty string.
+   * If unicode is true, matches an entire codepoint.
+   */
+  interface Any extends Expr<"any"> {
+    unicode?: boolean;
+  }
 }
 
 /** Current Peggy version in semver format. */
