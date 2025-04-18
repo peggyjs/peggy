@@ -499,6 +499,14 @@ CharacterClassMatcher "character class"
     "]"
     flags:ClassFlags
     {
+      // [^]u is like . but for a codepoint.
+      if (inverted && (parts.length === 0)) {
+        return {
+          type: "any",
+          unicode: Boolean(flags.unicode),
+          location: location()
+        };
+      }
       return {
         type: "class",
         parts: parts.filter(part => part !== ""),

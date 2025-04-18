@@ -367,6 +367,20 @@ describe("generated parser behavior", () => {
           expect(parser).to.failToParse("A");
           expect(parser).to.failToParse("a");
         });
+
+        it("matches not-nothing class", () => {
+          const parser = peg.generate("start = [^]+", options);
+          expect(parser).to.parse("A");
+          expect(parser).to.parse("\u{1F4A9}");
+          expect(parser).to.failToParse("");
+        });
+
+        it("matches not-nothing unicode class", () => {
+          const parser = peg.generate("start = [^]u", options);
+          expect(parser).to.parse("A");
+          expect(parser).to.parse("\u{1F4A9}");
+          expect(parser).to.failToParse("");
+        });
       });
 
       describe("when it matches", () => {
