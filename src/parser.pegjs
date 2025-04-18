@@ -504,7 +504,7 @@ CharacterClassMatcher "character class"
         return {
           type: "any",
           unicode: Boolean(flags.unicode),
-          location: location()
+          location: location(),
         };
       }
       return {
@@ -514,8 +514,8 @@ CharacterClassMatcher "character class"
         ignoreCase: Boolean(flags.ignoreCase),
         location: location(),
         unicode: Boolean(flags.unicode) || parts.flat().some(
-          c => ((typeof c === 'object') && c.unicode) || (c.codePointAt(0) > 0xffff)
-        )
+          c => ((typeof c === "object") && c.unicode) || (c.codePointAt(0) > 0xffff)
+        ),
       };
     }
 
@@ -525,7 +525,7 @@ AtomEscape
 CharacterClassEscape
   = value:$("p"i "{" UnicodePropertyValueExpression "}") {
     return {
-      type: 'classEscape',
+      type: "classEscape",
       value,
       unicode: true,
       location: location(),
@@ -564,8 +564,8 @@ ClassFlags
       return ret;
     }
 ClassFlag
-  = "i" { return ["ignoreCase", true] }
-  / "u" { return ["unicode", true] }
+  = "i" { return ["ignoreCase", true]; }
+  / "u" { return ["unicode", true]; }
 
 ClassCharacterRange
   = begin:ClassCharacter "-" end:ClassCharacter {
