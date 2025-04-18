@@ -14,10 +14,27 @@ describe("generated parser API", () => {
       expect(parser.parse("a")).to.equal("a");
     });
 
+    it("parses input in soft-mode", () => {
+      const parser = peg.generate("start = 'a'");
+
+      const result = parser.parse("a", { soft: true });
+      expect(result.result).to.equal("a");
+      expect(result.success).to.equal(true);
+    });
+
     it("throws an exception on syntax error", () => {
       const parser = peg.generate("start = 'a'");
 
       expect(() => { parser.parse("b"); }).to.throw();
+    });
+
+    it("gives partial result on syntax error in soft-mode", () => {
+      const parser = peg.generate("start = 'a'+");
+
+      const result = parser.parse("aab", { soft: true });
+      expect(result.result).to.deep.equal(["a", "a"]);
+      expect(result.success).to.equal(false);
+      expect(result.fail).to.throw('Expected "a" or end of input but "b" found.');
     });
 
     // Regression: https://github.com/peggyjs/peggy/pull/197

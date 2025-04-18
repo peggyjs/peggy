@@ -28,6 +28,7 @@ Released: TBD (Not before 2025-05-01)
   moving away from ES5. [#593](https://github.com/peggyjs/peggy/pull/593)
 
 ### New features
+ - [#501](https://github.com/peggyjs/peggy/issues/501) Implement soft-mode for generated parsers with access to partial results on syntax errors.
 
 - Slightly better verbose output from the CLI, showing where files are written.
   [#601](https://github.com/peggyjs/peggy/pull/601)
