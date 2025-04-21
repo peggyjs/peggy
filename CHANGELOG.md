@@ -28,7 +28,8 @@ Released: TBD (Not before 2025-05-01)
   moving away from ES5. [#593](https://github.com/peggyjs/peggy/pull/593)
 
 ### New features
-
+- Extend library mode to include a success flag and a function for throwing syntax errors when needed.
+  [#501](https://github.com/peggyjs/peggy/issues/501)
 - Slightly better verbose output from the CLI, showing where files are written.
   [#601](https://github.com/peggyjs/peggy/pull/601)
 - Merged class rules (rules which consist of a character class like `foo =

@@ -1405,7 +1405,9 @@ error: Rule "unknownRule" is not defined
   'peg$currPos': 3,
   'peg$FAILED': {},
   'peg$maxFailExpected': [],
-  'peg$maxFailPos': 0
+  'peg$maxFailPos': 0,
+  'peg$success': true,
+  'peg$throw': undefined
 }\n`,
     });
   });

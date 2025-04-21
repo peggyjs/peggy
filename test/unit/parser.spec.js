@@ -1454,6 +1454,8 @@ c = @'ijkl'
 
   it("handles peg$library", () => {
     const res = parser.parse("foo", { peg$library: true });
+    expect(typeof res.peg$throw).to.eql("function");
+    delete res.peg$throw;
     expect(res).to.eql({
       peg$result: {},
       peg$currPos: 0,
@@ -1466,6 +1468,7 @@ c = @'ijkl'
         { type: "literal", text: "=", ignoreCase: false },
       ],
       peg$maxFailPos: 3,
+      peg$success: false,
     });
   });
 });

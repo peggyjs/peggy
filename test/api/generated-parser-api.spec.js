@@ -14,10 +14,28 @@ describe("generated parser API", () => {
       expect(parser.parse("a")).to.equal("a");
     });
 
+    it("parses input in library mode", () => {
+      const parser = peg.generate("start = 'a'");
+
+      const result = parser.parse("a", { peg$library: true });
+      expect(result.peg$result).to.equal("a");
+      expect(result.peg$success).to.equal(true);
+      expect(result.peg$throw).to.equal(undefined);
+    });
+
     it("throws an exception on syntax error", () => {
       const parser = peg.generate("start = 'a'");
 
       expect(() => { parser.parse("b"); }).to.throw();
+    });
+
+    it("gives partial result on syntax error in library mode", () => {
+      const parser = peg.generate("start = 'a'+");
+
+      const result = parser.parse("aab", { peg$library: true });
+      expect(result.peg$result).to.deep.equal(["a", "a"]);
+      expect(result.peg$success).to.equal(false);
+      expect(result.peg$throw).to.throw('Expected "a" or end of input but "b" found.');
     });
 
     // Regression: https://github.com/peggyjs/peggy/pull/197

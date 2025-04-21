@@ -1599,18 +1599,8 @@ function peg$parse(input, options) {
 
   peg$result = peg$startRuleFunction();
 
-  if (options.peg$library) {
-    return /** @type {any} */ ({
-      peg$result,
-      peg$currPos,
-      peg$FAILED,
-      peg$maxFailExpected,
-      peg$maxFailPos,
-    });
-  }
-  if (peg$result !== peg$FAILED && peg$currPos === input.length) {
-    return peg$result;
-  } else {
+  const peg$success = (peg$result !== peg$FAILED && peg$currPos === input.length);
+  function peg$throw() {
     if (peg$result !== peg$FAILED && peg$currPos < input.length) {
       peg$fail(peg$endExpectation());
     }
@@ -1622,6 +1612,22 @@ function peg$parse(input, options) {
         ? peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1)
         : peg$computeLocation(peg$maxFailPos, peg$maxFailPos)
     );
+  }
+  if (options.peg$library) {
+    return /** @type {any} */ ({
+      peg$result,
+      peg$currPos,
+      peg$FAILED,
+      peg$maxFailExpected,
+      peg$maxFailPos,
+      peg$success,
+      peg$throw: peg$success ? undefined : peg$throw,
+    });
+  }
+  if (peg$success) {
+    return peg$result;
+  } else {
+    peg$throw();
   }
 }
 
