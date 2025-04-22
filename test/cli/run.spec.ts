@@ -813,6 +813,7 @@ Options:
     expect(() => {
       // Make sure the file isn't there before we start
       fs.statSync(test_output);
+      console.log(`Delete file: "${path.resolve(__dirname, "..", "..", test_output)}"`);
     }).toThrow();
 
     await exec({
