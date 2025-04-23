@@ -15,6 +15,7 @@ const fs = require("fs");
 const path = require("path");
 const peggy = require("../lib/peg.js");
 const util = require("util");
+const GrammarError = require("../lib/grammar-error.js");
 
 exports.CommanderError = CommanderError;
 exports.InvalidArgumentError = InvalidArgumentError;
@@ -189,10 +190,6 @@ class PeggyCLI extends Command {
           parserOptions,
           progOptions,
         } = await refineOptions(this, inputFiles, opts);
-        if (progOptions.verbose) {
-          parserOptions.info = (pass, msg) => PeggyCLI.print(this.std.err, `INFO(${pass}): ${msg}`);
-        }
-        parserOptions.warning = (pass, msg) => PeggyCLI.print(this.std.err, `WARN(${pass}): ${msg}`);
         this.parserOptions = parserOptions;
         this.progOptions = progOptions;
         this.verbose("PARSER OPTIONS:", parserOptions);
@@ -527,6 +524,26 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
 
       errorText = "parsing grammar";
       this.verbose("CLI", errorText);
+
+      if (this.progOptions.verbose) {
+        this.parserOptions.info = (pass, msg, loc, diag) => {
+          if (loc) {
+            const e = new GrammarError(`INFO(${pass}): ${msg}`, loc, diag);
+            PeggyCLI.print(this.std.err, e.format(sources));
+          } else {
+            PeggyCLI.print(this.std.err, `INFO(${pass}): ${msg}`);
+          }
+        };
+      }
+
+      this.parserOptions.warning = (pass, msg, loc, diag) => {
+        if (loc) {
+          const e = new GrammarError(`WARN(${pass}): ${msg}`, loc, diag);
+          PeggyCLI.print(this.std.err, e.format(sources));
+        } else {
+          PeggyCLI.print(this.std.err, `WARN(${pass}): ${msg}`);
+        }
+      };
 
       const source = peggy.generate(
         sources,
