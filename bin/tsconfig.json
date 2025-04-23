@@ -1,6 +1,11 @@
 {
   "extends": "../tsconfig-base.json",
-  "include": ["**/*.ts", "**/*.js"],
+  "include": [
+    "**/*.ts",
+    "**/*.js",
+    "../lib/grammar-error.js",
+    "../lib/grammar-location.js"
+  ],
   "compilerOptions": {
     "checkJs": true,
     "target": "ES2021"

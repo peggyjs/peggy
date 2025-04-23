@@ -443,17 +443,17 @@ type Severity = "error" | "info" | "warning";
 
 type Problem = [
   /** Problem severity. */
-  Severity,
+  severity: Severity,
   /** Diagnostic message. */
-  string,
+  message: string,
   /** Location where message is generated, if applicable. */
-  LocationRange?,
+  location: LocationRange?,
   /** List of additional messages with their locations, if applicable. */
-  DiagnosticNote[]?,
+  diagnostics: DiagnosticNote[]?,
 ];
 
 /** Thrown if the grammar contains a semantic error. */
-export class GrammarError extends Error {
+export class GrammarError extends SyntaxError {
   /** Location of the error in the source. */
   public location?: LocationRange;
 

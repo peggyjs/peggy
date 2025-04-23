@@ -108,6 +108,9 @@ Released: TBD (Not before 2025-05-01)
   with `--format es -t foo` will still not work in Deno.
 - Fix a bug with named NEVER_MATCH expressions.
   [#454](https://github.com/peggyjs/peggy/pull/454)
+- Warnings from grammar parsing are now presented more fully to the user in
+  the CLI.  Info messages from grammar parsing are presented the same if in
+  verbose mode. [#605](https://github.com/peggyjs/peggy/pull/605)
 
 ### Documentation
 

@@ -1266,6 +1266,20 @@ bar = '2'
       error: "Error running test",
     });
 
+    // INFO
+    const expectedInfo = `\
+error: INFO(transform): Removing unused rule: "bar"
+ --> stdin:2:1
+  |
+2 | bar='2'
+  | ^^^^^^^
+`.replace(/[()|^]/g, c => `\\${c}`);
+    await exec({
+      args: ["-t", "1", "--verbose"],
+      stdin: "foo='1'\nbar='2'\n",
+      expected: new RegExp(expectedInfo),
+    });
+
     // Abusing template literals to ensure we have a trailing space.
     await exec({
       args: ["-t", ""],
@@ -1352,6 +1366,21 @@ error: Rule "unknownRule" is not defined
   |
 1 | foo=unknownRule
   |     ^^^^^^^^^^^`,
+    });
+  });
+
+  it("handles grammar warnings", async() => {
+    await exec({
+      args: ["-t", "b"],
+      stdin: "foo=('b'*)|1..2|",
+      expected: `\
+error: WARN(check): An expression may not consume any input and may always match 2 times
+ --> stdin:1:5
+  |
+1 | foo=('b'*)|1..2|
+  |     ^^^^^^^^^^^^
+[ [ 'b' ], [] ]
+`,
     });
   });
 
