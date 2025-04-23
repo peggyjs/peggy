@@ -81,4 +81,21 @@ describe("Peggy compiler", () => {
       })).to.throw("Must provide grammarSource (as a string or GrammarLocation) in order to generate source maps");
     }
   });
+
+  it("generates correct bytecode for always-match alternatives", () => {
+    // This is here, in the wrong place, because it needs both
+    // inference-match-result and generate-bytecode to be in the plugin chain.
+    const ast = parser.parse("start = 'a'? / 'b'");
+    compiler.compile(ast, compiler.passes, { output: "ast" });
+
+    // Note there is no attempt to match string 1 ('b') here.
+    expect(ast.rules[0].bytecode).to.eql([
+      18, 0,  2, 2, // MATCH_STRING
+      22, 0,        //   ACCEPT_STRING
+      23, 0,        //   FAIL
+      14, 2,  0,    // IF_ERROR
+      6,            //   POP
+      2,            //   PUSH_NULL
+    ]);
+  });
 });

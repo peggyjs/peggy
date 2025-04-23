@@ -26,6 +26,13 @@ Released: TBD (Not before 2025-05-01)
   the type has changed to `PeggySyntaxError`, which may cause some slight need
   for rework in TypeScript-aware projects.  This was the main driver behind
   moving away from ES5. [#593](https://github.com/peggyjs/peggy/pull/593)
+- BREAKING: The grammar parser now uses your JavaScript environment's understanding
+  of Unicode classes, rather than a partial copy of Unicode 8 as before.  This
+  should be more correct and evolve over time while staying backward-compatible
+  to the extent that the Unicode Consortium keeps to its goals.  Because this
+  might slightly affect what rule names are valid, we are marking this as a
+  breaking change just in case.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
 
 ### New features
 - Extend library mode to include a success flag and a function for throwing syntax errors when needed.
@@ -47,6 +54,39 @@ Released: TBD (Not before 2025-05-01)
   generated for each of these removals.  Like merged class rules above, this
   should only be removing dead code.
   [#594](https://github.com/peggyjs/peggy/pull/594)
+- Character classes now process characters not in the Basic Multi-Lingual
+  Plane (BMP) correctly.  This feature requires a JavaScript environment
+  that supports the `u` flag to regular expressions.  The `u` flag will only
+  be used on character classes that make use of this new feature.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
+- Unicode characters may now be specified with the `\u{hex}` syntax, allowing
+  easier inclusion of characters not in the BMP (such as newer emoji).  This
+  syntax works both in string literals and in character classes.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
+- Errors pointing to non-BMP characters as the "found" text will now show the
+  full character and not the replacement character for the first surrogate in
+  the UTF-16 representation.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
+- Character classes can now be annotated with the "u" flag, which will force
+  the character class into Unicode mode, where one full Codepoint will be matched.
+  For example, `[^a]u` will match 💪 (U+1F4AA).  Without the "u" flag, `[^a]`
+  would only match \uD83D, the first surrogate that makes up U+1F4AA in UTF-16
+  encoding.  [#602](https://github.com/peggyjs/peggy/pull/602)
+- Empty inverted character classes such as `[^]u` now match one character,
+  because they match "not-nothing". Without the "u" flag, this is the same as
+  `.`.  With the "u" flag, this matches an entire codepoint, not just a single
+  UTF-16 code unit (JS character).  Previously, this expression compiled but
+  was useless.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
+- String literals may now contain characters from outside the BMP.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
+- Character classes may now contain `\p{}` or `\P{}` escapes to match or
+  inverted-match Unicode properties.  See
+  [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape)
+  for more details.  If you are generating code for a non-JavaScript environment
+  using a plugin, this may be somewhat challenging for the plugin author.
+  Please file an issue on Peggy for help.
+  [#602](https://github.com/peggyjs/peggy/pull/602)
 
 ### Bug fixes
 

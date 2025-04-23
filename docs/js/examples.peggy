@@ -8,6 +8,12 @@ class = match:[a-z] rest:rest { return {match, rest}; }
 
 not_class_i = match:[^a-z]i rest:rest { return {match, rest}; }
 
+not_class_u = match:[^a-z]u rest:rest { return {match, rest}; }
+
+class_p = match:[\p{ASCII}] rest:rest { return {match, rest}; }
+
+class_P = match:[\P{ASCII}] rest:rest { return {match, rest}; }
+
 rule = match:child rest:rest { return {match, rest}; }; child = "foo"
 
 paren = match:("1" { return 2; })+ rest:rest { return {match, rest}; }

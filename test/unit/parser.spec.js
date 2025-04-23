@@ -87,17 +87,22 @@ describe("Peggy grammar parser", () => {
     );
   }
 
-  function classGrammar(parts, inverted, ignoreCase) {
+  function classGrammar(parts, inverted, ignoreCase, unicode = false) {
     return oneRuleGrammar({
       type: "class",
       parts,
       inverted,
       ignoreCase,
+      unicode,
     });
   }
 
-  function anyGrammar() {
-    return oneRuleGrammar({ type: "any" });
+  function anyGrammar(unicode) {
+    const r = { type: "any" };
+    if (unicode) {
+      r.unicode = true;
+    }
+    return oneRuleGrammar(r);
   }
 
   function ruleRefGrammar(name) {
@@ -220,7 +225,14 @@ describe("Peggy grammar parser", () => {
       rule_ref: stripLeaf,
       library_ref: stripLeaf,
       literal: stripLeaf,
-      class: stripLeaf,
+      class(node) {
+        stripLeaf(node);
+        for (const p of node.parts) {
+          if (typeof p === "object") {
+            stripLeaf(p);
+          }
+        }
+      },
       any: stripLeaf,
     });
 
@@ -301,6 +313,7 @@ describe("Peggy grammar parser", () => {
     expect("\n{{ top level code }};\n{ code };\na = 'abcd';\n").to.parseAs(
       { type: "grammar", imports: [], topLevelInitializer, initializer, rules: [ruleA] }
     );
+    expect("").to.failToParse();
     expect("{{ ").to.failToParse();
     expect("{ ").to.failToParse();
     expect("{{}").to.failToParse();
@@ -866,7 +879,16 @@ describe("Peggy grammar parser", () => {
     expect("start = !{ code }").to.parseAs(oneRuleGrammar(semanticNot));
   });
 
-  // The SourceCharacter rule is not tested.
+  it("parses SourceCharacter", () => {
+    // Correct surrogates; this produces two UTF-16 code units (2 "chars").
+    expect("start = '\u{1F4A9}' // \u{1F4A9}").to.parseAs(literalGrammar("\u{1F4A9}", false));
+    expect("start = \"\u{1F4A9}\" // \u{1F4A9}").to.parseAs(literalGrammar("\u{1F4A9}", false));
+    // Lone surrogates
+    expect("start = '\u{d83d}' // \u{d83d}").to.parseAs(literalGrammar("\u{d83d}", false));
+    expect("start = '\u{dca9}' // \u{dca9}").to.parseAs(literalGrammar("\u{dca9}", false));
+    // Backwards
+    expect("start = '\u{dca9}\u{d83d}' // \u{dca9}\u{d83d}").to.parseAs(literalGrammar("\u{dca9}\u{d83d}", false));
+  });
 
   // Canonical WhiteSpace is " ".
   it("parses WhiteSpace", () => {
@@ -1042,6 +1064,72 @@ describe("Peggy grammar parser", () => {
     expect("start = [\\\n]").to.parseAs(
       classGrammar([], false, false)
     );
+
+    expect("start = [\u{1F4A9}]").to.parseAs(
+      classGrammar(["\u{1F4A9}"], false, false, true)
+    );
+    expect("start = [\\u{1F4A9}]").to.parseAs(
+      classGrammar(["\u{1F4A9}"], false, false, true)
+    );
+    expect("start = [\u{1F4A9}-\u{1F4B0}]").to.parseAs(
+      classGrammar([["\u{1F4A9}", "\u{1F4B0}"]], false, false, true)
+    );
+    expect("start = [\\u{1F4A9}-\\u{1F4B0}]").to.parseAs(
+      classGrammar([["\u{1F4A9}", "\u{1F4B0}"]], false, false, true)
+    );
+    expect("start = [\\u{g}]").to.failToParse();
+    expect("start = [\\u{1g}]").to.failToParse();
+    expect("start = [\\u{12g}]").to.failToParse();
+    expect("start = [\\u{123g}]").to.failToParse();
+    expect("start = [\\xgg]").to.failToParse();
+    expect("start = [a]uu").to.failToParse();
+    expect("start = [a]ii").to.failToParse();
+    expect("start = [a]iui").to.failToParse();
+    expect("start = [a]uiu").to.failToParse();
+    expect("start = [^a]u").to.parseAs(
+      classGrammar(["a"], true, false, true)
+    );
+    expect("start = [^a]ui").to.parseAs(
+      classGrammar(["a"], true, true, true)
+    );
+    expect("start = [^a]iu").to.parseAs(
+      classGrammar(["a"], true, true, true)
+    );
+    expect("start = [^]u").to.parseAs(anyGrammar(true));
+    expect("start = [\\p{ASCII}]").to.parseAs(
+      classGrammar([{
+        type: "classEscape",
+        value: "p{ASCII}",
+        unicode: true,
+      }], false, false, true)
+    );
+    expect("start = [\\P{ASCII}]").to.parseAs(
+      classGrammar([{
+        type: "classEscape",
+        value: "P{ASCII}",
+        unicode: true,
+      }], false, false, true)
+    );
+    expect("start = [\\p{gc=Nd}]").to.parseAs(
+      classGrammar([{
+        type: "classEscape",
+        value: "p{gc=Nd}",
+        unicode: true,
+      }], false, false, true)
+    );
+    expect("start = [\\p{Script=New_Tai_Lue}]").to.parseAs(
+      classGrammar([{
+        type: "classEscape",
+        value: "p{Script=New_Tai_Lue}",
+        unicode: true,
+      }], false, false, true)
+    );
+    expect("start = [\\p]").to.failToParse();
+    expect("start = [\\p{]").to.failToParse();
+    expect("start = [\\p{a]").to.failToParse();
+    expect("start = [\\p{a=]").to.failToParse();
+    expect("start = [\\p{a=b]").to.failToParse();
+    expect("start = [\\p{\u0661}]").to.failToParse();
   });
 
   // Canonical ClassCharacterRange is "a-d".
