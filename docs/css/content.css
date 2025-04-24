@@ -147,20 +147,26 @@
 #content #settings label { padding-right: 1em; }
 #content #parser-var { width: 15em; }
 #content #options { padding-top: 1em; }
+
+#content #download-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: .5rem;
+}
+
 #content .download-button {
-  float: right;
-  width: 10em;
-  margin-top: 2em;
+  width: 6em;
   border-width: 0;
-  padding: .5em; border-radius: .4em; -moz-border-radius: .4em;
+  padding: .25em;
+  border-radius: .4em; -moz-border-radius: .4em;
   font-family: "Trebuchet MS", lucida, sans-serif;
   font-size: 1em;
   line-height: 1.5;
   text-align: center; text-decoration: none;
   color: #e0ffe0; background-color: #499149;
-}
-#content .download-button:not(:first-of-type) {
-  margin-right: .5rem;
 }
 #content .download-button:hover { background-color: #006000; }
 #content .download-button.disabled { color: #e0e0e0; background-color: gray; }

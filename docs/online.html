@@ -121,15 +121,20 @@ _ "whitespace"
         </tr>
         <tr>
           <td class="content-height">
-              <input type="submit" id="parser-download-es6" class="download-button" value="Download ES6 parser" disabled>
-              <input type="submit" id="parser-download" class="download-button" value="Download CJS parser" disabled>
             <div id="settings">
-              <label for="parser-var">Parser variable <span style="font-size: .7rem">For CommonJS</span>:</label>
-              <input type="text" id="parser-var" value="module.exports" placeholder="module.exports" disabled>
+              <label for="parser-var">Parser variable for UMD or Global:</label>
+              <input type="text" id="parser-var" value="Peggy" placeholder="module.exports" disabled>
               <div id="options">
                 <input type="checkbox" id="option-cache" disabled>
                 <label for="option-cache">Use results cache</label>
               </div>
+            </div>
+            <div id="download-container">
+              <div>Download parser:</div>
+              <input type="submit" id="parser-download-globals" class="download-button" value="Globals" disabled>
+              <input type="submit" id="parser-download-umd" class="download-button" value="UMD" disabled>
+              <input type="submit" id="parser-download-cjs" class="download-button" value="CommonJS" disabled>
+              <input type="submit" id="parser-download-es6" class="download-button" value="ES6" disabled>
             </div>
           </td>
         </tr>
