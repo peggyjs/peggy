@@ -87,6 +87,15 @@ Released: TBD (Not before 2025-05-01)
   using a plugin, this may be somewhat challenging for the plugin author.
   Please file an issue on Peggy for help.
   [#602](https://github.com/peggyjs/peggy/pull/602)
+- A new "semantic" pass has been added to the compiler, which occurs after all
+  transformations, but before code generation.  Plugins in this pass can rely
+  on annotations from previous passes to reason about the code.
+  [#606](https://github.com/peggyjs/peggy/pull/606)
+- Unreachable code in rules like `'b'* / 'c'`, `![]`, `&[]`, `!('f'*)`, and
+  `&('f'*)` now cause a semantic warning.  This warning may be escalated to an
+  error in a future release, once experience in the field has shown that the
+  approach does not catch code that is valid.
+  [#606](https://github.com/peggyjs/peggy/pull/606)
 
 ### Bug fixes
 
