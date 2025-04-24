@@ -161,4 +161,41 @@ describe("Peggy compiler", () => {
       ],
     ]);
   });
+
+  it("detects deeper unreachable code", () => {
+    const ast = parser.parse("start = &('a'? / 'b') !('a'? / 'b') &('a'? / 'b')");
+    const warnings = [];
+    compiler.compile(ast, compiler.passes, {
+      output: "ast",
+      warning(...args) { warnings.push(args); },
+    });
+    expect(warnings).to.eql([
+      [
+        "semantic",
+        "Always matches.  Following alternatives may not be reachable.",
+        {
+          "start": { "column": 11, "line": 1, "offset": 10 },
+          "end": { "column": 15, "line": 1, "offset": 14 },
+          "source": undefined,
+        },
+      ],
+      [
+        "semantic",
+        "Always matches.  Following alternatives may not be reachable.",
+        {
+          "start": { "column": 25, "line": 1, "offset": 24 },
+          "end": { "column": 29, "line": 1, "offset": 28 },
+          "source": undefined,
+        },
+      ], [
+        "semantic",
+        "Always matches.  Following alternatives may not be reachable.",
+        {
+          "start": { "column": 39, "line": 1, "offset": 38 },
+          "end": { "column": 43, "line": 1, "offset": 42 },
+          "source": undefined,
+        },
+      ],
+    ]);
+  });
 });
