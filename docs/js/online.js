@@ -77,6 +77,23 @@ $(function() {
       : e.message;
   }
 
+  function saveParser(format, filename) {
+    try { // If this button was enabled, the source was already validated by 'rebuildGrammar'
+      const esSource = peggy.generate(editor.getValue(), {
+        cache: $("#option-cache").is(":checked"),
+        output: "source",
+        exportVar: $( "#parser-var" ).val(),
+        format,
+      })
+
+      console.log({filename})
+      const blob = new Blob([esSource], {type: "application/javascript"});
+      window.saveAs(blob, filename);
+    } catch (e) {
+      console.error('Unable to save parser', e);
+    }
+  }
+
   /**
    * Generates code from the parser, collects problems in `problems` in CodeMirror
    * lint format.
@@ -93,7 +110,9 @@ $(function() {
     $("#output").addClass("disabled").text("Output not available.");
     $("#parser-var").attr("disabled", "disabled");
     $("#option-cache").attr("disabled", "disabled");
-    $("#parser-download").attr("disabled", "disabled");
+    $("#parser-download-globals").attr("disabled", "disabled");
+    $("#parser-download-umd").attr("disabled", "disabled");
+    $("#parser-download-cjs").attr("disabled", "disabled");
     $("#parser-download-es6").attr("disabled", "disabled");
 
     let result = false;
@@ -135,7 +154,9 @@ $(function() {
       $("#input").removeAttr("disabled");
       $("#parser-var").removeAttr("disabled");
       $("#option-cache").removeAttr("disabled");
-      $("#parser-download").removeAttr("disabled");
+      $("#parser-download-globals").removeAttr("disabled");
+      $("#parser-download-umd").removeAttr("disabled");
+      $("#parser-download-cjs").removeAttr("disabled");
       $("#parser-download-es6").removeAttr("disabled");
 
       result = true;
@@ -222,30 +243,17 @@ $(function() {
     .on('keyup', rebuildGrammar)
     .on('keypress', rebuildGrammar);
 
-  $( "#parser-download" )
-    .on('click', function(){
+  $( "#parser-download-globals" )
+    .on('click', () => saveParser("globals", "parser.js"));
 
-      const blob = new Blob( [$( "#parser-var" ).val() + " = " + parserSource + ";\n"], {type: "application/javascript"} );
-      window.saveAs( blob, "parser.js" );
+  $( "#parser-download-umd" )
+    .on('click', () => saveParser("umd", "parser.js"));
 
-    });
+  $( "#parser-download-cjs" )
+    .on('click', () => saveParser("commonjs", "parser.cjs"));
 
   $( "#parser-download-es6" )
-    .on('click', function(){
-      try { // If this button was enabled, the source was already validated by 'rebuildGrammar'
-        const esSource = peggy.generate(editor.getValue(), {
-          cache: $("#option-cache").is(":checked"),
-          output: "source",
-          format: 'es'
-        })
-
-        const blob = new Blob([esSource], {type: "application/javascript"});
-        window.saveAs(blob, "parser.mjs");
-      } catch (e) {
-        console.error('Unable to save parser', e);
-      }
-
-    });
+    .on('click', () => saveParser("es", "parser.mjs"));
 
   doLayout();
   $(window).resize(doLayout);
