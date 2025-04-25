@@ -56,11 +56,21 @@ class peg$SyntaxError extends SyntaxError {
 
   static buildMessage(expected, found) {
     function hex(ch) {
-      return ch.charCodeAt(0).toString(16).toUpperCase();
+      return ch.codePointAt(0).toString(16).toUpperCase();
+    }
+
+    const nonPrintable = Object.prototype.hasOwnProperty.call(RegExp.prototype, "unicode")
+      ? new RegExp("[\\p{C}\\p{Mn}\\p{Mc}]", "gu")
+      : null;
+    function unicodeEscape(s) {
+      if (nonPrintable) {
+        return s.replace(nonPrintable,  ch => "\\u{" + hex(ch) + "}");
+      }
+      return s;
     }
 
     function literalEscape(s) {
-      return s
+      return unicodeEscape(s
         .replace(/\\/g, "\\\\")
         .replace(/"/g,  "\\\"")
         .replace(/\0/g, "\\0")
@@ -68,11 +78,11 @@ class peg$SyntaxError extends SyntaxError {
         .replace(/\n/g, "\\n")
         .replace(/\r/g, "\\r")
         .replace(/[\x00-\x0F]/g,          ch => "\\x0" + hex(ch))
-        .replace(/[\x10-\x1F\x7F-\x9F]/g, ch => "\\x"  + hex(ch));
+        .replace(/[\x10-\x1F\x7F-\x9F]/g, ch => "\\x"  + hex(ch)));
     }
 
     function classEscape(s) {
-      return s
+      return unicodeEscape(s
         .replace(/\\/g, "\\\\")
         .replace(/\]/g, "\\]")
         .replace(/\^/g, "\\^")
@@ -82,7 +92,7 @@ class peg$SyntaxError extends SyntaxError {
         .replace(/\n/g, "\\n")
         .replace(/\r/g, "\\r")
         .replace(/[\x00-\x0F]/g,          ch => "\\x0" + hex(ch))
-        .replace(/[\x10-\x1F\x7F-\x9F]/g, ch => "\\x"  + hex(ch));
+        .replace(/[\x10-\x1F\x7F-\x9F]/g, ch => "\\x"  + hex(ch)));
     }
 
     const DESCRIBE_EXPECTATION_FNS = {

@@ -921,14 +921,19 @@ WS = [ \t]*</code></pre>
       if it takes up two JavaScript characters in a UTF-16 surrogate pair.  If
       any of the characters in the class are outside the range 0x0-0xFFFF (the
       Basic Multilingual Plane: BMP), the class is automatically forced into
-      Unicode mode even if the "u" flag is not specified.  Note: the Unicode mode
-      generates a JavaScript regular expression with the "u" flag set.</p>
+      Unicode mode even if the "u" flag is not specified.  In unicode mode, a
+      range that includes the surrogates (without mentioning a codepoint in the
+      surrogate range explicitly) will not match a lone surrogate.  For example,
+      the class <code>[\u0100-\u{10FFFF}]u</code> will not match <code>"\ud800"</code>,
+      but <code>[\ud800-\udfff]u</code> will.</p>
     <p>The list of characters may also contain the special escape sequences
       <code>\p{}</code> or <code>\P{}</code></code>.  These escape sequences
       are used to match Unicode properties.  See
       <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape">MDN: Unicode character class escape</a>
       for more information.  When one or more of these escapes are included,
       the class is automatically put in Unicode mode.</p>
+    <p>Note: the Unicode mode generates a JavaScript regular expression with
+      the "u" flag set.</p>
 
     <div class="example">
       <div>
@@ -1002,7 +1007,7 @@ WS = [ \t]*</code></pre>
       one character.  If the "u" flag is not specified, this is the same as the
       <code>.</code> expression.  If the "u" flag is specified, this matches a
       whole Unicode codepoint, which may be one or two JavaScript characters
-      (UTF-16 code units).</p>
+      (UTF-16 code units).  In unicode mode, it will never match a lone surrogate.</p>
   </dd>
 
   <dt><code><em>rule</em></code></dt>

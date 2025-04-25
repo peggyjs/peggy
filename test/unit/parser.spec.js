@@ -1095,7 +1095,9 @@ describe("Peggy grammar parser", () => {
     expect("start = [^a]iu").to.parseAs(
       classGrammar(["a"], true, true, true)
     );
-    expect("start = [^]u").to.parseAs(anyGrammar(true));
+    expect("start = [^]u").to.parseAs(
+      classGrammar([["\ud800", "\udfff"]], true, false, true)
+    );
     expect("start = [\\p{ASCII}]").to.parseAs(
       classGrammar([{
         type: "classEscape",
