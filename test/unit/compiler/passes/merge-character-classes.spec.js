@@ -256,5 +256,16 @@ describe("compiler pass |mergeCharacterClasses|", () => {
       },
       { allowedStartRules: ["start"] }
     );
+    expect(pass).to.haveErrors("start = [\u{0}-\u{10ffff}]", [
+      [
+        "info",
+        "Removing surrogate range from [\\0-\\u{10FFFF}]",
+        {
+          "start": { "column": 9, "line": 1, "offset": 8 },
+          "end": { "column": 15, "line": 1, "offset": 14 },
+          "source": undefined,
+        },
+      ],
+    ]);
   });
 });
