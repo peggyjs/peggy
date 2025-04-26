@@ -72,12 +72,12 @@ Released: TBD (Not before 2025-05-01)
   For example, `[^a]u` will match 💪 (U+1F4AA).  Without the "u" flag, `[^a]`
   would only match \uD83D, the first surrogate that makes up U+1F4AA in UTF-16
   encoding.  [#602](https://github.com/peggyjs/peggy/pull/602)
-- Empty inverted character classes such as `[^]u` now match one character,
-  because they match "not-nothing". Without the "u" flag, this is the same as
-  `.`.  With the "u" flag, this matches an entire codepoint, not just a single
-  UTF-16 code unit (JS character).  Previously, this expression compiled but
-  was useless.
-  [#602](https://github.com/peggyjs/peggy/pull/602)
+- Empty inverted character classes such as `[^]` or `[^]u` now match one
+  character, because they match "not-nothing". Without the "u" flag, this is
+  the same as `.`.  With the "u" flag, this matches an entire codepoint that
+  is not a lone surrogate, not just a single UTF-16 code unit (one or two JS
+  characters). Previously, this expression compiled without the "u" flag, but
+  was useless. [#602](https://github.com/peggyjs/peggy/pull/602)
 - String literals may now contain characters from outside the BMP.
   [#602](https://github.com/peggyjs/peggy/pull/602)
 - Character classes may now contain `\p{}` or `\P{}` escapes to match or

@@ -499,13 +499,16 @@ CharacterClassMatcher "character class"
     "]"
     flags:ClassFlags
     {
-      // [^]u is like . but for a codepoint.
+      // [^]u is like . but for a codepoint: not-nothing.
       if (inverted && (parts.length === 0)) {
-        return {
-          type: "any",
-          unicode: Boolean(flags.unicode),
-          location: location(),
-        };
+        if (flags.unicode) {
+          parts = [["\ud800", "\udfff"]];
+        } else {
+          return {
+            type: "any",
+            location: location(),
+          };
+        }
       }
       return {
         type: "class",

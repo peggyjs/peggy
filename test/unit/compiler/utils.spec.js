@@ -25,6 +25,7 @@ describe("utility functions", () => {
     expect(stringEscape("\x10\x1f\x7f")).to.equal("\\x10\\x1F\\x7F");
     expect(stringEscape("\u0100\u0fff")).to.equal("\\u0100\\u0FFF");
     expect(stringEscape("\u1000\uffff")).to.equal("\\u1000\\uFFFF");
+    expect(stringEscape("\u{10ffff}")).to.equal("\\u{10FFFF}");
   });
 
   it("regexpClassEscape", () => {
@@ -34,6 +35,7 @@ describe("utility functions", () => {
     expect(regexpClassEscape("\x10\x1f\x7f")).to.equal("\\x10\\x1F\\x7F");
     expect(regexpClassEscape("\u0100\u0fff")).to.equal("\\u0100\\u0FFF");
     expect(regexpClassEscape("\u1000\uffff")).to.equal("\\u1000\\uFFFF");
+    expect(regexpClassEscape("\u{10ffff}")).to.equal("\\u{10FFFF}");
   });
 
   it("base64", () => {

@@ -402,9 +402,7 @@ declare namespace ast {
    * Matches any UTF-16 code unit in the input, but doesn't match the empty string.
    * If unicode is true, matches an entire codepoint.
    */
-  interface Any extends Expr<"any"> {
-    unicode?: boolean;
-  }
+  interface Any extends Expr<"any"> {}
 }
 
 /** Current Peggy version in semver format. */

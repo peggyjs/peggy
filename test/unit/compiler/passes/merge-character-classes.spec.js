@@ -235,4 +235,37 @@ describe("compiler pass |mergeCharacterClasses|", () => {
       { allowedStartRules: ["start"] }
     );
   });
+
+  it("elides surrogates from unicode ranges", () => {
+    expect(pass).to.changeAST(
+      [
+        "start = [\u{0}-\u{10ffff}]",
+      ].join("\n"),
+      {
+        rules: [
+          {
+            name: "start",
+            expression: {
+              type: "class",
+              parts: [["\0", "\ud7ff"], ["\ue000", "\u{10ffff}"]],
+              inverted: false,
+              unicode: true,
+            },
+          },
+        ],
+      },
+      { allowedStartRules: ["start"] }
+    );
+    expect(pass).to.haveErrors("start = [\u{0}-\u{10ffff}]", [
+      [
+        "info",
+        "Removing surrogate range from [\\0-\\u{10FFFF}]",
+        {
+          "start": { "column": 9, "line": 1, "offset": 8 },
+          "end": { "column": 15, "line": 1, "offset": 14 },
+          "source": undefined,
+        },
+      ],
+    ]);
+  });
 });
