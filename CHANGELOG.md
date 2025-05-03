@@ -3,10 +3,10 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+5.0.0
+-----
 
-Released: TBD (Not before 2025-05-01)
+Released: 2025-05-03
 
 ### Major Changes
 
@@ -35,19 +35,21 @@ Released: TBD (Not before 2025-05-01)
   [#602](https://github.com/peggyjs/peggy/pull/602)
 
 ### New features
-- Extend library mode to include a success flag and a function for throwing syntax errors when needed.
+- Extend library mode to include a success flag and a function for throwing
+  syntax errors when needed.  Library mode is still intended as internal-only,
+  and subject to backward-incompatible changes in future versions.
   [#501](https://github.com/peggyjs/peggy/issues/501)
 - Slightly better verbose output from the CLI, showing where files are written.
   [#601](https://github.com/peggyjs/peggy/pull/601)
-- Merged class rules (rules which consist of a character class like `foo =
-  [0-9]` that are only called from a rule like `bar = foo / [a-z]`, which
+- Merged class rules (rules which consist of a character class like
+  `foo = [0-9]` that are only called from a rule like `bar = foo / [a-z]`, which
   merges the two classes together into a single rule like `bar = [0-9a-z]`),
   and which are not allowedStartRules, are no longer output into the generated
   parser, since there is no way for that code to be called.  This has a chance
   of generating issues for people who are calling the internals of the
   generated parser using
   [@peggyjs/coverage](https://github.com/peggyjs/coverage), but that's a
-  lightly-documented feature of the library.
+  lightly-documented feature of that library.
   [#594](https://github.com/peggyjs/peggy/pull/594)
 - Superfluous rules (rules which cannot be reached from an allowedStartRule)
   no longer generate code into the parser.  An INFO-level debug statement is
@@ -96,9 +98,13 @@ Released: TBD (Not before 2025-05-01)
   error in a future release, once experience in the field has shown that the
   approach does not catch code that is valid.
   [#606](https://github.com/peggyjs/peggy/pull/606)
+- Globals, UMD, and CommonJS are now downloadable from the online version.  The
+  weird version of globals that was only available from the web download was
+  removed. [#608](https://github.com/peggyjs/peggy/pull/608)
 
 ### Bug fixes
 
+-  Switch to pnpm-action instead of corepack for GitHub Actions. Ensure that help text always wraps the same in tests, no matter the actual terminal width. [#588](https://github.com/peggyjs/peggy/pull/588)
 - All libraries used in the web site brought up-to-date, versioned with all
   other dependencies, and served locally. (TODO: Old version of CodeMirror to
   be replaced with Monaco). [#593](https://github.com/peggyjs/peggy/pull/593)
@@ -115,11 +121,15 @@ Released: TBD (Not before 2025-05-01)
 - Small measures to try to get `deno run -A npm:peggy` to work.  We will not
   know if these were successful until the package is published next.  Testing
   with `--format es -t foo` will still not work in Deno.
+  [#603](https://github.com/peggyjs/peggy/pull/603)
 - Fix a bug with named NEVER_MATCH expressions.
   [#454](https://github.com/peggyjs/peggy/pull/454)
 - Warnings from grammar parsing are now presented more fully to the user in
   the CLI.  Info messages from grammar parsing are presented the same if in
   verbose mode. [#605](https://github.com/peggyjs/peggy/pull/605)
+- One of the intermediate files that is generated in tests was not getting
+  a warning when it was unexpectedly found on test start.
+  [#604](https://github.com/peggyjs/peggy/pull/604)
 
 ### Documentation
 
@@ -130,6 +140,9 @@ Released: TBD (Not before 2025-05-01)
   [#595](https://github.com/peggyjs/peggy/pull/595)
 - Set a minimum height for the editors in the online version.
   [#596](https://github.com/peggyjs/peggy/pull/596)
+- Update the docs for newly-created compiler passes.  Make pluck and literal
+  syntax use the new "dim" approach for optional bits.
+  [$612](https://github.com/peggyjs/peggy/pull/612)
 
 4.2.0
 -----

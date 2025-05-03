@@ -819,12 +819,13 @@ WS = [ \t]*</code></pre>
   <code>rest</code> is any remaining input after the match.</p>
 
 <dl>
-  <dt><code>"<em>literal</em>"<br>'<em>literal</em>'</code></dt>
+  <dt><code>"<em>literal</em>"<span class="dim">i</span><br>'<em>literal</em>'<span class="dim">i</span></code></dt>
 
   <dd>
     <p>Match exact literal string and return it. The string syntax is the same
-      as in JavaScript. Appending <code>i</code> right after the literal makes the
-      match case-insensitive.</p>
+      as in JavaScript, including escape sequences such as <code>"\xff"</code>,
+      <code>"\uffff"</code> and <code>"\u{f}"</code>. Appending <code>i</code>
+      after the literal makes the match case-insensitive.</p>
 
     <div class="example">
       <div>
@@ -1351,7 +1352,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
     </div>
   </dd>
 
-  <dt id="pluck"><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
+  <dt id="pluck"><code><em>@</em> <span class="dim"><em>label</em>:</span> <em>expression</em></code></dt>
 
   <dd>
     <p>Match the expression and if the label exists, remember its match result
@@ -1828,10 +1829,15 @@ export function use(config, options) => {
       mapping will contain at least the following keys:</p>
 
     <ul>
-      <li><code>check</code> — passes that check AST for correctness. They shouldn't change the AST</li>
+      <li><code>prepare</code> - passes that prepare the AST for further
+        processing.  They may add to the AST, but not otherwise modify it.</li>
+      <li><code>check</code> — passes that check AST for correctness. They
+        shouldn't change the AST</li>
       <li><code>transform</code> — passes that performs various optimizations. They can change
         the AST, add or remove nodes or their properties</li>
-      <li><code>generate</code> — passes used for actual code generating</li>
+      <li><code>semantic</code> — passes that process the AST semantically,
+        relying on all of the transformations from previous passes.</li>
+      <li><code>generate</code> — passes used for actual code generation.</li>
     </ul>
 
     <p>A plugin that implements a pass should usually push it to the end of the correct
