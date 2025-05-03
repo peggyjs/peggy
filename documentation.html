@@ -147,7 +147,7 @@ In your <code>package.json</code> file, you can do something like:
 <p>Browsers and JS runtimes that pass the following
   <a href="https://github.com/browserslist/browserslist#readme">Browserslist</a>
   query at the time of release are supported:</p>
-  <pre><code>defaults, maintained node versions, not op_mini all</code></pre>
+  <pre><code><a href="https://browsersl.ist/#q=defaults%2C+maintained+node+versions%2C+not+op_mini+all">defaults, maintained node versions, not op_mini all</a></code></pre>
 
   <p>Opera Mini can't be bothered to implement <code>URL</code> of all things,
     so it's not worth our time to support.</p>
@@ -846,18 +846,19 @@ WS = [ \t]*</code></pre>
 
 <p>There are several types of parsing expressions, some of them containing
   subexpressions and thus forming a recursive structure. Each example below is
-  a part of a <a href="js/examples.peggy">full grammar</a>, which produces an
+  a part of a <a href="js/examples.peggy.txt">full grammar</a>, which produces an
   object that contains <code>match</code> and <code>rest</code>.
   <code>match</code> is the part of the input that matched the example,
   <code>rest</code> is any remaining input after the match.</p>
 
 <dl>
-  <dt><code>"<em>literal</em>"<br>'<em>literal</em>'</code></dt>
+  <dt><code>"<em>literal</em>"<span class="dim">i</span><br>'<em>literal</em>'<span class="dim">i</span></code></dt>
 
   <dd>
     <p>Match exact literal string and return it. The string syntax is the same
-      as in JavaScript. Appending <code>i</code> right after the literal makes the
-      match case-insensitive.</p>
+      as in JavaScript, including escape sequences such as <code>"\xff"</code>,
+      <code>"\uffff"</code> and <code>"\u{f}"</code>. Appending <code>i</code>
+      after the literal makes the match case-insensitive.</p>
 
     <div class="example">
       <div>
@@ -890,7 +891,7 @@ WS = [ \t]*</code></pre>
   <dt><code>.</code> (U+002E: FULL STOP, or "period")</dt>
 
   <dd>
-    <p>Match exactly one character and return it as a string.</p>
+    <p>Match exactly one JavaScript character (UTF-16 code unit) and return it as a string.</p>
     <div class="example">
       <div>
         <div><em>Example:</em> <code>any = .</code></div>
@@ -939,16 +940,34 @@ WS = [ \t]*</code></pre>
     </div>
   </dd>
 
-  <dt><code>[<em>characters</em>]</code></dt>
+  <dt><code>[<span class="dim">^</span><em>characters</em>]<span class="dim">iu</span></code></dt>
 
   <dd>
-    <p>Match one character from a set and return it as a string. The characters
-      in the list can be escaped in exactly the same way as in JavaScript string.
+    <p>Match one character from a character class and return it as a string. The characters
+      in the list can be escaped in exactly the same way as in JavaScript string, using
+      <code>\uXXXX</code> or <code>\u{XXXX}</code>.
       The list of characters can also contain ranges (e.g. <code>[a-z]</code>
       means “all lowercase letters”). Preceding the characters with <code>^</code>
-      inverts the matched set (e.g. <code>[^a-z]</code> means “all character but
-      lowercase letters”). Appending <code>i</code> right after the class makes
-      the match case-insensitive.</p>
+      inverts the matched set (e.g. <code>[^a-z]</code> means “all characters except
+      lowercase letters”). Appending <code>i</code> after the class makes
+      the match case-insensitive.  Appending <code>u</code> after the class forces
+      the class into Unicode mode, where an entire codepoint will be matched, even
+      if it takes up two JavaScript characters in a UTF-16 surrogate pair.  If
+      any of the characters in the class are outside the range 0x0-0xFFFF (the
+      Basic Multilingual Plane: BMP), the class is automatically forced into
+      Unicode mode even if the "u" flag is not specified.  In unicode mode, a
+      range that includes the surrogates (without mentioning a codepoint in the
+      surrogate range explicitly) will not match a lone surrogate.  For example,
+      the class <code>[\u0100-\u{10FFFF}]u</code> will not match <code>"\ud800"</code>,
+      but <code>[\ud800-\udfff]u</code> will.</p>
+    <p>The list of characters may also contain the special escape sequences
+      <code>\p{}</code> or <code>\P{}</code></code>.  These escape sequences
+      are used to match Unicode properties.  See
+      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape">MDN: Unicode character class escape</a>
+      for more information.  When one or more of these escapes are included,
+      the class is automatically put in Unicode mode.</p>
+    <p>Note: the Unicode mode generates a JavaScript regular expression with
+      the "u" flag set.</p>
 
     <div class="example">
       <div>
@@ -975,6 +994,54 @@ WS = [ \t]*</code></pre>
         <div class="result"></div>
       </div>
     </div>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>not_class_u = [^a-z]u</code></div>
+        <div><em>Matches:</em> <code>"🦥"</code></div>
+        <div><em>Does not match:</em> <code>"f"</code>, <code>""</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="🦥" class="exampleInput" name="not_class_u">
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>class_p = [\p{ASCII}]</code></div>
+        <div><em>Matches:</em> <code>"a"</code>, <code>"_"</code></div>
+        <div><em>Does not match:</em> <code>ø</code>, <code>"🦥"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="a" class="exampleInput" name="class_p">
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div>
+        <div><em>Example:</em> <code>class_P = [\P{ASCII}]</code></div>
+        <div><em>Matches:</em> <code>ø</code>, <code>"🦥"</code></div>
+        <div><em>Does not match:</em> <code>"a"</code>, <code>"_"</code></div>
+      </div>
+      <div class="try">
+        <em>Try it:</em>
+        <input type="text" value="ø" class="exampleInput" name="class_P">
+        <div class="result"></div>
+      </div>
+    </div>
+  </dd>
+
+  <dt><code>[^]<span class="dim">u</span></code> (not-nothing)</dt>
+  <dd>
+    <p>This is a special case of a character class, which is defined to equal
+      one character.  If the "u" flag is not specified, this is the same as the
+      <code>.</code> expression.  If the "u" flag is specified, this matches a
+      whole Unicode codepoint, which may be one or two JavaScript characters
+      (UTF-16 code units).  In unicode mode, it will never match a lone surrogate.</p>
   </dd>
 
   <dt><code><em>rule</em></code></dt>
@@ -1318,7 +1385,7 @@ n1 = n:$[0-9] { return parseInt(n); };</code></pre>
     </div>
   </dd>
 
-  <dt id="pluck"><code><em>@</em> ( <em>label</em> : )? <em>expression</em></code></dt>
+  <dt id="pluck"><code><em>@</em> <span class="dim"><em>label</em>:</span> <em>expression</em></code></dt>
 
   <dd>
     <p>Match the expression and if the label exists, remember its match result
@@ -1751,17 +1818,12 @@ note: Step 3: call itself without input consumption - left recursion
 <p>All of the notes about values for <code>location()</code> object are also
   applicable to the <code>range()</code> and <code>offset()</code> calls.</p>
 
-<p>Currently, Peggy grammars may only contain codepoints from the
+<p>Peggy grammars work one UTF-16 code unit at a time, except for string
+  literals containing characters from outside the
   <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic
-  Multilingual Plane (BMP)</a> of Unicode.
-  This means that all offsets are measured in UTF-16 code units. If you
-  include characters outside this Plane (for example, emoji, or any
-  surrogate pairs), you may get an offset inside a code point.</p>
-
-<p>Changing this behavior might be a breaking change, so it will likely cause
-  a major version number increase if it happens. You can join to the discussion
-  for this topic on the <a href="https://github.com/peggyjs/peggy/discussions/15">GitHub Discussions
-    page</a>.</p>
+  Multilingual Plane (BMP)</a> of Unicode or character classes in Unicode mode.
+  All offsets are measured in UTF-16 code units (JavaScript characters).  It
+  is possible to get an offset in the middle of a UTF-16 surrogate pair.</p>
 
 <h2 id="plugins-api">Plugins API</h2>
 
@@ -1800,10 +1862,15 @@ export function use(config, options) => {
       mapping will contain at least the following keys:</p>
 
     <ul>
-      <li><code>check</code> — passes that check AST for correctness. They shouldn't change the AST</li>
+      <li><code>prepare</code> - passes that prepare the AST for further
+        processing.  They may add to the AST, but not otherwise modify it.</li>
+      <li><code>check</code> — passes that check AST for correctness. They
+        shouldn't change the AST</li>
       <li><code>transform</code> — passes that performs various optimizations. They can change
         the AST, add or remove nodes or their properties</li>
-      <li><code>generate</code> — passes used for actual code generating</li>
+      <li><code>semantic</code> — passes that process the AST semantically,
+        relying on all of the transformations from previous passes.</li>
+      <li><code>generate</code> — passes used for actual code generation.</li>
     </ul>
 
     <p>A plugin that implements a pass should usually push it to the end of the correct

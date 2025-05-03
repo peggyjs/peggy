@@ -1,17 +1,17 @@
-$(document).ready(function() {
-  var KB      = 1024;
-  var MS_IN_S = 1000;
+$(function() {
+  const KB      = 1024;
+  const MS_IN_S = 1000;
 
-  var parser;
-  var parserSource       = null;
+  let parser;
+  let parserSource       = null;
 
-  var editor = CodeMirror.fromTextArea($("#grammar").get(0), {
+  const editor = CodeMirror.fromTextArea($("#grammar").get(0), {
       lineNumbers: true,
       mode: "pegjs",
       gutters: ["CodeMirror-lint-markers"],
       lint: true,
   });
-  var input = CodeMirror.fromTextArea($("#input").get(0), {
+  const input = CodeMirror.fromTextArea($("#input").get(0), {
       lineNumbers: true,
       mode: null,
       gutters: ["CodeMirror-lint-markers"],
@@ -19,13 +19,13 @@ $(document).ready(function() {
   });
 
   CodeMirror.registerHelper("lint", "pegjs", function(grammar) {
-    var problems = [];
+    const problems = [];
     buildAndParse(grammar, problems);
     return problems;
   });
 
   CodeMirror.registerHelper("lint", null, function(content) {
-    var problems = [];
+    const problems = [];
     parse(content, problems);
     return problems;
   });
@@ -49,8 +49,8 @@ $(document).ready(function() {
       });
     }
     if (e.diagnostics !== undefined) {
-      for (var i = 0; i < e.diagnostics.length; ++i) {
-        var d = e.diagnostics[i];
+      for (let i = 0; i < e.diagnostics.length; ++i) {
+        const d = e.diagnostics[i];
         problems.push({
           severity: "warning",
           message: d.message,
@@ -77,6 +77,23 @@ $(document).ready(function() {
       : e.message;
   }
 
+  function saveParser(format, filename) {
+    try { // If this button was enabled, the source was already validated by 'rebuildGrammar'
+      const esSource = peggy.generate(editor.getValue(), {
+        cache: $("#option-cache").is(":checked"),
+        output: "source",
+        exportVar: $( "#parser-var" ).val(),
+        format,
+      })
+
+      console.log({filename})
+      const blob = new Blob([esSource], {type: "application/javascript"});
+      window.saveAs(blob, filename);
+    } catch (e) {
+      console.error('Unable to save parser', e);
+    }
+  }
+
   /**
    * Generates code from the parser, collects problems in `problems` in CodeMirror
    * lint format.
@@ -93,11 +110,14 @@ $(document).ready(function() {
     $("#output").addClass("disabled").text("Output not available.");
     $("#parser-var").attr("disabled", "disabled");
     $("#option-cache").attr("disabled", "disabled");
-    $("#parser-download").attr("disabled", "disabled");
+    $("#parser-download-globals").attr("disabled", "disabled");
+    $("#parser-download-umd").attr("disabled", "disabled");
+    $("#parser-download-cjs").attr("disabled", "disabled");
     $("#parser-download-es6").attr("disabled", "disabled");
 
+    let result = false;
     try {
-      var timeBefore = (new Date).getTime();
+      const timeBefore = (new Date).getTime();
       parserSource = peggy.generate(grammar, {
         cache:    $("#option-cache").is(":checked"),
         output:   "source",
@@ -119,7 +139,7 @@ $(document).ready(function() {
           });
         },
       });
-      var timeAfter = (new Date).getTime();
+      const timeAfter = (new Date).getTime();
 
       parser = eval(parserSource);
 
@@ -134,15 +154,15 @@ $(document).ready(function() {
       $("#input").removeAttr("disabled");
       $("#parser-var").removeAttr("disabled");
       $("#option-cache").removeAttr("disabled");
-      $("#parser-download").removeAttr("disabled");
+      $("#parser-download-globals").removeAttr("disabled");
+      $("#parser-download-umd").removeAttr("disabled");
+      $("#parser-download-cjs").removeAttr("disabled");
       $("#parser-download-es6").removeAttr("disabled");
 
-      var result = true;
+      result = true;
     } catch (e) {
       convertError(e, problems);
       $("#build-message").attr("class", "message error").text(buildErrorMessage(e));
-
-      var result = false;
     }
 
     doLayout();
@@ -154,10 +174,11 @@ $(document).ready(function() {
     $("#parse-message").attr("class", "message progress").text("Parsing the input...");
     $("#output").addClass("disabled").text("Output not available.");
 
+    let result = false;
     try {
-      var timeBefore = (new Date).getTime();
-      var output = parser.parse(newInput);
-      var timeAfter = (new Date).getTime();
+      const timeBefore = (new Date).getTime();
+      const output = parser.parse(newInput);
+      const timeAfter = (new Date).getTime();
 
       $("#parse-message")
         .attr("class", "message info")
@@ -176,12 +197,10 @@ $(document).ready(function() {
         stylize: util.stylizeWithHTML,
       }));
 
-      var result = true;
+      result = true;
     } catch (e) {
       convertError(e, problems);
       $("#parse-message").attr("class", "message error").text(buildErrorMessage(e));
-
-      var result = false;
     }
 
     doLayout();
@@ -197,57 +216,44 @@ $(document).ready(function() {
   }
 
   function doLayout() {
-    var editors = $(".CodeMirror");
+    const editors = $(".CodeMirror");
     /*
      * This forces layout of the page so that the |#columns| table gets a chance
      * make itself smaller when the browser window shrinks.
      */
     $("#left-column").height("0px");    // needed for IE
     $("#right-column").height("0px");   // needed for IE
-    for (var i = 0; i < editors.length; ++i) {
+    for (let i = 0; i < editors.length; ++i) {
       $(editors[i]).height("0px");
     }
 
     $("#left-column").height(($("#left-column").parent().innerHeight() - 2) + "px");     // needed for IE
     $("#right-column").height(($("#right-column").parent().innerHeight() - 2) + "px");   // needed for IE
-    for (var i = 0; i < editors.length; ++i) {
+    for (let i = 0; i < editors.length; ++i) {
       $(editors[i]).height(($(editors[i]).parent().parent().innerHeight() - 14) + "px");
     }
   }
 
   $("#option-cache")
-    .change(rebuildGrammar)
-    .mousedown(rebuildGrammar)
-    .mouseup(rebuildGrammar)
-    .click(rebuildGrammar)
-    .keydown(rebuildGrammar)
-    .keyup(rebuildGrammar)
-    .keypress(rebuildGrammar);
+    .on('change', rebuildGrammar)
+    .on('mousedown', rebuildGrammar)
+    .on('mouseup', rebuildGrammar)
+    .on('click', rebuildGrammar)
+    .on('keydown', rebuildGrammar)
+    .on('keyup', rebuildGrammar)
+    .on('keypress', rebuildGrammar);
 
-  $( "#parser-download" )
-    .click(function(){
+  $( "#parser-download-globals" )
+    .on('click', () => saveParser("globals", "parser.js"));
 
-      var blob = new Blob( [$( "#parser-var" ).val() + " = " + parserSource + ";\n"], {type: "application/javascript"} );
-      window.saveAs( blob, "parser.js" );
+  $( "#parser-download-umd" )
+    .on('click', () => saveParser("umd", "parser.js"));
 
-    });
+  $( "#parser-download-cjs" )
+    .on('click', () => saveParser("commonjs", "parser.cjs"));
 
   $( "#parser-download-es6" )
-    .click(function(){
-      try { // If this button was enabled, the source was already validated by 'rebuildGrammar'
-        const esSource = peggy.generate(editor.getValue(), {
-          cache: $("#option-cache").is(":checked"),
-          output: "source",
-          format: 'es'
-        })
-
-        var blob = new Blob([esSource], {type: "application/javascript"});
-        window.saveAs(blob, "parser.mjs");
-      } catch (e) {
-        console.error('Unable to save parser', e);
-      }
-
-    });
+    .on('click', () => saveParser("es", "parser.mjs"));
 
   doLayout();
   $(window).resize(doLayout);
