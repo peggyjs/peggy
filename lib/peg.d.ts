@@ -445,9 +445,9 @@ type Problem = [
   /** Diagnostic message. */
   message: string,
   /** Location where message is generated, if applicable. */
-  location: LocationRange?,
+  location?: LocationRange,
   /** List of additional messages with their locations, if applicable. */
-  diagnostics: DiagnosticNote[]?,
+  diagnostics?: DiagnosticNote[],
 ];
 
 /** Thrown if the grammar contains a semantic error. */
