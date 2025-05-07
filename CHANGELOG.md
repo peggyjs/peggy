@@ -11,11 +11,11 @@ Released: 2025-05-07
 ### Bug fixes
 
 - Fix TypeScript error in peg.d.ts, SyntaxError constructor should not have a return type.
-  (#619)[https://github.com/peggyjs/peggy/pull/619]
+  [#619](https://github.com/peggyjs/peggy/pull/619)
 - Add more Unicode to fizzbuzz example.
-  (#619)[https://github.com/peggyjs/peggy/pull/619]
+  [#619](https://github.com/peggyjs/peggy/pull/619)
 - Catch invalid unicode property escapes at compile time.
-  (#619)[https://github.com/peggyjs/peggy/pull/619]
+  [#619](https://github.com/peggyjs/peggy/pull/619)
 
 5.0.1
 -----
