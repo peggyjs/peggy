@@ -3,18 +3,19 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+5.0.2
+-----
 
-Released: TBD
-
-### Major Changes
-
-### New features
+Released: 2025-05-07
 
 ### Bug fixes
 
-### Documentation
+- Fix TypeScript error in peg.d.ts, SyntaxError constructor should not have a return type.
+  (#619)[https://github.com/peggyjs/peggy/pull/619]
+- Add more Unicode to fizzbuzz example.
+  (#619)[https://github.com/peggyjs/peggy/pull/619]
+- Catch invalid unicode property escapes at compile time.
+  (#619)[https://github.com/peggyjs/peggy/pull/619]
 
 5.0.1
 -----
