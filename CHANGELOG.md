@@ -3,18 +3,17 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+5.0.1
+-----
 
-Released: TBD
-
-### Major Changes
-
-### New features
+Released: 2025-05-07
 
 ### Bug fixes
 
-### Documentation
+- Fix TypeScript error in peg.d.ts.
+  [#615](https://github.com/peggyjs/peggy/pull/615)
+- Fix SyntaxError definition in peg.d.ts
+  [#616](https://github.com/peggyjs/peggy/pull/616)
 
 5.0.0
 -----
