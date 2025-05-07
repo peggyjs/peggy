@@ -217,7 +217,7 @@ class PeggyCLI extends Command {
     };
 
     if (opts.error) {
-      const er = /** @type {peggy.parser.PeggySyntaxError} */(opts.error);
+      const er = /** @type {peggy.parser.SyntaxError} */(opts.error);
       if (typeof er.format === "function") {
         const fmt = er.format(/** @type {peggy.SourceText[]} */(opts.sources));
         message = `${message}\n${fmt}`;

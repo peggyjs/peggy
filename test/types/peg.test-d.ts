@@ -73,10 +73,10 @@ describe("peg.d.ts", () => {
   it("types SyntaxError correctly", () => {
     const parser = peggy.generate(src);
 
-    expectExact<peggy.parser.PeggySyntaxErrorConstructor>()(
+    expectExact<peggy.parser.SyntaxErrorConstructor>()(
       parser.SyntaxError
     )();
-    expectExact<peggy.parser.PeggySyntaxError>()(new parser.SyntaxError("", null, null, {
+    expectExact<peggy.parser.SyntaxError>()(new parser.SyntaxError("", null, null, {
       source: null,
       start: { line: 0, column: 0, offset: 0 },
       end: { line: 0, column: 0, offset: 0 },

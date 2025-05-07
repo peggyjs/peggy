@@ -451,7 +451,7 @@ type Problem = [
 ];
 
 /** Thrown if the grammar contains a semantic error. */
-export class GrammarError extends SyntaxError {
+export class GrammarError extends globalThis.SyntaxError {
   /** Location of the error in the source. */
   public location?: LocationRange;
 
@@ -635,15 +635,15 @@ export namespace parser {
     | LiteralExpectation
     | OtherExpectation;
 
-  interface PeggySyntaxErrorConstructor {
-    readonly prototype: PeggySyntaxError;
+  interface SyntaxErrorConstructor {
+    readonly prototype: SyntaxError;
 
     new (
       message: string,
       expected: Expectation[] | null,
       found: string | null,
       location: LocationRange
-    ): PeggySyntaxError;
+    ): SyntaxError;
 
     // Static methods
     /**
@@ -656,7 +656,7 @@ export namespace parser {
   }
 
   /** Thrown if the grammar contains a syntax error. */
-  class PeggySyntaxError extends SyntaxError {
+  class SyntaxError extends globalThis.SyntaxError {
     /** Location where error was originated. */
     public location: LocationRange;
 
@@ -1109,7 +1109,7 @@ export interface LibraryResults {
 
 export interface Parser {
   StartRules: string[];
-  SyntaxError: parser.PeggySyntaxErrorConstructor;
+  SyntaxError: parser.SyntaxErrorConstructor;
 
   parse(
     input: string,
@@ -1452,7 +1452,7 @@ export type GrammarInput = SourceText[] | string;
  *        `parser.pegjs` file
  * @param options Options that allow you to customize returned parser object
  *
- * @throws {PeggySyntaxError}  If the grammar contains a syntax error, for example,
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
  *         an unclosed brace
  * @throws {GrammarError} If the grammar contains a semantic error, for example,
  *         duplicated labels
@@ -1469,7 +1469,7 @@ export function generate(
  *        `parser.pegjs` file
  * @param options Options that allow you to customize returned parser object
  *
- * @throws {PeggySyntaxError}  If the grammar contains a syntax error, for example,
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
  *         an unclosed brace
  * @throws {GrammarError} If the grammar contains a semantic error, for example,
  *         duplicated labels
@@ -1491,7 +1491,7 @@ export function generate(
  *        `parser.pegjs` file
  * @param options Options that allow you to customize returned parser object
  *
- * @throws {PeggySyntaxError}  If the grammar contains a syntax error, for example,
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
  *         an unclosed brace
  * @throws {GrammarError} If the grammar contains a semantic error, for
  *         example, duplicated labels
@@ -1529,7 +1529,7 @@ export function generate(
  *        `parser.pegjs` file
  * @param options Options that allow you to customize returned parser object
  *
- * @throws {PeggySyntaxError}  If the grammar contains a syntax error, for example,
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
  *         an unclosed brace
  * @throws {GrammarError} If the grammar contains a semantic error, for example,
  *         duplicated labels
@@ -1550,7 +1550,7 @@ export function generate(
  *        `parser.pegjs` file
  * @param options Options that allow you to customize returned AST
  *
- * @throws {PeggySyntaxError}  If the grammar contains a syntax error, for example,
+ * @throws {SyntaxError}  If the grammar contains a syntax error, for example,
  *         an unclosed brace
  * @throws {GrammarError} If the grammar contains a semantic error, for example,
  *         duplicated labels
