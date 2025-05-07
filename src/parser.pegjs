@@ -527,6 +527,11 @@ AtomEscape
 
 CharacterClassEscape
   = value:$("p"i "{" UnicodePropertyValueExpression "}") {
+    try {
+      new RegExp(`[\\${value}]`, "u");
+    } catch (er) {
+      error("Invalid Unicode property escape");
+    }
     return {
       type: "classEscape",
       value,

@@ -1132,6 +1132,7 @@ describe("Peggy grammar parser", () => {
     expect("start = [\\p{a=]").to.failToParse();
     expect("start = [\\p{a=b]").to.failToParse();
     expect("start = [\\p{\u0661}]").to.failToParse();
+    expect("start = [\\p{foooo}]u").to.failToParse();
   });
 
   // Canonical ClassCharacterRange is "a-d".
