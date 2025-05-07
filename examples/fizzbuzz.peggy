@@ -33,12 +33,17 @@ line
   / buzz
 
 fizzbuzz = f:fizz _ b:buzz { return f + b }
-fizz = @"fizz"i !{ return currentNumber % 3 }
-buzz = @"buzz"i !{ return currentNumber % 5 }
+fizz
+  = @"fizz"i !{ return currentNumber % 3 }
+  / "🍺"
+
+buzz
+  = @"buzz"i !{ return currentNumber % 5 }
+  / "\u{1F41D}"
 
 // Arbitrary requirement needing &
 number "number without trailing comment"
-  = "0x" n:$[0-9a-f]i+ &"\n" { return parseInt(n, 16) }
+  = "0x" n:$[\p{ASCII_Hex_Digit}]+ &"\n" { return parseInt(n, 16) }
   / n:$[0-9]+ &"\n" { return parseInt(n, 10) }
 
 _ = $[ \t]*
