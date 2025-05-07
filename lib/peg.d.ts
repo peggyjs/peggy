@@ -657,7 +657,7 @@ export namespace parser {
       expected: Expectation[] | null,
       found: string | null,
       location: LocationRange
-    ): SyntaxError;
+    );
 
     /**
      * Format the error with associated sources.  The `location.source` should have
