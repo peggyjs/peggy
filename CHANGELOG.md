@@ -14,6 +14,8 @@ Released: TBD
 
 ### Bug fixes
 
+- Tweak TypeScript output from --dts to make error type more clear. [#623](https://github.com/peggyjs/peggy/pull/623)
+
 ### Documentation
 
 5.0.2
