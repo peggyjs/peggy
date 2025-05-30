@@ -4,7 +4,7 @@ Change Log
 This file documents all notable changes to Peggy.
 
 5.0.3
-----------
+-----
 
 Released: 2025-05-30
 
