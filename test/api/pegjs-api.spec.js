@@ -242,6 +242,7 @@ describe("Peggy API", () => {
           "set",
         ];
         for (const label of nonReserved) {
+          // One test per
           it(label, () => {
             const source = peg.generate([
               "start = " + label + ":end { return " + label + "; }",
@@ -350,6 +351,7 @@ describe("Peggy API", () => {
         "-",
         gl,
       ]) {
+        // Test each variant
         describe(`with source = ${chai.util.inspect(source)}`, () => {
           /* eslint-disable mocha/consistent-spacing-between-blocks */
           it("global initializer", () => check(GLOBAL_INITIALIZER, source, "$top_level_initializer"));
