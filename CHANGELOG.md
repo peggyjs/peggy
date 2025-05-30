@@ -15,6 +15,8 @@ Released: TBD
 ### Bug fixes
 
 - Tweak TypeScript output from --dts to make error type more clear. [#623](https://github.com/peggyjs/peggy/pull/623)
+- Test on Node 24, but not Node 23.
+  [#624](https://github.com/peggyjs/peggy/pull/624)
 
 ### Documentation
 
