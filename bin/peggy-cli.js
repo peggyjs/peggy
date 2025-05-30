@@ -642,6 +642,7 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
 
         if (this.lastError) {
           PeggyCLI.print(this.std.err, this.lastError);
+          PeggyCLI.print(this.std.err, `Failed writing: "${this.progOptions.outputFile}"`);
         } else if (!hasTest) {
           PeggyCLI.print(this.std.err, `Wrote: "${this.progOptions.outputFile}"`);
         }

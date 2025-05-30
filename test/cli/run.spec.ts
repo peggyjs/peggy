@@ -1465,9 +1465,9 @@ error: WARN(check): An expression may not consume any input and may always match
         args: ["-w", bad],
         exitCode: 0,
         onstderr(_s, cli) {
-          // This is brittle.  Stderr gets the "file added" message, then
-          // the error, then a newline.
-          if (++count === 4) {
+          // This is brittle.  Stderr gets the "file added" message, then the
+          // error, then a newline, then the failed message, then a newline.
+          if (++count === 6) {
             cli.stopWatching();
           }
         },
