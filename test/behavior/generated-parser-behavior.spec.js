@@ -26,6 +26,7 @@ describe("generated parser behavior", () => {
     ];
 
     optionsVariants.forEach(variant => {
+      // This comment is a lint fix
       describe(
         "with options " + chai.util.inspect(variant),
         () => { block(clone(variant)); }
@@ -106,7 +107,9 @@ describe("generated parser behavior", () => {
   });
 
   varyOptimizationOptions(options => {
+    // This comment is a lint fix
     describe("initializer", () => {
+      // This comment is a lint fix
       it("executes the code before parsing starts", () => {
         const parser = peg.generate([
           "{ var result = 42; }",
