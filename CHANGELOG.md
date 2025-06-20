@@ -3,16 +3,19 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+5.0.4
+-----
 
-Released: TBD
+Released: 2025-07-20
 
 ### Major Changes
 
 ### New features
 
 ### Bug fixes
+
+- Update dependencies.
+  [#630](https://github.com/peggyjs/peggy/pull/630)
 
 5.0.3
 -----
