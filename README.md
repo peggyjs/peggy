@@ -1,5 +1,6 @@
 [![Tests](https://github.com/peggyjs/peggy/actions/workflows/node.js.yml/badge.svg)](https://github.com/peggyjs/peggy/actions/workflows/node.js.yml)
 [![npm version](https://img.shields.io/npm/v/peggy.svg)](https://www.npmjs.com/package/peggy)
+[![codecov](https://codecov.io/gh/peggyjs/peggy/graph/badge.svg?token=9HBIZ9CRW8)](https://codecov.io/gh/peggyjs/peggy)
 [![License](https://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
 # Peggy
