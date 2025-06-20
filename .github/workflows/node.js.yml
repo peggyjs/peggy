@@ -29,10 +29,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Check coding standards
-        if: matrix.node-version == '22.x' && matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: npm run lint
       - name: Static analysis - check types
-        if: matrix.node-version == '22.x' && matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: npm run ts
       - name: Test
         run: npm run test
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
