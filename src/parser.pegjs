@@ -577,7 +577,7 @@ ClassFlag
 
 ClassCharacterRange
   = begin:ClassCharacter "-" end:ClassCharacter {
-      if (begin.charCodeAt(0) > end.charCodeAt(0)) {
+      if (begin.codePointAt(0) > end.codePointAt(0)) {
         error(
           "Invalid character range: " + text() + "."
         );
