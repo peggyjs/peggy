@@ -357,6 +357,11 @@ describe("generated parser behavior", () => {
           expect(parser).to.parse("\u{1F4A9}");
         });
 
+        it("matches unicode class range", () => {
+          const parser = peg.generate("start = [\\ue000-\\u{10ffff}]", options);
+          expect(parser).to.parse("\u{1F4A9}");
+        });
+
         it("matches explicit unicode classes", () => {
           const parser = peg.generate("start = [^a]u", options);
           expect(parser).to.parse("\u{1F4A9}");
