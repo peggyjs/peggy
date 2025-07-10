@@ -3,21 +3,20 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+5.0.5
+-----
 
-Released: TBD
-
-### Major Changes
-
-### New features
+Released: 2025-07-10
 
 ### Bug fixes
+
+- Fix unicode ranges whose upper bound is astral.
+  [#636](https://github.com/peggyjs/peggy/pull/636)
 
 5.0.4
 -----
 
-Released: 2025-07-20
+Released: 2025-06-20
 
 ### Bug fixes
 
