@@ -28,11 +28,11 @@ const packageJson = path.resolve(__dirname, "..", "..", "package.json");
 const grammarFile = path.resolve(__dirname, "..", "..", "examples", "json.pegjs");
 let tmpDir = "";
 
-beforeAll(async() => {
+beforeAll(async () => {
   tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "run-spec-"));
 });
 
-afterAll(async() => {
+afterAll(async () => {
   await fs.promises.rm(tmpDir, { recursive: true });
 });
 
@@ -151,7 +151,7 @@ async function exec(opts: Options = {}): Promise<string> {
     out.on("data", buf => outputBuffers.push(buf));
 
     // All of the errors we want to capture go into this promise.
-    const p = (async(): Promise<number> => {
+    const p = (async (): Promise<number> => {
       const cli = new PeggyCLI({ in: stdin, out, err })
         .exitOverride()
         .configureOutput({
@@ -334,7 +334,7 @@ async function checkSourceMap(
 }
 
 describe("MockStream", () => {
-  it("Accepts input larger than highwaterMark", async() => {
+  it("Accepts input larger than highwaterMark", async () => {
     const s = new MockStream({ highWaterMark: 1 });
     const recv: Buffer[] = [];
     // Note: before adding this callback, the write's below would block
@@ -352,7 +352,7 @@ describe("MockStream", () => {
 });
 
 describe("Command Line Interface", () => {
-  it("has help", async() => {
+  it("has help", async () => {
     const HELP = `\
 Usage: peggy [options] [input_file...]
 
@@ -459,7 +459,7 @@ Options:
     })).resolves.toBe(HELP);
   });
 
-  it("rejects invalid options", async() => {
+  it("rejects invalid options", async () => {
     await exec({
       args: ["--invalid-option"],
       error: CommanderError,
@@ -468,7 +468,7 @@ Options:
     });
   });
 
-  it("handles start rules", async() => {
+  it("handles start rules", async () => {
     await exec({
       args: ["--allowed-start-rules", "foo,bar,baz"],
       stdin: foobarbaz,
@@ -494,7 +494,7 @@ Options:
     });
   });
 
-  it("enables caching", async() => {
+  it("enables caching", async () => {
     await exec({
       args: ["--cache"],
       stdin: "foo = '1'",
@@ -502,7 +502,7 @@ Options:
     });
   });
 
-  it("prints version", async() => {
+  it("prints version", async () => {
     await exec({
       args: ["--version"],
       errorCode: "commander.version",
@@ -517,7 +517,7 @@ Options:
     });
   });
 
-  it("handles dependencies", async() => {
+  it("handles dependencies", async () => {
     await exec({
       args: ["-d", "c:commander", "-d", "jest"],
       stdin: "foo = '1' { return new c.Command(); }",
@@ -588,7 +588,7 @@ Options:
     });
   });
 
-  it("handles exportVar", async() => {
+  it("handles exportVar", async () => {
     await exec({
       args: ["--format", "globals", "-e", "football"],
       stdin: "foo = '1'",
@@ -619,7 +619,7 @@ Options:
     });
   });
 
-  it("handles extra options", async() => {
+  it("handles extra options", async () => {
     await exec({
       args: ["-d", "fs", "--extra-options", '{"format": "amd"}'],
       stdin: 'foo = "1"',
@@ -651,7 +651,7 @@ Options:
     });
   });
 
-  it("handles extra options in a file", async() => {
+  it("handles extra options in a file", async () => {
     const optFile = path.join(fixtures, "options.json");
     const optFileJS = path.join(fixtures, "options.js");
     const optFileMJS = path.join(fixtures, "options.mjs");
@@ -725,7 +725,7 @@ Options:
     });
   });
 
-  it("handles formats", async() => {
+  it("handles formats", async () => {
     await exec({
       args: ["--format"],
       errorCode: "commander.optionMissingArgument",
@@ -742,7 +742,7 @@ Options:
   });
 
   describe("--ast option", () => {
-    it("conflicts with --test/--test-file/--source-map", async() => {
+    it("conflicts with --test/--test-file/--source-map", async () => {
       await exec({
         args: ["--ast", "--test", "1"],
         stdin: 'foo = "1"',
@@ -777,7 +777,7 @@ Options:
       });
     });
 
-    it("produces AST", async() => {
+    it("produces AST", async () => {
       const output = await exec({
         args: ["--ast"],
         stdin: 'foo = "1"',
@@ -805,7 +805,7 @@ Options:
     });
   });
 
-  it("outputs to a file", async() => {
+  it("outputs to a file", async () => {
     const test_output = "test_output.js";
 
     expect(() => {
@@ -848,7 +848,7 @@ Options:
     });
   });
 
-  it("handles plugins", async() => {
+  it("handles plugins", async () => {
     // Plugin, starting with "./"
     const plugin = path.join(fixtures, "plugin.js");
     const pluginMjs = path.join(fixtures, "plugin.mjs");
@@ -961,14 +961,14 @@ Options:
     });
   });
 
-  it("handlers trace", async() => {
+  it("handlers trace", async () => {
     await expect(exec({
       args: ["--trace"],
       stdin: "foo = '1'",
     })).resolves.toMatch("DefaultTracer: peg$DefaultTracer");
   });
 
-  it("handles multiple files", async() => {
+  it("handles multiple files", async () => {
     const input1 = path.join(__dirname, "fixtures", "imports1.peggy");
     const input2 = path.join(__dirname, "fixtures", "imports2.peggy");
     const out = path.join(__dirname, "fixtures", "imports1.js");
@@ -986,7 +986,7 @@ Options:
     fs.unlinkSync(out);
   });
 
-  it("handles npm: sources", async() => {
+  it("handles npm: sources", async () => {
     let input1 = path.join(__dirname, "fixtures", "useFrags", "identifier.peggy");
     let out = path.join(__dirname, "fixtures", "useFrags", "identifier.js");
     await expect(exec({
@@ -1019,12 +1019,12 @@ Options:
     describe("with default name without --output", () => {
       const sourceMap = path.resolve(__dirname, "..", "..", "source.map");
 
-      it("generates a source map 1", async() => {
+      it("generates a source map 1", async () => {
         await checkSourceMap(sourceMap, ["--source-map"]);
         await checkSourceMap(sourceMap, ["-m"]);
       });
 
-      it("emits an error if used with --test/--test-file", async() => {
+      it("emits an error if used with --test/--test-file", async () => {
         expect(() => {
           // Make sure the file isn't there before we start
           fs.statSync(sourceMap);
@@ -1055,7 +1055,7 @@ Options:
       const testOutput = path.resolve(__dirname, FILENAME);
       const sourceMap = path.resolve(__dirname, `${FILENAME}.map`);
 
-      it("generates a source map 2", async() => {
+      it("generates a source map 2", async () => {
         expect(() => {
           // Make sure the file isn't there before we start
           fs.statSync(testOutput);
@@ -1071,7 +1071,7 @@ Options:
         fs.unlinkSync(testOutput);
       });
 
-      it("worked together with --test/--test-file", async() => {
+      it("worked together with --test/--test-file", async () => {
         expect(() => {
           // Make sure the file isn't there before we start
           fs.statSync(testOutput);
@@ -1114,7 +1114,7 @@ Options:
         fs.unlinkSync(testOutput);
       });
 
-      it("emits an error with hidden:inline", async() => {
+      it("emits an error with hidden:inline", async () => {
         await expect(exec({
           args: ["-m", "hidden:inline", "-o", testOutput],
           stdin: "foo = '1' { return 42; }",
@@ -1124,7 +1124,7 @@ Options:
         }));
       });
 
-      it("hides sourceMap with hidden:", async() => {
+      it("hides sourceMap with hidden:", async () => {
         await checkSourceMap(
           sourceMap,
           ["-o", testOutput, "-m", "hidden:" + sourceMap]
@@ -1139,7 +1139,7 @@ Options:
     describe("with specified name", () => {
       const sourceMap = path.resolve(__dirname, "specified-name.map");
 
-      it("generates a source map 3", async() => {
+      it("generates a source map 3", async () => {
         await exec({
           args: ["--source-map", `${fixtures}/imp.peggy/none.js.map`],
           stdin: "foo = '1' { return 42; }",
@@ -1152,7 +1152,7 @@ Options:
         await checkSourceMap(sourceMap, ["-m", sourceMap]);
       });
 
-      it("emits an error if used with --test/--test-file", async() => {
+      it("emits an error if used with --test/--test-file", async () => {
         expect(() => {
           // Make sure the file isn't there before we start
           fs.statSync(sourceMap);
@@ -1179,7 +1179,7 @@ Options:
     });
 
     describe("with inline map", () => {
-      it("generates map inline", async() => {
+      it("generates map inline", async () => {
         await exec({
           args: ["-m", "inline"],
           stdin: "foo = '1'",
@@ -1189,7 +1189,7 @@ Options:
     });
   });
 
-  it("uses dash-dash", async() => {
+  it("uses dash-dash", async () => {
     await exec({
       args: ["--", "--trace"],
       errorCode: "peggy.cli",
@@ -1198,7 +1198,7 @@ Options:
     });
   });
 
-  it("handles input tests", async() => {
+  it("handles input tests", async () => {
     await exec({
       args: ["-t", "boo"],
       stdin: "foo = 'boo'",
@@ -1294,7 +1294,7 @@ Error: Expected "1" but end of input found.
     });
   });
 
-  it("handles stdout errors", async() => {
+  it("handles stdout errors", async () => {
     const stderr = new MockStream({ name: "stderr", encoding: "utf8" });
     const stdout = new MockStream({
       name: "stdout",
@@ -1315,7 +1315,7 @@ Error: Expected "1" but end of input found.
     });
   });
 
-  it("handles tests that require other modules", async() => {
+  it("handles tests that require other modules", async () => {
     const grammar = path.join(__dirname, "fixtures", "req.peggy");
     await exec({
       args: ["-t", "1", grammar],
@@ -1323,7 +1323,7 @@ Error: Expected "1" but end of input found.
     });
   });
 
-  it("handles tests that import other modules", async() => {
+  it("handles tests that import other modules", async () => {
     if ((await import("vm")).SourceTextModule) {
       const grammar = path.join(__dirname, "fixtures", "imp.peggy");
       try {
@@ -1352,7 +1352,7 @@ Error: Expected "1" but end of input found.
     }
   });
 
-  it("handles grammar errors", async() => {
+  it("handles grammar errors", async () => {
     await exec({
       stdin: "foo=unknownRule",
       errorCode: "peggy.cli",
@@ -1367,7 +1367,7 @@ error: Rule "unknownRule" is not defined
     });
   });
 
-  it("handles grammar warnings", async() => {
+  it("handles grammar warnings", async () => {
     await exec({
       args: ["-t", "b"],
       stdin: "foo=('b'*)|1..2|",
@@ -1382,7 +1382,7 @@ error: WARN(check): An expression may not consume any input and may always match
     });
   });
 
-  it("handles imports", async() => {
+  it("handles imports", async () => {
     const lib = path.join(__dirname, "fixtures", "lib.peggy");
     const imps = path.join(__dirname, "fixtures", "imports_peggy.peggy");
     const impjs = path.join(__dirname, "fixtures", "imports_peggy.js");
@@ -1422,7 +1422,7 @@ error: WARN(check): An expression may not consume any input and may always match
     });
   });
 
-  it("produces library-style output", async() => {
+  it("produces library-style output", async () => {
     await exec({
       args: ["-t", "boo", "--library"],
       stdin: "foo = 'boo'",
@@ -1440,7 +1440,7 @@ error: WARN(check): An expression may not consume any input and may always match
   });
 
   describe("--watch option", () => {
-    it("rejects stdin for watching", async() => {
+    it("rejects stdin for watching", async () => {
       await exec({
         args: ["-w"],
         errorCode: "peggy.invalidArgument",
@@ -1452,12 +1452,12 @@ error: WARN(check): An expression may not consume any input and may always match
       });
     });
 
-    it("errors when stopWatching is invalid", async() => {
+    it("errors when stopWatching is invalid", async () => {
       const cli = new PeggyCLI();
       await expect(cli.stopWatching()).rejects.toThrow();
     });
 
-    it("handles grammar errors but keeps going", async() => {
+    it("handles grammar errors but keeps going", async () => {
       const bad = path.join(__dirname, "fixtures", "bad.js");
 
       let count = 0;
@@ -1474,7 +1474,7 @@ error: WARN(check): An expression may not consume any input and may always match
       });
     });
 
-    it("watches", async() => {
+    it("watches", async () => {
       const grammar = path.join(__dirname, "fixtures", "simple.peggy");
       let count = 0;
       await exec({
@@ -1489,7 +1489,7 @@ error: WARN(check): An expression may not consume any input and may always match
       });
     });
 
-    it("watches with tests", async() => {
+    it("watches with tests", async () => {
       const grammar = path.join(__dirname, "fixtures", "simple.peggy");
       let count = 0;
       await exec({
@@ -1503,7 +1503,7 @@ error: WARN(check): An expression may not consume any input and may always match
       });
     });
 
-    it("watches with test file", async() => {
+    it("watches with test file", async () => {
       const grammar = path.join(__dirname, "fixtures", "simple.peggy");
       const testFile = path.join(__dirname, "fixtures", "simple.txt");
       let count = 0;
@@ -1518,7 +1518,7 @@ error: WARN(check): An expression may not consume any input and may always match
       });
     });
 
-    it("handles watcher errors", async() => {
+    it("handles watcher errors", async () => {
       const grammar = path.join(__dirname, "fixtures", "simple.peggy");
       let count = 0;
       await exec({
@@ -1560,7 +1560,7 @@ error: WARN(check): An expression may not consume any input and may always match
       });
     });
 
-    it("creates .d.ts files", async() => {
+    it("creates .d.ts files", async () => {
       await exec({
         args: ["--dts", grammar],
         exitCode: 0,
@@ -1569,7 +1569,7 @@ error: WARN(check): An expression may not consume any input and may always match
       expect(dts).toMatch(/: any;\n$/);
     });
 
-    it("uses returnTypes", async() => {
+    it("uses returnTypes", async () => {
       await exec({
         args: ["--dts", "-c", opts, grammar],
         exitCode: 0,
@@ -1578,7 +1578,7 @@ error: WARN(check): An expression may not consume any input and may always match
       expect(dts).toMatch(/: string;\n$/);
     });
 
-    it("generates overloads for allowed-start-rules='*'", async() => {
+    it("generates overloads for allowed-start-rules='*'", async () => {
       await exec({
         args: ["--dts", "-c", opts, "--allowed-start-rules", "*", grammar],
         exitCode: 0,
@@ -1587,7 +1587,7 @@ error: WARN(check): An expression may not consume any input and may always match
       expect(dts).toMatch(/: string;\n$/);
     });
 
-    it("errors with dts for stdin", async() => {
+    it("errors with dts for stdin", async () => {
       await exec({
         args: ["--dts"],
         stdin: "foo = '1'",

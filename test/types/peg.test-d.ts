@@ -334,12 +334,12 @@ describe("peg.d.ts", () => {
         expectExact<string>()(node.code)();
         expectExact<peggy.LocationRange>()(node.codeLocation)();
         expectExact<
-          peggy.ast.Labeled |
-          peggy.ast.Prefixed |
-          peggy.ast.Primary |
-          peggy.ast.Repeated |
-          peggy.ast.Sequence |
-          peggy.ast.Suffixed>()(node.expression)();
+          peggy.ast.Labeled
+          | peggy.ast.Prefixed
+          | peggy.ast.Primary
+          | peggy.ast.Repeated
+          | peggy.ast.Sequence
+          | peggy.ast.Suffixed>()(node.expression)();
         visit(node.expression);
       },
       sequence(node) {
@@ -359,10 +359,10 @@ describe("peg.d.ts", () => {
         expectExact<string | null>()(node.label)();
         expectExact<peggy.LocationRange>()(node.labelLocation)();
         expectExact<
-          peggy.ast.Prefixed |
-          peggy.ast.Primary |
-          peggy.ast.Repeated |
-          peggy.ast.Suffixed>()(node.expression)();
+          peggy.ast.Prefixed
+          | peggy.ast.Primary
+          | peggy.ast.Repeated
+          | peggy.ast.Suffixed>()(node.expression)();
         visit(node.expression);
       },
       text(node) {
@@ -372,9 +372,9 @@ describe("peg.d.ts", () => {
         expect(node.type).toBe("text");
         expectExact<peggy.LocationRange>()(node.location)();
         expectExact<
-          peggy.ast.Primary |
-          peggy.ast.Repeated |
-          peggy.ast.Suffixed>()(node.expression)();
+          peggy.ast.Primary
+          | peggy.ast.Repeated
+          | peggy.ast.Suffixed>()(node.expression)();
         visit(node.expression);
       },
       simple_and(node) {
@@ -384,9 +384,9 @@ describe("peg.d.ts", () => {
         expect(node.type).toBe("simple_and");
         expectExact<peggy.LocationRange>()(node.location)();
         expectExact<
-          peggy.ast.Primary |
-          peggy.ast.Repeated |
-          peggy.ast.Suffixed>()(node.expression)();
+          peggy.ast.Primary
+          | peggy.ast.Repeated
+          | peggy.ast.Suffixed>()(node.expression)();
         visit(node.expression);
       },
       simple_not(node) {
@@ -395,9 +395,9 @@ describe("peg.d.ts", () => {
         expectExact<"simple_and" | "simple_not" | "text">()(node.type)();
         expect(node.type).toBe("simple_not");
         expectExact<
-          peggy.ast.Primary |
-          peggy.ast.Repeated |
-          peggy.ast.Suffixed>()(node.expression)();
+          peggy.ast.Primary
+          | peggy.ast.Repeated
+          | peggy.ast.Suffixed>()(node.expression)();
         visit(node.expression);
       },
       optional(node) {
