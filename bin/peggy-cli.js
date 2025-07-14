@@ -185,7 +185,7 @@ class PeggyCLI extends Command {
           .hideHelp()
           .default(false)
       )
-      .action(async(inputFiles, opts) => { // On parse()
+      .action(async (inputFiles, opts) => { // On parse()
         const {
           parserOptions,
           progOptions,

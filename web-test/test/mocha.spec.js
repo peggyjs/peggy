@@ -4,7 +4,7 @@
 const { test, expect } = require("@playwright/test");
 const { version } = require("../../package.json");
 
-test("benchmark tests", async({ page }) => {
+test("benchmark tests", async ({ page }) => {
   page.on("console", msg => {
     const txt = msg.text();
     if (!/^(\[11ty\]|PASS: 0)/.test(txt)) {

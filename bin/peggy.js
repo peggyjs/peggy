@@ -37,7 +37,7 @@ exports.PeggyCLI = PeggyCLI;
 // See: https://github.com/facebook/jest/issues/5274
 /* istanbul ignore if */
 if (require.main === module) {
-  (async() => {
+  (async () => {
     let code = 1;
     try {
       const cli = await (new PeggyCLI().parseAsync());
