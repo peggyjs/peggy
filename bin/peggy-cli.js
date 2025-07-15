@@ -484,7 +484,7 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
 const results = IMPORTED.parse(arg[0], arg[1]);
 const util = await import("node:util");
 return util.inspect(results, {
-  colors: arg[3],
+  colors: arg[2],
   depth: Infinity,
   maxArrayLength: Infinity,
   maxStringLength: Infinity,
