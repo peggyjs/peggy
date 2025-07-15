@@ -1326,6 +1326,7 @@ Error: Expected "1" but end of input found.
   it("handles tests that import other modules", async () => {
     if ((await import("vm")).SourceTextModule) {
       const grammar = path.join(__dirname, "fixtures", "imp.peggy");
+      const simple = path.join(__dirname, "fixtures", "simple.peggy");
       try {
         await exec({
           args: ["--format", "es", "-t", "1", grammar],
@@ -1335,12 +1336,12 @@ Error: Expected "1" but end of input found.
         expect((e as Error).message).toMatch("Requires node.js 20.8+ or 21");
       }
       await exec({
-        args: ["--format", "amd", "-t", "1", grammar],
-        error: /Unsupported output format/,
+        args: ["--format", "amd", "-t", "1", simple],
+        expected: "'1'\n",
       });
       await exec({
-        args: ["--format", "globals", "-e", "foo", "-t", "1", grammar],
-        error: /Unsupported output format/,
+        args: ["--format", "globals", "-e", "foo", "-t", "1", simple],
+        expected: "'1'\n",
       });
       await exec({
         args: ["--format", "bare", "-t", "1"],
