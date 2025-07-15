@@ -12,6 +12,9 @@ Released: TBD
 
 ### New features
 
+- Now supports testing with -t and -T with "amd", "umd", and "globals" format.  Fork/exec no longer needed in basic generation path.
+  [#643](https://github.com/peggyjs/peggy/pull/643)
+
 ### Bug fixes
 
 5.0.5
