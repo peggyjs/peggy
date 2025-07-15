@@ -48,6 +48,7 @@
     "deploy:tests": "copyfiles -f build/test-bundle.min.js docs/js/",
     "deploy:bench": "copyfiles -f build/benchmark-bundle.min.js docs/js/",
     "build": "npm run build:notidy && npm run tidy",
+    "build:dev": "(npm run clean && npm run make && (npm run lint || true) && npm run audit) && npm run tidy",
     "build:notidy": "npm run clean && npm run make && npm run lint && npm run audit",
     "make": "npm run parser && npm run ts && npm run rollup && npm run terser && npm run examples && npm run docs && npm run headers && npm run deploy",
     "audit": "npm run test && npm run benchmark",
