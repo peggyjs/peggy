@@ -469,20 +469,31 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
       const fromMem = require("@peggyjs/from-mem");
 
       assert(this.progOptions.outputJS);
-      const exec = /** @type {import("../lib/peg.js").Parser} */(
-        await fromMem(source, {
-          filename: this.progOptions.outputJS,
-          format: this.parserOptions.format,
-        })
-      );
 
       /** @type {import("../lib/peg.js").ParserOptions} */
       const opts = {
         grammarSource: this.progOptions.testGrammarSource,
         peg$library: this.progOptions.library,
       };
-      const results = exec.parse(this.progOptions.testText, opts);
-      PeggyCLI.print(this.std.out, "%O", results);
+
+      const results = await fromMem(source, {
+        filename: this.progOptions.outputJS,
+        format: this.parserOptions.format,
+        exportVar: this.parserOptions.exportVar,
+        exec: `\
+const results = IMPORTED.parse(arg[0], arg[1]);
+const util = await import("node:util");
+return util.inspect(results, {
+  colors: arg[2],
+  depth: Infinity,
+  maxArrayLength: Infinity,
+  maxStringLength: Infinity,
+});
+`,
+        arg: [this.progOptions.testText, opts, this.std.out.isTTY],
+      });
+
+      PeggyCLI.print(this.std.out, results);
     }
   }
 
