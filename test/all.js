@@ -1,0 +1,27 @@
+"use strict";
+
+require("./unit/parser.spec.js");
+require("./unit/grammar-error.spec.js");
+require("./unit/compiler.spec.js");
+require("./unit/compiler/utils.spec.js");
+require("./unit/compiler/stack.spec.js");
+require("./unit/compiler/intern.spec.js");
+require("./unit/compiler/passes/report-undefined-rules.spec.js");
+require("./unit/compiler/passes/report-infinite-repetition.spec.js");
+require("./unit/compiler/passes/report-infinite-recursion.spec.js");
+require("./unit/compiler/passes/report-incorrect-plucking.spec.js");
+require("./unit/compiler/passes/report-duplicate-rules.spec.js");
+require("./unit/compiler/passes/report-duplicate-labels.spec.js");
+require("./unit/compiler/passes/report-duplicate-imports.spec.js");
+require("./unit/compiler/passes/remove-unused-rules.spec.js");
+require("./unit/compiler/passes/remove-proxy-rules.spec.js");
+require("./unit/compiler/passes/merge-character-classes.spec.js");
+require("./unit/compiler/passes/inference-match-result.spec.js");
+require("./unit/compiler/passes/generate-js.spec.js");
+require("./unit/compiler/passes/generate-bytecode.spec.js");
+require("./unit/compiler/passes/fix-library-numbers.spec.js");
+require("./unit/compiler/passes/add-imported-rules.spec.js");
+require("./behavior/generated-parser-behavior.spec.js");
+require("./api/plugin-api.spec.js");
+require("./api/pegjs-api.spec.js");
+require("./api/generated-parser-api.spec.js");
