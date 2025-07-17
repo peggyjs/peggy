@@ -2,6 +2,13 @@
   "name": "peggy",
   "version": "5.0.5",
   "description": "Parser generator for JavaScript",
+  "files": [
+    "AUTHORS",
+    "bin/*.js",
+    "bin/*.d.ts",
+    "lib",
+    "browser"
+  ],
   "keywords": [
     "grammar",
     "parser generator",
