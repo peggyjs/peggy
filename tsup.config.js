@@ -8,15 +8,17 @@ module.exports = tsup.defineConfig([
     entry: {
       "peggy.min": "./lib/peg.js",
     },
-    format: ["umd"],
-    dts: true,
-    platform: "browser",
-    minify: true,
-    outDir: "browser",
-    target: "es5",
+
     bundle: true,
     clean: true,
+    dts: true,
+    format: ["umd"],
+    minify: true,
+    outDir: "browser",
+    platform: "browser",
     splitting: false,
+    target: "es5",
+
     noExternal: [/./],
     esbuildPlugins: [
       umdWrapper({ libraryName: "peggy", external: [] }),
@@ -26,18 +28,20 @@ module.exports = tsup.defineConfig([
     entry: {
       "test-bundle.min": "test/all.js",
     },
-    format: ["umd"],
-    platform: "browser",
-    minify: true,
-    outDir: "docs/js",
+
     bundle: true,
     clean: false,
+    format: ["iife"],
+    minify: true,
+    outDir: "docs/js",
+    outExtension() {
+      return { js: ".js" };
+    },
+    platform: "browser",
     splitting: false,
+
     external: ["mocha", "chai"],
     noExternal: [/./],
-    esbuildPlugins: [
-      umdWrapper({ libraryName: "peggy_tests" }),
-    ],
     esbuildOptions(options, _context) {
       options.alias = {
         "whatwg-url": "@cto.af/whatwg-url",
@@ -48,14 +52,16 @@ module.exports = tsup.defineConfig([
     entry: {
       "benchmark-bundle.min": "benchmark/browser.stub.js",
     },
-    format: ["umd"],
-    platform: "browser",
-    minify: true,
-    outDir: "docs/js",
-    target: "es5",
+
     bundle: true,
     clean: false,
+    format: ["umd"],
+    minify: true,
+    outDir: "docs/js",
+    platform: "browser",
     splitting: false,
+    target: "es5",
+
     external: ["../lib/peg"],
     esbuildPlugins: [
       umdWrapper({ libraryName: "peggy_benchmark" }),

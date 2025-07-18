@@ -56,7 +56,7 @@
   "devDependencies": {
     "@cto.af/whatwg-url": "0.0.1",
     "@peggyjs/eslint-config": "^6.0.5",
-    "@swc/core": "1.12.14",
+    "@swc/core": "1.13.0",
     "@types/chai": "^4.3.20",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.14",
