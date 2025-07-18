@@ -1,8 +1,0 @@
-{
-  "env": {
-    "commonjs": true
-  },
-  "parserOptions": {
-    "project": ["lib/tsconfig.json"]
-  }
-}

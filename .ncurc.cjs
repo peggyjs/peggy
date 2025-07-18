@@ -5,6 +5,5 @@ module.exports = {
   "reject": [
     "chai", // Moved to es6
     "@types/chai", // Should match chai,
-    "rimraf", // Requires node 20
   ],
 };

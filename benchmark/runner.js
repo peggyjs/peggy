@@ -1,6 +1,6 @@
 "use strict";
 
-const peg = require("../lib/peg");
+const peg = globalThis.peggy || require("../lib/peg");
 
 const Runner = {
   run(benchmarks, runCount, options, callbacks) {

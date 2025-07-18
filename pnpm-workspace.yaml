@@ -3,3 +3,10 @@ packages:
   - test/cli/fixtures/frags
   - test/cli/fixtures/useFrag
   - web-test
+
+ignoredBuiltDependencies:
+  - unrs-resolver
+
+onlyBuiltDependencies:
+  - "@swc/core"
+  - esbuild

@@ -18,6 +18,7 @@ export default [
       "lib/parser.js", // Generated
       "lib/parser.d.ts", // Generated
       "bin/generated_template.d.ts", // Generated
+      "browser/*",
     ],
   },
   ...commonjs,
