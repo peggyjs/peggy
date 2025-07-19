@@ -17,6 +17,8 @@ Released: TBD
 
 ### Bug fixes
 
+- Adjust repository's Git configuration around CR/LF normalization. [#639](https://github.com/peggyjs/peggy/pull/639)
+
 5.0.5
 -----
 
