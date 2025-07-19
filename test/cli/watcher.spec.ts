@@ -4,7 +4,7 @@ import Watcher from "../../bin/watcher.js";
 import path from "path";
 
 describe("watches files", () => {
-  it("is safe to close twice", async() => {
+  it("is safe to close twice", async () => {
     const w = new Watcher(__filename);
     await w.close();
     await w.close();

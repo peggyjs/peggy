@@ -62,15 +62,15 @@ declare namespace ast {
     unicode: boolean;
   }
 
-  type GrammarExpectation =
-    | { type: "any" }
+  type GrammarExpectation
+    = { type: "any" }
     | { type: "literal"; value: string; ignoreCase: boolean }
     | { type: "rule"; value: string }
     | GrammarCharacterClass & { type: "class" }
     ;
 
-  type AllNodes =
-    | Expression
+  type AllNodes
+    = Expression
     | Grammar
     | GrammarImport
     | Initializer

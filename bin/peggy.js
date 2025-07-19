@@ -2,29 +2,6 @@
 
 "use strict";
 
-const { isImportSupported } = require("@peggyjs/from-mem");
-
-// Since Windows can't handle `env -S`, exec once to get permission
-// to use the vm module in its modern form.
-const execArgv = new Set(process.execArgv);
-if (!isImportSupported() && !Object.prototype.hasOwnProperty.call(globalThis, "Deno")) {
-  execArgv.add("--experimental-vm-modules");
-  execArgv.add("--no-warnings");
-  const { spawnSync } = require("node:child_process");
-  // NOTE: Does not replace process.  Node can't do that, apparently.
-  const { status, signal, error } = spawnSync(process.argv[0], [
-    ...execArgv,
-    ...process.argv.slice(1),
-  ], { stdio: "inherit" });
-  if (error) {
-    throw error;
-  }
-  if (signal) {
-    process.kill(process.pid, signal);
-  }
-  process.exit(status);
-}
-
 const {
   CommanderError, InvalidArgumentError, PeggyCLI,
 } = require("./peggy-cli.js");
@@ -37,7 +14,7 @@ exports.PeggyCLI = PeggyCLI;
 // See: https://github.com/facebook/jest/issues/5274
 /* istanbul ignore if */
 if (require.main === module) {
-  (async() => {
+  (async () => {
     let code = 1;
     try {
       const cli = await (new PeggyCLI().parseAsync());
