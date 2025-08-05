@@ -3,12 +3,10 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
-Unreleased
-----------
+5.0.6
+-----
 
-Released: TBD
-
-### Major Changes
+Released: 2025-08-05
 
 ### New features
 
@@ -18,6 +16,7 @@ Released: TBD
 ### Bug fixes
 
 - Adjust repository's Git configuration around CR/LF normalization. [#639](https://github.com/peggyjs/peggy/pull/639)
+- Now uses tsup for code generation instead of tsc and rollup.  This may be user-visible, since tsup injects different polyfills than typescript was.  [#644](https://github.com/peggyjs/peggy/pull/644)
 
 5.0.5
 -----
