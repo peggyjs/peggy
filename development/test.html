@@ -45,19 +45,17 @@
 
   <div id="content">
 <script>
-  // Modern browsers don't need whatwgURL.
-  // source-map looks for it with this name, as configured in rollup.config.mjs
-  window.whatwgURL = { URL };
   mocha.setup({
     ui: "bdd",
     global: [
       "TextEncoder", // Not really a leak, we put it back after deleting
       "peggyVersion", // Intentional
     ],
+    timeout: "5000",
   });
   mocha.checkLeaks();
 </script>
-<script src='../js/test-bundle.min.js'></script>
+<script src='/js/test-bundle.min.js'></script>
 <style>
   .hidden {
     display: none;
@@ -70,7 +68,7 @@
 <script class="mocha-exec">
   mocha.run(failures => {
     const result = failures === 0 ? 'PASS' : 'FAIL';
-    // If you change the next line, please modifiy the regexp in web-test/index.js
+    // If you change the next line, please modify the regexp in web-test/index.js
     const status = result + ': ' + failures + ' failures. Peggy Version: ' + globalThis.peggyVersion;
     console.log(status);
     const div = document.getElementById('results');

@@ -27,6 +27,8 @@
       
         <script src="/vendor/jquery.scrollTo.min.js"></script>
       
+        <script src="/vendor/peggy/peggy.min.js"></script>
+      
     
   </head>
   <body>
@@ -44,8 +46,6 @@
 </nav>
 
   <div id="content">
-<script defer src="/js/benchmark-bundle.min.js"></script>
-
 <div id="options">
   <label for="run-count">Run each test</label>
   <input type="text" id="run-count" value="10" /> times
@@ -65,6 +65,9 @@
     <td class="no-results" colspan="4">No results available yet.</td>
   </tr>
 </table>
+
+<!-- Must be at the end -->
+<script src="/js/benchmark-bundle.min.js"></script>
 </div>
 
   <footer id="footer">
