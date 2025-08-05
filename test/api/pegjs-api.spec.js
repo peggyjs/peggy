@@ -16,7 +16,7 @@ beforeEach(() => {
   // Mocha (which is what we use in the browser) pause until we're ready.
   if (typeof window !== "undefined") {
     return SourceMapConsumer.initialize({
-      "lib/mappings.wasm": "https://raw.githubusercontent.com/mozilla/source-map/0.7.3/lib/mappings.wasm",
+      "lib/mappings.wasm": "https://raw.githubusercontent.com/mozilla/source-map/0.7.6/lib/mappings.wasm",
     });
   }
   return null;
