@@ -1661,6 +1661,21 @@ error: WARN(check): An expression may not consume any input and may always match
       expect(fs.existsSync(path.join(multiOutDir, "multi2.js.map"))).toBe(true);
     });
 
+    it("outputs AST JSON per file when --ast enabled", async () => {
+      await exec({
+        args: ["--multi-output", multiOutDir, "--ast", grammar1, grammar2],
+        exitCode: 0,
+      });
+      const ast1 = JSON.parse(
+        fs.readFileSync(path.join(multiOutDir, "multi1.js"), "utf8")
+      );
+      const ast2 = JSON.parse(
+        fs.readFileSync(path.join(multiOutDir, "multi2.js"), "utf8")
+      );
+      expect(ast1.type).toBe("grammar");
+      expect(ast2.type).toBe("grammar");
+    });
+
     it("errors when combined with --output", async () => {
       await exec({
         args: ["--multi-output", multiOutDir, "--output", "foo.js", grammar1],
