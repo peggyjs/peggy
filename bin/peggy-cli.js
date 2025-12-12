@@ -7,7 +7,7 @@ const {
   addExtraOptionsJSON, refineOptions,
 } = require("./opts.js");
 const {
-  isER, commaArg, moreJSON, readStream, mkFileDir,
+  isER, commaArg, moreJSON, readStream, mkFileDir, replaceExt,
 } = require("./utils.js");
 const Module = require("module");
 const assert = require("assert");
@@ -151,6 +151,10 @@ class PeggyCLI extends Command {
         });
       }).hideHelp())
       .option("-o, --output <file>", "Output file for generated parser. Use '-' for stdout (the default is a file next to the input file with the extension change to '.js', unless a test is specified, in which case no parser is output without this option)")
+      .addOption(
+        new Option("--multi-output <dir>", "Output directory for separate parser files (one per input grammar)")
+          .conflicts("output")
+      )
       .option(
         "--plugin <module>",
         "Comma-separated list of plugins. (can be specified multiple times)",
@@ -555,6 +559,49 @@ return util.inspect(results, {
           PeggyCLI.print(this.std.err, `WARN(${pass}): ${msg}`);
         }
       };
+
+      // Multi-output mode: compile each grammar separately
+      if (this.progOptions.outputDir) {
+        for (const singleSource of sources) {
+          const baseName = path.basename(
+            singleSource.source,
+            path.extname(singleSource.source)
+          );
+          const outFile = path.join(this.progOptions.outputDir, baseName + ".js");
+
+          // Set per-file output paths
+          this.progOptions.outputFile = outFile;
+          this.progOptions.outputJS = outFile;
+          if (this.progOptions.dts) {
+            this.progOptions.dtsFile = replaceExt(outFile, ".d.ts");
+          }
+          if (this.progOptions.sourceMap !== undefined) {
+            this.progOptions.sourceMap = outFile + ".map";
+          }
+
+          this.parserOptions.grammarSource = singleSource.source;
+
+          errorText = `generating parser for "${singleSource.source}"`;
+          this.verbose("CLI", errorText);
+          const generated = peggy.generate([singleSource], this.parserOptions);
+
+          errorText = `writing output "${outFile}"`;
+          this.verbose("CLI", errorText);
+          await mkFileDir(outFile);
+          const outputStream = fs.createWriteStream(outFile);
+
+          if (this.progOptions.ast) {
+            const json = JSON.stringify(generated, null, 2);
+            await this.writeOutput(outputStream, json);
+          } else {
+            assert(generated.code);
+            const mappedSource = await this.writeSourceMap(generated.code);
+            await this.writeOutput(outputStream, mappedSource);
+            await this.writeDTS(generated);
+          }
+        }
+        return 0;
+      }
 
       const source = peggy.generate(
         sources,
