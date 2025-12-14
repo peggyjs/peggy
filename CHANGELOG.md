@@ -12,6 +12,10 @@ Released: TBD
 
 ### New features
 
+- Added `--multi-output <dir>` CLI option to compile multiple grammars to
+  separate output files instead of merging them.
+  [#650](https://github.com/peggyjs/peggy/issues/650)
+
 ### Bug fixes
 
 5.0.6

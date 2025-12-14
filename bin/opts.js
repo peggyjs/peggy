@@ -23,6 +23,7 @@ const PROG_OPTIONS = [
   "extraOptionsFile",
   "input",
   "library",
+  "multiOutput",
   "output",
   "plugin",
   "returnTypes",
@@ -43,7 +44,9 @@ const PROG_OPTIONS = [
  * @property {string|string[]} [input]
  * @property {string[]} inputFiles
  * @property {boolean} [library]
+ * @property {string} [multiOutput]
  * @property {string} [output]
+ * @property {string} [outputDir]
  * @property {string[]} [plugin]
  * @property {string} [returnTypes]
  * @property {boolean|string} [sourceMap]
@@ -285,6 +288,13 @@ async function refineOptions(cmd, inputFiles, cliOptions) {
 
   if (progOptions.inputFiles.includes("-") && progOptions.watch) {
     cmd.error("Can't watch stdin");
+  }
+
+  if (progOptions.multiOutput) {
+    if (progOptions.inputFiles.includes("-")) {
+      cmd.error("Can't use --multi-output with stdin input");
+    }
+    progOptions.outputDir = progOptions.multiOutput;
   }
 
   if (!progOptions.outputFile) {
