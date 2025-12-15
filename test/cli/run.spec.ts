@@ -1629,6 +1629,12 @@ error: WARN(check): An expression may not consume any input and may always match
       }
     });
 
+    afterAll(async () => {
+      await fs.promises.unlink(grammar1);
+      await fs.promises.unlink(grammar2);
+      await fs.promises.rmdir(multiOutDir);
+    });
+
     it("compiles multiple grammars to separate files", async () => {
       await exec({
         args: ["--multi-output", multiOutDir, grammar1, grammar2],
