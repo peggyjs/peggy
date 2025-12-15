@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/refs/heads/main/schemas/devContainer.schema.json",
+  "name": "node",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:4.0.5-trixie",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "editorconfig.editorconfig",
+        "peggyjs.peggy-language"
+      ]
+    }
+  },
+  "postCreateCommand": "sudo npm install -g npm-check-updates"
+}
