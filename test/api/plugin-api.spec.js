@@ -61,7 +61,7 @@ describe("plugin API", () => {
 
     it("receives options", () => {
       const plugin = {
-        use(config, options) {
+        use(_config, options) {
           // eslint-disable-next-line no-use-before-define -- Mutual recursion
           expect(options).to.equal(generateOptions);
         },
@@ -141,7 +141,7 @@ describe("plugin API", () => {
         "c = 'x'",
       ].join("\n");
       const plugin = {
-        use(config, options) {
+        use(_config, options) {
           options.allowedStartRules = ["b", "c"];
         },
       };
