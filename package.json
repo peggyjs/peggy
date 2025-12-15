@@ -54,7 +54,7 @@
     "version": "npm run set_version && npm run parser && npm run parser && npm run test && npm run examples && git add lib/version.js lib/parser.js docs/index.html test/cli/fixtures/imports_peggy.js test/cli/fixtures/lib.js docs/js/examples.js"
   },
   "devDependencies": {
-    "@peggyjs/eslint-config": "^6.0.7",
+    "@peggyjs/eslint-config": "^6.0.9",
     "@swc/core": "1.15.5",
     "@types/chai": "^4.3.20",
     "@types/jest": "^30.0.0",
