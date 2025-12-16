@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/refs/heads/main/schemas/devContainer.schema.json",
-  "name": "node",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:4.0.5-trixie",
+  "name": "playwright",
+  "dockerFile": "Dockerfile",
   "customizations": {
     "vscode": {
       "extensions": [
