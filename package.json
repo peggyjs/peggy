@@ -54,38 +54,38 @@
     "version": "npm run set_version && npm run parser && npm run parser && npm run test && npm run examples && git add lib/version.js lib/parser.js docs/index.html test/cli/fixtures/imports_peggy.js test/cli/fixtures/lib.js docs/js/examples.js"
   },
   "devDependencies": {
-    "@peggyjs/eslint-config": "^6.0.6",
-    "@swc/core": "1.13.3",
+    "@peggyjs/eslint-config": "^6.0.9",
+    "@swc/core": "1.15.5",
     "@types/chai": "^4.3.20",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.2.0",
+    "@types/node": "^25.0.2",
     "chai": "4.5.0",
     "chai-like": "^1.1.3",
     "copyfiles": "^2.4.1",
     "esbuild-plugin-umd-wrapper": "3.0.0",
-    "eslint": "^9.32.0",
+    "eslint": "^9.39.2",
     "eslint-plugin-compat": "6.0.2",
-    "eslint-plugin-mocha": "11.1.0",
-    "glob": "^11.0.3",
-    "jest": "^30.0.5",
+    "eslint-plugin-mocha": "11.2.0",
+    "glob": "^13.0.0",
+    "jest": "^30.2.0",
     "package-extract": "3.1.3",
-    "rimraf": "^6.0.1",
+    "rimraf": "^6.1.2",
     "source-map": "0.7.6",
-    "ts-jest": "^29.4.1",
-    "tsup": "8.5.0",
-    "typescript": "5.9.2",
-    "typescript-eslint": "8.39.0",
+    "ts-jest": "^29.4.6",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.50.0",
     "url": "0.11.4"
   },
   "dependencies": {
-    "@peggyjs/from-mem": "3.1.1",
-    "commander": "^14.0.0",
+    "@peggyjs/from-mem": "3.1.2",
+    "commander": "^14.0.2",
     "source-map-generator": "2.0.2"
   },
   "browserslist": [
     "defaults, maintained node versions, not op_mini all"
   ],
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "pnpm@10.26.0",
   "engines": {
     "node": ">=20"
   }

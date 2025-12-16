@@ -15,7 +15,7 @@ module.exports = function(chai, utils) {
     const ast = parser.parse(grammar, options);
 
     utils.flag(this, "object")(ast, options, new Session({
-      error(stage, ...args) { throw new GrammarError(...args); },
+      error(_stage, ...args) { throw new GrammarError(...args); },
     }));
 
     new Assertion(ast).like(props);
@@ -47,7 +47,7 @@ module.exports = function(chai, utils) {
 
     try {
       utils.flag(this, "object")(ast, {}, new Session({
-        error(stage, ...args) { throw new GrammarError(...args); },
+        error(_stage, ...args) { throw new GrammarError(...args); },
       }));
       passed = true;
     } catch (e) {
