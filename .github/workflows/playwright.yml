@@ -9,11 +9,11 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: pnpm/action-setup@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 22
+        node-version: 24
         cache: pnpm
     - name: Install dependencies
       run: pnpm i -r
@@ -24,7 +24,7 @@ jobs:
       run: echo "PLAYWRIGHT_VERSION=$(pnpm ls @playwright/test --parseable | tail -1)" >> $GITHUB_ENV
       working-directory: web-test
     - name: Cache playwright binaries
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: playwright-cache
       with:
         path: |
@@ -43,5 +43,5 @@ jobs:
       if: failure()
       with:
         name: playwright-report
-        path: web/playwright-report/
+        path: web-test/playwright-report/
         retention-days: 30
