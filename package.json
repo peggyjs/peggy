@@ -43,7 +43,7 @@
     "test:all": "npm run test && npm run test:web",
     "benchmark": "node ./benchmark/run_bench.js",
     "headers": "node ./tools/header.js browser/peggy.min.js docs/js/benchmark-bundle.min.js docs/js/test-bundle.min.js",
-    "deploy": "copyfiles -f browser/peggy.min.js docs/vendor/peggy/",
+    "deploy": "cpy browser/peggy.min.js docs/vendor/peggy/",
     "coverage": "npm run rollup && npm run parser -- -m inline && npm test",
     "ts": "tsup",
     "build": "npm run clean && npm run make && npm run lint && npm run audit",
@@ -55,13 +55,13 @@
   },
   "devDependencies": {
     "@peggyjs/eslint-config": "^6.0.9",
-    "@swc/core": "1.15.5",
+    "@swc/core": "1.15.7",
     "@types/chai": "^4.3.20",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.0.2",
+    "@types/node": "^25.0.3",
     "chai": "4.5.0",
     "chai-like": "^1.1.3",
-    "copyfiles": "^2.4.1",
+    "cpy-cli": "^6.0.0",
     "esbuild-plugin-umd-wrapper": "3.0.0",
     "eslint": "^9.39.2",
     "eslint-plugin-compat": "6.0.2",
@@ -85,7 +85,7 @@
   "browserslist": [
     "defaults, maintained node versions, not op_mini all"
   ],
-  "packageManager": "pnpm@10.26.0",
+  "packageManager": "pnpm@10.26.1",
   "engines": {
     "node": ">=20"
   }

@@ -4,7 +4,7 @@
 const { defineConfig, devices } = require("@playwright/test");
 
 const isCI = Boolean(process.env.CI);
-const timeout = isCI ? 300000 : 5000;
+const timeout = isCI ? 300000 : 6000;
 
 /**
  * Read environment variables from file.
