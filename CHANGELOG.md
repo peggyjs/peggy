@@ -12,12 +12,26 @@ Released: TBD
 
 ### New features
 
+- Added `--multi-output <dir>` CLI option to compile multiple grammars to
+  separate output files instead of merging them.
+  [#650](https://github.com/peggyjs/peggy/issues/650)
+
+### Bug fixes
+
+5.0.6
+-----
+
+Released: 2025-08-05
+
+### New features
+
 - Now supports testing with -t and -T with "amd", "umd", and "globals" format.  Fork/exec no longer needed in basic generation path.
   [#643](https://github.com/peggyjs/peggy/pull/643)
 
 ### Bug fixes
 
 - Adjust repository's Git configuration around CR/LF normalization. [#639](https://github.com/peggyjs/peggy/pull/639)
+- Now uses tsup for code generation instead of tsc and rollup.  This may be user-visible, since tsup injects different polyfills than typescript was.  [#644](https://github.com/peggyjs/peggy/pull/644)
 
 5.0.5
 -----

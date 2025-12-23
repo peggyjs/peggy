@@ -1,4 +1,6 @@
+.DS_Store
 .nyc_output
+.pnpm-store/
 .vscode/
 *.map
 browser/

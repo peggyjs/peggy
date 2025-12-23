@@ -42,11 +42,6 @@ module.exports = tsup.defineConfig([
 
     external: ["mocha", "chai"],
     noExternal: [/./],
-    esbuildOptions(options, _context) {
-      options.alias = {
-        "whatwg-url": "@cto.af/whatwg-url",
-      };
-    },
   },
   {
     entry: {

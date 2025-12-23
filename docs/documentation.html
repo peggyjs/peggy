@@ -216,6 +216,12 @@ to keep libraries of often-used grammar rules in
   <dd>File to send output to. Defaults to input file name with
     extension changed to <code>.js</code>, or stdout if no input file is given.</dd>
 
+  <dt><code>--multi-output &lt;dir&gt;</code></dt>
+  <dd>Output directory for separate parser files. When specified, each input
+    grammar is compiled to a separate output file in the given directory
+    instead of being merged into a single parser. Cannot be used with
+    <code>-o/--output</code> or stdin input.</dd>
+
   <dt><code>--plugin</code></dt>
   <dd>Makes Peggy use a specified plugin (can be specified multiple
     times).</dd>

@@ -25,7 +25,7 @@ function expectExact<T>() {
 }
 
 function error(
-  stage: peggy.Stage,
+  _stage: peggy.Stage,
   message: string,
   location?: peggy.LocationRange,
   notes?: peggy.DiagnosticNote[]
@@ -34,7 +34,7 @@ function error(
 }
 
 function info(
-  stage: peggy.Stage,
+  _stage: peggy.Stage,
   message: string,
   location?: peggy.LocationRange,
   notes?: peggy.DiagnosticNote[]
@@ -43,7 +43,7 @@ function info(
 }
 
 function warning(
-  stage: peggy.Stage,
+  _stage: peggy.Stage,
   message: string,
   location?: peggy.LocationRange,
   notes?: peggy.DiagnosticNote[]

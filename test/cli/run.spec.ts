@@ -401,6 +401,8 @@ Options:
                                    '.js', unless a test is specified, in which
                                    case no parser is output without this
                                    option)
+  --multi-output <dir>             Output directory for separate parser files
+                                   (one per input grammar)
   --plugin <module>                Comma-separated list of plugins. (can be
                                    specified multiple times)
   -m, --source-map [mapfile]       Generate a source map. If name is not
@@ -1603,6 +1605,97 @@ error: WARN(check): An expression may not consume any input and may always match
       });
       fs.unlink(grammarDTS, () => {
         // Ignored
+      });
+    });
+  });
+
+  describe("--multi-output", () => {
+    const grammar1 = path.join(tmpDir, "multi1.peggy");
+    const grammar2 = path.join(tmpDir, "multi2.peggy");
+    let multiOutDir = "";
+
+    beforeAll(async () => {
+      await fs.promises.writeFile(grammar1, "start = 'hello'");
+      await fs.promises.writeFile(grammar2, "start = 'world'");
+      multiOutDir = path.join(tmpDir, "multi-out");
+      await fs.promises.mkdir(multiOutDir, { recursive: true });
+    });
+
+    afterEach(async () => {
+      // Clean up generated files
+      const files = await fs.promises.readdir(multiOutDir);
+      for (const f of files) {
+        await fs.promises.unlink(path.join(multiOutDir, f));
+      }
+    });
+
+    afterAll(async () => {
+      await fs.promises.unlink(grammar1);
+      await fs.promises.unlink(grammar2);
+      await fs.promises.rmdir(multiOutDir);
+    });
+
+    it("compiles multiple grammars to separate files", async () => {
+      await exec({
+        args: ["--multi-output", multiOutDir, grammar1, grammar2],
+        exitCode: 0,
+      });
+      const out1 = path.join(multiOutDir, "multi1.js");
+      const out2 = path.join(multiOutDir, "multi2.js");
+      expect(fs.existsSync(out1)).toBe(true);
+      expect(fs.existsSync(out2)).toBe(true);
+    });
+
+    it("generates DTS per file when --dts enabled", async () => {
+      await exec({
+        args: ["--multi-output", multiOutDir, "--dts", grammar1, grammar2],
+        exitCode: 0,
+      });
+      expect(fs.existsSync(path.join(multiOutDir, "multi1.d.ts"))).toBe(true);
+      expect(fs.existsSync(path.join(multiOutDir, "multi2.d.ts"))).toBe(true);
+    });
+
+    it("generates source maps per file when --source-map enabled", async () => {
+      await exec({
+        args: [
+          "--multi-output", multiOutDir, "--source-map",
+          "--", grammar1, grammar2,
+        ],
+        exitCode: 0,
+      });
+      expect(fs.existsSync(path.join(multiOutDir, "multi1.js.map"))).toBe(true);
+      expect(fs.existsSync(path.join(multiOutDir, "multi2.js.map"))).toBe(true);
+    });
+
+    it("outputs AST JSON per file when --ast enabled", async () => {
+      await exec({
+        args: ["--multi-output", multiOutDir, "--ast", grammar1, grammar2],
+        exitCode: 0,
+      });
+      const ast1 = JSON.parse(
+        fs.readFileSync(path.join(multiOutDir, "multi1.js"), "utf8")
+      );
+      const ast2 = JSON.parse(
+        fs.readFileSync(path.join(multiOutDir, "multi2.js"), "utf8")
+      );
+      expect(ast1.type).toBe("grammar");
+      expect(ast2.type).toBe("grammar");
+    });
+
+    it("errors when combined with --output", async () => {
+      await exec({
+        args: ["--multi-output", multiOutDir, "--output", "foo.js", grammar1],
+        exitCode: 1,
+        error: /cannot be used with/,
+      });
+    });
+
+    it("errors when used with stdin", async () => {
+      await exec({
+        args: ["--multi-output", multiOutDir, "-"],
+        stdin: "start = '1'",
+        exitCode: 1,
+        error: /Can't use --multi-output with stdin/,
       });
     });
   });
