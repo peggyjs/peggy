@@ -182,6 +182,13 @@ describe("Peggy API", () => {
           // eslint-disable-next-line no-eval -- Required
           expect(eval(source).parse("a")).to.equal("a");
         });
+
+        it("uses charCodeAt for simple character class checks", () => {
+          const source = peg.generate("start = [a-z]", { output: "source" });
+
+          expect(source).to.contain("peg$charCode = s0.charCodeAt(0)");
+          expect(source).to.not.contain("peg$r0.test(s0)");
+        });
       });
 
       describe("when |output| is set to |\"ast\"|", () => {
@@ -367,7 +374,7 @@ describe("Peggy API", () => {
           it("labelled rule name", () => check("RULE_2 'named'", source, "RULE_2", "peg$parseRULE_2() {"));
           it("literal expression", () => check("'a'", source, null, "input.charCodeAt(peg$currPos) === 97"));
           it("multichar literal", () => check("'def'", source, null, "input.substr(peg$currPos, 3) === peg$c3"));
-          it("chars expression", () => check("[abc]", source, null, /s\d = input\.charAt\(peg\$currPos\);\s*if \(peg\$r0\.test\(s\d\)\)/));
+          it("chars expression", () => check("[abc]", source, null, /s\d = input\.charAt\(peg\$currPos\);\s*if \(\(peg\$charCode = s\d\.charCodeAt\(0\)/));
           it("rule expression", () => check("RULE_2", source, null, "peg$parseRULE_2();"));
           it("choice expression", () => check(
             "RULE_1 / RULE_2",
