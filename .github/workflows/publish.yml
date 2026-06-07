@@ -11,7 +11,7 @@ jobs:
       id-token: write # Needed for creating provenance attestation
     steps:
       - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
           node-version: 24

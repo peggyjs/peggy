@@ -3,10 +3,24 @@ packages:
   - test/cli/fixtures/frags
   - test/cli/fixtures/useFrag
   - web-test
-
-ignoredBuiltDependencies:
-  - unrs-resolver
-
+linkWorkspacePackages: true
+allowBuilds:
+  '@parcel/watcher': set this to true or false
+  '@swc/core': true
+  esbuild: true
+  unrs-resolver: true
 onlyBuiltDependencies:
   - "@swc/core"
   - esbuild
+overrides:
+  "tsup@8.5.1>esbuild": "0.28.2"
+  "tsjest@29.4.14>esbuild":  "0.28.2"
+minimumReleaseAgeExclude:
+  - "@peggyjs/eslint-config@6.0.16"
+  - "@peggyjs/from-mem@4.0.0"
+  - node-inspect-extracted@3.3.4
+auditConfig:
+  ignoreGhsas:
+    - GHSA-238p-pmpm-9mq7
+    - GHSA-vfj7-8cjw-p6xm
+    - GHSA-hp3w-g68c-fv3c

@@ -1,13 +1,14 @@
 // @ts-check
 "use strict";
 
+/**
+ * @typedef {import("../../../../lib/peg")} PEG
+ */
+
 const chai = require("chai");
 const pass = require("../../../../lib/compiler/passes/generate-js");
 
 const { expect } = chai;
-/**
- * @typedef {import("../../../../lib/peg")} PEG
- */
 
 describe("compiler pass |generateJS|", () => {
   describe("coverage", () => {

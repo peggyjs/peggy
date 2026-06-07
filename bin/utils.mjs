@@ -1,13 +1,12 @@
-"use strict";
-
 /**
  * @fileoverview Utility functions for CLI
  */
 
-const { InvalidArgumentError } = require("commander");
-const assert = require("assert");
-const fs = require("fs");
-const path = require("path");
+import { Buffer } from "node:buffer";
+import { InvalidArgumentError } from "commander";
+import assert from "node:assert";
+import fs from "node:fs";
+import path from "node:path";
 
 /**
  * @typedef {import("node:stream").Readable} Readable
@@ -22,7 +21,7 @@ const path = require("path");
  * @param {unknown} er
  * @returns {asserts er is Error}
  */
-function isER(er) {
+export function isER(er) {
   assert(er);
   assert.equal(typeof er, "object");
   assert(Object.prototype.hasOwnProperty.call(er, "message"));
@@ -34,7 +33,7 @@ function isER(er) {
  * @param {unknown} er
  * @returns {er is NodeJS.ErrnoException}
  */
-function isErrno(er) {
+export function isErrno(er) {
   return (Boolean(er)
     && (typeof er === "object")
     && (Object.prototype.hasOwnProperty.call(er, "code")));
@@ -49,7 +48,7 @@ function isErrno(er) {
  * @param {string[]} sel
  * @returns {Pick<T, sel>}
  */
-function select(obj, sel) {
+export function select(obj, sel) {
   const ret = Object.create(null);
   for (const s of sel) {
     if (Object.prototype.hasOwnProperty.call(obj, s)) {
@@ -69,7 +68,7 @@ function select(obj, sel) {
  * @param {string[]?} prev Previous value
  * @returns {string[]}
  */
-function commaArg(val, prev) {
+export function commaArg(val, prev) {
   return (prev || []).concat(val.split(",").map(x => x.trim()));
 }
 
@@ -81,7 +80,7 @@ function commaArg(val, prev) {
  * @param {object} [prev = {}]
  * @returns {object}
  */
-function moreJSON(val, prev = {}) {
+export function moreJSON(val, prev = {}) {
   try {
     const v = JSON.parse(val);
     return Object.assign(prev, v);
@@ -101,7 +100,7 @@ function moreJSON(val, prev = {}) {
  * @param {Readable} inputStream
  * @returns {Promise<string>}
  */
-function readStream(inputStream) {
+export function readStream(inputStream) {
   return new Promise((resolve, reject) => {
     /** @type {Buffer[]} */
     const input = [];
@@ -118,7 +117,7 @@ function readStream(inputStream) {
  * @param {string} filename
  * @returns {Promise<void>}
  */
-async function mkFileDir(filename) {
+export async function mkFileDir(filename) {
   const dir = path.dirname(filename);
   try {
     const stats = await fs.promises.stat(dir);
@@ -140,20 +139,9 @@ async function mkFileDir(filename) {
  * @param {string} ext
  * @returns {string}
  */
-function replaceExt(filename, ext) {
+export function replaceExt(filename, ext) {
   return filename.slice(
     0,
     filename.length - path.extname(filename).length
   ) + ext;
 }
-
-module.exports = {
-  commaArg,
-  mkFileDir,
-  isER,
-  isErrno,
-  moreJSON,
-  readStream,
-  replaceExt,
-  select,
-};

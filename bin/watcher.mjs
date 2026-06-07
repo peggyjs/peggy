@@ -1,8 +1,7 @@
-"use strict";
-
-const fs = require("fs");
-const path = require("path");
-const { EventEmitter } = require("events");
+import { EventEmitter } from "node:events";
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
 
 // This may have to be tweaked based on experience.
 const DEBOUNCE_MS = 100;
@@ -18,7 +17,9 @@ const ERROR = Symbol("ERROR");
  * inode of the original file.  No notification is given on file deletion,
  * just when the file is ready to be read.
  */
-class Watcher extends EventEmitter {
+export class Watcher extends EventEmitter {
+  static interval = DEBOUNCE_MS;
+
   /**
    * Creates an instance of Watcher.  This only works for files in a small
    * number of directories.
@@ -76,7 +77,7 @@ class Watcher extends EventEmitter {
     }
 
     // Fire initial time if file exists.
-    setImmediate(() => {
+    process.nextTick(() => {
       if (this.watchers.length > 0) {
         // First watcher will correspond to the directory of the first filename.
         const w = this.watchers[0];
@@ -117,5 +118,3 @@ class Watcher extends EventEmitter {
   }
 }
 
-Watcher.interval = DEBOUNCE_MS;
-module.exports = Watcher;

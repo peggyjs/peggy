@@ -1,8 +1,10 @@
 // This is typescript so that it only runs in node contexts, not on the web
 
-import Watcher from "../../bin/watcher.js";
+import { Watcher } from "../../bin/watcher.mjs";
 import path from "path";
+import url from "url";
 
+const __filename = url.fileURLToPath(import.meta.url);
 describe("watches files", () => {
   it("is safe to close twice", async () => {
     const w = new Watcher(__filename);

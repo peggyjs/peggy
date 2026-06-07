@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 
-"use strict";
-
-const {
+import {
   CommanderError, InvalidArgumentError, PeggyCLI,
-} = require("./peggy-cli.js");
+} from "./peggy-cli.mjs";
+import process from "node:process";
 
-exports.CommanderError = CommanderError;
-exports.InvalidArgumentError = InvalidArgumentError;
-exports.PeggyCLI = PeggyCLI;
+export {
+  CommanderError,
+  InvalidArgumentError,
+  PeggyCLI,
+};
 
 // Jest's coverage can't see into fork'd processes.
 // See: https://github.com/facebook/jest/issues/5274
 /* istanbul ignore if */
-if (require.main === module) {
+if (import.meta.url.endsWith(process.argv[1])) {
   (async () => {
     let code = 1;
     try {

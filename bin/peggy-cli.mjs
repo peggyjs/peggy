@@ -1,24 +1,27 @@
-"use strict";
-
-const {
+import {
   Command, CommanderError, InvalidArgumentError, Option,
-} = require("commander");
-const {
+} from "commander";
+import {
   addExtraOptionsJSON, refineOptions,
-} = require("./opts.js");
-const {
-  isER, commaArg, moreJSON, readStream, mkFileDir, replaceExt,
-} = require("./utils.js");
-const Module = require("module");
-const assert = require("assert");
-const fs = require("fs");
-const path = require("path");
-const peggy = require("../lib/peg.js");
-const util = require("util");
-const GrammarError = require("../lib/grammar-error.js");
+} from "./opts.mjs";
+import {
+  commaArg, isER, mkFileDir, moreJSON, readStream, replaceExt,
+} from "./utils.mjs";
+import { Buffer } from "node:buffer";
+import GrammarError from "../lib/grammar-error.js";
+import Module from "node:module";
+import { Watcher } from "./watcher.mjs";
+import assert from "node:assert";
+import fs from "node:fs";
+import path from "node:path";
+import peggy from  "../lib/peg.js";
+import process from "node:process";
+import util from "node:util";
 
-exports.CommanderError = CommanderError;
-exports.InvalidArgumentError = InvalidArgumentError;
+export {
+  CommanderError,
+  InvalidArgumentError,
+};
 
 const MODULE_FORMATS = ["amd", "bare", "commonjs", "es", "globals", "umd"];
 
@@ -33,7 +36,7 @@ const MODULE_FORMATS = ["amd", "bare", "commonjs", "es", "globals", "umd"];
 
 /**
  * @typedef {object} Stdio
- * @property {import("./utils.js").Readable} in StdIn.
+ * @property {import("./utils.mjs").Readable} in StdIn.
  * @property {Writable} out StdOut.
  * @property {Writable} err StdErr.
  */
@@ -50,7 +53,7 @@ const MODULE_FORMATS = ["amd", "bare", "commonjs", "es", "globals", "umd"];
  */
 
 // Command line processing
-class PeggyCLI extends Command {
+export class PeggyCLI extends Command {
   /**
    * Create a CLI environment.
    *
@@ -69,11 +72,11 @@ class PeggyCLI extends Command {
 
     /** @type {import("../lib/peg.js").SourceOptionsBase<"ast">} */
     this.parserOptions = Object.create(null);
-    /** @type {import("./opts.js").ProgOptions} */
+    /** @type {import("./opts.mjs").ProgOptions} */
     this.progOptions = Object.create(null);
     /** @type {string=} */
     this.lastError = undefined;
-    /** @type {import('./watcher.js')?} */
+    /** @type {Watcher | null} */
     this.watcher = null;
 
     this
@@ -388,6 +391,8 @@ class PeggyCLI extends Command {
         outputStream.end(source, (/** @type {unknown} */ err) => {
           if (!err) {
             resolve();
+          } else {
+            throw new Error("NOT REACHABLE");
           }
         });
       }
@@ -402,7 +407,7 @@ class PeggyCLI extends Command {
     if (!this.progOptions.dtsFile) {
       return;
     }
-    const templateFile = path.join(__dirname, "generated_template.d.ts");
+    const templateFile = new URL("generated_template.d.ts", import.meta.url);
     this.verbose("CLI reading DTS template from '%s'", templateFile);
     let template = await fs.promises.readFile(templateFile, "utf8");
     let startRules = this.parserOptions.allowedStartRules
@@ -470,7 +475,7 @@ declare function ParseFunction<Options extends ParseOptions<StartRuleNames>>(
       // Create a module that exports the parser, then load it from the
       // correct directory, so that any modules that the parser requires will
       // be loaded from the correct place.
-      const fromMem = require("@peggyjs/from-mem");
+      const { default: fromMem } = await import("@peggyjs/from-mem");
 
       assert(this.progOptions.outputJS);
 
@@ -685,7 +690,6 @@ return util.inspect(results, {
    */
   main() {
     if (this.progOptions.watch) {
-      const Watcher = require("./watcher.js"); // Lazy: usually not needed.
       const hasTest = this.progOptions.test || this.progOptions.testFile;
       const watchFiles = [...this.progOptions.inputFiles];
       if (this.progOptions.testFile) {
@@ -693,7 +697,7 @@ return util.inspect(results, {
       }
       this.watcher = new Watcher(...watchFiles);
 
-      this.watcher.on("change", async fn => {
+      this.watcher?.on("change", async fn => {
         PeggyCLI.print(this.std.err, `"${fn}" changed...`);
         this.lastError = undefined;
         await this.run();
@@ -717,5 +721,3 @@ return util.inspect(results, {
     }
   }
 }
-
-exports.PeggyCLI = PeggyCLI;

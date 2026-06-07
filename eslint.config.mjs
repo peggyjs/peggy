@@ -33,7 +33,7 @@ export default [
   {
     ...modern,
     // All of these can use modern JS and node constructs
-    files: ["bin/*.js", "tools/**", "web-test/**", "src/*.mjs"],
+    files: ["bin/*.js", "bin/*.mjs", "tools/**", "web-test/**", "src/*.mjs"],
   },
   {
     // Check these files for broad browser compatibility.

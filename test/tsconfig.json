@@ -1,10 +1,17 @@
 {
   "extends": "../tsconfig-base.json",
-  "include": ["**/*.ts", "**/*.js"],
+  "include": ["**/*.ts", "**/*.mts", "**/*.js"],
   "exclude": ["./cli/**/*", "./types/**/*"],
   "references": [
     { "path": "../lib" },
     { "path": "./cli" },
     { "path": "./types" }
-  ]
+  ],
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2025",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+  }
 }

@@ -13,6 +13,7 @@ module.exports = {
   "testMatch": [
     "**/*.spec.js",
     "**/*.spec.ts",
+    "**/*.spec.mts",
     "**/*.test-d.ts",
   ],
   "transform": {

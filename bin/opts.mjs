@@ -1,16 +1,14 @@
-"use strict";
-
 /**
  * @fileoverview Functions for extended processing of command line options,
  * converting them to the correct types for the Peggy API, etc.
  */
 
-const assert = require("assert");
-const fs = require("fs");
-const path = require("path");
-const { InvalidArgumentError } = require("commander");
-const { isErrno, isER, replaceExt, select } = require("./utils.js");
-const { pathToFileURL } = require("url");
+import { isER, isErrno, replaceExt, select } from "./utils.mjs";
+import { InvalidArgumentError } from "commander";
+import assert from "node:assert";
+import fs from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const MODULE_FORMATS_WITH_DEPS = ["amd", "commonjs", "es", "umd"];
 const MODULE_FORMATS_WITH_GLOBAL = ["globals", "umd"];
@@ -79,7 +77,7 @@ trace
  */
 
 /**
- * @typedef {import('./peggy-cli.js').PeggyCLI} Command
+ * @typedef {import('./peggy-cli.mjs').PeggyCLI} Command
  */
 
 /**
@@ -92,7 +90,7 @@ trace
  * @param {string} source
  * @returns {null}
  */
-function addExtraOptions(cmd, extraOptions, source) {
+export function addExtraOptions(cmd, extraOptions, source) {
   if ((extraOptions === null)
       || (typeof extraOptions !== "object")
       || Array.isArray(extraOptions)) {
@@ -124,7 +122,7 @@ function addExtraOptions(cmd, extraOptions, source) {
  * @param {string} source Name of option that was the source of the JSON.
  * @returns {null}
  */
-function addExtraOptionsJSON(cmd, json, source) {
+export function addExtraOptionsJSON(cmd, json, source) {
   try {
     const extraOptions = JSON.parse(json);
     return addExtraOptions(cmd, extraOptions, source);
@@ -210,7 +208,7 @@ async function loadPlugin(cmd, val) {
  * @param {CliOptions} cliOptions
  * @returns {Promise<{parserOptions: AstOptions, progOptions: ProgOptions}>}
  */
-async function refineOptions(cmd, inputFiles, cliOptions) {
+export async function refineOptions(cmd, inputFiles, cliOptions) {
   if (cliOptions.extraOptionsFile) {
     // Can't load options from node_modules
     for (const val of cliOptions.extraOptionsFile) {
@@ -358,10 +356,3 @@ async function refineOptions(cmd, inputFiles, cliOptions) {
     progOptions,
   };
 }
-
-module.exports = {
-  addExtraOptions,
-  addExtraOptionsJSON,
-  refineOptions,
-};
-

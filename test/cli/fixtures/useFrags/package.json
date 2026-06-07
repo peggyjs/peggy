@@ -5,7 +5,7 @@
   "type": "module",
   "private": "true",
   "scripts": {
-    "build": "../../../../bin/peggy.js --format es identifier.peggy npm:frags/unicode.peggy && ../../../../bin/peggy.js --format es fs.peggy npm:frags/path.peggy"
+    "build": "../../../../bin/peggy.mjs --format es identifier.peggy npm:frags/unicode.peggy && ../../../../bin/peggy.mjs --format es fs.peggy npm:frags/path.peggy"
   },
   "author": "Joe Hildebrand <joe-github@cursive.net>",
   "license": "MIT",

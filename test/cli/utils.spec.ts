@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { mkFileDir } from "../../bin/utils.js";
+import { mkFileDir } from "../../bin/utils.mjs";
 
 describe("cli utilities", () => {
   it("ensureDirectoryExists", async () => {

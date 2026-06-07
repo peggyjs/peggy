@@ -1,19 +1,17 @@
-/* eslint-disable mocha/no-setup-in-describe */
-/* eslint-disable mocha/max-top-level-suites */
 // This is typescript so that it only runs in node contexts, not on the web
 
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as peggy from "../../lib/peg.js";
-import { CommanderError, PeggyCLI } from "../../bin/peggy.js";
+import { CommanderError, PeggyCLI } from "../../bin/peggy.mjs";
 import { Transform, TransformCallback, TransformOptions } from "stream";
 import { SourceMapConsumer } from "source-map";
-import { isER } from "../../bin/utils.js";
+import { isER } from "../../bin/utils.mjs";
 import { promisify } from "util";
 import { spawn } from "child_process";
 
-const peggyPath = path.resolve(__dirname, "..", "..", "bin", "peggy.js");
+const peggyPath = path.resolve(__dirname, "..", "..", "bin", "peggy.mjs");
 const foobarbaz = `\
 foo = '1'
 bar = '2'
@@ -255,7 +253,7 @@ function forkExec(opts: Options = {}): Promise<string> {
     ...opts,
   };
   return new Promise((resolve, reject) => {
-    let bin = path.join(__dirname, "..", "..", "bin", "peggy.js");
+    let bin = path.join(__dirname, "..", "..", "bin", "peggy.mjs");
     const env = {
       ...process.env,
       ...opts.env,
