@@ -20,5 +20,5 @@ onlyBuiltDependencies:
   - esbuild
 
 overrides:
-  "mocha@11.7.5>diff": "8.0.3"
-  "mocha@11.7.5>serialize-javascript": "7.0.3"
+  "mocha@11.7.6>diff": "8.0.4"
+  "mocha@11.7.6>serialize-javascript": "7.0.5"
