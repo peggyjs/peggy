@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20, 22, 24, 25]
+        node-version: [22, 24, 26]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
         with:
@@ -35,6 +35,8 @@ jobs:
         run: npm run ts
       - name: Test
         run: npm run test
+      - name: Audit
+        run: pnpm audit
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:

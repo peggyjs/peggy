@@ -3,10 +3,23 @@ packages:
   - test/cli/fixtures/frags
   - test/cli/fixtures/useFrag
   - web-test
+linkWorkspacePackages: true
+allowBuilds:
+  '@swc/core': true
+  esbuild: true
+  unrs-resolver: true
 
-ignoredBuiltDependencies:
-  - unrs-resolver
+minimumReleaseAgeExclude:
+  - '@peggyjs/eslint-config@6.0.14'
+  - '@peggyjs/from-mem@3.1.4'
+  - package-extract@4.0.1
+  - source-map-generator@2.0.7
+  - '@types/node@25.9.3'
 
 onlyBuiltDependencies:
   - "@swc/core"
   - esbuild
+
+overrides:
+  "mocha@11.7.6>diff": "8.0.4"
+  "mocha@11.7.6>serialize-javascript": "7.0.5"
