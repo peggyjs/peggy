@@ -55,10 +55,10 @@
   },
   "devDependencies": {
     "@peggyjs/eslint-config": "^6.0.14",
-    "@swc/core": "^1.15.40",
+    "@swc/core": "^1.15.41",
     "@types/chai": "^4.3.20",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.9.2",
+    "@types/node": "^25.9.3",
     "chai": "^4.5.0",
     "chai-like": "^1.1.3",
     "cpy-cli": "^7.0.0",
@@ -67,14 +67,14 @@
     "eslint-plugin-compat": "7.0.2",
     "eslint-plugin-mocha": "^11.3.0",
     "glob": "^13.0.6",
-    "jest": "^30.4.2",
+    "jest": "30.4.2",
     "package-extract": "^4.0.1",
     "rimraf": "^6.1.3",
     "source-map": "^0.7.6",
-    "ts-jest": "^29.4.11",
+    "ts-jest": "29.4.11",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.60.1",
+    "typescript-eslint": "^8.61.0",
     "url": "^0.11.4"
   },
   "dependencies": {
@@ -85,7 +85,7 @@
   "browserslist": [
     "defaults, maintained node versions, not op_mini all"
   ],
-  "packageManager": "pnpm@11.5.2",
+  "packageManager": "pnpm@11.5.3",
   "engines": {
     "node": ">=22"
   }
