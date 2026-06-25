@@ -278,6 +278,15 @@ describe("generated parser behavior", () => {
           expect(parser).to.parse("a");
           expect(parser).to.parse("A");
         });
+
+        it("matches a case-insensitive literal whose lower case changes its length", () => {
+          // "İ" (U+0130) is one UTF-16 code unit, but `.toLowerCase()` yields
+          // two ("i" + U+0307). The case-insensitive match must read and
+          // consume the original code units, not the lower-cased length.
+          const parser = peg.generate("start = \"İ\"i .", options);
+
+          expect(parser).to.parse("İx", ["İ", "x"]);
+        });
       });
 
       describe("when it matches", () => {
