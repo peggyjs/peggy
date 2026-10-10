@@ -14,6 +14,7 @@ Released: TBD
 
 ### Bug fixes
 
+- Use JavaScript syntax highlighting for the online grammar editor to avoid broken highlighting in action blocks. [#627](https://github.com/peggyjs/peggy/issues/627)
 - Use a `Map` for the results cache, increasing performance by ~1.9x when caching is enabled as measured by `npm run benchmark -- --cache`
   [#663](https://github.com/peggyjs/peggy/pull/663)
 
