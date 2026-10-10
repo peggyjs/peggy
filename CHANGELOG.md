@@ -3,6 +3,20 @@ Change Log
 
 This file documents all notable changes to Peggy.
 
+Unreleased
+----------
+
+Released: TBD
+
+### Major Changes
+
+### New features
+
+### Bug fixes
+
+- Use a `Map` for the results cache, increasing performance by ~1.9x when caching is enabled as measured by `npm run benchmark -- --cache`
+  [#663](https://github.com/peggyjs/peggy/pull/663)
+
 5.1.0
 -----
 
