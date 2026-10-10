@@ -7,21 +7,19 @@ $(function() {
 
   const editor = CodeMirror.fromTextArea($("#grammar").get(0), {
       lineNumbers: true,
-      mode: "pegjs",
+      mode: "javascript",
       gutters: ["CodeMirror-lint-markers"],
-      lint: true,
+      lint: function(grammar) {
+        const problems = [];
+        buildAndParse(grammar, problems);
+        return problems;
+      },
   });
   const input = CodeMirror.fromTextArea($("#input").get(0), {
       lineNumbers: true,
       mode: null,
       gutters: ["CodeMirror-lint-markers"],
       lint: true,
-  });
-
-  CodeMirror.registerHelper("lint", "pegjs", function(grammar) {
-    const problems = [];
-    buildAndParse(grammar, problems);
-    return problems;
   });
 
   CodeMirror.registerHelper("lint", null, function(content) {
