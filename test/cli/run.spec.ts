@@ -1,5 +1,3 @@
-/* eslint-disable mocha/no-setup-in-describe */
-/* eslint-disable mocha/max-top-level-suites */
 // This is typescript so that it only runs in node contexts, not on the web
 
 import * as fs from "fs";

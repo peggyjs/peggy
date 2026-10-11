@@ -1,4 +1,3 @@
-/* eslint-disable mocha/no-setup-in-describe */
 "use strict";
 
 const chai = require("chai");
@@ -133,6 +132,7 @@ describe("generated parser behavior", () => {
 
     describe("rule", () => {
       if (options.cache) {
+        // eslint-disable-next-line mocha/no-conditional-tests
         it("caches rule match results", () => {
           const parser = peg.generate([
             "{ var n = 0; }",
@@ -143,6 +143,7 @@ describe("generated parser behavior", () => {
           expect(parser).to.parse("ac", 1);
         });
       } else {
+        // eslint-disable-next-line mocha/no-conditional-tests
         it("doesn't cache rule match results", () => {
           const parser = peg.generate([
             "{ var n = 0; }",
