@@ -1,4 +1,3 @@
-/* eslint-disable mocha/no-setup-in-describe */
 "use strict";
 
 const chai = require("chai");
@@ -9,7 +8,6 @@ const { spy } = require("../utils.js");
 
 chai.use(require("chai-like"));
 
-// eslint-disable-next-line mocha/no-top-level-hooks
 beforeEach(() => {
   // In the browser, initialize SourceMapConsumer's wasm bits.
   // This is *async*, so make sure to return the promise to make
@@ -353,7 +351,6 @@ describe("Peggy API", () => {
       ]) {
         // Test each variant
         describe(`with source = ${chai.util.inspect(source)}`, () => {
-          /* eslint-disable mocha/consistent-spacing-between-blocks */
           it("global initializer", () => check(GLOBAL_INITIALIZER, source, "$top_level_initializer"));
           it("per-parse initializer", () => check(PER_PARSE_INITIALIZER, source, "$initializer"));
           it("action block", () => check(ACTION_BLOCK, source, null));
@@ -380,7 +377,6 @@ describe("Peggy API", () => {
               /s. = peg\$parseRULE_2/,
             ].map(r => r.source).join(""))
           ));
-          /* eslint-enable mocha/consistent-spacing-between-blocks */
         });
       }
     });
