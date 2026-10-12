@@ -16,6 +16,12 @@ Released: TBD
 
 - Use a `Map` for the results cache, increasing performance by ~1.9x when caching is enabled as measured by `npm run benchmark -- --cache`
   [#663](https://github.com/peggyjs/peggy/pull/663)
+- Fixed case-insensitive string literals whose lower case has a different
+  length than the original (for example `"İ"i`, where U+0130 is one code unit
+  but lower-cases to two). The generated parser now reads and consumes the
+  original code units instead of the lower-cased length, so the match no
+  longer fails.
+  [#662](https://github.com/peggyjs/peggy/pull/662)
 
 5.1.0
 -----
