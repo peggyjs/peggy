@@ -399,6 +399,79 @@ describe("generated parser behavior", () => {
           expect(parser).to.parse("\u{1F4A9}");
           expect(parser).to.failToParse("");
         });
+
+        it("matches classes with mixed ranges and characters", () => {
+          [
+            ["[a-zA-Z0-9_$]", ["a", "z", "A", "Z", "0", "9", "_", "$"], ["`", "{", "@", "[", "/", ":", "-", ""]],
+            ["[^ \\t\\r\\n]", ["a", "-", "\u00E9", "\uD83D"], [" ", "\t", "\r", "\n", ""]],
+            ["[\\]\\\\^-]", ["]", "\\", "^", "-"], ["[", "a", ""]],
+            ["[^\\]\\\\^-]", ["[", "a"], ["]", "\\", "^", "-", ""]],
+            ["[\\0-\\x1F\\x7F]", ["\0", "\x1F", "\x7F"], [" ", "~", "\x80", ""]],
+            ["[a-a]", ["a"], ["`", "b", ""]],
+            ["[\\u2028\\u2029\\uFFFF]", ["\u2028", "\u2029", "\uFFFF"], ["\u2027", "\u202A", "\uFFFE", ""]],
+          ].forEach(([cls, matches, fails]) => {
+            const parser = peg.generate(`start = ${cls}`, options);
+
+            matches.forEach(input => expect(parser).to.parse(input, input));
+            fails.forEach(input => expect(parser).to.failToParse(input));
+          });
+        });
+
+        it("matches surrogate code units in non-unicode classes", () => {
+          const pair = peg.generate(
+            "start = [\\uD800-\\uDBFF] [\\uDC00-\\uDFFF]", options
+          );
+          expect(pair).to.parse("\u{1F4A9}", ["\uD83D", "\uDCA9"]);
+          expect(pair).to.failToParse("\uDCA9\uD83D");
+          expect(pair).to.failToParse("\uD83D");
+
+          const notSurrogate = peg.generate("start = [^\\uD800-\\uDFFF]", options);
+          expect(notSurrogate).to.parse("\uFFFF");
+          expect(notSurrogate).to.failToParse("\uD83D");
+          expect(notSurrogate).to.failToParse("\uDCA9");
+          expect(notSurrogate).to.failToParse("");
+        });
+
+        it("matches classes with more than 32 parts", () => {
+          const codes = Array.from({ length: 40 }, (_, i) => 0x100 + (i * 2));
+          const cls = codes.map(c => `\\u${c.toString(16).padStart(4, "0")}`).join("");
+          const parser = peg.generate(`start = [${cls}]`, options);
+          const inverted = peg.generate(`start = [^${cls}]`, options);
+
+          codes.forEach(c => {
+            expect(parser).to.parse(String.fromCharCode(c));
+            expect(parser).to.failToParse(String.fromCharCode(c + 1));
+            expect(inverted).to.failToParse(String.fromCharCode(c));
+            expect(inverted).to.parse(String.fromCharCode(c + 1));
+          });
+          expect(parser).to.failToParse("");
+          expect(inverted).to.failToParse("");
+        });
+
+        it("matches classes in loops up to the end of input", () => {
+          const parser = peg.generate(
+            "start = $[a-zA-Z_]+ $[^;]* ';'?", options
+          );
+          expect(parser).to.parse("abc_DEF xyz;", ["abc_DEF", " xyz", ";"]);
+          expect(parser).to.parse("abc def", ["abc", " def", null]);
+          expect(parser).to.parse("a", ["a", "", null]);
+          expect(parser).to.failToParse("1abc");
+        });
+
+        it("matches simple classes mixed with case-insensitive and unicode classes", () => {
+          const parser = peg.generate(
+            "start = [a-z] [0-9a-f]i [^\\p{L}]u [^,]", options
+          );
+          expect(parser).to.parse(
+            "aF\u{1F4A9}x", ["a", "F", "\u{1F4A9}", "x"]
+          );
+          expect(parser).to.parse("z0!\uD83D", ["z", "0", "!", "\uD83D"]);
+          expect(parser).to.failToParse("A0!x");
+          expect(parser).to.failToParse("aG!x");
+          expect(parser).to.failToParse("a0bx");
+          expect(parser).to.failToParse("a0!,");
+          expect(parser).to.failToParse("a0!");
+        });
       });
 
       describe("when it matches", () => {

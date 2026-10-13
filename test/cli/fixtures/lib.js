@@ -199,6 +199,7 @@ function peg$parse(input, options) {
   let peg$silentFails = options.peg$silentFails | 0;
 
   let peg$result;
+  let peg$charCode;
 
   if (options.startRule) {
     if (!(options.startRule in peg$startRuleFunctions)) {
