@@ -190,6 +190,100 @@ describe("Peggy API", () => {
           expect(source.match(/s\d+ = peg\$parsea\(\);/g)).to.have.length(1);
           expect(source.match(/s\d+ = peg\$parseb\(\);/g)).to.have.length(1);
         });
+
+        describe("character class checks", () => {
+          const charCodeCheck = /peg\$charCode = s\d+\.charCodeAt\(0\)/;
+          const regexpCheck = /peg\$r\d+\.test\(/;
+
+          it("uses charCodeAt for simple character class checks", () => {
+            const source = peg.generate("start = [a-z]", { output: "source" });
+
+            expect(source).to.contain("peg$charCode = s0.charCodeAt(0)");
+            expect(source).to.not.contain("peg$r0.test(s0)");
+          });
+
+          it("uses charCodeAt for classes of single code units", () => {
+            [
+              "start = [a-zA-Z0-9_$]",
+              "start = [^ \\t\\r\\n]",
+              "start = [\\]\\\\^-]",
+              "start = [^\\]\\\\^-]",
+              "start = [\\0-\\x1F\\x7F]",
+              "start = [a-a]",
+              "start = [\\u2028\\u2029\\uFFFF]",
+              "start = [\\uD800-\\uDBFF]",
+              "start = [^\\uD800-\\uDFFF]",
+              "start = $([a-z_] [a-z0-9_]* / [^\"\\\\\\n])+",
+            ].forEach(grammar => {
+              const source = peg.generate(grammar, { output: "source" });
+
+              expect(source, grammar).to.match(charCodeCheck);
+              expect(source, grammar).to.not.match(regexpCheck);
+            });
+          });
+
+          it("uses RegExp for case-insensitive and unicode classes", () => {
+            [
+              "start = [a-z]i",
+              "start = [^A-Z]i",
+              "start = [a-z]u",
+              "start = [^a-z]u",
+              "start = [a-z]ui",
+              "start = [\\p{L}]u",
+              "start = [^\\p{L}\\p{N}]u",
+              "start = [\\u{1F4A9}]",
+              "start = [a-z\\u{1F4A9}]",
+              "start = [\\ue000-\\u{10ffff}]",
+            ].forEach(grammar => {
+              const source = peg.generate(grammar, { output: "source" });
+
+              expect(source, grammar).to.match(regexpCheck);
+              expect(source, grammar).to.not.match(charCodeCheck);
+            });
+          });
+
+          it("uses RegExp for classes with more than 32 parts", () => {
+            function chars(n) {
+              return Array.from(
+                { length: n },
+                (_, i) => `\\u${(0x100 + (i * 2)).toString(16).padStart(4, "0")}`
+              ).join("");
+            }
+
+            const small = peg.generate(`start = [${chars(32)}]`, { output: "source" });
+            expect(small).to.match(charCodeCheck);
+            expect(small).to.not.match(regexpCheck);
+
+            const large = peg.generate(`start = [${chars(33)}]`, { output: "source" });
+            expect(large).to.match(regexpCheck);
+            expect(large).to.not.match(charCodeCheck);
+          });
+
+          it("chooses the check for each class in a grammar", () => {
+            const source = peg.generate(
+              "start = [a-z] [0-9a-f]i [^\\p{L}]u [^,]",
+              { output: "source" }
+            );
+
+            expect(source).to.not.contain("peg$r0.test(");
+            expect(source).to.contain("peg$r1.test(");
+            expect(source).to.contain("peg$r2.test(");
+            expect(source).to.not.contain("peg$r3.test(");
+            expect(source.match(/peg\$charCode = /g)).to.have.length(2);
+          });
+
+          it("only declares RegExps for classes that use them", () => {
+            const source = peg.generate(
+              "start = [a-z] [0-9a-f]i [^\\p{L}]u [^,]",
+              { output: "source" }
+            );
+
+            expect(source).to.not.contain("const peg$r0 =");
+            expect(source).to.contain("const peg$r1 = /^[0-9a-f]/i;");
+            expect(source).to.contain("const peg$r2 = /^[^\\p{L}]/u;");
+            expect(source).to.not.contain("const peg$r3 =");
+          });
+        });
       });
 
       describe("when |output| is set to |\"ast\"|", () => {
@@ -374,7 +468,7 @@ describe("Peggy API", () => {
           it("labelled rule name", () => check("RULE_2 'named'", source, "RULE_2", "peg$parseRULE_2() {"));
           it("literal expression", () => check("'a'", source, null, "input.charCodeAt(peg$currPos) === 97"));
           it("multichar literal", () => check("'def'", source, null, "input.substr(peg$currPos, 3) === peg$c3"));
-          it("chars expression", () => check("[abc]", source, null, /s\d = input\.charAt\(peg\$currPos\);\s*if \(peg\$r0\.test\(s\d\)\)/));
+          it("chars expression", () => check("[abc]", source, null, /s\d = input\.charAt\(peg\$currPos\);\s*if \(\(peg\$charCode = s\d\.charCodeAt\(0\)/));
           it("rule expression", () => check("RULE_2", source, null, "peg$parseRULE_2();"));
           it("choice expression", () => check(
             "RULE_1 / RULE_2",
