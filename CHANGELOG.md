@@ -24,7 +24,7 @@ Released: TBD
   [#662](https://github.com/peggyjs/peggy/pull/662)
 - Character classes that are not case-insensitive or unicode, and only
   contain single UTF-16 code units, now generate `charCodeAt` comparisons
-  instead of a RegExp test. This makes parsing about 14-19% faster for
+  instead of a RegExp test. This makes parsing about 21-27% faster for
   Sentry's search grammar, which spends much of its time in class loops.
   [#660](https://github.com/peggyjs/peggy/pull/660)
 
