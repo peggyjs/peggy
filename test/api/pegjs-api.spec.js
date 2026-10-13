@@ -181,11 +181,69 @@ describe("Peggy API", () => {
           expect(eval(source).parse("a")).to.equal("a");
         });
 
-        it("uses charCodeAt for simple character class checks", () => {
-          const source = peg.generate("start = [a-z]", { output: "source" });
+        describe("character class checks", () => {
+          const charCodeCheck = /peg\$charCode = s\d+\.charCodeAt\(0\)/;
+          const regexpCheck = /peg\$r\d+\.test\(/;
 
-          expect(source).to.contain("peg$charCode = s0.charCodeAt(0)");
-          expect(source).to.not.contain("peg$r0.test(s0)");
+          it("uses charCodeAt for simple character class checks", () => {
+            const source = peg.generate("start = [a-z]", { output: "source" });
+
+            expect(source).to.contain("peg$charCode = s0.charCodeAt(0)");
+            expect(source).to.not.contain("peg$r0.test(s0)");
+          });
+
+          it("uses charCodeAt for classes of single code units", () => {
+            [
+              "start = [a-zA-Z0-9_$]",
+              "start = [^ \\t\\r\\n]",
+              "start = [\\]\\\\^-]",
+              "start = [^\\]\\\\^-]",
+              "start = [\\0-\\x1F\\x7F]",
+              "start = [a-a]",
+              "start = [\\u2028\\u2029\\uFFFF]",
+              "start = [\\uD800-\\uDBFF]",
+              "start = [^\\uD800-\\uDFFF]",
+              "start = $([a-z_] [a-z0-9_]* / [^\"\\\\\\n])+",
+            ].forEach(grammar => {
+              const source = peg.generate(grammar, { output: "source" });
+
+              expect(source, grammar).to.match(charCodeCheck);
+              expect(source, grammar).to.not.match(regexpCheck);
+            });
+          });
+
+          it("uses RegExp for case-insensitive and unicode classes", () => {
+            [
+              "start = [a-z]i",
+              "start = [^A-Z]i",
+              "start = [a-z]u",
+              "start = [^a-z]u",
+              "start = [a-z]ui",
+              "start = [\\p{L}]u",
+              "start = [^\\p{L}\\p{N}]u",
+              "start = [\\u{1F4A9}]",
+              "start = [a-z\\u{1F4A9}]",
+              "start = [\\ue000-\\u{10ffff}]",
+            ].forEach(grammar => {
+              const source = peg.generate(grammar, { output: "source" });
+
+              expect(source, grammar).to.match(regexpCheck);
+              expect(source, grammar).to.not.match(charCodeCheck);
+            });
+          });
+
+          it("chooses the check for each class in a grammar", () => {
+            const source = peg.generate(
+              "start = [a-z] [0-9a-f]i [^\\p{L}]u [^,]",
+              { output: "source" }
+            );
+
+            expect(source).to.not.contain("peg$r0.test(");
+            expect(source).to.contain("peg$r1.test(");
+            expect(source).to.contain("peg$r2.test(");
+            expect(source).to.not.contain("peg$r3.test(");
+            expect(source.match(/peg\$charCode = /g)).to.have.length(2);
+          });
         });
       });
 
