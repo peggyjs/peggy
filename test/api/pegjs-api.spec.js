@@ -232,6 +232,23 @@ describe("Peggy API", () => {
             });
           });
 
+          it("uses RegExp for classes with more than 32 parts", () => {
+            function chars(n) {
+              return Array.from(
+                { length: n },
+                (_, i) => `\\u${(0x100 + (i * 2)).toString(16).padStart(4, "0")}`
+              ).join("");
+            }
+
+            const small = peg.generate(`start = [${chars(32)}]`, { output: "source" });
+            expect(small).to.match(charCodeCheck);
+            expect(small).to.not.match(regexpCheck);
+
+            const large = peg.generate(`start = [${chars(33)}]`, { output: "source" });
+            expect(large).to.match(regexpCheck);
+            expect(large).to.not.match(charCodeCheck);
+          });
+
           it("chooses the check for each class in a grammar", () => {
             const source = peg.generate(
               "start = [a-z] [0-9a-f]i [^\\p{L}]u [^,]",
@@ -243,6 +260,18 @@ describe("Peggy API", () => {
             expect(source).to.contain("peg$r2.test(");
             expect(source).to.not.contain("peg$r3.test(");
             expect(source.match(/peg\$charCode = /g)).to.have.length(2);
+          });
+
+          it("only declares RegExps for classes that use them", () => {
+            const source = peg.generate(
+              "start = [a-z] [0-9a-f]i [^\\p{L}]u [^,]",
+              { output: "source" }
+            );
+
+            expect(source).to.not.contain("const peg$r0 =");
+            expect(source).to.contain("const peg$r1 = /^[0-9a-f]/i;");
+            expect(source).to.contain("const peg$r2 = /^[^\\p{L}]/u;");
+            expect(source).to.not.contain("const peg$r3 =");
           });
         });
       });

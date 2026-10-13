@@ -432,6 +432,22 @@ describe("generated parser behavior", () => {
           expect(notSurrogate).to.failToParse("");
         });
 
+        it("matches classes with more than 32 parts", () => {
+          const codes = Array.from({ length: 40 }, (_, i) => 0x100 + (i * 2));
+          const cls = codes.map(c => `\\u${c.toString(16).padStart(4, "0")}`).join("");
+          const parser = peg.generate(`start = [${cls}]`, options);
+          const inverted = peg.generate(`start = [^${cls}]`, options);
+
+          codes.forEach(c => {
+            expect(parser).to.parse(String.fromCharCode(c));
+            expect(parser).to.failToParse(String.fromCharCode(c + 1));
+            expect(inverted).to.failToParse(String.fromCharCode(c));
+            expect(inverted).to.parse(String.fromCharCode(c + 1));
+          });
+          expect(parser).to.failToParse("");
+          expect(inverted).to.failToParse("");
+        });
+
         it("matches classes in loops up to the end of input", () => {
           const parser = peg.generate(
             "start = $[a-zA-Z_]+ $[^;]* ';'?", options
