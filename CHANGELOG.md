@@ -22,6 +22,11 @@ Released: TBD
   original code units instead of the lower-cased length, so the match no
   longer fails.
   [#662](https://github.com/peggyjs/peggy/pull/662)
+- Generated parsers are about 4-9% smaller after minification, with the same
+  parse speed. `*` and `+` now emit their expression once inside the loop,
+  instead of once before the loop and again inside it, using a new
+  `LOOP_APPEND` opcode. Plugins that read the bytecode of `*` and `+` will see
+  the new opcode. The error message helpers also share their escape code.
 
 5.1.0
 -----

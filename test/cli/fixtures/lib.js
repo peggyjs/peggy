@@ -62,10 +62,10 @@ class peg$SyntaxError extends SyntaxError {
       return s;
     }
 
-    function literalEscape(s) {
+    function escape(s, special) {
       return unicodeEscape(s
         .replace(/\\/g, "\\\\")
-        .replace(/"/g,  "\\\"")
+        .replace(special, "\\$&")
         .replace(/\0/g, "\\0")
         .replace(/\t/g, "\\t")
         .replace(/\n/g, "\\n")
@@ -74,18 +74,12 @@ class peg$SyntaxError extends SyntaxError {
         .replace(/[\x10-\x1F\x7F-\x9F]/g, ch => "\\x"  + hex(ch)));
     }
 
+    function literalEscape(s) {
+      return escape(s, /"/g);
+    }
+
     function classEscape(s) {
-      return unicodeEscape(s
-        .replace(/\\/g, "\\\\")
-        .replace(/\]/g, "\\]")
-        .replace(/\^/g, "\\^")
-        .replace(/-/g,  "\\-")
-        .replace(/\0/g, "\\0")
-        .replace(/\t/g, "\\t")
-        .replace(/\n/g, "\\n")
-        .replace(/\r/g, "\\r")
-        .replace(/[\x00-\x0F]/g,          ch => "\\x0" + hex(ch))
-        .replace(/[\x10-\x1F\x7F-\x9F]/g, ch => "\\x"  + hex(ch)));
+      return escape(s, /[\]^-]/g);
     }
 
     const DESCRIBE_EXPECTATION_FNS = {

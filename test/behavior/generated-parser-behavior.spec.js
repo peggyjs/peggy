@@ -1015,6 +1015,42 @@ describe("generated parser behavior", () => {
           expect(parser).to.parse("a",   ["a"]);
           expect(parser).to.parse("aaa", ["a", "a", "a"]);
         });
+
+        it("keeps falsy match results", () => {
+          const parser = peg.generate(
+            "start = ('a' { return 0; } / 'b' { return null; } / 'c' { return false; } / 'd' { return ''; } / 'e' { return undefined; })*",
+            options
+          );
+
+          expect(parser).to.parse("abcde", [0, null, false, "", undefined]);
+        });
+
+        it("stops at the first failure without consuming it", () => {
+          const parser = peg.generate("start = 'a'* .", options);
+
+          expect(parser).to.parse("b",   [[], "b"]);
+          expect(parser).to.parse("aab", [["a", "a"], "b"]);
+        });
+
+        it("matches nested repetitions", () => {
+          const parser = peg.generate("start = ('a'+ ',')*", options);
+
+          expect(parser).to.parse("aa,a,", [[["a", "a"], ","], [["a"], ","]]);
+          expect(parser).to.failToParse("aa,,");
+        });
+      });
+
+      describe("when the next expression fails", () => {
+        it("reports the expectation from the last iteration", () => {
+          const parser = peg.generate("start = 'a'* 'b'", options);
+
+          expect(parser).to.failToParse("aac", {
+            expected: [
+              { type: "literal", text: "a", ignoreCase: false },
+              { type: "literal", text: "b", ignoreCase: false },
+            ],
+          });
+        });
       });
     });
 
@@ -1026,6 +1062,23 @@ describe("generated parser behavior", () => {
           expect(parser).to.parse("a",   ["a"]);
           expect(parser).to.parse("aaa", ["a", "a", "a"]);
         });
+
+        it("keeps falsy match results", () => {
+          const parser = peg.generate(
+            "start = ('a' { return 0; } / 'b' { return null; } / 'c' { return false; } / 'd' { return ''; } / 'e' { return undefined; })+",
+            options
+          );
+
+          expect(parser).to.parse("abcde", [0, null, false, "", undefined]);
+          expect(parser).to.parse("b", [null]);
+        });
+
+        it("matches inside predicates without consuming input", () => {
+          const parser = peg.generate("start = &('a'+) .", options);
+
+          expect(parser).to.parse("a", [undefined, "a"]);
+          expect(parser).to.failToParse("b");
+        });
       });
 
       describe("when the expression doesn't match", () => {
@@ -1033,6 +1086,16 @@ describe("generated parser behavior", () => {
           const parser = peg.generate("start = 'a'+", options);
 
           expect(parser).to.failToParse("");
+          expect(parser).to.failToParse("b", {
+            expected: [{ type: "literal", text: "a", ignoreCase: false }],
+          });
+        });
+
+        it("restores the position for the enclosing sequence", () => {
+          const parser = peg.generate("start = 'a' 'b'+ 'c' / 'a' .", options);
+
+          expect(parser).to.parse("abbc", ["a", ["b", "b"], "c"]);
+          expect(parser).to.parse("ac", ["a", "c"]);
         });
       });
     });
@@ -2820,6 +2883,22 @@ describe("generated parser behavior", () => {
 
           expect(parser).to.failToParse("d", {
             message: "Expected \"aa\", \"bb\", or \"cc\" but \"d\" found.",
+          });
+        });
+
+        it("escapes special characters in literals", () => {
+          const parser = peg.generate("start = 'a\"\\\\\\0\\t\\x01\\x7F'", options);
+
+          expect(parser).to.failToParse("\"", {
+            message: "Expected \"a\\\"\\\\\\0\\t\\x01\\x7F\" but \"\\\"\" found.",
+          });
+        });
+
+        it("escapes special characters in classes", () => {
+          const parser = peg.generate("start = [\\]\\\\^\\-a-z\\t]", options);
+
+          expect(parser).to.failToParse("!", {
+            message: "Expected [\\]\\\\\\^\\-a-z\\t] but \"!\" found.",
           });
         });
       });

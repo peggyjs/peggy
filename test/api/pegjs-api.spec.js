@@ -180,6 +180,16 @@ describe("Peggy API", () => {
           // eslint-disable-next-line no-eval -- Required
           expect(eval(source).parse("a")).to.equal("a");
         });
+
+        it("emits each repetition body once", () => {
+          const source = peg.generate(
+            "start = a* b+\na = 'a'\nb = 'b'",
+            { output: "source" }
+          );
+
+          expect(source.match(/s\d+ = peg\$parsea\(\);/g)).to.have.length(1);
+          expect(source.match(/s\d+ = peg\$parseb\(\);/g)).to.have.length(1);
+        });
       });
 
       describe("when |output| is set to |\"ast\"|", () => {
