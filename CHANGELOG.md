@@ -27,6 +27,7 @@ Released: TBD
   instead of once before the loop and again inside it, using a new
   `LOOP_APPEND` opcode. Plugins that read the bytecode of `*` and `+` will see
   the new opcode. The error message helpers also share their escape code.
+  [#666](https://github.com/peggyjs/peggy/pull/666)
 
 5.1.0
 -----
