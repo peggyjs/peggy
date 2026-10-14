@@ -27,6 +27,12 @@ Released: TBD
   instead of a RegExp test. This makes parsing about 21-27% faster for
   Sentry's search grammar, which spends much of its time in class loops.
   [#660](https://github.com/peggyjs/peggy/pull/660)
+- Generated parsers are about 4-9% smaller after minification, with the same
+  parse speed. `*` and `+` now emit their expression once inside the loop,
+  instead of once before the loop and again inside it, using a new
+  `LOOP_APPEND` opcode. Plugins that read the bytecode of `*` and `+` will see
+  the new opcode. The error message helpers also share their escape code.
+  [#666](https://github.com/peggyjs/peggy/pull/666)
 
 5.1.0
 -----
