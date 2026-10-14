@@ -1091,7 +1091,13 @@ describe("generated parser behavior", () => {
 
         it("keeps falsy match results", () => {
           const parser = peg.generate(
-            "start = ('a' { return 0; } / 'b' { return null; } / 'c' { return false; } / 'd' { return ''; } / 'e' { return undefined; })*",
+            [
+              "start = ('a' { return 0; }",
+              "'b' { return null; }",
+              "'c' { return false; }",
+              "'d' { return ''; }",
+              "'e' { return undefined; })*",
+            ].join(" / "),
             options
           );
 
@@ -1125,6 +1131,39 @@ describe("generated parser behavior", () => {
           });
         });
       });
+
+      describe("when the expression never matches", () => {
+        it("still reports its expectation", () => {
+          const parser = peg.generate("start = []* 'a'", options);
+
+          expect(parser).to.parse("a", [[], "a"]);
+          expect(parser).to.failToParse("b", {
+            message: "Expected \"a\" or [] but \"b\" found.",
+          });
+        });
+
+        it("reports a failure inside the expression", () => {
+          const parser = peg.generate("start = ('x' [])* 'a'", options);
+
+          expect(parser).to.failToParse("xb", {
+            message: "Expected [] but \"b\" found.",
+            location: {
+              source: undefined,
+              start: { offset: 1, line: 1, column: 2 },
+              end: { offset: 2, line: 1, column: 3 },
+            },
+          });
+        });
+
+        it("runs the expression once", () => {
+          const parser = peg.generate([
+            "{ let calls = 0; }",
+            "start = (&{ calls++; return true; } [])* { return calls; }",
+          ].join("\n"), options);
+
+          expect(parser).to.parse("", 1);
+        });
+      });
     });
 
     describe("one or more", () => {
@@ -1138,7 +1177,13 @@ describe("generated parser behavior", () => {
 
         it("keeps falsy match results", () => {
           const parser = peg.generate(
-            "start = ('a' { return 0; } / 'b' { return null; } / 'c' { return false; } / 'd' { return ''; } / 'e' { return undefined; })+",
+            [
+              "start = ('a' { return 0; }",
+              "'b' { return null; }",
+              "'c' { return false; }",
+              "'d' { return ''; }",
+              "'e' { return undefined; })+",
+            ].join(" / "),
             options
           );
 
@@ -1163,12 +1208,25 @@ describe("generated parser behavior", () => {
             expected: [{ type: "literal", text: "a", ignoreCase: false }],
           });
         });
+      });
 
-        it("restores the position for the enclosing sequence", () => {
-          const parser = peg.generate("start = 'a' 'b'+ 'c' / 'a' .", options);
+      describe("when the expression never matches", () => {
+        it("still reports its expectation", () => {
+          const parser = peg.generate("start = []+ / 'a'", options);
 
-          expect(parser).to.parse("abbc", ["a", ["b", "b"], "c"]);
-          expect(parser).to.parse("ac", ["a", "c"]);
+          expect(parser).to.parse("a", "a");
+          expect(parser).to.failToParse("b", {
+            message: "Expected \"a\" or [] but \"b\" found.",
+          });
+        });
+
+        it("runs the expression once", () => {
+          const parser = peg.generate([
+            "{ let calls = 0; }",
+            "start = (&{ calls++; return true; } [])+ / '' { return calls; }",
+          ].join("\n"), options);
+
+          expect(parser).to.parse("", 1);
         });
       });
     });
@@ -2960,18 +3018,18 @@ describe("generated parser behavior", () => {
         });
 
         it("escapes special characters in literals", () => {
-          const parser = peg.generate("start = 'a\"\\\\\\0\\t\\x01\\x7F'", options);
+          const parser = peg.generate(String.raw`start = 'a"\\\0\t\x01\x7F'`, options);
 
           expect(parser).to.failToParse("\"", {
-            message: "Expected \"a\\\"\\\\\\0\\t\\x01\\x7F\" but \"\\\"\" found.",
+            message: String.raw`Expected "a\"\\\0\t\x01\x7F" but "\"" found.`,
           });
         });
 
         it("escapes special characters in classes", () => {
-          const parser = peg.generate("start = [\\]\\\\^\\-a-z\\t]", options);
+          const parser = peg.generate(String.raw`start = [\]\\^\-a-z\t]`, options);
 
           expect(parser).to.failToParse("!", {
-            message: "Expected [\\]\\\\\\^\\-a-z\\t] but \"!\" found.",
+            message: String.raw`Expected [\]\\\^\-a-z\t] but "!" found.`,
           });
         });
       });

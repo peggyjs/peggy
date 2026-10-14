@@ -71,7 +71,6 @@ class peg$SyntaxError extends SyntaxError {
 
     function escape(s, special) {
       return unicodeEscape(s
-        .replace(/\\/g, "\\\\")
         .replace(special, "\\$&")
         .replace(/\0/g, "\\0")
         .replace(/\t/g, "\\t")
@@ -82,11 +81,11 @@ class peg$SyntaxError extends SyntaxError {
     }
 
     function literalEscape(s) {
-      return escape(s, /"/g);
+      return escape(s, /[\\"]/g);
     }
 
     function classEscape(s) {
-      return escape(s, /[\]^-]/g);
+      return escape(s, /[\\\]^-]/g);
     }
 
     const DESCRIBE_EXPECTATION_FNS = {

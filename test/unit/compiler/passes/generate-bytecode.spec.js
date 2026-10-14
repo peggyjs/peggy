@@ -3,6 +3,7 @@
 const chai = require("chai");
 const helpers = require("./helpers");
 const pass = require("../../../../lib/compiler/passes/generate-bytecode");
+const inferenceMatchResult = require("../../../../lib/compiler/passes/inference-match-result");
 
 chai.use(helpers);
 
@@ -24,6 +25,13 @@ describe("compiler pass |generateBytecode|", () => {
 
   function constsDetails(literals, classes, expectations, functions) {
     return { literals, classes, expectations, functions };
+  }
+
+  // Runs match inference first, so the pass knows which expressions never
+  // match.
+  function withMatchResults(ast, options, session) {
+    inferenceMatchResult(ast);
+    pass(ast, options, session);
   }
 
   describe("for grammar", () => {
@@ -507,6 +515,14 @@ describe("compiler pass |generateBytecode|", () => {
       ]));
     });
 
+    it("generates correct bytecode when the expression never matches", () => {
+      expect(withMatchResults).to.changeAST("start = []*", bytecodeDetails([
+        4,                           // PUSH_EMPTY_ARRAY
+        23, 0,                       // <expression>
+        6,                           // POP
+      ]));
+    });
+
     it("defines correct constants", () => {
       expect(pass).to.changeAST(grammar, constsDetails(
         ["a"],
@@ -528,6 +544,12 @@ describe("compiler pass |generateBytecode|", () => {
         30, 1, 2, 0,                 // IF_LT
         6,                           //   * POP
         3,                           //     PUSH_FAILED
+      ]));
+    });
+
+    it("generates correct bytecode when the expression never matches", () => {
+      expect(withMatchResults).to.changeAST("start = []+", bytecodeDetails([
+        23, 0,                       // <expression>
       ]));
     });
 
