@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "build": "eleventy",
-    "start": "eleventy --serve"
+    "start": "eleventy --serve --port 8083"
   },
   "keywords": [],
   "license": "MIT",

@@ -9,10 +9,6 @@ allowBuilds:
   '@swc/core': true
   esbuild: true
   unrs-resolver: false
-minimumReleaseAgeExclude:
-  - '@peggyjs/eslint-config@6.0.16'
-  - "@peggyjs/from-mem@4.0.0"
-  - node-inspect-extracted@3.3.4
 overrides:
   "tsup@8.5.1>esbuild": "0.28.2"
   "tsjest@29.4.14>esbuild":  "0.28.2"
