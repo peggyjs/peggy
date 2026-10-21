@@ -5,6 +5,12 @@ $(function() {
   let parser;
   let parserSource       = null;
 
+  const input = CodeMirror.fromTextArea($("#input").get(0), {
+      lineNumbers: true,
+      mode: null,
+      gutters: ["CodeMirror-lint-markers"],
+      lint: true,
+  });
   const editor = CodeMirror.fromTextArea($("#grammar").get(0), {
       lineNumbers: true,
       mode: "javascript",
@@ -14,12 +20,6 @@ $(function() {
         buildAndParse(grammar, problems);
         return problems;
       },
-  });
-  const input = CodeMirror.fromTextArea($("#input").get(0), {
-      lineNumbers: true,
-      mode: null,
-      gutters: ["CodeMirror-lint-markers"],
-      lint: true,
   });
 
   CodeMirror.registerHelper("lint", null, function(content) {
