@@ -5,23 +5,21 @@ $(function() {
   let parser;
   let parserSource       = null;
 
-  const editor = CodeMirror.fromTextArea($("#grammar").get(0), {
-      lineNumbers: true,
-      mode: "pegjs",
-      gutters: ["CodeMirror-lint-markers"],
-      lint: true,
-  });
   const input = CodeMirror.fromTextArea($("#input").get(0), {
       lineNumbers: true,
       mode: null,
       gutters: ["CodeMirror-lint-markers"],
       lint: true,
   });
-
-  CodeMirror.registerHelper("lint", "pegjs", function(grammar) {
-    const problems = [];
-    buildAndParse(grammar, problems);
-    return problems;
+  const editor = CodeMirror.fromTextArea($("#grammar").get(0), {
+      lineNumbers: true,
+      mode: "javascript",
+      gutters: ["CodeMirror-lint-markers"],
+      lint: function(grammar) {
+        const problems = [];
+        buildAndParse(grammar, problems);
+        return problems;
+      },
   });
 
   CodeMirror.registerHelper("lint", null, function(content) {
