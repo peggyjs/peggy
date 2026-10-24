@@ -11,9 +11,6 @@ allowBuilds:
   unrs-resolver: false
 overrides:
   "tsup@8.5.1>esbuild": "0.28.2"
-  "tsjest@29.4.14>esbuild":  "0.28.2"
 auditConfig:
   ignoreGhsas:
     - GHSA-238p-pmpm-9mq7
-    - GHSA-vfj7-8cjw-p6xm
-    - GHSA-hp3w-g68c-fv3c
