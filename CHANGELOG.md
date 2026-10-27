@@ -32,6 +32,9 @@ Released: TBD
   into the range `[😀-🚀]`, so it also matched every character in between,
   and `"😀" / [a-\uFFFF]` did not match `"😀"` at all.
   [#681](https://github.com/peggyjs/peggy/pull/681)
+- Escape NUL as `\x00` in generated code when a digit follows it. `"\x001"`
+  made `generate()` throw an octal escape error, and `[\x001]i` matched U+0001.
+  [#670](https://github.com/peggyjs/peggy/pull/670)
 
 5.1.1
 -----
