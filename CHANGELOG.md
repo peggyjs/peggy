@@ -14,6 +14,9 @@ Released: TBD
 
 ### Bug fixes
 
+- Escape NUL as `\x00` in generated code when a digit follows it. `"\x001"`
+  made `generate()` throw an octal escape error, and `[\x001]i` matched U+0001.
+
 5.1.1
 -----
 
