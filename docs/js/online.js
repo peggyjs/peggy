@@ -9,17 +9,13 @@ $(function() {
       lineNumbers: true,
       mode: null,
       gutters: ["CodeMirror-lint-markers"],
-      lint: true,
+      lint: false,
   });
   const editor = CodeMirror.fromTextArea($("#grammar").get(0), {
       lineNumbers: true,
       mode: "javascript",
       gutters: ["CodeMirror-lint-markers"],
-      lint: function(grammar) {
-        const problems = [];
-        buildAndParse(grammar, problems);
-        return problems;
-      },
+      lint: false,
   });
 
   CodeMirror.registerHelper("lint", null, function(content) {
@@ -27,6 +23,15 @@ $(function() {
     parse(content, problems);
     return problems;
   });
+
+  // CodeMirror runs lint synchronously when it is enabled. Wait until both
+  // editors exist before either lint callback can use them.
+  editor.setOption("lint", function(grammar) {
+    const problems = [];
+    buildAndParse(grammar, problems);
+    return problems;
+  });
+  input.setOption("lint", true);
 
   function convertLocation(location) {
     return CodeMirror.Pos(location.line - 1, location.column - 1);
