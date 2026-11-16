@@ -19,6 +19,11 @@ Released: TBD
 
 ### Bug fixes
 
+- Fixed the error message when a parse fails and no expectation was recorded,
+  for example when a semantic predicate fails. It used to read
+  `Expected , or undefined but "a" found.` and is now `Unexpected "a".`
+  [#671](https://github.com/peggyjs/peggy/issues/671)
+
 5.1.1
 -----
 
