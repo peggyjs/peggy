@@ -153,6 +153,10 @@ class peg$SyntaxError extends SyntaxError {
       return found ? "\"" + literalEscape(found) + "\"" : "end of input";
     }
 
+    if (expected.length === 0) {
+      return "Unexpected " + describeFound(found) + ".";
+    }
+
     return "Expected " + describeExpected(expected) + " but " + describeFound(found) + " found.";
   }
 }
