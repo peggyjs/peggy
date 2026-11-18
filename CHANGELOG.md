@@ -14,6 +14,10 @@ Released: TBD
 
 ### Bug fixes
 
+- Check nested repetition expressions for possible infinite loops, including
+  those inside consuming `*`, `+`, and bounded repetition expressions.
+  [#674](https://github.com/peggyjs/peggy/issues/674)
+
 5.1.1
 -----
 

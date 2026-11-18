@@ -3,12 +3,72 @@
 const chai = require("chai");
 const helpers = require("./helpers");
 const pass = require("../../../../lib/compiler/passes/report-infinite-repetition");
+const peg = require("../../../../lib/peg");
+const parser = require("../../../../lib/parser");
+const Session = require("../../../../lib/compiler/session");
 
 chai.use(helpers);
 
 const expect = chai.expect;
 
 describe("compiler pass |reportInfiniteRepetition|", () => {
+  describe("nested repetitions", () => {
+    for (const outer of ["*", "+", "|1..2|", "|..|", "|1..2, ','|"]) {
+      for (const inner of ['""*', '""+', '""|..|']) {
+        it(`reports ${inner} inside ${outer} at the inner expression`, () => {
+          const grammar = `start = ("a" ${inner})${outer}`;
+          const offset = grammar.indexOf(inner);
+          expect(pass).to.reportError(grammar, {
+            message: inner.includes("|")
+              ? "Possible infinite loop when parsing (unbounded range repetition used with an expression that may not consume any input)"
+              : "Possible infinite loop when parsing (repetition used with an expression that may not consume any input)",
+            location: {
+              source: undefined,
+              start: { offset, line: 1, column: offset + 1 },
+              end: {
+                offset: offset + inner.length,
+                line: 1,
+                column: offset + inner.length + 1,
+              },
+            },
+          });
+        });
+      }
+    }
+
+    it("reports each nested expression once", () => {
+      expect(pass).to.haveErrors('start = ("a" ""* ""+)|1..2|', 2);
+    });
+
+    it("retains warnings for finite non-consuming nested repetitions", () => {
+      const session = new Session();
+      pass(parser.parse('start = ("a" ""|..2|)*'), {}, session);
+      expect(session.errors).to.equal(0);
+      expect(session.problems).to.have.lengthOf(1);
+      expect(session.problems[0].slice(0, 2)).to.deep.equal([
+        "warning",
+        "An expression may not consume any input and may always match 2 times",
+      ]);
+    });
+
+    it("rejects the reported grammar before generating a looping parser", () => {
+      expect(() => peg.generate('start = ("a" _+)+\n_ = " "*'))
+        .to.throw(peg.GrammarError, "Possible infinite loop when parsing");
+    });
+
+    it("keeps valid nested parsers working with and without the cache", () => {
+      for (const outer of ["*", "+", "|1..2|"]) {
+        for (const cache of [false, true]) {
+          const generated = peg.generate(`start = ("a" "b"*)${outer}`, { cache });
+          expect(generated.parse("abbab")).to.deep.equal([
+            ["a", ["b", "b"]],
+            ["a", ["b"]],
+          ]);
+        }
+      }
+    });
+  });
+
   it("reports infinite loops for zero_or_more", () => {
     expect(pass).to.reportError("start = ('')*", {
       message: "Possible infinite loop when parsing (repetition used with an expression that may not consume any input)",
