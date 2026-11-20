@@ -69,6 +69,65 @@ describe("compiler pass |reportInfiniteRepetition|", () => {
     });
   });
 
+  describe("consumption summaries", () => {
+    it("reads a deeply nested repetition terminal once", () => {
+      const depth = 200;
+      const ast = parser.parse(`start = ${"(".repeat(depth)}"a"${")+".repeat(depth)}`);
+      let terminal = ast.rules[0].expression;
+      while (terminal.type !== "literal") {
+        terminal = terminal.expression;
+      }
+      let reads = 0;
+      Object.defineProperty(terminal, "value", {
+        get() {
+          reads++;
+          return "a";
+        },
+      });
+      const session = new Session();
+      pass(ast, {}, session);
+      expect(session.problems).to.have.lengthOf(0);
+      expect(reads).to.equal(1);
+    });
+
+    it("checks descendants after consumption short circuits", () => {
+      expect(pass).to.haveErrors('start = ("a" ""*) / ""+', 2);
+      expect(pass).to.haveErrors('start = ("" / ""+) "a"', 1);
+      expect(pass).to.haveErrors('start = &(""*) !(""+) (""*)?', 3);
+    });
+
+    it("retains delimiter-first diagnostics and reports each expression once", () => {
+      const grammar = 'start = ("a" ""*)|1..2, (""+)|';
+      const session = new Session();
+      pass(parser.parse(grammar), {}, session);
+      expect(session.errors).to.equal(2);
+      const offsets = session.problems.map(problem => problem[2].start.offset);
+      expect(offsets).to.deep.equal([
+        grammar.indexOf("\"\"+"),
+        grammar.indexOf("\"\"*"),
+      ]);
+    });
+
+    it("resolves forward rule references and valid right recursion", () => {
+      expect(pass).to.not.reportError('start = b*\na = "a" b?\nb = a');
+      expect(() => peg.generate('start = b*\na = "a" b?\nb = a').parse("aaa"))
+        .to.not.throw();
+      expect(pass).to.reportError('start = a*\na = b\nb = ""');
+    });
+
+    it("leaves missing rules and left recursion to their respective checks", () => {
+      expect(pass).to.reportError("start = missing*");
+      expect(pass).to.reportError("start = a*\na = b\nb = a");
+    });
+
+    it("accounts for bounded repetition minima and delimiters", () => {
+      expect(pass).to.not.reportError('start = (""|2..3, "a"|)*');
+      expect(pass).to.reportError('start = (""|1..3, "a"|)*');
+      expect(pass).to.reportError('start = ("a"|0..3|)*');
+      expect(pass).to.reportError('start = ("a"|len..3|)*');
+    });
+  });
+
   it("reports infinite loops for zero_or_more", () => {
     expect(pass).to.reportError("start = ('')*", {
       message: "Possible infinite loop when parsing (repetition used with an expression that may not consume any input)",
