@@ -12,6 +12,11 @@ Released: TBD
 
 ### New features
 
+- The default tracer now colorizes `rule.enter`, `rule.match`, and
+  `rule.fail` events when `process.stdout` is a TTY.  Set `NO_COLOR` to
+  turn color off, or `FORCE_COLOR` to turn it on when not on a TTY.
+  [#629](https://github.com/peggyjs/peggy/issues/629)
+
 ### Bug fixes
 
 5.1.1
