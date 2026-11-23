@@ -2,6 +2,7 @@
 
 const chai = require("chai");
 const peg = require("../../lib/peg");
+const process = require("node:process");
 const { spy, stub } = require("../utils.js");
 const expect = chai.expect;
 
@@ -79,6 +80,104 @@ describe("generated parser API", () => {
       ].join("\n"), { trace: true });
 
       describe("default tracer", () => {
+        const { env, stdout } = process;
+        const isTTY = Object.getOwnPropertyDescriptor(stdout, "isTTY");
+        let savedEnv = null;
+
+        beforeEach(() => {
+          savedEnv = { ...env };
+          delete env.FORCE_COLOR;
+          delete env.NO_COLOR;
+          stdout.isTTY = false;
+        });
+
+        afterEach(() => {
+          for (const k of ["FORCE_COLOR", "NO_COLOR"]) {
+            if (k in savedEnv) {
+              env[k] = savedEnv[k];
+            } else {
+              delete env[k];
+            }
+          }
+          if (isTTY) {
+            Object.defineProperty(stdout, "isTTY", isTTY);
+          } else {
+            delete stdout.isTTY;
+          }
+        });
+
+        function traceLines(input) {
+          stub(console, "log");
+          try {
+            parser.parse(input);
+            return console.log.calls.map(c => c.args);
+          } finally {
+            console.log.restore();
+          }
+        }
+
+        const RED = "\x1b[31m";
+        const GREEN = "\x1b[32m";
+        const CYAN = "\x1b[36m";
+        const RESET = "\x1b[0m";
+        const colored = [
+          [`1:1-1:1 ${CYAN}rule.enter${RESET} start`],
+          [`1:1-1:1 ${CYAN}rule.enter${RESET}   a`],
+          [`1:1-1:1 ${RED}rule.fail ${RESET}   a`],
+          [`1:1-1:1 ${CYAN}rule.enter${RESET}   b`],
+          [`1:1-1:2 ${GREEN}rule.match${RESET}   b`],
+          [`1:1-1:2 ${GREEN}rule.match${RESET} start`],
+        ];
+        const plain = [
+          ["1:1-1:1 rule.enter start"],
+          ["1:1-1:1 rule.enter   a"],
+          ["1:1-1:1 rule.fail    a"],
+          ["1:1-1:1 rule.enter   b"],
+          ["1:1-1:2 rule.match   b"],
+          ["1:1-1:2 rule.match start"],
+        ];
+
+        it("colorizes output when stdout is a TTY", () => {
+          stdout.isTTY = true;
+          expect(traceLines("b")).to.deep.equal(colored);
+        });
+
+        it("does not colorize when NO_COLOR is set", () => {
+          stdout.isTTY = true;
+          env.NO_COLOR = "1";
+          expect(traceLines("b")).to.deep.equal(plain);
+        });
+
+        it("colorizes when FORCE_COLOR is set", () => {
+          env.FORCE_COLOR = "1";
+          expect(traceLines("b")).to.deep.equal(colored);
+        });
+
+        it("does not colorize when FORCE_COLOR is 0", () => {
+          stdout.isTTY = true;
+          env.FORCE_COLOR = "0";
+          expect(traceLines("b")).to.deep.equal(plain);
+        });
+
+        it("does not colorize when process is not defined", () => {
+          stdout.isTTY = true;
+          env.FORCE_COLOR = "1";
+          const source = peg.generate([
+            "start = a / b",
+            "a = 'a'i",
+            "b = 'b'",
+          ].join("\n"), { trace: true, output: "source", format: "bare" });
+          // eslint-disable-next-line no-new-func
+          const browserParser = new Function("process", `return (\n${source}\n);`)();
+          stub(console, "log");
+          try {
+            browserParser.parse("b");
+            expect(console.log.calls.map(c => c.args)).to.deep.equal(plain);
+          } finally {
+            console.log.restore();
+          }
+        });
+
         it("traces using console.log (if console is defined)", () => {
           const messages = [
             "1:1-1:1 rule.enter start",

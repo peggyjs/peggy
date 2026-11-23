@@ -262,7 +262,10 @@ to keep libraries of often-used grammar rules in
     If the input to be tested is not parsed, the CLI will exit with code 2.</dd>
 
   <dt><code>--trace</code></dt>
-  <dd>Makes the parser trace its progress.</dd>
+  <dd>Makes the parser trace its progress.  When stdout is a TTY, the default
+    tracer colorizes its output.  Set the <code>NO_COLOR</code> environment
+    variable to turn color off, or <code>FORCE_COLOR</code> to turn it on
+    when stdout is not a TTY.</dd>
 
   <dt><code>-w,--watch</code></dt>
   <dd>Watch the input file for changes, generating the output once at the
@@ -508,7 +511,11 @@ echo "foo = '1' { return 42 }" | npx peggy --output parser.js --source-map --tes
   <dd>Plugins to use. See the <a href="#plugins-api">Plugins API</a> section.</dd>
 
   <dt><code>trace</code></dt>
-  <dd>Makes the parser trace its progress (default: <code>false</code>).</dd>
+  <dd>Makes the parser trace its progress (default: <code>false</code>).
+    The default tracer writes to <code>console.log</code>, colorizing its
+    output when <code>process.stdout</code> is a TTY (overridable with the
+    <code>NO_COLOR</code> and <code>FORCE_COLOR</code> environment
+    variables).</dd>
 
   <dt><code>warning</code></dt>
   <dd>Callback for warnings. See <a href="#error-reporting">Error Reporting</a></dd>
