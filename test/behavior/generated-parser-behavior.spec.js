@@ -3001,6 +3001,26 @@ describe("generated parser behavior", () => {
           });
         });
 
+        it("builds message correctly with no expectations", () => {
+          const parser = peg.generate("start = 'a' &{ return false; }", options);
+
+          expect(parser).to.failToParse("a", {
+            expected: [],
+            message: "Unexpected \"a\".",
+          });
+          expect(parser).to.failToParse("ab", {
+            expected: [],
+            message: "Unexpected \"a\".",
+          });
+
+          const parser2 = peg.generate("start = !{ return true; }", options);
+
+          expect(parser2).to.failToParse("", {
+            expected: [],
+            message: "Unexpected end of input.",
+          });
+        });
+
         it("removes duplicates from expectations", () => {
           const parser = peg.generate("start = 'a' / 'a'", options);
 
