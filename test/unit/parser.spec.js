@@ -1542,6 +1542,12 @@ c = @'ijkl'
     }
   });
 
+  it("builds a message when there are no expectations", () => {
+    const { SyntaxError } = parser;
+    expect(SyntaxError.buildMessage([], "a")).to.eql("Unexpected \"a\".");
+    expect(SyntaxError.buildMessage([], null)).to.eql("Unexpected end of input.");
+  });
+
   it("handles peg$library", () => {
     const res = parser.parse("foo", { peg$library: true });
     expect(typeof res.peg$throw).to.eql("function");
