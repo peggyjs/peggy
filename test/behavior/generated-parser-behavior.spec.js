@@ -1799,6 +1799,19 @@ describe("generated parser behavior", () => {
           expect(parser).to.failToParse("aaa", {
             expected: [{ type: "end" }],
           });
+
+          // Large numeric boundaries are not truncated to int32
+          parser = peg.generate("start = 'a'|..{ return Infinity; }|", options);
+          expect(parser).to.parse("aaa", ["a", "a", "a"]);
+
+          parser = peg.generate("start = 'a'|{ return Infinity; }..|", options);
+          expect(parser).to.failToParse("aaa");
+
+          parser = peg.generate("start = 'a'|..{ return 2 ** 32; }|", options);
+          expect(parser).to.parse("aaa", ["a", "a", "a"]);
+
+          parser = peg.generate("start = 'a'|{ return 2 ** 32; }..|", options);
+          expect(parser).to.failToParse("aaa");
         });
       });
 
