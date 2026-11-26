@@ -23,6 +23,10 @@ Released: TBD
   for example when a semantic predicate fails. It used to read
   `Expected , or undefined but "a" found.` and is now `Unexpected "a".`
   [#671](https://github.com/peggyjs/peggy/issues/671)
+- Dynamic repetition boundaries are no longer truncated to 32-bit integers,
+  so counts above `2 ** 31` no longer wrap around. Non-numeric counts keep
+  their previous coercion, for example `"1"` stays 1 and `NaN` becomes 0.
+  [#678](https://github.com/peggyjs/peggy/pull/678)
 
 5.1.1
 -----
