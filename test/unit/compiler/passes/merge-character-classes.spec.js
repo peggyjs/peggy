@@ -286,7 +286,10 @@ describe("compiler pass |mergeCharacterClasses|", () => {
 
   it("keeps class escapes when merging", () => {
     expect(pass).to.changeAST(
-      "one = [\\p{L}]u / 'a' / [\\p{N}b-c]u",
+      [
+        "one = [\\p{N}]u / 'a' / [\\p{L}b-c]u",
+        "two = [\\p{L}]u / [\\p{L}]u",
+      ].join("\n"),
       {
         rules: [
           {
@@ -301,9 +304,20 @@ describe("compiler pass |mergeCharacterClasses|", () => {
               unicode: true,
             },
           },
+          {
+            name: "two",
+            expression: {
+              type: "class",
+              parts: [
+                { type: "classEscape", value: "p{L}" },
+                { type: "classEscape", value: "p{L}" },
+              ],
+              unicode: true,
+            },
+          },
         ],
       },
-      { allowedStartRules: ["one"] }
+      { allowedStartRules: ["one", "two"] }
     );
   });
 
