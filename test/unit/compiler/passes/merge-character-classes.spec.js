@@ -289,6 +289,7 @@ describe("compiler pass |mergeCharacterClasses|", () => {
       [
         "one = [\\p{N}]u / 'a' / [\\p{L}b-c]u",
         "two = [\\p{L}]u / [\\p{L}]u",
+        "three = [\\p{L}]u / [\\p{N}]u",
       ].join("\n"),
       {
         rules: [
@@ -315,9 +316,20 @@ describe("compiler pass |mergeCharacterClasses|", () => {
               unicode: true,
             },
           },
+          {
+            name: "three",
+            expression: {
+              type: "class",
+              parts: [
+                { type: "classEscape", value: "p{L}" },
+                { type: "classEscape", value: "p{N}" },
+              ],
+              unicode: true,
+            },
+          },
         ],
       },
-      { allowedStartRules: ["one", "two"] }
+      { allowedStartRules: ["one", "two", "three"] }
     );
   });
 
