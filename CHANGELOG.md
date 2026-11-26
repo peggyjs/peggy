@@ -31,6 +31,7 @@ Released: TBD
   contain astral (non-BMP) characters.  `"😀" / "🚀"` used to be merged
   into the range `[😀-🚀]`, so it also matched every character in between,
   and `"😀" / [a-\uFFFF]` did not match `"😀"` at all.
+  [#681](https://github.com/peggyjs/peggy/pull/681)
 
 5.1.1
 -----
