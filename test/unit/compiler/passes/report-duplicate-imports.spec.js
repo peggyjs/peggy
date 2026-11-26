@@ -16,8 +16,7 @@ import * as foo from "./foo.js"
 import * as foo from "./bar.js"
 
 a = foo.one
-`,
-    {
+`, {
       message: "Module \"foo\" is already imported",
     });
   });

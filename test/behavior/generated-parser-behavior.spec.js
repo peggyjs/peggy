@@ -419,7 +419,8 @@ describe("generated parser behavior", () => {
 
         it("matches surrogate code units in non-unicode classes", () => {
           const pair = peg.generate(
-            "start = [\\uD800-\\uDBFF] [\\uDC00-\\uDFFF]", options
+            "start = [\\uD800-\\uDBFF] [\\uDC00-\\uDFFF]",
+            options
           );
           expect(pair).to.parse("\u{1F4A9}", ["\uD83D", "\uDCA9"]);
           expect(pair).to.failToParse("\uDCA9\uD83D");
@@ -450,7 +451,8 @@ describe("generated parser behavior", () => {
 
         it("matches classes in loops up to the end of input", () => {
           const parser = peg.generate(
-            "start = $[a-zA-Z_]+ $[^;]* ';'?", options
+            "start = $[a-zA-Z_]+ $[^;]* ';'?",
+            options
           );
           expect(parser).to.parse("abc_DEF xyz;", ["abc_DEF", " xyz", ";"]);
           expect(parser).to.parse("abc def", ["abc", " def", null]);
@@ -460,10 +462,12 @@ describe("generated parser behavior", () => {
 
         it("matches simple classes mixed with case-insensitive and unicode classes", () => {
           const parser = peg.generate(
-            "start = [a-z] [0-9a-f]i [^\\p{L}]u [^,]", options
+            "start = [a-z] [0-9a-f]i [^\\p{L}]u [^,]",
+            options
           );
           expect(parser).to.parse(
-            "aF\u{1F4A9}x", ["a", "F", "\u{1F4A9}", "x"]
+            "aF\u{1F4A9}x",
+            ["a", "F", "\u{1F4A9}", "x"]
           );
           expect(parser).to.parse("z0!\uD83D", ["z", "0", "!", "\uD83D"]);
           expect(parser).to.failToParse("A0!x");

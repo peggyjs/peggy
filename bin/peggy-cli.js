@@ -1,13 +1,22 @@
 "use strict";
 
 const {
-  Command, CommanderError, InvalidArgumentError, Option,
+  Command,
+  CommanderError,
+  InvalidArgumentError,
+  Option,
 } = require("commander");
 const {
-  addExtraOptionsJSON, refineOptions,
+  addExtraOptionsJSON,
+  refineOptions,
 } = require("./opts.js");
 const {
-  isER, commaArg, moreJSON, readStream, mkFileDir, replaceExt,
+  isER,
+  commaArg,
+  moreJSON,
+  readStream,
+  mkFileDir,
+  replaceExt,
 } = require("./utils.js");
 const Module = require("module");
 const assert = require("assert");
@@ -385,7 +394,7 @@ class PeggyCLI extends Command {
           }
         });
       } else {
-        outputStream.end(source, (/** @type {unknown} */ err) => {
+        outputStream.end(source, (/** @type {any} */ err) => {
           if (!err) {
             resolve();
           }

@@ -477,9 +477,12 @@ Options:
 
     await exec({
       args: [
-        "--allowed-start-rules", "foo",
-        "--allowed-start-rules", "bar",
-        "--extra-options", '{"allowedStartRules": ["baz"]}',
+        "--allowed-start-rules",
+        "foo",
+        "--allowed-start-rules",
+        "bar",
+        "--extra-options",
+        '{"allowedStartRules": ["baz"]}',
       ],
       stdin: foobarbaz,
       expected: RE_START_RULES,
@@ -572,8 +575,10 @@ Options:
 
     await exec({
       args: [
-        "-D", '{"c": "commander"}',
-        "--extra-options", '{"dependencies": {"c": "jest"}}',
+        "-D",
+        '{"c": "commander"}',
+        "--extra-options",
+        '{"dependencies": {"c": "jest"}}',
       ],
       stdin: "foo = '1' { return c.run(); }",
       expected: /c = require\("jest"\)/,
@@ -859,9 +864,12 @@ Options:
 
     await exec({
       args: [
-        "--plugin", plugin,
-        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
-        "-t", "1",
+        "--plugin",
+        plugin,
+        "--extra-options",
+        '{"cli_test": {"words": ["foo"]}}',
+        "-t",
+        "1",
       ],
       stdin: "var = bar:'1'",
       expected: "'1'\n",
@@ -869,9 +877,12 @@ Options:
 
     await exec({
       args: [
-        "--plugin", pluginMjs,
-        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
-        "-t", "1",
+        "--plugin",
+        pluginMjs,
+        "--extra-options",
+        '{"cli_test": {"words": ["foo"]}}',
+        "-t",
+        "1",
       ],
       stdin: "var = bar:'1'",
       expected: "'1'\n",
@@ -879,9 +890,12 @@ Options:
 
     await exec({
       args: [
-        "--plugin", plugin2Mjs,
-        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
-        "-t", "1",
+        "--plugin",
+        plugin2Mjs,
+        "--extra-options",
+        '{"cli_test": {"words": ["foo"]}}',
+        "-t",
+        "1",
       ],
       stdin: "var = bar:'1'",
       expected: "'1'\n",
@@ -889,9 +903,12 @@ Options:
 
     await exec({
       args: [
-        "--plugin", pluginCjs,
-        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
-        "-t", "1",
+        "--plugin",
+        pluginCjs,
+        "--extra-options",
+        '{"cli_test": {"words": ["foo"]}}',
+        "-t",
+        "1",
       ],
       stdin: "var = bar:'1'",
       expected: "'1'\n",
@@ -899,9 +916,12 @@ Options:
 
     await exec({
       args: [
-        "--plugin", `${plugin},${plugin}`,
-        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
-        "-t", "1",
+        "--plugin",
+        `${plugin},${plugin}`,
+        "--extra-options",
+        '{"cli_test": {"words": ["foo"]}}',
+        "-t",
+        "1",
       ],
       stdin: "var = bar:'1'",
       expected: "'1'\n",
@@ -909,8 +929,10 @@ Options:
 
     await exec({
       args: [
-        "--plugin", plugin,
-        "--extra-options", '{"cli_test": {"words": ["foo"]}}',
+        "--plugin",
+        plugin,
+        "--extra-options",
+        '{"cli_test": {"words": ["foo"]}}',
       ],
       stdin: "var = foo:'1'",
       errorCode: "peggy.cli",
@@ -953,8 +975,10 @@ Options:
     // Warnings
     await exec({
       args: [
-        "--plugin", plugin,
-        "--extra-options", '{"cli_test": { "warning": true }}',
+        "--plugin",
+        plugin,
+        "--extra-options",
+        '{"cli_test": { "warning": true }}',
       ],
       stdin: "foo = '1'",
       expected: /WARN\(check\): I WARN YOU/,
@@ -1541,7 +1565,6 @@ error: WARN(check): An expression may not consume any input and may always match
 
   it("throws on parse now", () => {
     const cli = new PeggyCLI();
-
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => cli.parse([])).toThrow();
   });
@@ -1656,8 +1679,12 @@ error: WARN(check): An expression may not consume any input and may always match
     it("generates source maps per file when --source-map enabled", async () => {
       await exec({
         args: [
-          "--multi-output", multiOutDir, "--source-map",
-          "--", grammar1, grammar2,
+          "--multi-output",
+          multiOutDir,
+          "--source-map",
+          "--",
+          grammar1,
+          grammar2,
         ],
         exitCode: 0,
       });

@@ -54,7 +54,8 @@
     "version": "npm run set_version && npm run parser && npm run parser && npm run test && npm run examples && git add lib/version.js lib/parser.js docs/index.html test/cli/fixtures/imports_peggy.js test/cli/fixtures/lib.js docs/js/examples.js"
   },
   "devDependencies": {
-    "@peggyjs/eslint-config": "^6.0.16",
+    "@cto.af/ncurc": "^0.0.3",
+    "@peggyjs/eslint-config": "^6.0.19",
     "@swc/core": "^1.16.22",
     "@types/chai": "^4.3.20",
     "@types/jest": "^30.0.0",
@@ -70,7 +71,7 @@
     "eslint-plugin-mocha": "^12.0.2",
     "glob": "^14.0.6",
     "jest": "^30.5.2",
-    "package-extract": "^4.0.2",
+    "package-extract": "^4.0.3",
     "rimraf": "^6.1.4",
     "source-map": "^0.8.0",
     "ts-jest": "^29.4.15",
@@ -87,7 +88,7 @@
   "browserslist": [
     "defaults, maintained node versions, not op_mini all"
   ],
-  "packageManager": "pnpm@12.21.0",
+  "packageManager": "pnpm@12.22.0",
   "engines": {
     "node": ">=22"
   }
