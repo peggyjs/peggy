@@ -236,6 +236,54 @@ describe("compiler pass |mergeCharacterClasses|", () => {
     );
   });
 
+  it("merges astral characters by code point", () => {
+    expect(pass).to.changeAST(
+      [
+        "one = '\u{1F600}' / '\u{1F680}'",
+        "two = '\uD7FF' / '\u{10000}'",
+        "three = [\uE000-\uFFFF] / '\u{10000}'",
+        "four = '\u{1F600}' / [a-\uFFFF]",
+      ].join("\n"),
+      {
+        rules: [
+          {
+            name: "one",
+            expression: {
+              type: "class",
+              parts: ["\u{1F600}", "\u{1F680}"],
+              unicode: true,
+            },
+          },
+          {
+            name: "two",
+            expression: {
+              type: "class",
+              parts: ["\uD7FF", "\u{10000}"],
+              unicode: true,
+            },
+          },
+          {
+            name: "three",
+            expression: {
+              type: "class",
+              parts: [["\uE000", "\u{10000}"]],
+              unicode: true,
+            },
+          },
+          {
+            name: "four",
+            expression: {
+              type: "class",
+              parts: [["a", "\uFFFF"], "\u{1F600}"],
+              unicode: true,
+            },
+          },
+        ],
+      },
+      { allowedStartRules: ["one", "two", "three", "four"] }
+    );
+  });
+
   it("elides surrogates from unicode ranges", () => {
     expect(pass).to.changeAST(
       [

@@ -2932,6 +2932,29 @@ describe("generated parser behavior", () => {
 
           expect(parser).to.failToParse("d");
         });
+
+        it("does not match characters between astral alternatives", () => {
+          const parser = peg.generate("start = '\u{1F600}' / '\u{1F680}'", options);
+
+          expect(parser).to.parse("\u{1F600}");
+          expect(parser).to.parse("\u{1F680}");
+          expect(parser).to.failToParse("\u{1F642}");
+        });
+
+        it("does not match characters between BMP and astral alternatives", () => {
+          const parser = peg.generate("start = '\uD7FF' / '\u{10000}'", options);
+
+          expect(parser).to.parse("\uD7FF");
+          expect(parser).to.parse("\u{10000}");
+          expect(parser).to.failToParse("\uE000");
+        });
+
+        it("keeps astral alternatives next to a BMP range", () => {
+          const parser = peg.generate("start = '\u{1F600}' / [a-\uFFFF]", options);
+
+          expect(parser).to.parse("\u{1F600}");
+          expect(parser).to.parse("b");
+        });
       });
     });
 
