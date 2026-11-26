@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/list-style */
 "use strict";
 
 const chai = require("chai");

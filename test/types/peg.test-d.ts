@@ -229,11 +229,13 @@ describe("peg.d.ts", () => {
         expectExact<
           | peggy.ast.TopLevelInitializer
           | peggy.ast.TopLevelInitializer[]
-          | undefined>()(node.topLevelInitializer)();
+          | undefined
+        >()(node.topLevelInitializer)();
         expectExact<
           | peggy.ast.Initializer
           | peggy.ast.Initializer[]
-          | undefined>()(node.initializer)();
+          | undefined
+        >()(node.initializer)();
         expectExact<peggy.ast.Rule[]>()(node.rules)();
         expectExact<string[] | undefined>()(node.literals)();
         expectExact<peggy.ast.GrammarCharacterClass[] | undefined>()(
@@ -339,7 +341,8 @@ describe("peg.d.ts", () => {
           | peggy.ast.Primary
           | peggy.ast.Repeated
           | peggy.ast.Sequence
-          | peggy.ast.Suffixed>()(node.expression)();
+          | peggy.ast.Suffixed
+        >()(node.expression)();
         visit(node.expression);
       },
       sequence(node) {
@@ -362,7 +365,8 @@ describe("peg.d.ts", () => {
           peggy.ast.Prefixed
           | peggy.ast.Primary
           | peggy.ast.Repeated
-          | peggy.ast.Suffixed>()(node.expression)();
+          | peggy.ast.Suffixed
+        >()(node.expression)();
         visit(node.expression);
       },
       text(node) {
@@ -374,7 +378,8 @@ describe("peg.d.ts", () => {
         expectExact<
           peggy.ast.Primary
           | peggy.ast.Repeated
-          | peggy.ast.Suffixed>()(node.expression)();
+          | peggy.ast.Suffixed
+        >()(node.expression)();
         visit(node.expression);
       },
       simple_and(node) {
@@ -386,7 +391,8 @@ describe("peg.d.ts", () => {
         expectExact<
           peggy.ast.Primary
           | peggy.ast.Repeated
-          | peggy.ast.Suffixed>()(node.expression)();
+          | peggy.ast.Suffixed
+        >()(node.expression)();
         visit(node.expression);
       },
       simple_not(node) {
@@ -397,7 +403,8 @@ describe("peg.d.ts", () => {
         expectExact<
           peggy.ast.Primary
           | peggy.ast.Repeated
-          | peggy.ast.Suffixed>()(node.expression)();
+          | peggy.ast.Suffixed
+        >()(node.expression)();
         visit(node.expression);
       },
       optional(node) {

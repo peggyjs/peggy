@@ -3,7 +3,9 @@
 "use strict";
 
 const {
-  CommanderError, InvalidArgumentError, PeggyCLI,
+  CommanderError,
+  InvalidArgumentError,
+  PeggyCLI,
 } = require("./peggy-cli.js");
 
 exports.CommanderError = CommanderError;
