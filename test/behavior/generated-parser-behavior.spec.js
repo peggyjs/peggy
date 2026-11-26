@@ -1812,6 +1812,19 @@ describe("generated parser behavior", () => {
 
           parser = peg.generate("start = 'a'|{ return 2 ** 32; }..|", options);
           expect(parser).to.failToParse("aaa");
+
+          // Non-numeric boundaries still coerce like "| 0"
+          parser = peg.generate("start = 'a'|..{ return '1'; }|", options);
+          expect(parser).to.parse("a", ["a"]);
+          expect(parser).to.failToParse("aa", {
+            expected: [{ type: "end" }],
+          });
+
+          parser = peg.generate("start = 'a'|{ return '1'; }..|", options);
+          expect(parser).to.parse("a", ["a"]);
+
+          parser = peg.generate("start = 'a'|..{ return NaN; }|", options);
+          expect(parser).to.failToParse("aaa");
         });
       });
 
