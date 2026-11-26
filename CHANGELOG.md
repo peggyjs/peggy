@@ -19,6 +19,10 @@ Released: TBD
 
 ### Bug fixes
 
+- Infer `ALWAYS_MATCH` for choices where any alternative always matches,
+  avoiding redundant `!== peg$FAILED` checks and unreachable `else` branches in
+  generated parsers and reporting `&`/`!` predicate warnings on such choices.
+  [#577](https://github.com/peggyjs/peggy/issues/577)
 - Fixed the error message when a parse fails and no expectation was recorded,
   for example when a semantic predicate fails. It used to read
   `Expected , or undefined but "a" found.` and is now `Unexpected "a".`

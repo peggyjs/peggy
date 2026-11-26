@@ -116,6 +116,32 @@ describe("Peggy compiler", () => {
     ]);
   });
 
+  it("generates correct bytecode and JS when calling an always-matching choice rule", () => {
+    const ast = parser.parse("Foo = either ' '\neither = '.' / [a-z]*");
+    const warnings = [];
+    const source = compiler.compile(ast, compiler.passes, {
+      output: "source",
+      warning(...args) { warnings.push(args); },
+    });
+
+    expect(warnings).to.eql([]);
+    // Note there is no IF_NOT_ERROR check after calling `either`.
+    expect(ast.rules[0].bytecode).to.eql([
+      5,                // PUSH_CURR_POS
+      27, 1,            // RULE 1 (either)
+      18, 0, 2, 2,      // MATCH_STRING 0 (' ')
+      22, 0,            //   ACCEPT_STRING 0
+      23, 0,            //   FAIL 0
+      15, 3, 4,         // IF_NOT_ERROR
+      11, 2,            //   WRAP 2
+      9,                //   NIP
+      8, 2,             //   POP_N 2
+      7,                //   POP_CURR_POS
+      3,                //   PUSH_FAILED
+    ]);
+    expect(source).to.not.contain("if (s1 !== peg$FAILED)");
+  });
+
   it("detects unreachable code", () => {
     const ast = parser.parse("start = &('f'*) &[] !('f'*) ![] 'b'");
     const warnings = [];
@@ -182,18 +208,46 @@ describe("Peggy compiler", () => {
       ],
       [
         "semantic",
+        "Always matches, making the & predicate redundant.",
+        {
+          "start": { "column": 11, "line": 1, "offset": 10 },
+          "end": { "column": 21, "line": 1, "offset": 20 },
+          "source": undefined,
+        },
+      ],
+      [
+        "semantic",
         "Always matches.  Following alternatives may not be reachable.",
         {
           "start": { "column": 25, "line": 1, "offset": 24 },
           "end": { "column": 29, "line": 1, "offset": 28 },
           "source": undefined,
         },
-      ], [
+      ],
+      [
+        "semantic",
+        "Always matches, making the ! predicate always fail.",
+        {
+          "start": { "column": 25, "line": 1, "offset": 24 },
+          "end": { "column": 35, "line": 1, "offset": 34 },
+          "source": undefined,
+        },
+      ],
+      [
         "semantic",
         "Always matches.  Following alternatives may not be reachable.",
         {
           "start": { "column": 39, "line": 1, "offset": 38 },
           "end": { "column": 43, "line": 1, "offset": 42 },
+          "source": undefined,
+        },
+      ],
+      [
+        "semantic",
+        "Always matches, making the & predicate redundant.",
+        {
+          "start": { "column": 39, "line": 1, "offset": 38 },
+          "end": { "column": 49, "line": 1, "offset": 48 },
           "source": undefined,
         },
       ],
