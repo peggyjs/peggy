@@ -44,14 +44,17 @@ describe("compiler pass |inferenceMatchResult|", () => {
   it("calculate |match| property for |choice| correctly", () => {
     expect(pass).to.changeAST("start = 'a' / 'b'", { rules: [{ match:  0 }] });
 
-    expect(pass).to.changeAST("start = 'a' / ''",  { rules: [{ match:  0 }] });
-    expect(pass).to.changeAST("start = ''  / 'b'", { rules: [{ match:  0 }] });
+    expect(pass).to.changeAST("start = 'a' / ''",  { rules: [{ match:  1 }] });
+    expect(pass).to.changeAST("start = ''  / 'b'", { rules: [{ match:  1 }] });
     expect(pass).to.changeAST("start = ''  / ''",  { rules: [{ match:  1 }] });
 
     expect(pass).to.changeAST("start = 'a' / []",  { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = []  / 'b'", { rules: [{ match:  0 }] });
     expect(pass).to.changeAST("start = []  / []",  { rules: [{ match: -1 }] });
-    expect(pass).to.changeAST("start = 'a'? / 'b'",  { rules: [{ match: 0 }] });
+    expect(pass).to.changeAST("start = ''  / []",  { rules: [{ match:  1 }] });
+    expect(pass).to.changeAST("start = []  / ''",  { rules: [{ match:  1 }] });
+    expect(pass).to.changeAST("start = 'a'? / 'b'",   { rules: [{ match: 1 }] });
+    expect(pass).to.changeAST("start = '.' / [a-z]*", { rules: [{ match: 1 }] });
   });
 
   it("calculate |match| property for predicates correctly", () => {
@@ -472,5 +475,23 @@ describe("compiler pass |inferenceMatchResult|", () => {
     expect(pass).to.changeAST("start = [] start", { rules: [{ match: -1 }] });
 
     expect(pass).to.changeAST("start = . start []", { rules: [{ match: -1 }] });
+    expect(pass).to.changeAST("start = 'a' start / ''", { rules: [{ match: 1 }] });
+    expect(pass).to.changeAST(
+      ["Foo = either ' '", "either = '.' / [a-z]*"].join("\n"),
+      {
+        rules: [
+          {
+            match: 0,
+            expression: {
+              elements: [
+                { match: 1 },
+                { match: 0 },
+              ],
+            },
+          },
+          { match: 1 },
+        ],
+      }
+    );
   });
 });
