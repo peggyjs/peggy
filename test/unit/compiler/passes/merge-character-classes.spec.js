@@ -236,6 +236,103 @@ describe("compiler pass |mergeCharacterClasses|", () => {
     );
   });
 
+  it("merges astral characters by code point", () => {
+    expect(pass).to.changeAST(
+      [
+        "one = '\u{1F600}' / '\u{1F680}'",
+        "two = '\uD7FF' / '\u{10000}'",
+        "three = [\uE000-\uFFFF] / '\u{10000}'",
+        "four = '\u{1F600}' / [a-\uFFFF]",
+      ].join("\n"),
+      {
+        rules: [
+          {
+            name: "one",
+            expression: {
+              type: "class",
+              parts: ["\u{1F600}", "\u{1F680}"],
+              unicode: true,
+            },
+          },
+          {
+            name: "two",
+            expression: {
+              type: "class",
+              parts: ["\uD7FF", "\u{10000}"],
+              unicode: true,
+            },
+          },
+          {
+            name: "three",
+            expression: {
+              type: "class",
+              parts: [["\uE000", "\u{10000}"]],
+              unicode: true,
+            },
+          },
+          {
+            name: "four",
+            expression: {
+              type: "class",
+              parts: [["a", "\uFFFF"], "\u{1F600}"],
+              unicode: true,
+            },
+          },
+        ],
+      },
+      { allowedStartRules: ["one", "two", "three", "four"] }
+    );
+  });
+
+  it("keeps class escapes when merging", () => {
+    expect(pass).to.changeAST(
+      [
+        "one = [\\p{N}]u / 'a' / [\\p{L}b-c]u",
+        "two = [\\p{L}]u / [\\p{L}]u",
+        "three = [\\p{L}]u / [\\p{N}]u",
+      ].join("\n"),
+      {
+        rules: [
+          {
+            name: "one",
+            expression: {
+              type: "class",
+              parts: [
+                { type: "classEscape", value: "p{L}" },
+                { type: "classEscape", value: "p{N}" },
+                ["a", "c"],
+              ],
+              unicode: true,
+            },
+          },
+          {
+            name: "two",
+            expression: {
+              type: "class",
+              parts: [
+                { type: "classEscape", value: "p{L}" },
+                { type: "classEscape", value: "p{L}" },
+              ],
+              unicode: true,
+            },
+          },
+          {
+            name: "three",
+            expression: {
+              type: "class",
+              parts: [
+                { type: "classEscape", value: "p{L}" },
+                { type: "classEscape", value: "p{N}" },
+              ],
+              unicode: true,
+            },
+          },
+        ],
+      },
+      { allowedStartRules: ["one", "two", "three"] }
+    );
+  });
+
   it("elides surrogates from unicode ranges", () => {
     expect(pass).to.changeAST(
       [

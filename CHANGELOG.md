@@ -27,6 +27,11 @@ Released: TBD
   so counts above `2 ** 31` no longer wrap around. Non-numeric counts keep
   their previous coercion, for example `"1"` stays 1 and `NaN` becomes 0.
   [#678](https://github.com/peggyjs/peggy/pull/678)
+- Fixed merging of choices between single characters and classes that
+  contain astral (non-BMP) characters.  `"😀" / "🚀"` used to be merged
+  into the range `[😀-🚀]`, so it also matched every character in between,
+  and `"😀" / [a-\uFFFF]` did not match `"😀"` at all.
+  [#681](https://github.com/peggyjs/peggy/pull/681)
 
 5.1.1
 -----
