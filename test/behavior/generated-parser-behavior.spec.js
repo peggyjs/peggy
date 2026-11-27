@@ -288,6 +288,13 @@ describe("generated parser behavior", () => {
 
           expect(parser).to.parse("İx", ["İ", "x"]);
         });
+
+        it("matches a NUL followed by a digit", () => {
+          const parser = peg.generate("start = '\\x001'", options);
+
+          expect(parser).to.parse("\x001");
+          expect(parser).to.failToParse("\x01");
+        });
       });
 
       describe("when it matches", () => {
@@ -414,6 +421,16 @@ describe("generated parser behavior", () => {
 
             matches.forEach(input => expect(parser).to.parse(input, input));
             fails.forEach(input => expect(parser).to.failToParse(input));
+          });
+        });
+
+        it("matches a NUL followed by a digit in classes that use a RegExp", () => {
+          ["i", "u"].forEach(flag => {
+            const parser = peg.generate(`start = [\\x001]${flag}`, options);
+
+            expect(parser).to.parse("\x00");
+            expect(parser).to.parse("1");
+            expect(parser).to.failToParse("\x01");
           });
         });
 
